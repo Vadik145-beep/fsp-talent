@@ -538,31 +538,77 @@ LEVEL_LABEL = {
     "national": "всероссийского",
     "international": "международного",
 }
-LEVEL_WEIGHT = {"regional": 1.0, "national": 2.0, "international": 3.0}
 ACHIEVEMENTS: list[J] = []
+# Старые случайные достижения больше не попадают в фикстуры (см. make_achievements)
+_LEGACY_ACHIEVEMENTS: list[J] = []
+
+# Мок реестра ФСП — источник правды по ФИО участников и их достижениям. Кандидаты с ФСП ID
+# получают ФИО из реестра, fsp_achievements.json — кэш достижений из реестра в формате API.
+FSP_REGISTRY_JSON = (
+    Path(__file__).resolve().parents[2]
+    / "services"
+    / "fsp-registry-mock"
+    / "data"
+    / "participants.json"
+)
+FSP_REGISTRY: dict[str, J] = {
+    p["fsp_id"]: p
+    for p in json.loads(FSP_REGISTRY_JSON.read_text(encoding="utf-8"))["participants"]
+}
+# коды дисциплин реестра → коды платформы (app/common/enums.py FspDiscipline)
+DISCIPLINE_FROM_REGISTRY = {
+    "product": "product",
+    "algorithmic": "algorithmic",
+    "security": "cybersecurity",
+    "uav": "uas",
+    "robotics": "robotics",
+}
+DIPLOMA_LABEL = {1: "Диплом I степени", 2: "Диплом II степени", 3: "Диплом III степени"}
+
+# ФСП-скор (docs/integration/fsp.md, раздел 7) — та же формула, что в backend/app/fsp/scoring.py
+LEVEL_WEIGHT = {"regional": 1.0, "national": 2.0, "international": 3.0}
+DIPLOMA_WEIGHT = {"Диплом I степени": 0.8, "Диплом II степени": 0.6, "Диплом III степени": 0.45}
+LEVEL_WINNER = {
+    "regional": "Победитель регионального соревнования",
+    "national": "Победитель всероссийского соревнования",
+    "international": "Победитель международного соревнования",
+}
 
 
-def place_weight(place: int | None) -> float:
-    return {1: 1.0, 2: 0.8, 3: 0.65}.get(place or 0, 0.3 if place is None else 0.45)
+def result_weight(place: int | None, diploma: str | None) -> float:
+    if place is not None:
+        return {1: 1.0, 2: 0.85, 3: 0.7}.get(place, 0.4 if place <= 10 else 0.25)
+    if diploma is not None:
+        return DIPLOMA_WEIGHT.get(diploma, 0.45)
+    return 0.1  # участие
 
 
 def fsp_score(achs: list[J]) -> float | None:
-    """ФСП-скор = Σ уровень × место × свежесть, нормирован в 0..100 (T5.3)."""
+    """ФСП-скор = 100 × (1 − e^(−S/3)), S = Σ уровень × результат × 0,5^(возраст/2)."""
     if not achs:
         return None
     total = 0.0
     for a in achs:
-        age_years = (NOW.date() - datetime.fromisoformat(a["date"]).date()).days / 365
-        freshness = math.exp(-age_years / 2)
-        total += LEVEL_WEIGHT[a["level"]] * place_weight(a["place"]) * freshness
-    return round(100 * (1 - math.exp(-total / 2.5)), 1)
+        age_years = max(0, (NOW.date() - datetime.fromisoformat(a["date"]).date()).days) / 365.25
+        freshness = 0.5 ** (age_years / 2)
+        total += LEVEL_WEIGHT[a["level"]] * result_weight(a["place"], a["diploma"]) * freshness
+    return float(round(100 * (1 - math.exp(-total / 3))))
+
+
+def is_prize(a: J) -> bool:
+    return a["diploma"] is not None or (a["place"] is not None and a["place"] <= 3)
 
 
 def badges_for(achs: list[J]) -> list[J]:
+    """Бейджи «подтверждено ФСП» — та же логика, что в backend/app/fsp/scoring.py."""
     badges: list[J] = []
     for level in ("international", "national", "regional"):
-        prize = [a for a in achs if a["level"] == level and a["place"] and a["place"] <= 3]
-        if prize:
+        on_level = [a for a in achs if a["level"] == level]
+        if any(a["place"] == 1 for a in on_level):
+            badges.append(
+                {"id": f"{level}_winner", "title": LEVEL_WINNER[level], "level": level, "verified": True}
+            )
+        elif any(is_prize(a) for a in on_level):
             badges.append(
                 {
                     "id": f"{level}_prize",
@@ -571,6 +617,8 @@ def badges_for(achs: list[J]) -> list[J]:
                     "verified": True,
                 }
             )
+    if any((a["role"] or "").startswith("Капитан") for a in achs):
+        badges.append({"id": "captain", "title": "Капитан команды", "level": None, "verified": True})
     if len(achs) >= 2:
         badges.append(
             {
@@ -580,7 +628,7 @@ def badges_for(achs: list[J]) -> list[J]:
                 "verified": True,
             }
         )
-    elif len(achs) == 1 and not badges:
+    elif len(achs) == 1:
         badges.append(
             {
                 "id": "participant",
@@ -592,7 +640,41 @@ def badges_for(achs: list[J]) -> list[J]:
     return badges
 
 
+def registry_achievements(fsp: str) -> list[J]:
+    """Достижения участника из мока реестра → формат кэша платформы (схема FspAchievement).
+
+    Порядок — как в реестре (от старых к новым), поэтому id достижения в реестре
+    восстанавливается как ACH-<номер>-<порядковый номер> (см. backend/app/fsp/fixtures_loader.py).
+    """
+    result = []
+    for item in FSP_REGISTRY[fsp]["achievements"]:
+        res, team = item["result"], item["team"]
+        role = None
+        if team:
+            role = f"Капитан, {team['role']}" if team["is_captain"] else team["role"]
+        ach = {
+            "id": len(ACHIEVEMENTS) + 1,
+            "fsp_id": fsp,
+            "competition": item["competition"]["title"],
+            "discipline": DISCIPLINE_FROM_REGISTRY[item["discipline"]["code"]],
+            "level": item["level"]["code"],
+            "date": item["date"],
+            "place": res["place"] if res["kind"] == "place" else None,
+            "diploma": DIPLOMA_LABEL[res["diploma_degree"]] if res["kind"] == "diploma" else None,
+            "team": team["name"] if team else None,
+            "role": role,
+            "rating": float(item["rating_points"]),
+            "protocol_url": item["competition"]["protocol_url"],
+            "verified": item["verified"],
+        }
+        ACHIEVEMENTS.append(ach)
+        result.append(ach)
+    return result
+
+
 def make_achievements(fsp: str, spec: str, grade: str) -> list[J]:
+    """Старый генератор случайных достижений. Результат не используется (источник — реестр),
+    но вызовы rng сохранены, чтобы не сдвинуть остальные фикстуры."""
     count = {
         "intern": 1,
         "junior": rng.randint(1, 2),
@@ -608,7 +690,7 @@ def make_achievements(fsp: str, spec: str, grade: str) -> list[J]:
         ach_date = (NOW - timedelta(days=year_days)).date()
         competition = rng.choice(COMPETITIONS[discipline])
         ach = {
-            "id": len(ACHIEVEMENTS) + 1,
+            "id": len(_LEGACY_ACHIEVEMENTS) + 1,
             "fsp_id": fsp,
             "competition": f"{competition} {ach_date.year}",
             "discipline": discipline,
@@ -626,7 +708,7 @@ def make_achievements(fsp: str, spec: str, grade: str) -> list[J]:
             "protocol_url": f"https://fsp-registry.example.com/protocols/{rng.randint(1000, 9999)}",
             "verified": True,
         }
-        ACHIEVEMENTS.append(ach)
+        _LEGACY_ACHIEVEMENTS.append(ach)
         result.append(ach)
     return result
 
@@ -682,6 +764,12 @@ def build_people() -> None:
             if full not in used_names:
                 used_names.add(full)
                 break
+        fsp = fsp_id_for(i)
+        if fsp:
+            # ФИО участника ФСП — из реестра (имена выше всё равно разыгрываются, чтобы rng
+            # не сдвинулся и остальные фикстуры не изменились)
+            first, surname = FSP_REGISTRY[fsp]["first_name"], FSP_REGISTRY[fsp]["last_name"]
+            full = f"{first} {surname}"
         login = f"{translit(first)[0]}.{translit(surname)}.{i:02d}"
         email = {1: "candidate@example.com", 26: "candidate.nofsp@example.com"}.get(
             i, f"{login}@example.com"
@@ -709,8 +797,9 @@ def build_people() -> None:
             stack = ["python", "fastapi", "postgresql", "redis", "docker", "kafka"]
         lo, hi = SALARY_RANGE[g_for_ranges]
         exp_lo, exp_hi = EXPERIENCE[g_for_ranges]
-        fsp = fsp_id_for(i)
-        achs = make_achievements(fsp, spec, g_for_ranges) if fsp and i <= 20 else []
+        if fsp and i <= 20:
+            make_achievements(fsp, spec, g_for_ranges)  # только расход rng, см. docstring
+        achs = registry_achievements(fsp) if fsp else []
         links = []
         if rng.random() < 0.6:
             links.append(

@@ -3,10 +3,10 @@
     "id": 1,
     "user_id": 1,
     "pseudonym": "Кандидат #CFAD",
-    "full_name": "Алексей Смирнов",
+    "full_name": "Никита Латыпов",
     "email": "candidate@example.com",
     "phone": "+7 900 101-55-37",
-    "telegram": "@example_aleksey1",
+    "telegram": "@example_nikita1",
     "city": "Казань",
     "work_formats": [
       "remote",
@@ -77,16 +77,34 @@
     "links": [
       {
         "type": "github",
-        "url": "https://github.com/example-aleksey1"
+        "url": "https://github.com/example-nikita1"
       }
     ],
     "min_salary": 180000,
     "fsp_id": "FSP-000001",
-    "fsp_score": 41.1,
+    "fsp_score": 86.0,
     "fsp_badges": [
       {
+        "id": "international_winner",
+        "title": "Победитель международного соревнования",
+        "level": "international",
+        "verified": true
+      },
+      {
+        "id": "national_prize",
+        "title": "Призёр всероссийского соревнования",
+        "level": "national",
+        "verified": true
+      },
+      {
+        "id": "captain",
+        "title": "Капитан команды",
+        "level": null,
+        "verified": true
+      },
+      {
         "id": "participant_many",
-        "title": "Участник 3 соревнований ФСП",
+        "title": "Участник 7 соревнований ФСП",
         "level": null,
         "verified": true
       }
@@ -109,8 +127,8 @@
     "id": 2,
     "user_id": 2,
     "pseudonym": "Кандидат #ABCD",
-    "full_name": "Наталья Андреева",
-    "email": "n.andreeva.02@example.com",
+    "full_name": "Артём Белов",
+    "email": "a.belov.02@example.com",
     "phone": "+7 900 102-76-88",
     "telegram": null,
     "city": "Новосибирск",
@@ -181,7 +199,7 @@
     "links": [
       {
         "type": "github",
-        "url": "https://github.com/example-natalya2"
+        "url": "https://github.com/example-artem2"
       },
       {
         "type": "portfolio",
@@ -190,17 +208,23 @@
     ],
     "min_salary": 110000,
     "fsp_id": "FSP-000002",
-    "fsp_score": 36.4,
+    "fsp_score": 41.0,
     "fsp_badges": [
       {
-        "id": "international_prize",
-        "title": "Призёр международного соревнования",
-        "level": "international",
+        "id": "national_prize",
+        "title": "Призёр всероссийского соревнования",
+        "level": "national",
+        "verified": true
+      },
+      {
+        "id": "captain",
+        "title": "Капитан команды",
+        "level": null,
         "verified": true
       },
       {
         "id": "participant_many",
-        "title": "Участник 2 соревнований ФСП",
+        "title": "Участник 5 соревнований ФСП",
         "level": null,
         "verified": true
       }
@@ -223,10 +247,10 @@
     "id": 3,
     "user_id": 3,
     "pseudonym": "Кандидат #47DA",
-    "full_name": "Анна Николаева",
-    "email": "a.nikolaeva.03@example.com",
+    "full_name": "Кирилл Волков",
+    "email": "k.volkov.03@example.com",
     "phone": "+7 900 103-12-29",
-    "telegram": "@example_anna3",
+    "telegram": "@example_kirill3",
     "city": "Иннополис",
     "work_formats": [
       "office"
@@ -291,13 +315,19 @@
     "links": [
       {
         "type": "github",
-        "url": "https://github.com/example-anna3"
+        "url": "https://github.com/example-kirill3"
       }
     ],
     "min_salary": 290000,
     "fsp_id": "FSP-000003",
-    "fsp_score": 44.5,
+    "fsp_score": 20.0,
     "fsp_badges": [
+      {
+        "id": "captain",
+        "title": "Капитан команды",
+        "level": null,
+        "verified": true
+      },
       {
         "id": "participant_many",
         "title": "Участник 4 соревнований ФСП",
@@ -323,8 +353,8 @@
     "id": 4,
     "user_id": 4,
     "pseudonym": "Кандидат #D3C3",
-    "full_name": "Алексей Волков",
-    "email": "a.volkov.04@example.com",
+    "full_name": "Арсений Лебедев",
+    "email": "a.lebedev.04@example.com",
     "phone": "+7 900 104-27-61",
     "telegram": null,
     "city": "Томск",
@@ -396,12 +426,12 @@
     "links": [
       {
         "type": "github",
-        "url": "https://github.com/example-aleksey4"
+        "url": "https://github.com/example-arseniy4"
       }
     ],
     "min_salary": 420000,
     "fsp_id": "FSP-000004",
-    "fsp_score": 55.9,
+    "fsp_score": 53.0,
     "fsp_badges": [
       {
         "id": "national_prize",
@@ -410,8 +440,14 @@
         "verified": true
       },
       {
+        "id": "regional_prize",
+        "title": "Призёр регионального соревнования",
+        "level": "regional",
+        "verified": true
+      },
+      {
         "id": "participant_many",
-        "title": "Участник 3 соревнований ФСП",
+        "title": "Участник 6 соревнований ФСП",
         "level": null,
         "verified": true
       }
@@ -434,10 +470,10 @@
     "id": 5,
     "user_id": 5,
     "pseudonym": "Кандидат #0DE0",
-    "full_name": "Максим Соловьёв",
-    "email": "m.solovev.05@example.com",
+    "full_name": "Софья Зайцева",
+    "email": "s.zaytseva.05@example.com",
     "phone": "+7 900 105-12-25",
-    "telegram": "@example_maksim5",
+    "telegram": "@example_sofya5",
     "city": "Екатеринбург",
     "work_formats": [
       "hybrid",
@@ -501,12 +537,12 @@
     "links": [
       {
         "type": "github",
-        "url": "https://github.com/example-maksim5"
+        "url": "https://github.com/example-sofya5"
       }
     ],
     "min_salary": 360000,
     "fsp_id": "FSP-000005",
-    "fsp_score": 50.9,
+    "fsp_score": 24.0,
     "fsp_badges": [
       {
         "id": "national_prize",
@@ -539,10 +575,10 @@
     "id": 6,
     "user_id": 6,
     "pseudonym": "Кандидат #232A",
-    "full_name": "Полина Орлова",
-    "email": "p.orlova.06@example.com",
+    "full_name": "Софья Морозова",
+    "email": "s.morozova.06@example.com",
     "phone": "+7 900 106-80-51",
-    "telegram": "@example_polina6",
+    "telegram": "@example_sofya6",
     "city": "Москва",
     "work_formats": [
       "hybrid",
@@ -614,12 +650,18 @@
     "links": [],
     "min_salary": 180000,
     "fsp_id": "FSP-000006",
-    "fsp_score": 23.4,
+    "fsp_score": 30.0,
     "fsp_badges": [
       {
-        "id": "regional_prize",
-        "title": "Призёр регионального соревнования",
-        "level": "regional",
+        "id": "national_prize",
+        "title": "Призёр всероссийского соревнования",
+        "level": "national",
+        "verified": true
+      },
+      {
+        "id": "participant_many",
+        "title": "Участник 2 соревнований ФСП",
+        "level": null,
         "verified": true
       }
     ],
@@ -641,10 +683,10 @@
     "id": 7,
     "user_id": 7,
     "pseudonym": "Кандидат #C1D5",
-    "full_name": "Владимир Воробьёв",
-    "email": "v.vorobev.07@example.com",
+    "full_name": "Вероника Волкова",
+    "email": "v.volkova.07@example.com",
     "phone": "+7 900 107-98-64",
-    "telegram": "@example_vladimir7",
+    "telegram": "@example_veronika7",
     "city": "Самара",
     "work_formats": [
       "office"
@@ -709,17 +751,17 @@
     "links": [
       {
         "type": "github",
-        "url": "https://github.com/example-vladimir7"
+        "url": "https://github.com/example-veronika7"
       }
     ],
     "min_salary": 240000,
     "fsp_id": "FSP-000007",
-    "fsp_score": 43.6,
+    "fsp_score": 5.0,
     "fsp_badges": [
       {
-        "id": "national_prize",
-        "title": "Призёр всероссийского соревнования",
-        "level": "national",
+        "id": "participant",
+        "title": "Участник соревнования ФСП",
+        "level": null,
         "verified": true
       }
     ],
@@ -741,10 +783,10 @@
     "id": 8,
     "user_id": 8,
     "pseudonym": "Кандидат #B480",
-    "full_name": "Илья Романов",
-    "email": "i.romanov.08@example.com",
+    "full_name": "Павел Сафин",
+    "email": "p.safin.08@example.com",
     "phone": "+7 900 108-15-19",
-    "telegram": "@example_ilya8",
+    "telegram": "@example_pavel8",
     "city": "Санкт-Петербург",
     "work_formats": [
       "hybrid",
@@ -808,7 +850,7 @@
     "links": [
       {
         "type": "github",
-        "url": "https://github.com/example-ilya8"
+        "url": "https://github.com/example-pavel8"
       },
       {
         "type": "portfolio",
@@ -817,12 +859,24 @@
     ],
     "min_salary": 110000,
     "fsp_id": "FSP-000008",
-    "fsp_score": 13.0,
+    "fsp_score": 41.0,
     "fsp_badges": [
       {
-        "id": "regional_prize",
-        "title": "Призёр регионального соревнования",
-        "level": "regional",
+        "id": "national_prize",
+        "title": "Призёр всероссийского соревнования",
+        "level": "national",
+        "verified": true
+      },
+      {
+        "id": "captain",
+        "title": "Капитан команды",
+        "level": null,
+        "verified": true
+      },
+      {
+        "id": "participant_many",
+        "title": "Участник 8 соревнований ФСП",
+        "level": null,
         "verified": true
       }
     ],
@@ -844,10 +898,10 @@
     "id": 9,
     "user_id": 9,
     "pseudonym": "Кандидат #25FD",
-    "full_name": "Екатерина Соколова",
-    "email": "e.sokolova.09@example.com",
+    "full_name": "Полина Гарипова",
+    "email": "p.garipova.09@example.com",
     "phone": "+7 900 109-85-63",
-    "telegram": "@example_ekaterina9",
+    "telegram": "@example_polina9",
     "city": "Екатеринбург",
     "work_formats": [
       "remote"
@@ -909,12 +963,18 @@
     "links": [],
     "min_salary": 130000,
     "fsp_id": "FSP-000009",
-    "fsp_score": 15.8,
+    "fsp_score": 19.0,
     "fsp_badges": [
       {
-        "id": "regional_prize",
-        "title": "Призёр регионального соревнования",
-        "level": "regional",
+        "id": "national_prize",
+        "title": "Призёр всероссийского соревнования",
+        "level": "national",
+        "verified": true
+      },
+      {
+        "id": "participant_many",
+        "title": "Участник 3 соревнований ФСП",
+        "level": null,
         "verified": true
       }
     ],
@@ -936,10 +996,10 @@
     "id": 10,
     "user_id": 10,
     "pseudonym": "Кандидат #9779",
-    "full_name": "Дарья Соловьёва",
-    "email": "d.soloveva.10@example.com",
+    "full_name": "Вероника Баранова",
+    "email": "v.baranova.10@example.com",
     "phone": "+7 900 110-85-86",
-    "telegram": "@example_darya10",
+    "telegram": "@example_veronika10",
     "city": "Томск",
     "work_formats": [
       "hybrid",
@@ -1010,12 +1070,12 @@
     "links": [
       {
         "type": "github",
-        "url": "https://github.com/example-darya10"
+        "url": "https://github.com/example-veronika10"
       }
     ],
     "min_salary": 100000,
     "fsp_id": "FSP-000010",
-    "fsp_score": 46.7,
+    "fsp_score": 19.0,
     "fsp_badges": [
       {
         "id": "national_prize",
@@ -1024,9 +1084,9 @@
         "verified": true
       },
       {
-        "id": "regional_prize",
-        "title": "Призёр регионального соревнования",
-        "level": "regional",
+        "id": "captain",
+        "title": "Капитан команды",
+        "level": null,
         "verified": true
       },
       {
@@ -1054,8 +1114,8 @@
     "id": 11,
     "user_id": 11,
     "pseudonym": "Кандидат #142C",
-    "full_name": "Владимир Борисов",
-    "email": "v.borisov.11@example.com",
+    "full_name": "Виктория Зайцева",
+    "email": "v.zaytseva.11@example.com",
     "phone": "+7 900 111-54-99",
     "telegram": null,
     "city": "Томск",
@@ -1129,17 +1189,11 @@
     "links": [],
     "min_salary": 440000,
     "fsp_id": "FSP-000011",
-    "fsp_score": 42.8,
+    "fsp_score": 3.0,
     "fsp_badges": [
       {
-        "id": "regional_prize",
-        "title": "Призёр регионального соревнования",
-        "level": "regional",
-        "verified": true
-      },
-      {
-        "id": "participant_many",
-        "title": "Участник 4 соревнований ФСП",
+        "id": "participant",
+        "title": "Участник соревнования ФСП",
         "level": null,
         "verified": true
       }
@@ -1162,10 +1216,10 @@
     "id": 12,
     "user_id": 12,
     "pseudonym": "Кандидат #927E",
-    "full_name": "Дмитрий Степанов",
-    "email": "d.stepanov.12@example.com",
+    "full_name": "Ксения Латыпова",
+    "email": "k.latypova.12@example.com",
     "phone": "+7 900 112-90-69",
-    "telegram": "@example_dmitriy12",
+    "telegram": "@example_kseniya12",
     "city": "Москва",
     "work_formats": [
       "remote"
@@ -1240,7 +1294,7 @@
     ],
     "min_salary": 310000,
     "fsp_id": "FSP-000012",
-    "fsp_score": 48.5,
+    "fsp_score": 32.0,
     "fsp_badges": [
       {
         "id": "international_prize",
@@ -1250,7 +1304,7 @@
       },
       {
         "id": "participant_many",
-        "title": "Участник 2 соревнований ФСП",
+        "title": "Участник 4 соревнований ФСП",
         "level": null,
         "verified": true
       }
@@ -1273,10 +1327,10 @@
     "id": 13,
     "user_id": 13,
     "pseudonym": "Кандидат #371B",
-    "full_name": "Иван Соловьёв",
-    "email": "i.solovev.13@example.com",
+    "full_name": "Максим Морозов",
+    "email": "m.morozov.13@example.com",
     "phone": "+7 900 113-10-68",
-    "telegram": "@example_ivan13",
+    "telegram": "@example_maksim13",
     "city": "Москва",
     "work_formats": [
       "hybrid",
@@ -1341,16 +1395,28 @@
     "links": [
       {
         "type": "github",
-        "url": "https://github.com/example-ivan13"
+        "url": "https://github.com/example-maksim13"
       }
     ],
     "min_salary": 210000,
     "fsp_id": "FSP-000013",
-    "fsp_score": 33.0,
+    "fsp_score": 39.0,
     "fsp_badges": [
       {
+        "id": "national_prize",
+        "title": "Призёр всероссийского соревнования",
+        "level": "national",
+        "verified": true
+      },
+      {
+        "id": "captain",
+        "title": "Капитан команды",
+        "level": null,
+        "verified": true
+      },
+      {
         "id": "participant_many",
-        "title": "Участник 3 соревнований ФСП",
+        "title": "Участник 5 соревнований ФСП",
         "level": null,
         "verified": true
       }
@@ -1373,8 +1439,8 @@
     "id": 14,
     "user_id": 14,
     "pseudonym": "Кандидат #F668",
-    "full_name": "Татьяна Алексеева",
-    "email": "t.alekseeva.14@example.com",
+    "full_name": "Анна Комарова",
+    "email": "a.komarova.14@example.com",
     "phone": "+7 900 114-81-72",
     "telegram": null,
     "city": "Томск",
@@ -1444,13 +1510,25 @@
     "links": [
       {
         "type": "github",
-        "url": "https://github.com/example-tatyana14"
+        "url": "https://github.com/example-anna14"
       }
     ],
     "min_salary": 110000,
     "fsp_id": "FSP-000014",
-    "fsp_score": 21.0,
+    "fsp_score": 34.0,
     "fsp_badges": [
+      {
+        "id": "international_prize",
+        "title": "Призёр международного соревнования",
+        "level": "international",
+        "verified": true
+      },
+      {
+        "id": "captain",
+        "title": "Капитан команды",
+        "level": null,
+        "verified": true
+      },
       {
         "id": "participant_many",
         "title": "Участник 2 соревнований ФСП",
@@ -1476,10 +1554,10 @@
     "id": 15,
     "user_id": 15,
     "pseudonym": "Кандидат #70ED",
-    "full_name": "Полина Захарова",
-    "email": "p.zakharova.15@example.com",
+    "full_name": "Софья Тихонова",
+    "email": "s.tikhonova.15@example.com",
     "phone": "+7 900 115-87-88",
-    "telegram": "@example_polina15",
+    "telegram": "@example_sofya15",
     "city": "Екатеринбург",
     "work_formats": [
       "hybrid",
@@ -1545,16 +1623,16 @@
     "links": [
       {
         "type": "github",
-        "url": "https://github.com/example-polina15"
+        "url": "https://github.com/example-sofya15"
       }
     ],
     "min_salary": 250000,
     "fsp_id": "FSP-000015",
-    "fsp_score": 52.0,
+    "fsp_score": 2.0,
     "fsp_badges": [
       {
-        "id": "participant_many",
-        "title": "Участник 3 соревнований ФСП",
+        "id": "participant",
+        "title": "Участник соревнования ФСП",
         "level": null,
         "verified": true
       }
@@ -1577,10 +1655,10 @@
     "id": 16,
     "user_id": 16,
     "pseudonym": "Кандидат #1939",
-    "full_name": "Павел Григорьев",
-    "email": "p.grigorev.16@example.com",
+    "full_name": "Ксения Гарипова",
+    "email": "k.garipova.16@example.com",
     "phone": "+7 900 116-12-72",
-    "telegram": "@example_pavel16",
+    "telegram": "@example_kseniya16",
     "city": "Екатеринбург",
     "work_formats": [
       "hybrid",
@@ -1643,17 +1721,29 @@
     "links": [
       {
         "type": "github",
-        "url": "https://github.com/example-pavel16"
+        "url": "https://github.com/example-kseniya16"
       }
     ],
     "min_salary": 60000,
     "fsp_id": "FSP-000016",
-    "fsp_score": 12.0,
+    "fsp_score": 47.0,
     "fsp_badges": [
       {
-        "id": "regional_prize",
-        "title": "Призёр регионального соревнования",
-        "level": "regional",
+        "id": "international_prize",
+        "title": "Призёр международного соревнования",
+        "level": "international",
+        "verified": true
+      },
+      {
+        "id": "national_prize",
+        "title": "Призёр всероссийского соревнования",
+        "level": "national",
+        "verified": true
+      },
+      {
+        "id": "participant_many",
+        "title": "Участник 3 соревнований ФСП",
+        "level": null,
         "verified": true
       }
     ],
@@ -1675,8 +1765,8 @@
     "id": 17,
     "user_id": 17,
     "pseudonym": "Кандидат #18A5",
-    "full_name": "Илья Павлов",
-    "email": "i.pavlov.17@example.com",
+    "full_name": "Тимур Абрамов",
+    "email": "t.abramov.17@example.com",
     "phone": "+7 900 117-15-42",
     "telegram": null,
     "city": "Санкт-Петербург",
@@ -1750,17 +1840,23 @@
     ],
     "min_salary": 180000,
     "fsp_id": "FSP-000017",
-    "fsp_score": 52.1,
+    "fsp_score": 60.0,
     "fsp_badges": [
       {
-        "id": "regional_prize",
-        "title": "Призёр регионального соревнования",
-        "level": "regional",
+        "id": "national_prize",
+        "title": "Призёр всероссийского соревнования",
+        "level": "national",
+        "verified": true
+      },
+      {
+        "id": "captain",
+        "title": "Капитан команды",
+        "level": null,
         "verified": true
       },
       {
         "id": "participant_many",
-        "title": "Участник 3 соревнований ФСП",
+        "title": "Участник 6 соревнований ФСП",
         "level": null,
         "verified": true
       }
@@ -1783,8 +1879,8 @@
     "id": 18,
     "user_id": 18,
     "pseudonym": "Кандидат #52D9",
-    "full_name": "Константин Васильев",
-    "email": "k.vasilev.18@example.com",
+    "full_name": "Анна Тихонова",
+    "email": "a.tikhonova.18@example.com",
     "phone": "+7 900 118-87-11",
     "telegram": null,
     "city": "Самара",
@@ -1850,11 +1946,11 @@
     "links": [],
     "min_salary": 160000,
     "fsp_id": "FSP-000018",
-    "fsp_score": 18.4,
+    "fsp_score": 15.0,
     "fsp_badges": [
       {
-        "id": "participant",
-        "title": "Участник соревнования ФСП",
+        "id": "participant_many",
+        "title": "Участник 2 соревнований ФСП",
         "level": null,
         "verified": true
       }
@@ -1877,10 +1973,10 @@
     "id": 19,
     "user_id": 19,
     "pseudonym": "Кандидат #1869",
-    "full_name": "Иван Гусев",
-    "email": "i.gusev.19@example.com",
+    "full_name": "Максим Медведев",
+    "email": "m.medvedev.19@example.com",
     "phone": "+7 900 119-89-60",
-    "telegram": "@example_ivan19",
+    "telegram": "@example_maksim19",
     "city": "Санкт-Петербург",
     "work_formats": [
       "remote"
@@ -1957,7 +2053,7 @@
     ],
     "min_salary": 60000,
     "fsp_id": "FSP-000019",
-    "fsp_score": 5.2,
+    "fsp_score": 1.0,
     "fsp_badges": [
       {
         "id": "participant",
@@ -1984,10 +2080,10 @@
     "id": 20,
     "user_id": 20,
     "pseudonym": "Кандидат #38DC",
-    "full_name": "Наталья Григорьева",
-    "email": "n.grigoreva.20@example.com",
+    "full_name": "Тимур Морозов",
+    "email": "t.morozov.20@example.com",
     "phone": "+7 900 120-36-75",
-    "telegram": "@example_natalya20",
+    "telegram": "@example_timur20",
     "city": "Екатеринбург",
     "work_formats": [
       "office",
@@ -2053,13 +2149,19 @@
     "links": [
       {
         "type": "github",
-        "url": "https://github.com/example-natalya20"
+        "url": "https://github.com/example-timur20"
       }
     ],
     "min_salary": 60000,
     "fsp_id": "FSP-000020",
-    "fsp_score": 11.5,
+    "fsp_score": 18.0,
     "fsp_badges": [
+      {
+        "id": "national_prize",
+        "title": "Призёр всероссийского соревнования",
+        "level": "national",
+        "verified": true
+      },
       {
         "id": "participant",
         "title": "Участник соревнования ФСП",
@@ -2085,10 +2187,10 @@
     "id": 21,
     "user_id": 21,
     "pseudonym": "Кандидат #7C27",
-    "full_name": "Михаил Романов",
-    "email": "m.romanov.21@example.com",
+    "full_name": "Илья Белов",
+    "email": "i.belov.21@example.com",
     "phone": "+7 900 121-17-24",
-    "telegram": "@example_mikhail21",
+    "telegram": "@example_ilya21",
     "city": "Самара",
     "work_formats": [
       "hybrid"
@@ -2151,7 +2253,7 @@
     "links": [
       {
         "type": "github",
-        "url": "https://github.com/example-mikhail21"
+        "url": "https://github.com/example-ilya21"
       }
     ],
     "min_salary": 250000,
@@ -2176,8 +2278,8 @@
     "id": 22,
     "user_id": 22,
     "pseudonym": "Кандидат #FA38",
-    "full_name": "Полина Соколова",
-    "email": "p.sokolova.22@example.com",
+    "full_name": "Иван Латыпов",
+    "email": "i.latypov.22@example.com",
     "phone": "+7 900 122-51-37",
     "telegram": null,
     "city": "Казань",
@@ -2270,10 +2372,10 @@
     "id": 23,
     "user_id": 23,
     "pseudonym": "Кандидат #F96C",
-    "full_name": "Константин Гусев",
-    "email": "k.gusev.23@example.com",
+    "full_name": "Тимур Карпов",
+    "email": "t.karpov.23@example.com",
     "phone": "+7 900 123-40-70",
-    "telegram": "@example_konstantin23",
+    "telegram": "@example_timur23",
     "city": "Екатеринбург",
     "work_formats": [
       "hybrid",
@@ -2340,7 +2442,7 @@
     "links": [
       {
         "type": "github",
-        "url": "https://github.com/example-konstantin23"
+        "url": "https://github.com/example-timur23"
       }
     ],
     "min_salary": 340000,
@@ -2365,10 +2467,10 @@
     "id": 24,
     "user_id": 24,
     "pseudonym": "Кандидат #2A14",
-    "full_name": "Вероника Романова",
-    "email": "v.romanova.24@example.com",
+    "full_name": "Кирилл Волков",
+    "email": "k.volkov.24@example.com",
     "phone": "+7 900 124-75-90",
-    "telegram": "@example_veronika24",
+    "telegram": "@example_kirill24",
     "city": "Екатеринбург",
     "work_formats": [
       "office"
@@ -2433,7 +2535,7 @@
     "links": [
       {
         "type": "github",
-        "url": "https://github.com/example-veronika24"
+        "url": "https://github.com/example-kirill24"
       },
       {
         "type": "portfolio",
@@ -2462,8 +2564,8 @@
     "id": 25,
     "user_id": 25,
     "pseudonym": "Кандидат #187C",
-    "full_name": "Тимур Смирнов",
-    "email": "t.smirnov.25@example.com",
+    "full_name": "Тимур Широков",
+    "email": "t.shirokov.25@example.com",
     "phone": "+7 900 125-51-28",
     "telegram": "@example_timur25",
     "city": "Москва",
