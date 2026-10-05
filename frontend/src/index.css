@@ -1,0 +1,128 @@
+@import 'tailwindcss';
+
+/*
+ * Дизайн-токены ФСП.
+ * Фирменные цвета — как в шаблоне презентации. Семантические токены (primary, muted, success…)
+ * подобраны так, чтобы текст проходил WCAG AA (4.5:1) на своём фоне.
+ * Каждый токен из @theme доступен и как CSS-переменная (var(--color-primary)),
+ * и как класс Tailwind (bg-primary, text-muted, border-line…).
+ */
+@theme {
+  --font-sans: 'Montserrat', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Фирменная палитра ФСП */
+  --color-fsp-pink: #ff0053;
+  --color-fsp-rose: #fc3777;
+  --color-fsp-lavender: #8a83d1;
+  --color-fsp-blush: #ffd6e4;
+  --color-fsp-night: #310f53;
+  --color-fsp-plum: #520978;
+  --color-fsp-ink: #1c1d22;
+  --color-fsp-white: #ffffff;
+
+  /*
+   * Главные кнопки. #FF0053 с белым текстом даёт 3.9:1 — ниже AA для обычного текста,
+   * поэтому фон кнопки чуть темнее (#E0004B, 4.9:1). #FF0053 — для акцентов и крупных элементов.
+   */
+  --color-primary: #e0004b;
+  --color-primary-hover: #c20041;
+  --color-primary-active: #a80038;
+  --color-primary-soft: #fff0f5;
+  --color-primary-tint: #ffd6e4;
+  --color-on-primary: #ffffff;
+
+  /* Поверхности и текст */
+  --color-canvas: #f6f5fa;
+  --color-surface: #ffffff;
+  --color-surface-muted: #faf9fc;
+  --color-ink: #1c1d22;
+  --color-muted: #5c5869;
+  --color-subtle: #6e6978;
+  --color-line: #e6e3ee;
+  --color-line-strong: #cfcadb;
+
+  /* Шапка и меню */
+  --color-nav: #310f53;
+  --color-nav-hover: #42186b;
+  --color-nav-active: #520978;
+  --color-on-nav: #ffffff;
+  --color-on-nav-muted: #d9cfe6;
+
+  /* Статусы (текст на светлой подложке — AA) */
+  --color-info: #4a4399;
+  --color-info-soft: #ecebfa;
+  --color-violet: #520978;
+  --color-violet-soft: #f3e8fa;
+  --color-success: #0b6e43;
+  --color-success-soft: #e3f5ec;
+  --color-warning: #8a4b00;
+  --color-warning-soft: #fff1d6;
+  --color-danger: #b3102b;
+  --color-danger-soft: #fde7ea;
+  --color-neutral: #4f4b5c;
+  --color-neutral-soft: #efedf3;
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  --shadow-card: 0 1px 2px rgb(49 15 83 / 0.04), 0 1px 3px rgb(49 15 83 / 0.06);
+  --shadow-pop: 0 10px 30px -10px rgb(49 15 83 / 0.25), 0 4px 10px -4px rgb(49 15 83 / 0.1);
+  --shadow-focus: 0 0 0 3px rgb(255 0 83 / 0.28);
+
+  --animate-fade-in: fade-in 150ms ease-out;
+  --animate-slide-in-right: slide-in-right 200ms ease-out;
+  --animate-slide-in-left: slide-in-left 200ms ease-out;
+  --animate-pop-in: pop-in 160ms ease-out;
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slide-in-right {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+  }
+  @keyframes slide-in-left {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+  }
+  @keyframes pop-in {
+    from { opacity: 0; transform: translateY(6px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-canvas text-ink font-sans text-[15px] leading-relaxed;
+    min-height: 100vh;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-fsp-pink);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--color-fsp-blush);
+    color: var(--color-fsp-ink);
+  }
+  h1, h2, h3, h4 {
+    @apply text-ink;
+    letter-spacing: -0.01em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
