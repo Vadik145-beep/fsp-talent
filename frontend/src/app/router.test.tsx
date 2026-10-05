@@ -45,15 +45,17 @@ const cabinetRoutes = [
 const publicRoutes = ['/login', '/register', '/verify-email', '/auth/fsp-callback']
 
 describe('роутинг', () => {
-  it.each(cabinetRoutes)('%s открывает заглушку экрана', async (path) => {
+  // Экраны уже настоящие (волна 1): проверяем, что маршрут есть и рисует экран, а не 404.
+  it.each(cabinetRoutes)('%s открывает экран', async (path) => {
     renderApp(path)
-    expect(await screen.findByText('Экран в работе')).toBeInTheDocument()
+    expect((await screen.findAllByRole('heading')).length).toBeGreaterThan(0)
     expect(screen.queryByText('Страница не найдена')).not.toBeInTheDocument()
   })
 
-  it.each(publicRoutes)('%s открывает публичную заглушку', async (path) => {
+  it.each(publicRoutes)('%s открывает публичный экран', async (path) => {
     renderApp(path)
-    expect(await screen.findByText('Экран в работе')).toBeInTheDocument()
+    expect((await screen.findAllByRole('heading')).length).toBeGreaterThan(0)
+    expect(screen.queryByText('Страница не найдена')).not.toBeInTheDocument()
   })
 
   it('лендинг открывается', async () => {
@@ -69,7 +71,7 @@ describe('роутинг', () => {
 
   it('экран онбординга — без бокового меню', async () => {
     renderApp('/candidate/onboarding', { role: 'candidate' })
-    await screen.findByText('Экран в работе')
+    await screen.findAllByRole('heading')
     expect(screen.queryByRole('navigation', { name: 'Меню кабинета' })).not.toBeInTheDocument()
   })
 })

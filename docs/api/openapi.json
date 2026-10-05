@@ -809,6 +809,7 @@
           "auth"
         ],
         "summary": "Ссылка на вход/привязку через ФСП ID",
+        "description": "Генерирует state, nonce и PKCE code_verifier, хранит их в подписанной httpOnly cookie `fsp_oidc_state` (10 минут, путь /api/auth) и отдаёт адрес страницы входа Keycloak с `code_challenge` (S256). Если Keycloak не отвечает — 503, основной вход не затронут.",
         "operationId": "fsp_authorize_url_api_auth_fsp_authorize_url_get",
         "parameters": [
           {
@@ -830,10 +831,19 @@
             "in": "query",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": "http://localhost:15173/auth/fsp-callback",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 2048
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Куда Keycloak вернёт браузер (по умолчанию <фронт>/auth/fsp-callback)",
               "title": "Redirect Uri"
-            }
+            },
+            "description": "Куда Keycloak вернёт браузер (по умолчанию <фронт>/auth/fsp-callback)"
           }
         ],
         "responses": {
@@ -896,7 +906,7 @@
           "auth"
         ],
         "summary": "Вход через ФСП ID (обмен кода Keycloak на сессию)",
-        "description": "Заглушка: возвращает сессию демо-соискателя. Настоящий OIDC — волна 2c.",
+        "description": "Код и state из redirect_uri → проверка ID-токена → профиль с этим `fsp_id` → сессия. Вход работает только для уже привязанного ФСП ID.",
         "operationId": "fsp_login_api_auth_fsp_login_post",
         "requestBody": {
           "content": {
@@ -920,7 +930,7 @@
             }
           },
           "400": {
-            "description": "`oidc_error` — Ошибка обмена кода авторизации",
+            "description": "`oidc_error` — Ошибка входа через ФСП ID: state истёк/подменён, код не принят или ID-токен не прошёл проверку (причина в details.reason)",
             "content": {
               "application/json": {
                 "schema": {
@@ -928,10 +938,10 @@
                 },
                 "examples": {
                   "oidc_error": {
-                    "summary": "Ошибка обмена кода авторизации",
+                    "summary": "Ошибка входа через ФСП ID: state истёк/подменён, код не принят или ID-токен не прошёл проверку (причина в details.reason)",
                     "value": {
                       "code": "oidc_error",
-                      "message": "Ошибка обмена кода авторизации",
+                      "message": "Ошибка входа через ФСП ID: state истёк/подменён, код не принят или ID-токен не прошёл проверку (причина в details.reason)",
                       "details": {}
                     }
                   }
@@ -1008,7 +1018,7 @@
           "auth"
         ],
         "summary": "Привязать ФСП ID к профилю",
-        "description": "Обмен кода Keycloak, claim `fsp_id` → профиль, синхронизация достижений.",
+        "description": "Обмен кода Keycloak, claim `fsp_id` → привязка к текущему кандидату и сразу синхронизация достижений из реестра. Если реестр недоступен, привязка сохраняется, достижения подтянутся по кнопке «Обновить» (сообщение в `message`).",
         "operationId": "fsp_link_api_auth_fsp_link_post",
         "security": [
           {
@@ -1114,16 +1124,36 @@
               }
             }
           },
+          "404": {
+            "description": "`not_found` — Объект не найден",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Объект не найден",
+                    "value": {
+                      "code": "not_found",
+                      "message": "Объект не найден",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "400": {
-            "description": "`oidc_error` — Ошибка обмена кода авторизации",
+            "description": "`oidc_error` — Ошибка входа через ФСП ID: state истёк/подменён, код не принят или ID-токен не прошёл проверку (причина в details.reason)",
             "content": {
               "application/json": {
                 "examples": {
                   "oidc_error": {
-                    "summary": "Ошибка обмена кода авторизации",
+                    "summary": "Ошибка входа через ФСП ID: state истёк/подменён, код не принят или ID-токен не прошёл проверку (причина в details.reason)",
                     "value": {
                       "code": "oidc_error",
-                      "message": "Ошибка обмена кода авторизации",
+                      "message": "Ошибка входа через ФСП ID: state истёк/подменён, код не принят или ID-токен не прошёл проверку (причина в details.reason)",
                       "details": {}
                     }
                   }
@@ -1135,7 +1165,7 @@
             }
           },
           "409": {
-            "description": "`fsp_id_taken` — Этот ФСП ID уже привязан к другому профилю",
+            "description": "`fsp_id_taken` — Этот ФСП ID уже привязан к другому профилю; `fsp_already_linked` — К профилю уже привязан другой ФСП ID",
             "content": {
               "application/json": {
                 "examples": {
@@ -1144,6 +1174,14 @@
                     "value": {
                       "code": "fsp_id_taken",
                       "message": "Этот ФСП ID уже привязан к другому профилю",
+                      "details": {}
+                    }
+                  },
+                  "fsp_already_linked": {
+                    "summary": "К профилю уже привязан другой ФСП ID",
+                    "value": {
+                      "code": "fsp_already_linked",
+                      "message": "К профилю уже привязан другой ФСП ID",
                       "details": {}
                     }
                   }
@@ -1201,7 +1239,7 @@
           "auth"
         ],
         "summary": "Отвязать ФСП ID",
-        "description": "Достижения скрываются из профиля и выдачи; основной вход не меняется.",
+        "description": "Связь и кэш достижений удаляются: бейджи и ФСП-скор пропадают из профиля и выдачи. Основной вход не меняется.",
         "operationId": "fsp_unlink_api_auth_fsp_link_delete",
         "security": [
           {
@@ -1287,6 +1325,26 @@
                     "value": {
                       "code": "forbidden",
                       "message": "Недостаточно прав",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`not_found` — Объект не найден",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Объект не найден",
+                    "value": {
+                      "code": "not_found",
+                      "message": "Объект не найден",
                       "details": {}
                     }
                   }
@@ -5142,7 +5200,7 @@
           "fsp"
         ],
         "summary": "Статус привязки ФСП ID, ФСП-скор и бейджи",
-        "description": "Без истории ФСП — нейтральное состояние без штрафа (T5.4).",
+        "description": "Данные из БД (кэш реестра). Без ФСП ID или без истории — нейтральное состояние без штрафа (T5.4): `fsp_score: null`, пустые бейджи и подсказка в `message`.",
         "operationId": "fsp_status_api_fsp_status_get",
         "security": [
           {
@@ -5277,7 +5335,7 @@
           "fsp"
         ],
         "summary": "Достижения ФСП (подтверждено ФСП)",
-        "description": "Пустой список, если ФСП ID не привязан или истории нет.",
+        "description": "Новые сверху. Пустой список, если ФСП ID не привязан или истории нет.",
         "operationId": "fsp_achievements_api_fsp_achievements_get",
         "security": [
           {
@@ -5416,7 +5474,7 @@
           "fsp"
         ],
         "summary": "Обновить достижения из реестра ФСП",
-        "description": "Заглушка: синхронизация с `fsp-registry-mock` — волна 2c.",
+        "description": "Кнопка «Обновить»: перечитывает достижения участника из реестра в кэш.",
         "operationId": "fsp_sync_api_fsp_sync_post",
         "security": [
           {
@@ -5558,6 +5616,124 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fsp/webhook": {
+      "post": {
+        "tags": [
+          "fsp"
+        ],
+        "summary": "Вебхук реестра ФСП: достижения участника изменились",
+        "description": "Реестр сообщает об изменении — платформа сразу перечитывает достижения участника. Тело подписывается HMAC-SHA256 общим секретом (`FSP_WEBHOOK_SECRET`), заголовок `X-FSP-Signature: sha256=<hex>`. Событие `participant.achievements_updated` → пересинхронизация; другие события и непривязанные ФСП ID принимаются и игнорируются. Повтор события безопасен: синхронизация заменяет кэш целиком, дублей нет.",
+        "operationId": "fsp_webhook_api_fsp_webhook_post",
+        "parameters": [
+          {
+            "name": "X-FSP-Signature",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "sha256=<hex HMAC тела>",
+              "title": "X-Fsp-Signature"
+            },
+            "description": "sha256=<hex HMAC тела>"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FspWebhookAck"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`invalid_signature` — Неверная подпись вебхука; `webhook_expired` — Событие устарело (sent_at старше 5 минут)",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "invalid_signature": {
+                    "summary": "Неверная подпись вебхука",
+                    "value": {
+                      "code": "invalid_signature",
+                      "message": "Неверная подпись вебхука",
+                      "details": {}
+                    }
+                  },
+                  "webhook_expired": {
+                    "summary": "Событие устарело (sent_at старше 5 минут)",
+                    "value": {
+                      "code": "webhook_expired",
+                      "message": "Событие устарело (sent_at старше 5 минут)",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_error` — Неверное тело события",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "validation_error": {
+                    "summary": "Неверное тело события",
+                    "value": {
+                      "code": "validation_error",
+                      "message": "Неверное тело события",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "`fsp_registry_unavailable` — Реестр ФСП недоступен — повторите позже; `webhook_disabled` — Секрет вебхука не настроен",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "fsp_registry_unavailable": {
+                    "summary": "Реестр ФСП недоступен — повторите позже",
+                    "value": {
+                      "code": "fsp_registry_unavailable",
+                      "message": "Реестр ФСП недоступен — повторите позже",
+                      "details": {}
+                    }
+                  },
+                  "webhook_disabled": {
+                    "summary": "Секрет вебхука не настроен",
+                    "value": {
+                      "code": "webhook_disabled",
+                      "message": "Секрет вебхука не настроен",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -15948,14 +16124,31 @@
             "freshness": 0.72,
             "fsp_badges": [
               {
+                "id": "international_winner",
+                "level": "international",
+                "title": "Победитель международного соревнования",
+                "verified": true
+              },
+              {
+                "id": "national_prize",
+                "level": "national",
+                "title": "Призёр всероссийского соревнования",
+                "verified": true
+              },
+              {
+                "id": "captain",
+                "title": "Капитан команды",
+                "verified": true
+              },
+              {
                 "id": "participant_many",
-                "title": "Участник 3 соревнований ФСП",
+                "title": "Участник 7 соревнований ФСП",
                 "verified": true
               }
             ],
             "fsp_id": "FSP-000001",
-            "fsp_score": 41.1,
-            "full_name": "Алексей Смирнов",
+            "fsp_score": 86.0,
+            "full_name": "Никита Латыпов",
             "grade": "middle",
             "grade_changed_at": "2026-09-10T15:30:00+03:00",
             "id": 1,
@@ -15964,7 +16157,7 @@
             "links": [
               {
                 "type": "github",
-                "url": "https://github.com/example-aleksey1"
+                "url": "https://github.com/example-nikita1"
               }
             ],
             "min_salary": 180000,
@@ -15995,7 +16188,7 @@
               "docker",
               "kafka"
             ],
-            "telegram": "@example_aleksey1",
+            "telegram": "@example_nikita1",
             "theta": 0.42,
             "theta_se": 0.3,
             "topic_scores": [
@@ -17222,16 +17415,17 @@
         "description": "Достижение участника (наша версия API реестра ФСП, T5.1).",
         "examples": [
           {
-            "competition": "Турнир по защите инфраструктуры 2024",
-            "date": "2024-07-30",
+            "competition": "Всероссийские соревнования по программированию систем ИБ (Attack-Defense)",
+            "date": "2023-10-07",
+            "diploma": "Диплом I степени",
             "discipline": "cybersecurity",
             "fsp_id": "FSP-000001",
             "id": 1,
-            "level": "regional",
-            "place": 10,
-            "protocol_url": "https://fsp-registry.example.com/protocols/9733",
-            "role": "Разработчик",
-            "team": "Синтаксис",
+            "level": "national",
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-03.pdf",
+            "rating": 200.0,
+            "role": "Капитан, специалист по защите сервисов",
+            "team": "Северные биты",
             "verified": true
           }
         ]
@@ -17315,20 +17509,41 @@
         "properties": {
           "code": {
             "type": "string",
+            "maxLength": 4096,
+            "minLength": 1,
             "title": "Code"
           },
           "state": {
             "type": "string",
+            "maxLength": 512,
+            "minLength": 1,
             "title": "State"
           },
           "code_verifier": {
-            "type": "string",
-            "maxLength": 128,
-            "minLength": 43,
-            "title": "Code Verifier"
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128,
+                "minLength": 43
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code Verifier",
+            "description": "Не нужен: verifier хранит сервер. Игнорируется",
+            "deprecated": true
           },
           "redirect_uri": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2048
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Redirect Uri"
           }
         },
@@ -17336,16 +17551,13 @@
         "type": "object",
         "required": [
           "code",
-          "state",
-          "code_verifier",
-          "redirect_uri"
+          "state"
         ],
         "title": "FspCodeExchange",
-        "description": "Код авторизации из Keycloak (OIDC Authorization Code + PKCE).",
+        "description": "Код авторизации из Keycloak после входа через ФСП ID (OIDC Authorization Code + PKCE).\n\n`code_verifier` хранит сервер (подписанная httpOnly cookie, выданная вместе с authorize-url),\nпоэтому поле необязательно и игнорируется — оставлено для совместимости с контрактом v0.\n`redirect_uri`, если передан, должен совпадать с тем, что был в authorize-url.",
         "examples": [
           {
             "code": "kc-auth-code",
-            "code_verifier": "pkce-verifier-43-128-chars-xxxxxxxxxxxxxxxxxxxxxxx",
             "redirect_uri": "http://localhost:15173/auth/fsp-callback",
             "state": "b1f0c2"
           }
@@ -17477,6 +17689,56 @@
             "message": "Нет данных ФСП. Привяжите ФСП ID, если участвовали в соревнованиях."
           }
         ]
+      },
+      "FspWebhookAck": {
+        "properties": {
+          "accepted": {
+            "type": "boolean",
+            "title": "Accepted",
+            "default": true
+          },
+          "event": {
+            "type": "string",
+            "title": "Event"
+          },
+          "fsp_id": {
+            "type": "string",
+            "title": "Fsp Id"
+          },
+          "resynced": {
+            "type": "boolean",
+            "title": "Resynced",
+            "description": "false — событие не про изменения или ФСП ID не привязан"
+          },
+          "achievements_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Achievements Count"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "resynced",
+              "ignored"
+            ],
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event",
+          "fsp_id",
+          "resynced",
+          "status"
+        ],
+        "title": "FspWebhookAck",
+        "description": "Ответ на вебхук: принято, пересинхронизирован ли участник."
       },
       "Grade": {
         "properties": {
@@ -23203,7 +23465,7 @@
             "created_at": "2026-09-05T18:00:00+03:00",
             "email": "candidate@example.com",
             "email_verified": true,
-            "full_name": "Алексей Смирнов",
+            "full_name": "Никита Латыпов",
             "id": 1,
             "last_login_at": "2026-10-03T12:00:00.407539+03:00",
             "role": "candidate"

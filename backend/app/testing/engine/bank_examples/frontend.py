@@ -115,11 +115,11 @@ def _gen_event_loop(rng: random.Random) -> Variant:
             if kind in ("sync", "promise", "micro"):
                 st: Stmt = (kind, labels.pop())
             elif kind == "timeout":
-                st = (kind, labels.pop(), rng.choice((0, 0, 10, 100)))
+                st = (kind, labels.pop(), rng.choice((0, 0, 100, 400)))
             elif kind in ("chain", "await"):
                 st = (kind, labels.pop(), labels.pop())
             else:
-                st = (kind, labels.pop(), labels.pop(), rng.choice((0, 10, 50)))
+                st = (kind, labels.pop(), labels.pop(), rng.choice((0, 100, 250)))
             stmts.append(st)
             used += [s for s in st[1:] if isinstance(s, str)]
         out = _simulate(stmts)

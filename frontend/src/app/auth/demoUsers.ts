@@ -20,7 +20,7 @@ export const DEMO_USERS: Record<Role, DemoUser> = {
     id: 'demo-candidate',
     userId: 1,
     role: 'candidate',
-    name: 'Алексей Смирнов',
+    name: 'Никита Латыпов',
     email: 'candidate@example.com',
     subtitle: 'Соискатель',
   },
