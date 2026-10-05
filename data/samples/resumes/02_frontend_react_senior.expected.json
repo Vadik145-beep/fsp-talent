@@ -1,0 +1,38 @@
+{
+  "file": "02_frontend_react_senior.pdf",
+  "layout": "Две колонки: тёмная боковая панель с контактами и стеком, справа опыт; Montserrat",
+  "full_name": "Колесникова Анна Сергеевна",
+  "email": "anna.kolesnikova@example.com",
+  "phone": "+79215550317",
+  "city": "Санкт-Петербург",
+  "specialization": "frontend",
+  "grade": "senior",
+  "stack": [
+    "TypeScript",
+    "JavaScript",
+    "React",
+    "Redux Toolkit",
+    "Next.js",
+    "Vite",
+    "Webpack",
+    "Jest",
+    "Playwright",
+    "Storybook",
+    "HTML",
+    "CSS"
+  ],
+  "experience_years": 8.0,
+  "roles": [
+    "Frontend-разработчик",
+    "Тимлид"
+  ],
+  "soft_skills": [
+    "Лидерство",
+    "Наставничество",
+    "Работа в команде"
+  ],
+  "work_format": "remote",
+  "links": {
+    "github": "github.com/anna-kolesnikova"
+  }
+}

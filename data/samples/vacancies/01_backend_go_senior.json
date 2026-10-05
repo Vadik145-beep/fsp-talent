@@ -1,0 +1,40 @@
+{
+  "id": "vac-01",
+  "file": "01_backend_go_senior.md",
+  "title": "Senior Go-разработчик (платёжная платформа)",
+  "company": {
+    "name": "ООО «Пэйлайн Технологии»",
+    "industry": "Финтех"
+  },
+  "specialization": "backend",
+  "grade": "senior",
+  "stack_required": [
+    "Go",
+    "PostgreSQL",
+    "Kafka",
+    "Docker",
+    "Kubernetes",
+    "gRPC"
+  ],
+  "stack_optional": [
+    "Redis",
+    "ClickHouse",
+    "Prometheus",
+    "Grafana"
+  ],
+  "salary_from": 350000,
+  "salary_to": 450000,
+  "currency": "RUB",
+  "salary_gross": true,
+  "work_format": "remote",
+  "city": null,
+  "experience_years_min": 4,
+  "team_description": "Команда процессинга платёжной платформы: 7 бэкенд-разработчиков, QA и SRE; более 2 млн транзакций в сутки.",
+  "expected_topics": [
+    "Go: конкурентность (горутины, каналы, context)",
+    "PostgreSQL: транзакции, изоляция, индексы",
+    "Kafka: гарантии доставки и идемпотентность",
+    "gRPC и проектирование API",
+    "Kubernetes: деплой и диагностика"
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "file": "01_backend_python_middle.pdf",
+  "layout": "Одна колонка, шрифт с засечками, классическое резюме",
+  "full_name": "Морозов Денис Андреевич",
+  "email": "denis.morozov@example.com",
+  "phone": "+79172451863",
+  "city": "Казань",
+  "specialization": "backend",
+  "grade": "middle",
+  "stack": [
+    "Python",
+    "FastAPI",
+    "Django",
+    "PostgreSQL",
+    "Redis",
+    "Celery",
+    "SQLAlchemy",
+    "Alembic",
+    "Docker",
+    "GitLab CI",
+    "pytest",
+    "Git",
+    "Linux"
+  ],
+  "experience_years": 5.5,
+  "roles": [
+    "Backend-разработчик",
+    "Наставник"
+  ],
+  "soft_skills": [
+    "Ответственность",
+    "Коммуникабельность",
+    "Наставничество"
+  ],
+  "work_format": "hybrid",
+  "links": {
+    "github": "github.com/denis-morozov-dev"
+  }
+}

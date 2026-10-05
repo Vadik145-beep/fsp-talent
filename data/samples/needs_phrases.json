@@ -1,0 +1,263 @@
+{
+  "note": "Свободные формулировки потребности работодателя и эталонный разбор (T6.1). Зарплата в рублях; null — не указано. Поле acceptable — допустимые альтернативы при спорной трактовке (их тоже засчитываем как верный ответ).",
+  "items": [
+    {
+      "id": "need-01",
+      "text": "нужен сеньор на Go в финтех, удалёнка, 300–400к",
+      "style": "краткий, сленг",
+      "expected": {
+        "specialization": "backend",
+        "grade": "senior",
+        "stack_required": [
+          "Go"
+        ],
+        "stack_optional": [],
+        "salary_from": 300000,
+        "salary_to": 400000,
+        "work_format": "remote",
+        "city": null,
+        "domain": "финтех"
+      }
+    },
+    {
+      "id": "need-02",
+      "text": "Ищем джуна фронтендера, реакт + тайпскрипт, офис в Москве, до 120 тыс",
+      "style": "сленг, технологии по-русски, только верх вилки",
+      "expected": {
+        "specialization": "frontend",
+        "grade": "junior",
+        "stack_required": [
+          "React",
+          "TypeScript"
+        ],
+        "stack_optional": [],
+        "salary_from": null,
+        "salary_to": 120000,
+        "work_format": "office",
+        "city": "Москва",
+        "domain": null
+      }
+    },
+    {
+      "id": "need-03",
+      "text": "мидл питонист на бэк, джанго/постгрес, гибрид спб, 180-230",
+      "style": "сленг, сокращения, вилка без единиц",
+      "expected": {
+        "specialization": "backend",
+        "grade": "middle",
+        "stack_required": [
+          "Python",
+          "Django",
+          "PostgreSQL"
+        ],
+        "stack_optional": [],
+        "salary_from": 180000,
+        "salary_to": 230000,
+        "work_format": "hybrid",
+        "city": "Санкт-Петербург",
+        "domain": null
+      }
+    },
+    {
+      "id": "need-04",
+      "text": "Нужен специалист по данным уровня middle+, обязательно SQL и Python, желательно Airflow. Команда антифрода в банке. Вилка 250 000 – 300 000 руб.",
+      "style": "деловой стиль, обязательный и желательный стек",
+      "expected": {
+        "specialization": "data_ml",
+        "grade": "middle",
+        "stack_required": [
+          "SQL",
+          "Python"
+        ],
+        "stack_optional": [
+          "Airflow"
+        ],
+        "salary_from": 250000,
+        "salary_to": 300000,
+        "work_format": null,
+        "city": null,
+        "domain": "банк, антифрод"
+      }
+    },
+    {
+      "id": "need-05",
+      "text": "сроно нужен девопс, кубер терраформ, удаленка",
+      "style": "опечатки, сленг, без грейда и зарплаты",
+      "expected": {
+        "specialization": "devops",
+        "grade": null,
+        "stack_required": [
+          "Kubernetes",
+          "Terraform"
+        ],
+        "stack_optional": [],
+        "salary_from": null,
+        "salary_to": null,
+        "work_format": "remote",
+        "city": null,
+        "domain": null
+      }
+    },
+    {
+      "id": "need-06",
+      "text": "Тестировщик-автоматизатор на Java (Selenium), junior/middle, гибрид, Казань, от 150к",
+      "style": "два грейда, только низ вилки",
+      "expected": {
+        "specialization": "qa",
+        "grade": "junior",
+        "stack_required": [
+          "Java",
+          "Selenium"
+        ],
+        "stack_optional": [],
+        "salary_from": 150000,
+        "salary_to": null,
+        "work_format": "hybrid",
+        "city": "Казань",
+        "domain": null,
+        "acceptable": {
+          "grade": [
+            "junior",
+            "middle"
+          ]
+        }
+      }
+    },
+    {
+      "id": "need-07",
+      "text": "ios разработчик сеньор swift swiftui, фуллремоут, 350-450 тыс. на руки",
+      "style": "без заглавных и запятых, «фуллремоут»",
+      "expected": {
+        "specialization": "mobile",
+        "grade": "senior",
+        "stack_required": [
+          "Swift",
+          "SwiftUI"
+        ],
+        "stack_optional": [],
+        "salary_from": 350000,
+        "salary_to": 450000,
+        "work_format": "remote",
+        "city": null,
+        "domain": null
+      }
+    },
+    {
+      "id": "need-08",
+      "text": "Стажёр в ML-команду, Python, базовая математика, можно студент, офис Новосибирск, 60 000",
+      "style": "стажёр, одна сумма вместо вилки",
+      "expected": {
+        "specialization": "data_ml",
+        "grade": "intern",
+        "stack_required": [
+          "Python"
+        ],
+        "stack_optional": [],
+        "salary_from": 60000,
+        "salary_to": 60000,
+        "work_format": "office",
+        "city": "Новосибирск",
+        "domain": null
+      }
+    },
+    {
+      "id": "need-09",
+      "text": "ищем фронта на вью, мидл, гибрид мск, денег 200-250к, плюсом nuxt",
+      "style": "сленг («фронт», «вью», «мск»), желательный стек",
+      "expected": {
+        "specialization": "frontend",
+        "grade": "middle",
+        "stack_required": [
+          "Vue.js"
+        ],
+        "stack_optional": [
+          "Nuxt"
+        ],
+        "salary_from": 200000,
+        "salary_to": 250000,
+        "work_format": "hybrid",
+        "city": "Москва",
+        "domain": null
+      }
+    },
+    {
+      "id": "need-10",
+      "text": "Бэкенд на Java/Kotlin + Spring, уровень сеньор или лид, highload e-commerce, вилка до 500к",
+      "style": "альтернативы через «/», «лид»",
+      "expected": {
+        "specialization": "backend",
+        "grade": "senior",
+        "stack_required": [
+          "Java",
+          "Kotlin",
+          "Spring"
+        ],
+        "stack_optional": [],
+        "salary_from": null,
+        "salary_to": 500000,
+        "work_format": null,
+        "city": null,
+        "domain": "e-commerce, highload",
+        "acceptable": {
+          "stack_required_any_of": [
+            [
+              "Java",
+              "Kotlin"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "need-11",
+      "text": "Flutter dev джун+ на удалёнке, проект для доставки еды, 100-140 т.р.",
+      "style": "смесь языков, «джун+», «т.р.»",
+      "expected": {
+        "specialization": "mobile",
+        "grade": "junior",
+        "stack_required": [
+          "Flutter"
+        ],
+        "stack_optional": [],
+        "salary_from": 100000,
+        "salary_to": 140000,
+        "work_format": "remote",
+        "city": null,
+        "domain": "доставка еды",
+        "acceptable": {
+          "stack_required_extra": [
+            "Dart"
+          ]
+        }
+      }
+    },
+    {
+      "id": "need-12",
+      "text": "нужен sre/девопс мидл в облачный сервис: линукс, докер, prometheus+grafana, ci/cd на гитлабе. офис/гибрид, екб. зп обсуждается",
+      "style": "длинный стек вперемешку рус/англ, зарплата не указана",
+      "expected": {
+        "specialization": "devops",
+        "grade": "middle",
+        "stack_required": [
+          "Linux",
+          "Docker",
+          "Prometheus",
+          "Grafana",
+          "GitLab CI"
+        ],
+        "stack_optional": [],
+        "salary_from": null,
+        "salary_to": null,
+        "work_format": "hybrid",
+        "city": "Екатеринбург",
+        "domain": "облачный сервис",
+        "acceptable": {
+          "work_format": [
+            "hybrid",
+            "office"
+          ]
+        }
+      }
+    }
+  ]
+}

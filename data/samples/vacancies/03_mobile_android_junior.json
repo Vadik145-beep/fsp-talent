@@ -1,0 +1,37 @@
+{
+  "id": "vac-03",
+  "file": "03_mobile_android_junior.md",
+  "title": "Junior Android-разработчик (Kotlin)",
+  "company": {
+    "name": "ООО «ГородТранс Диджитал»",
+    "industry": "Городской транспорт"
+  },
+  "specialization": "mobile",
+  "grade": "junior",
+  "stack_required": [
+    "Kotlin",
+    "Android SDK",
+    "Jetpack Compose",
+    "Git"
+  ],
+  "stack_optional": [
+    "Kotlin Coroutines",
+    "Retrofit",
+    "Room"
+  ],
+  "salary_from": 110000,
+  "salary_to": 150000,
+  "currency": "RUB",
+  "salary_gross": null,
+  "work_format": "office",
+  "city": "Казань",
+  "experience_years_min": 0,
+  "team_description": "Мобильная команда приложения оплаты проезда: 3 Android, 3 iOS, QA и дизайнер; джуну дают наставника.",
+  "expected_topics": [
+    "Kotlin: основы языка и null-safety",
+    "Android: жизненный цикл Activity/Fragment",
+    "Jetpack Compose: вёрстка экранов",
+    "Работа с REST API",
+    "Git: ветки и merge request"
+  ]
+}

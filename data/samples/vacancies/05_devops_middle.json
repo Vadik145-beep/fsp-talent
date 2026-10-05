@@ -1,0 +1,39 @@
+{
+  "id": "vac-05",
+  "file": "05_devops_middle.md",
+  "title": "DevOps-инженер (Middle)",
+  "company": {
+    "name": "АО «Логистик Клауд»",
+    "industry": "Логистика, SaaS"
+  },
+  "specialization": "devops",
+  "grade": "middle",
+  "stack_required": [
+    "Linux",
+    "Docker",
+    "Kubernetes",
+    "Terraform",
+    "GitLab CI"
+  ],
+  "stack_optional": [
+    "Ansible",
+    "Prometheus",
+    "Grafana",
+    "Helm"
+  ],
+  "salary_from": 220000,
+  "salary_to": 290000,
+  "currency": "RUB",
+  "salary_gross": true,
+  "work_format": "hybrid",
+  "city": "Новосибирск",
+  "experience_years_min": 1.5,
+  "team_description": "Платформенная команда из 4 инженеров обслуживает 60 сервисов SaaS для транспортных компаний.",
+  "expected_topics": [
+    "Linux: сети, процессы, диагностика",
+    "Docker: образы и контейнеризация",
+    "Kubernetes: объекты и отладка",
+    "Terraform: состояние и модули",
+    "CI/CD на GitLab CI"
+  ]
+}
