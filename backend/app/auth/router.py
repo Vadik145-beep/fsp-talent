@@ -15,28 +15,14 @@ from app.auth.schemas import (
     VerifyEmailRequest,
 )
 from app.auth.service import AuthService
+from app.auth.sessions import clear_refresh_cookie, set_refresh_cookie
 from app.common.schemas import MessageResponse
-from app.core.config import get_settings
 from app.core.errors import error_responses
 from app.core.security import AnyUser
 from app.users.schemas import Me
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 service = AuthService()
-
-REFRESH_COOKIE = "refresh_token"
-
-
-def _set_refresh_cookie(response: Response, user_id: int) -> None:
-    response.set_cookie(
-        REFRESH_COOKIE,
-        f"demo-refresh.{user_id}",
-        httponly=True,
-        samesite="lax",
-        secure=get_settings().app_env != "dev",
-        max_age=get_settings().refresh_token_ttl_days * 86400,
-        path="/api/auth",
-    )
 
 
 @router.post(
@@ -98,7 +84,7 @@ async def resend_verification(body: ResendVerificationRequest) -> Any:
 )
 async def login(body: LoginRequest, response: Response) -> Any:
     token = service.login(str(body.email), body.password)
-    _set_refresh_cookie(response, token["user"]["id"])
+    set_refresh_cookie(response, token["user"]["id"])
     return token
 
 
@@ -113,7 +99,7 @@ async def refresh(
     refresh_token: Annotated[str | None, Cookie()] = None,
 ) -> Any:
     token = service.refresh(refresh_token)
-    _set_refresh_cookie(response, token["user"]["id"])
+    set_refresh_cookie(response, token["user"]["id"])
     return token
 
 
@@ -125,7 +111,7 @@ async def refresh(
 )
 async def logout() -> Response:
     response = Response(status_code=status.HTTP_204_NO_CONTENT)
-    response.delete_cookie(REFRESH_COOKIE, path="/api/auth")
+    clear_refresh_cookie(response)
     return response
 
 

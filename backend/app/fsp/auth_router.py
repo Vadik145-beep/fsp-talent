@@ -8,9 +8,9 @@ from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Query, Response
 
-from app.auth.router import _set_refresh_cookie
 from app.auth.router import service as auth_service
 from app.auth.schemas import FspAuthorizeUrl, FspCodeExchange, TokenResponse
+from app.auth.sessions import issue_session
 from app.core.errors import AppError, error_responses
 from app.core.security import CandidateUser
 from app.fsp.schemas import FspStatus
@@ -48,8 +48,7 @@ async def fsp_authorize_url(
 )
 async def fsp_login(body: FspCodeExchange, response: Response) -> Any:
     token = service.fsp_login()
-    _set_refresh_cookie(response, token["user"]["id"])
-    return token
+    return issue_session(response, token["user"]["id"])
 
 
 @router.post(
