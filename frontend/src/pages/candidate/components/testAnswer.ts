@@ -2,7 +2,7 @@ import type { AnswerPayload, ItemView } from '../api'
 
 /** Разбор числа: «40», «40,5», «1 000» (пробелы между разрядами допустимы). null — не число. */
 export function parseNumber(raw: string): number | null {
-  const cleaned = raw.replace(/[\s ]/g, '').replace(',', '.')
+  const cleaned = raw.replace(/\s/g, '').replace(',', '.')
   if (!cleaned || !/^-?\d*\.?\d+$/.test(cleaned)) return null
   return Number(cleaned)
 }

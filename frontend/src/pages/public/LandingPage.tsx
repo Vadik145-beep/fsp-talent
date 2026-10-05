@@ -170,13 +170,13 @@ export default function LandingPage() {
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Link to="/register?role=candidate" className={ctaPrimary}>
-              Ищу работу
+              Создать профиль
             </Link>
             <Link
               to="/register?role=recruiter"
               className="inline-flex h-12 items-center justify-center rounded-md border border-white/40 px-6 text-base font-semibold text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus)]"
             >
-              Ищу специалистов
+              Подключить компанию
             </Link>
           </div>
         </div>

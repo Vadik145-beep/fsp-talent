@@ -1,0 +1,169 @@
+import { describe, expect, it } from 'vitest'
+import { db } from '@/mocks/db'
+import type { components } from '@/shared/api/schema'
+import { FALLTHROUGH_STATUS, call, setupMockServer } from './mswTestServer'
+
+type S = components['schemas']
+
+setupMockServer()
+
+const invitation = (id: number) => db.data.invitations.find((i) => i.id === id)!
+
+describe('моки соискателя: приглашения', () => {
+  it('принятие меняет статус в общей базе и открывает контакты рекрутера', async () => {
+    const res = await call<S['Invitation']>('POST', '/invitations/2/accept')
+    expect(res.status).toBe(200)
+    expect(res.data.status).toBe('accepted')
+    expect(res.data.recruiter_contacts?.email).toBe('m.titova.hr@example.com')
+    expect(invitation(2).status).toBe('accepted')
+    expect(db.data.invitation_events.some((e) => e.invitation_id === 2 && e.type === 'contacts_revealed')).toBe(true)
+    // повторно принять нельзя
+    expect((await call('POST', '/invitations/2/accept')).status).toBe(409)
+  })
+
+  it('отклонение сохраняет причину и комментарий', async () => {
+    const res = await call<S['Invitation']>('POST', '/invitations/4/decline', {
+      body: { reason: 'salary_too_low', comment: 'Жду от 250 000' },
+    })
+    expect(res.status).toBe(200)
+    expect(res.data.decline_reason_label).toBe('Мала зарплата')
+    expect(invitation(4).status).toBe('declined')
+    expect(invitation(4).decline_reason).toBe('salary_too_low')
+    expect(invitation(4).decline_comment).toBe('Жду от 250 000')
+  })
+
+  it('без причины или «другое» без комментария — 422', async () => {
+    expect((await call('POST', '/invitations/4/decline', { body: {} })).status).toBe(422)
+    expect((await call('POST', '/invitations/4/decline', { body: { reason: 'other' } })).status).toBe(422)
+    expect(invitation(4).status).toBe('viewed')
+  })
+
+  it('открытие карточки переводит «отправлено» в «просмотрено»', async () => {
+    expect(invitation(2).status).toBe('sent')
+    const res = await call<S['InvitationDetail']>('GET', '/invitations/2')
+    expect(res.data.status).toBe('viewed')
+    expect(res.data.recruiter_contacts).toBeNull()
+    expect(invitation(2).status).toBe('viewed')
+  })
+
+  it('чужие роли проходят мимо хендлеров соискателя', async () => {
+    expect((await call('GET', '/invitations', { role: 'recruiter', userId: 41 })).status).toBe(FALLTHROUGH_STATUS)
+    expect((await call('GET', '/invitations/quota', { role: 'candidate' })).status).toBe(FALLTHROUGH_STATUS)
+  })
+})
+
+describe('моки соискателя: тест и грейд', () => {
+  it('кулдаун: тест на грейд выше недоступен 90 дней после смены грейда', async () => {
+    const grade = await call<S['GradeStatus']>('GET', '/testing/grade')
+    expect(grade.data.can_test_higher).toBe(false)
+    expect(grade.data.higher_available_at).toMatch(/^2026-12-09/)
+    const start = await call<{ code: string }>('POST', '/testing/sessions', {
+      body: { specialization: 'backend', target_grade: 'senior', kind: 'higher' },
+    })
+    expect(start.status).toBe(409)
+    expect(start.data.code).toBe('cooldown_active')
+  })
+
+  it('адаптивный тест: 12–15 задач, затем категория, θ и интервал', async () => {
+    const created = await call<S['TestSessionState']>('POST', '/testing/sessions', {
+      body: { specialization: 'backend', target_grade: 'middle', kind: 'placement' },
+    })
+    expect(created.status).toBe(201)
+    const id = created.data.session.id
+    let item = created.data.current_item
+    const formats = new Set<string>()
+    let answered = 0
+    while (item) {
+      formats.add(item.format)
+      const ack = await call<S['AnswerAck']>('POST', `/testing/sessions/${id}/answers`, {
+        body: { instance_id: item.instance_id, answer: { choice_ids: ['a'], value: 1, text: 'x', line: 1, order: [] } },
+      })
+      expect(ack.status).toBe(200)
+      answered = ack.data.answered
+      item = ack.data.finished ? null : (ack.data.next_item ?? null)
+    }
+    expect(answered).toBeGreaterThanOrEqual(12)
+    expect(answered).toBeLessThanOrEqual(15)
+    expect(formats.size).toBeGreaterThanOrEqual(4)
+    const result = await call<S['TestResult']>('GET', `/testing/sessions/${id}/result`)
+    expect(result.status).toBe(200)
+    expect(result.data.category).toMatch(/^backend:/)
+    expect(result.data.ci_low).toBeLessThan(result.data.theta)
+    expect(result.data.ci_high).toBeGreaterThan(result.data.theta)
+    expect(result.data.topic_scores.length).toBeGreaterThan(0)
+  }, 30_000)
+})
+
+describe('моки соискателя: кандидат без ФСП (user 26)', () => {
+  it('статус ФСП нейтральный, достижения пустые, главная и настройки работают', async () => {
+    const status = await call<S['FspStatus']>('GET', '/fsp/status', { userId: 26 })
+    expect(status.status).toBe(200)
+    expect(status.data.linked).toBe(false)
+    expect(status.data.has_history).toBe(false)
+    expect((await call<unknown[]>('GET', '/fsp/achievements', { userId: 26 })).data).toEqual([])
+    const dash = await call<S['CandidateDashboard']>('GET', '/candidates/me/dashboard', { userId: 26 })
+    expect(dash.data.fsp_linked).toBe(false)
+    expect(dash.data.category).toBe('frontend:junior')
+    expect((await call('GET', '/candidates/me/settings', { userId: 26 })).status).toBe(200)
+  })
+
+  it('привязка ФСП ID без истории и отвязка', async () => {
+    const linked = await call<S['FspStatus']>('POST', '/auth/fsp-link', {
+      userId: 26,
+      body: { code: 'mock:FSP-000036', state: 's', code_verifier: 'x'.repeat(43), redirect_uri: 'http://localhost/auth/fsp-callback' },
+    })
+    expect(linked.data.linked).toBe(true)
+    expect(linked.data.has_history).toBe(false)
+    const taken = await call<{ code: string }>('POST', '/auth/fsp-link', {
+      userId: 26,
+      body: { code: 'mock:FSP-000001', state: 's', code_verifier: 'x'.repeat(43), redirect_uri: 'x' },
+    })
+    expect(taken.data.code).toBe('fsp_id_taken')
+    expect((await call<S['FspStatus']>('DELETE', '/auth/fsp-link', { userId: 26 })).data.linked).toBe(false)
+  })
+})
+
+describe('моки соискателя: отклик и задание', () => {
+  it('отклик на вакансию создаёт запись, повторный — 409', async () => {
+    const res = await call<S['Application']>('POST', '/vacancies/3/applications', { body: { cover_letter: 'Здравствуйте' } })
+    expect(res.status).toBe(201)
+    expect(db.data.applications.some((a) => a.id === res.data.id && a.candidate_id === 1)).toBe(true)
+    expect((await call('POST', '/vacancies/3/applications', { body: {} })).status).toBe(409)
+    const list = await call<S['Vacancy'][]>('GET', '/vacancies')
+    expect(list.data.find((v) => v.id === 3)?.my_application_id).toBe(res.data.id)
+  })
+
+  it('ответ на задание переводит его в «на проверке»', async () => {
+    const res = await call<S['TaskSubmission']>('POST', '/tasks/submissions/3/answer', {
+      body: { answer_kind: 'approach', answer_text: 'Кэш с TTL и инвалидация по событию' },
+    })
+    expect(res.status).toBe(200)
+    expect(res.data.status).toBe('submitted')
+    expect(db.data.task_submissions.find((s) => s.id === 3)?.status).toBe('submitted')
+  })
+})
+
+describe('моки авторизации', () => {
+  it('регистрация → вход до подтверждения запрещён → подтверждение → вход', async () => {
+    const reg = await call<S['RegisterResponse']>('POST', '/auth/register', {
+      role: '',
+      body: { email: 'new@example.com', password: 'secret123', full_name: 'Новый Человек', role: 'candidate', consent_processing: true },
+    })
+    expect(reg.status).toBe(201)
+    const early = await call<{ code: string }>('POST', '/auth/login', { role: '', body: { email: 'new@example.com', password: 'secret123' } })
+    expect(early.data.code).toBe('email_not_verified')
+    expect((await call('POST', '/auth/verify-email', { role: '', body: { token: `mock-verify-${reg.data.user_id}` } })).status).toBe(200)
+    const ok = await call<S['TokenResponse']>('POST', '/auth/login', { role: '', body: { email: 'new@example.com', password: 'secret123' } })
+    expect(ok.status).toBe(200)
+    expect(ok.data.user.role).toBe('candidate')
+  })
+
+  it('без согласия на обработку ПДн регистрация невозможна', async () => {
+    const res = await call<{ details: { fields: Record<string, string> } }>('POST', '/auth/register', {
+      role: '',
+      body: { email: 'x@example.com', password: 'secret123', full_name: 'Икс', role: 'candidate', consent_processing: false },
+    })
+    expect(res.status).toBe(422)
+    expect(res.data.details.fields.consent_processing).toBeTruthy()
+  })
+})
