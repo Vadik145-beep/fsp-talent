@@ -58,6 +58,11 @@ files = ["app", "tests", "alembic/env.py"]
 module = ["asyncpg.*"]
 ignore_missing_imports = true
 
+# Тесты движка (трек 0b) пишутся без аннотаций; сам движок app/testing/engine проверяется строго
+[[tool.mypy.overrides]]
+module = ["tests.engine.*"]
+ignore_errors = true
+
 [tool.pydantic-mypy]
 init_forbid_extra = true
 init_typed = true
