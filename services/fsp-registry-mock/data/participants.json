@@ -1,0 +1,3946 @@
+{
+  "meta": {
+    "synthetic": true,
+    "note": "Синтетические данные для хакатона. Люди, команды, места и рейтинги выдуманы; названия соревнований составлены по общему образцу.",
+    "seed": 20261006,
+    "updated_at": "2026-10-01T03:00:00Z",
+    "generator": "services/fsp-registry-mock/tools/generate_participants.py"
+  },
+  "disciplines": [
+    {
+      "code": "product",
+      "title": "Продуктовое программирование"
+    },
+    {
+      "code": "algorithmic",
+      "title": "Алгоритмическое программирование"
+    },
+    {
+      "code": "security",
+      "title": "Программирование систем информационной безопасности"
+    },
+    {
+      "code": "uav",
+      "title": "Программирование беспилотных авиационных систем"
+    },
+    {
+      "code": "robotics",
+      "title": "Программирование робототехники"
+    }
+  ],
+  "levels": [
+    {
+      "code": "regional",
+      "title": "Региональный"
+    },
+    {
+      "code": "national",
+      "title": "Всероссийский"
+    },
+    {
+      "code": "international",
+      "title": "Международный"
+    }
+  ],
+  "competitions": [
+    {
+      "id": "COMP-2023-01",
+      "title": "Региональный чемпионат по продуктовому программированию",
+      "level": "regional",
+      "discipline": "product",
+      "date": "2023-04-15",
+      "participation": "team",
+      "team_size": 4,
+      "participants_total": 64,
+      "region": "Республика Татарстан",
+      "organizer": "Региональное отделение ФСП (Республика Татарстан)",
+      "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-01.pdf"
+    },
+    {
+      "id": "COMP-2023-02",
+      "title": "Открытые соревнования по алгоритмическому программированию «Весенний раунд»",
+      "level": "national",
+      "discipline": "algorithmic",
+      "date": "2023-05-20",
+      "participation": "individual",
+      "team_size": 1,
+      "participants_total": 1200,
+      "region": null,
+      "organizer": "Федерация спортивного программирования России",
+      "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-02.pdf"
+    },
+    {
+      "id": "COMP-2023-03",
+      "title": "Всероссийские соревнования по программированию систем ИБ (Attack-Defense)",
+      "level": "national",
+      "discipline": "security",
+      "date": "2023-10-07",
+      "participation": "team",
+      "team_size": 5,
+      "participants_total": 90,
+      "region": null,
+      "organizer": "Федерация спортивного программирования России",
+      "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-03.pdf"
+    },
+    {
+      "id": "COMP-2023-04",
+      "title": "Региональные соревнования по программированию БАС",
+      "level": "regional",
+      "discipline": "uav",
+      "date": "2023-09-16",
+      "participation": "team",
+      "team_size": 3,
+      "participants_total": 18,
+      "region": "Новосибирская область",
+      "organizer": "Региональное отделение ФСП (Новосибирская область)",
+      "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-04.pdf"
+    },
+    {
+      "id": "COMP-2023-05",
+      "title": "Всероссийский хакатон по продуктовому программированию «Осенний спринт»",
+      "level": "national",
+      "discipline": "product",
+      "date": "2023-11-25",
+      "participation": "team",
+      "team_size": 5,
+      "participants_total": 210,
+      "region": null,
+      "organizer": "Федерация спортивного программирования России",
+      "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-05.pdf"
+    },
+    {
+      "id": "COMP-2024-01",
+      "title": "Региональный чемпионат по алгоритмическому программированию (командный)",
+      "level": "regional",
+      "discipline": "algorithmic",
+      "date": "2024-02-10",
+      "participation": "team",
+      "team_size": 3,
+      "participants_total": 140,
+      "region": "Свердловская область",
+      "organizer": "Региональное отделение ФСП (Свердловская область)",
+      "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-01.pdf"
+    },
+    {
+      "id": "COMP-2024-02",
+      "title": "Всероссийские соревнования по программированию робототехники",
+      "level": "national",
+      "discipline": "robotics",
+      "date": "2024-04-13",
+      "participation": "team",
+      "team_size": 4,
+      "participants_total": 36,
+      "region": null,
+      "organizer": "Федерация спортивного программирования России",
+      "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-02.pdf"
+    },
+    {
+      "id": "COMP-2024-03",
+      "title": "Международный онлайн-турнир по алгоритмическому программированию",
+      "level": "international",
+      "discipline": "algorithmic",
+      "date": "2024-05-25",
+      "participation": "individual",
+      "team_size": 1,
+      "participants_total": 3400,
+      "region": null,
+      "organizer": "ФСП России и партнёры (международный зачёт)",
+      "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-03.pdf"
+    },
+    {
+      "id": "COMP-2024-04",
+      "title": "Региональные соревнования по программированию систем ИБ (CTF)",
+      "level": "regional",
+      "discipline": "security",
+      "date": "2024-06-08",
+      "participation": "team",
+      "team_size": 4,
+      "participants_total": 75,
+      "region": "г. Москва",
+      "organizer": "Региональное отделение ФСП (г. Москва)",
+      "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-04.pdf"
+    },
+    {
+      "id": "COMP-2024-05",
+      "title": "Всероссийский чемпионат по продуктовому программированию, финал",
+      "level": "national",
+      "discipline": "product",
+      "date": "2024-09-28",
+      "participation": "team",
+      "team_size": 5,
+      "participants_total": 120,
+      "region": null,
+      "organizer": "Федерация спортивного программирования России",
+      "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-05.pdf"
+    },
+    {
+      "id": "COMP-2024-06",
+      "title": "Всероссийские соревнования по программированию БАС",
+      "level": "national",
+      "discipline": "uav",
+      "date": "2024-10-19",
+      "participation": "team",
+      "team_size": 3,
+      "participants_total": 40,
+      "region": null,
+      "organizer": "Федерация спортивного программирования России",
+      "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-06.pdf"
+    },
+    {
+      "id": "COMP-2024-07",
+      "title": "Кубок по алгоритмическому программированию «Зимний раунд»",
+      "level": "national",
+      "discipline": "algorithmic",
+      "date": "2024-12-07",
+      "participation": "individual",
+      "team_size": 1,
+      "participants_total": 1500,
+      "region": null,
+      "organizer": "Федерация спортивного программирования России",
+      "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-07.pdf"
+    },
+    {
+      "id": "COMP-2025-01",
+      "title": "Региональный хакатон по продуктовому программированию",
+      "level": "regional",
+      "discipline": "product",
+      "date": "2025-03-01",
+      "participation": "team",
+      "team_size": 4,
+      "participants_total": 48,
+      "region": "Нижегородская область",
+      "organizer": "Региональное отделение ФСП (Нижегородская область)",
+      "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-01.pdf"
+    },
+    {
+      "id": "COMP-2025-02",
+      "title": "Международные онлайн-соревнования по программированию систем ИБ (CTF)",
+      "level": "international",
+      "discipline": "security",
+      "date": "2025-04-19",
+      "participation": "team",
+      "team_size": 4,
+      "participants_total": 600,
+      "region": null,
+      "organizer": "ФСП России и партнёры (международный зачёт)",
+      "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-02.pdf"
+    },
+    {
+      "id": "COMP-2025-03",
+      "title": "Всероссийские соревнования по алгоритмическому программированию (команды)",
+      "level": "national",
+      "discipline": "algorithmic",
+      "date": "2025-05-17",
+      "participation": "team",
+      "team_size": 3,
+      "participants_total": 300,
+      "region": null,
+      "organizer": "Федерация спортивного программирования России",
+      "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-03.pdf"
+    },
+    {
+      "id": "COMP-2025-04",
+      "title": "Региональные соревнования по программированию робототехники",
+      "level": "regional",
+      "discipline": "robotics",
+      "date": "2025-06-14",
+      "participation": "team",
+      "team_size": 3,
+      "participants_total": 22,
+      "region": "г. Санкт-Петербург",
+      "organizer": "Региональное отделение ФСП (г. Санкт-Петербург)",
+      "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-04.pdf"
+    },
+    {
+      "id": "COMP-2025-05",
+      "title": "Международный онлайн-хакатон по продуктовому программированию",
+      "level": "international",
+      "discipline": "product",
+      "date": "2025-09-13",
+      "participation": "team",
+      "team_size": 5,
+      "participants_total": 260,
+      "region": null,
+      "organizer": "ФСП России и партнёры (международный зачёт)",
+      "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-05.pdf"
+    },
+    {
+      "id": "COMP-2025-06",
+      "title": "Всероссийские соревнования по программированию систем ИБ (Attack-Defense)",
+      "level": "national",
+      "discipline": "security",
+      "date": "2025-10-25",
+      "participation": "team",
+      "team_size": 5,
+      "participants_total": 110,
+      "region": null,
+      "organizer": "Федерация спортивного программирования России",
+      "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-06.pdf"
+    },
+    {
+      "id": "COMP-2025-07",
+      "title": "Региональный чемпионат по алгоритмическому программированию",
+      "level": "regional",
+      "discipline": "algorithmic",
+      "date": "2025-11-22",
+      "participation": "individual",
+      "team_size": 1,
+      "participants_total": 260,
+      "region": "Республика Башкортостан",
+      "organizer": "Региональное отделение ФСП (Республика Башкортостан)",
+      "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-07.pdf"
+    },
+    {
+      "id": "COMP-2026-01",
+      "title": "Всероссийский хакатон по продуктовому программированию «Весна-2026»",
+      "level": "national",
+      "discipline": "product",
+      "date": "2026-03-21",
+      "participation": "team",
+      "team_size": 5,
+      "participants_total": 180,
+      "region": null,
+      "organizer": "Федерация спортивного программирования России",
+      "protocol_url": "https://registry.fsp.example/protocols/COMP-2026-01.pdf"
+    },
+    {
+      "id": "COMP-2026-02",
+      "title": "Всероссийские соревнования по программированию БАС, финал",
+      "level": "national",
+      "discipline": "uav",
+      "date": "2026-04-25",
+      "participation": "team",
+      "team_size": 3,
+      "participants_total": 30,
+      "region": null,
+      "organizer": "Федерация спортивного программирования России",
+      "protocol_url": "https://registry.fsp.example/protocols/COMP-2026-02.pdf"
+    },
+    {
+      "id": "COMP-2026-03",
+      "title": "Региональные соревнования по программированию систем ИБ (CTF)",
+      "level": "regional",
+      "discipline": "security",
+      "date": "2026-05-16",
+      "participation": "team",
+      "team_size": 4,
+      "participants_total": 50,
+      "region": "Краснодарский край",
+      "organizer": "Региональное отделение ФСП (Краснодарский край)",
+      "protocol_url": "https://registry.fsp.example/protocols/COMP-2026-03.pdf"
+    },
+    {
+      "id": "COMP-2026-04",
+      "title": "Международный онлайн-турнир по алгоритмическому программированию «Лето»",
+      "level": "international",
+      "discipline": "algorithmic",
+      "date": "2026-07-11",
+      "participation": "individual",
+      "team_size": 1,
+      "participants_total": 2800,
+      "region": null,
+      "organizer": "ФСП России и партнёры (международный зачёт)",
+      "protocol_url": "https://registry.fsp.example/protocols/COMP-2026-04.pdf"
+    },
+    {
+      "id": "COMP-2026-05",
+      "title": "Всероссийский чемпионат по продуктовому программированию, финал",
+      "level": "national",
+      "discipline": "product",
+      "date": "2026-09-26",
+      "participation": "team",
+      "team_size": 5,
+      "participants_total": 140,
+      "region": null,
+      "organizer": "Федерация спортивного программирования России",
+      "protocol_url": "https://registry.fsp.example/protocols/COMP-2026-05.pdf"
+    }
+  ],
+  "participants": [
+    {
+      "fsp_id": "FSP-000001",
+      "last_name": "Латыпов",
+      "first_name": "Никита",
+      "middle_name": "Викторович",
+      "full_name": "Латыпов Никита Викторович",
+      "region": "Самарская область",
+      "registered_at": "2023-02-19",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000001",
+      "achievements": [
+        {
+          "id": "ACH-000001-01",
+          "competition": {
+            "id": "COMP-2023-03",
+            "title": "Всероссийские соревнования по программированию систем ИБ (Attack-Defense)",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 90,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-03.pdf"
+          },
+          "discipline": {
+            "code": "security",
+            "title": "Программирование систем информационной безопасности"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2023-10-07",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 1,
+            "label": "Диплом I степени"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Северные биты",
+            "size": 5,
+            "role": "специалист по защите сервисов",
+            "is_captain": true
+          },
+          "rating_points": 200,
+          "verified": true
+        },
+        {
+          "id": "ACH-000001-02",
+          "competition": {
+            "id": "COMP-2023-05",
+            "title": "Всероссийский хакатон по продуктовому программированию «Осенний спринт»",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 210,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-05.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2023-11-25",
+          "result": {
+            "kind": "place",
+            "place": 2,
+            "diploma_degree": null,
+            "label": "2 место"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Асинхронные лисы",
+            "size": 5,
+            "role": "фулстек-разработчик",
+            "is_captain": true
+          },
+          "rating_points": 212,
+          "verified": true
+        },
+        {
+          "id": "ACH-000001-03",
+          "competition": {
+            "id": "COMP-2024-05",
+            "title": "Всероссийский чемпионат по продуктовому программированию, финал",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 120,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-05.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2024-09-28",
+          "result": {
+            "kind": "place",
+            "place": 47,
+            "diploma_degree": null,
+            "label": "47 место из 120"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Ночные ежи",
+            "size": 5,
+            "role": "фулстек-разработчик",
+            "is_captain": true
+          },
+          "rating_points": 75,
+          "verified": true
+        },
+        {
+          "id": "ACH-000001-04",
+          "competition": {
+            "id": "COMP-2025-01",
+            "title": "Региональный хакатон по продуктовому программированию",
+            "organizer": "Региональное отделение ФСП (Нижегородская область)",
+            "region": "Нижегородская область",
+            "participants_total": 48,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-01.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "regional",
+            "title": "Региональный"
+          },
+          "date": "2025-03-01",
+          "result": {
+            "kind": "place",
+            "place": 25,
+            "diploma_degree": null,
+            "label": "25 место из 48"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Ночные сурки",
+            "size": 4,
+            "role": "фулстек-разработчик",
+            "is_captain": true
+          },
+          "rating_points": 30,
+          "verified": true
+        },
+        {
+          "id": "ACH-000001-05",
+          "competition": {
+            "id": "COMP-2025-05",
+            "title": "Международный онлайн-хакатон по продуктовому программированию",
+            "organizer": "ФСП России и партнёры (международный зачёт)",
+            "region": null,
+            "participants_total": 260,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-05.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "international",
+            "title": "Международный"
+          },
+          "date": "2025-09-13",
+          "result": {
+            "kind": "place",
+            "place": 1,
+            "diploma_degree": null,
+            "label": "1 место"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Северные лисы",
+            "size": 5,
+            "role": "фулстек-разработчик",
+            "is_captain": false
+          },
+          "rating_points": 400,
+          "verified": true
+        },
+        {
+          "id": "ACH-000001-06",
+          "competition": {
+            "id": "COMP-2026-01",
+            "title": "Всероссийский хакатон по продуктовому программированию «Весна-2026»",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 180,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2026-01.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2026-03-21",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 1,
+            "label": "Диплом I степени"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Ленивые тюлени",
+            "size": 5,
+            "role": "фулстек-разработчик",
+            "is_captain": true
+          },
+          "rating_points": 200,
+          "verified": true
+        },
+        {
+          "id": "ACH-000001-07",
+          "competition": {
+            "id": "COMP-2026-05",
+            "title": "Всероссийский чемпионат по продуктовому программированию, финал",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 140,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2026-05.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2026-09-26",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 3,
+            "label": "Диплом III степени"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Тихие ежи",
+            "size": 5,
+            "role": "фулстек-разработчик",
+            "is_captain": false
+          },
+          "rating_points": 112,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000002",
+      "last_name": "Белов",
+      "first_name": "Артём",
+      "middle_name": "Алексеевич",
+      "full_name": "Белов Артём Алексеевич",
+      "region": "Пермский край",
+      "registered_at": "2023-03-27",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000002",
+      "achievements": [
+        {
+          "id": "ACH-000002-01",
+          "competition": {
+            "id": "COMP-2024-01",
+            "title": "Региональный чемпионат по алгоритмическому программированию (командный)",
+            "organizer": "Региональное отделение ФСП (Свердловская область)",
+            "region": "Свердловская область",
+            "participants_total": 140,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-01.pdf"
+          },
+          "discipline": {
+            "code": "algorithmic",
+            "title": "Алгоритмическое программирование"
+          },
+          "level": {
+            "code": "regional",
+            "title": "Региональный"
+          },
+          "date": "2024-02-10",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Тихие сурки",
+            "size": 3,
+            "role": "участник команды",
+            "is_captain": true
+          },
+          "rating_points": 15,
+          "verified": true
+        },
+        {
+          "id": "ACH-000002-02",
+          "competition": {
+            "id": "COMP-2024-03",
+            "title": "Международный онлайн-турнир по алгоритмическому программированию",
+            "organizer": "ФСП России и партнёры (международный зачёт)",
+            "region": null,
+            "participants_total": 3400,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-03.pdf"
+          },
+          "discipline": {
+            "code": "algorithmic",
+            "title": "Алгоритмическое программирование"
+          },
+          "level": {
+            "code": "international",
+            "title": "Международный"
+          },
+          "date": "2024-05-25",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "individual",
+          "team": null,
+          "rating_points": 60,
+          "verified": true
+        },
+        {
+          "id": "ACH-000002-03",
+          "competition": {
+            "id": "COMP-2024-07",
+            "title": "Кубок по алгоритмическому программированию «Зимний раунд»",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 1500,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-07.pdf"
+          },
+          "discipline": {
+            "code": "algorithmic",
+            "title": "Алгоритмическое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2024-12-07",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 2,
+            "label": "Диплом II степени"
+          },
+          "participation": "individual",
+          "team": null,
+          "rating_points": 150,
+          "verified": true
+        },
+        {
+          "id": "ACH-000002-04",
+          "competition": {
+            "id": "COMP-2025-03",
+            "title": "Всероссийские соревнования по алгоритмическому программированию (команды)",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 300,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-03.pdf"
+          },
+          "discipline": {
+            "code": "algorithmic",
+            "title": "Алгоритмическое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2025-05-17",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 3,
+            "label": "Диплом III степени"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Квантовые кодеры",
+            "size": 3,
+            "role": "участник команды",
+            "is_captain": false
+          },
+          "rating_points": 112,
+          "verified": true
+        },
+        {
+          "id": "ACH-000002-05",
+          "competition": {
+            "id": "COMP-2025-05",
+            "title": "Международный онлайн-хакатон по продуктовому программированию",
+            "organizer": "ФСП России и партнёры (международный зачёт)",
+            "region": null,
+            "participants_total": 260,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-05.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "international",
+            "title": "Международный"
+          },
+          "date": "2025-09-13",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Тихие кометы",
+            "size": 5,
+            "role": "аналитик",
+            "is_captain": false
+          },
+          "rating_points": 60,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000003",
+      "last_name": "Волков",
+      "first_name": "Кирилл",
+      "middle_name": "Игоревич",
+      "full_name": "Волков Кирилл Игоревич",
+      "region": "Воронежская область",
+      "registered_at": "2022-05-08",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000003",
+      "achievements": [
+        {
+          "id": "ACH-000003-01",
+          "competition": {
+            "id": "COMP-2023-01",
+            "title": "Региональный чемпионат по продуктовому программированию",
+            "organizer": "Региональное отделение ФСП (Республика Татарстан)",
+            "region": "Республика Татарстан",
+            "participants_total": 64,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-01.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "regional",
+            "title": "Региональный"
+          },
+          "date": "2023-04-15",
+          "result": {
+            "kind": "place",
+            "place": 48,
+            "diploma_degree": null,
+            "label": "48 место из 64"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Цифровые ежи",
+            "size": 4,
+            "role": "ML-инженер",
+            "is_captain": false
+          },
+          "rating_points": 30,
+          "verified": true
+        },
+        {
+          "id": "ACH-000003-02",
+          "competition": {
+            "id": "COMP-2023-05",
+            "title": "Всероссийский хакатон по продуктовому программированию «Осенний спринт»",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 210,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-05.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2023-11-25",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Бинарные куницы",
+            "size": 5,
+            "role": "ML-инженер",
+            "is_captain": true
+          },
+          "rating_points": 38,
+          "verified": true
+        },
+        {
+          "id": "ACH-000003-03",
+          "competition": {
+            "id": "COMP-2024-04",
+            "title": "Региональные соревнования по программированию систем ИБ (CTF)",
+            "organizer": "Региональное отделение ФСП (г. Москва)",
+            "region": "г. Москва",
+            "participants_total": 75,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-04.pdf"
+          },
+          "discipline": {
+            "code": "security",
+            "title": "Программирование систем информационной безопасности"
+          },
+          "level": {
+            "code": "regional",
+            "title": "Региональный"
+          },
+          "date": "2024-06-08",
+          "result": {
+            "kind": "place",
+            "place": 15,
+            "diploma_degree": null,
+            "label": "15 место из 75"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Северные кодеры",
+            "size": 4,
+            "role": "специалист по защите сервисов",
+            "is_captain": false
+          },
+          "rating_points": 30,
+          "verified": true
+        },
+        {
+          "id": "ACH-000003-04",
+          "competition": {
+            "id": "COMP-2026-01",
+            "title": "Всероссийский хакатон по продуктовому программированию «Весна-2026»",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 180,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2026-01.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2026-03-21",
+          "result": {
+            "kind": "place",
+            "place": 52,
+            "diploma_degree": null,
+            "label": "52 место из 180"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Стальные кодеры",
+            "size": 5,
+            "role": "ML-инженер",
+            "is_captain": false
+          },
+          "rating_points": 75,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000004",
+      "last_name": "Лебедев",
+      "first_name": "Арсений",
+      "middle_name": "Викторович",
+      "full_name": "Лебедев Арсений Викторович",
+      "region": "Воронежская область",
+      "registered_at": "2022-12-03",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000004",
+      "achievements": [
+        {
+          "id": "ACH-000004-01",
+          "competition": {
+            "id": "COMP-2023-03",
+            "title": "Всероссийские соревнования по программированию систем ИБ (Attack-Defense)",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 90,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-03.pdf"
+          },
+          "discipline": {
+            "code": "security",
+            "title": "Программирование систем информационной безопасности"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2023-10-07",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 2,
+            "label": "Диплом II степени"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Красные сурки",
+            "size": 5,
+            "role": "специалист по защите сервисов",
+            "is_captain": false
+          },
+          "rating_points": 150,
+          "verified": true
+        },
+        {
+          "id": "ACH-000004-02",
+          "competition": {
+            "id": "COMP-2024-04",
+            "title": "Региональные соревнования по программированию систем ИБ (CTF)",
+            "organizer": "Региональное отделение ФСП (г. Москва)",
+            "region": "г. Москва",
+            "participants_total": 75,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-04.pdf"
+          },
+          "discipline": {
+            "code": "security",
+            "title": "Программирование систем информационной безопасности"
+          },
+          "level": {
+            "code": "regional",
+            "title": "Региональный"
+          },
+          "date": "2024-06-08",
+          "result": {
+            "kind": "place",
+            "place": 3,
+            "diploma_degree": null,
+            "label": "3 место"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Тихие кометы",
+            "size": 4,
+            "role": "специалист по защите сервисов",
+            "is_captain": false
+          },
+          "rating_points": 70,
+          "verified": true
+        },
+        {
+          "id": "ACH-000004-03",
+          "competition": {
+            "id": "COMP-2024-07",
+            "title": "Кубок по алгоритмическому программированию «Зимний раунд»",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 1500,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-07.pdf"
+          },
+          "discipline": {
+            "code": "algorithmic",
+            "title": "Алгоритмическое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2024-12-07",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 3,
+            "label": "Диплом III степени"
+          },
+          "participation": "individual",
+          "team": null,
+          "rating_points": 112,
+          "verified": true
+        },
+        {
+          "id": "ACH-000004-04",
+          "competition": {
+            "id": "COMP-2025-04",
+            "title": "Региональные соревнования по программированию робототехники",
+            "organizer": "Региональное отделение ФСП (г. Санкт-Петербург)",
+            "region": "г. Санкт-Петербург",
+            "participants_total": 22,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-04.pdf"
+          },
+          "discipline": {
+            "code": "robotics",
+            "title": "Программирование робототехники"
+          },
+          "level": {
+            "code": "regional",
+            "title": "Региональный"
+          },
+          "date": "2025-06-14",
+          "result": {
+            "kind": "place",
+            "place": 12,
+            "diploma_degree": null,
+            "label": "12 место из 22"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Быстрые кодеры",
+            "size": 3,
+            "role": "программист робота",
+            "is_captain": false
+          },
+          "rating_points": 30,
+          "verified": true
+        },
+        {
+          "id": "ACH-000004-05",
+          "competition": {
+            "id": "COMP-2025-06",
+            "title": "Всероссийские соревнования по программированию систем ИБ (Attack-Defense)",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 110,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-06.pdf"
+          },
+          "discipline": {
+            "code": "security",
+            "title": "Программирование систем информационной безопасности"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2025-10-25",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 3,
+            "label": "Диплом III степени"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Красные кометы",
+            "size": 5,
+            "role": "специалист по защите сервисов",
+            "is_captain": false
+          },
+          "rating_points": 112,
+          "verified": true
+        },
+        {
+          "id": "ACH-000004-06",
+          "competition": {
+            "id": "COMP-2026-03",
+            "title": "Региональные соревнования по программированию систем ИБ (CTF)",
+            "organizer": "Региональное отделение ФСП (Краснодарский край)",
+            "region": "Краснодарский край",
+            "participants_total": 50,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2026-03.pdf"
+          },
+          "discipline": {
+            "code": "security",
+            "title": "Программирование систем информационной безопасности"
+          },
+          "level": {
+            "code": "regional",
+            "title": "Региональный"
+          },
+          "date": "2026-05-16",
+          "result": {
+            "kind": "place",
+            "place": 18,
+            "diploma_degree": null,
+            "label": "18 место из 50"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Северные тюлени",
+            "size": 4,
+            "role": "специалист по защите сервисов",
+            "is_captain": false
+          },
+          "rating_points": 30,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000005",
+      "last_name": "Зайцева",
+      "first_name": "Софья",
+      "middle_name": "Сергеевна",
+      "full_name": "Зайцева Софья Сергеевна",
+      "region": "Калининградская область",
+      "registered_at": "2023-06-19",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000005",
+      "achievements": [
+        {
+          "id": "ACH-000005-01",
+          "competition": {
+            "id": "COMP-2024-01",
+            "title": "Региональный чемпионат по алгоритмическому программированию (командный)",
+            "organizer": "Региональное отделение ФСП (Свердловская область)",
+            "region": "Свердловская область",
+            "participants_total": 140,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-01.pdf"
+          },
+          "discipline": {
+            "code": "algorithmic",
+            "title": "Алгоритмическое программирование"
+          },
+          "level": {
+            "code": "regional",
+            "title": "Региональный"
+          },
+          "date": "2024-02-10",
+          "result": {
+            "kind": "place",
+            "place": 22,
+            "diploma_degree": null,
+            "label": "22 место из 140"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Ленивые кодеры",
+            "size": 3,
+            "role": "участник команды",
+            "is_captain": false
+          },
+          "rating_points": 30,
+          "verified": true
+        },
+        {
+          "id": "ACH-000005-02",
+          "competition": {
+            "id": "COMP-2025-03",
+            "title": "Всероссийские соревнования по алгоритмическому программированию (команды)",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 300,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-03.pdf"
+          },
+          "discipline": {
+            "code": "algorithmic",
+            "title": "Алгоритмическое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2025-05-17",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 3,
+            "label": "Диплом III степени"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Квантовые совы",
+            "size": 3,
+            "role": "участник команды",
+            "is_captain": false
+          },
+          "rating_points": 112,
+          "verified": true
+        },
+        {
+          "id": "ACH-000005-03",
+          "competition": {
+            "id": "COMP-2026-01",
+            "title": "Всероссийский хакатон по продуктовому программированию «Весна-2026»",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 180,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2026-01.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2026-03-21",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Бинарные кодеры",
+            "size": 5,
+            "role": "ML-инженер",
+            "is_captain": false
+          },
+          "rating_points": 38,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000006",
+      "last_name": "Морозова",
+      "first_name": "Софья",
+      "middle_name": "Викторовна",
+      "full_name": "Морозова Софья Викторовна",
+      "region": "Краснодарский край",
+      "registered_at": "2023-09-04",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000006",
+      "achievements": [
+        {
+          "id": "ACH-000006-01",
+          "competition": {
+            "id": "COMP-2023-05",
+            "title": "Всероссийский хакатон по продуктовому программированию «Осенний спринт»",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 210,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-05.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2023-11-25",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 3,
+            "label": "Диплом III степени"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Рекурсивные совы",
+            "size": 5,
+            "role": "фронтенд-разработчик",
+            "is_captain": false
+          },
+          "rating_points": 112,
+          "verified": true
+        },
+        {
+          "id": "ACH-000006-02",
+          "competition": {
+            "id": "COMP-2026-01",
+            "title": "Всероссийский хакатон по продуктовому программированию «Весна-2026»",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 180,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2026-01.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2026-03-21",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 3,
+            "label": "Диплом III степени"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Стальные совы",
+            "size": 5,
+            "role": "фронтенд-разработчик",
+            "is_captain": false
+          },
+          "rating_points": 112,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000007",
+      "last_name": "Волкова",
+      "first_name": "Вероника",
+      "middle_name": "Романовна",
+      "full_name": "Волкова Вероника Романовна",
+      "region": "Калининградская область",
+      "registered_at": "2024-11-25",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000007",
+      "achievements": [
+        {
+          "id": "ACH-000007-01",
+          "competition": {
+            "id": "COMP-2025-01",
+            "title": "Региональный хакатон по продуктовому программированию",
+            "organizer": "Региональное отделение ФСП (Нижегородская область)",
+            "region": "Нижегородская область",
+            "participants_total": 48,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-01.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "regional",
+            "title": "Региональный"
+          },
+          "date": "2025-03-01",
+          "result": {
+            "kind": "place",
+            "place": 43,
+            "diploma_degree": null,
+            "label": "43 место из 48"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Стальные ежи",
+            "size": 4,
+            "role": "дизайнер интерфейсов",
+            "is_captain": false
+          },
+          "rating_points": 30,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000008",
+      "last_name": "Сафин",
+      "first_name": "Павел",
+      "middle_name": "Игоревич",
+      "full_name": "Сафин Павел Игоревич",
+      "region": "Республика Татарстан",
+      "registered_at": "2022-04-13",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000008",
+      "achievements": [
+        {
+          "id": "ACH-000008-01",
+          "competition": {
+            "id": "COMP-2023-01",
+            "title": "Региональный чемпионат по продуктовому программированию",
+            "organizer": "Региональное отделение ФСП (Республика Татарстан)",
+            "region": "Республика Татарстан",
+            "participants_total": 64,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-01.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "regional",
+            "title": "Региональный"
+          },
+          "date": "2023-04-15",
+          "result": {
+            "kind": "place",
+            "place": 25,
+            "diploma_degree": null,
+            "label": "25 место из 64"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Бинарные кометы",
+            "size": 4,
+            "role": "фронтенд-разработчик",
+            "is_captain": false
+          },
+          "rating_points": 30,
+          "verified": true
+        },
+        {
+          "id": "ACH-000008-02",
+          "competition": {
+            "id": "COMP-2023-05",
+            "title": "Всероссийский хакатон по продуктовому программированию «Осенний спринт»",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 210,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-05.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2023-11-25",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Северные лисы",
+            "size": 5,
+            "role": "фронтенд-разработчик",
+            "is_captain": false
+          },
+          "rating_points": 38,
+          "verified": true
+        },
+        {
+          "id": "ACH-000008-03",
+          "competition": {
+            "id": "COMP-2024-02",
+            "title": "Всероссийские соревнования по программированию робототехники",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 36,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-02.pdf"
+          },
+          "discipline": {
+            "code": "robotics",
+            "title": "Программирование робототехники"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2024-04-13",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Стальные грифоны",
+            "size": 4,
+            "role": "инженер компьютерного зрения",
+            "is_captain": true
+          },
+          "rating_points": 38,
+          "verified": true
+        },
+        {
+          "id": "ACH-000008-04",
+          "competition": {
+            "id": "COMP-2024-05",
+            "title": "Всероссийский чемпионат по продуктовому программированию, финал",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 120,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-05.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2024-09-28",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 3,
+            "label": "Диплом III степени"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Северные тюлени",
+            "size": 5,
+            "role": "фронтенд-разработчик",
+            "is_captain": false
+          },
+          "rating_points": 112,
+          "verified": true
+        },
+        {
+          "id": "ACH-000008-05",
+          "competition": {
+            "id": "COMP-2025-01",
+            "title": "Региональный хакатон по продуктовому программированию",
+            "organizer": "Региональное отделение ФСП (Нижегородская область)",
+            "region": "Нижегородская область",
+            "participants_total": 48,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-01.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "regional",
+            "title": "Региональный"
+          },
+          "date": "2025-03-01",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Северные кометы",
+            "size": 4,
+            "role": "фронтенд-разработчик",
+            "is_captain": false
+          },
+          "rating_points": 15,
+          "verified": true
+        },
+        {
+          "id": "ACH-000008-06",
+          "competition": {
+            "id": "COMP-2025-05",
+            "title": "Международный онлайн-хакатон по продуктовому программированию",
+            "organizer": "ФСП России и партнёры (международный зачёт)",
+            "region": null,
+            "participants_total": 260,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-05.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "international",
+            "title": "Международный"
+          },
+          "date": "2025-09-13",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Квантовые лисы",
+            "size": 5,
+            "role": "фронтенд-разработчик",
+            "is_captain": false
+          },
+          "rating_points": 60,
+          "verified": true
+        },
+        {
+          "id": "ACH-000008-07",
+          "competition": {
+            "id": "COMP-2026-01",
+            "title": "Всероссийский хакатон по продуктовому программированию «Весна-2026»",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 180,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2026-01.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2026-03-21",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Асинхронные тюлени",
+            "size": 5,
+            "role": "фронтенд-разработчик",
+            "is_captain": false
+          },
+          "rating_points": 38,
+          "verified": true
+        },
+        {
+          "id": "ACH-000008-08",
+          "competition": {
+            "id": "COMP-2026-05",
+            "title": "Всероссийский чемпионат по продуктовому программированию, финал",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 140,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2026-05.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2026-09-26",
+          "result": {
+            "kind": "place",
+            "place": 55,
+            "diploma_degree": null,
+            "label": "55 место из 140"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Асинхронные кометы",
+            "size": 5,
+            "role": "фронтенд-разработчик",
+            "is_captain": false
+          },
+          "rating_points": 75,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000009",
+      "last_name": "Гарипова",
+      "first_name": "Полина",
+      "middle_name": "Игоревна",
+      "full_name": "Гарипова Полина Игоревна",
+      "region": "Самарская область",
+      "registered_at": "2022-08-28",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000009",
+      "achievements": [
+        {
+          "id": "ACH-000009-01",
+          "competition": {
+            "id": "COMP-2023-04",
+            "title": "Региональные соревнования по программированию БАС",
+            "organizer": "Региональное отделение ФСП (Новосибирская область)",
+            "region": "Новосибирская область",
+            "participants_total": 18,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-04.pdf"
+          },
+          "discipline": {
+            "code": "uav",
+            "title": "Программирование беспилотных авиационных систем"
+          },
+          "level": {
+            "code": "regional",
+            "title": "Региональный"
+          },
+          "date": "2023-09-16",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Асинхронные кометы",
+            "size": 3,
+            "role": "оператор-испытатель",
+            "is_captain": false
+          },
+          "rating_points": 15,
+          "verified": true
+        },
+        {
+          "id": "ACH-000009-02",
+          "competition": {
+            "id": "COMP-2024-02",
+            "title": "Всероссийские соревнования по программированию робототехники",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 36,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-02.pdf"
+          },
+          "discipline": {
+            "code": "robotics",
+            "title": "Программирование робототехники"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2024-04-13",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 2,
+            "label": "Диплом II степени"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Рекурсивные тюлени",
+            "size": 4,
+            "role": "программист робота",
+            "is_captain": false
+          },
+          "rating_points": 150,
+          "verified": true
+        },
+        {
+          "id": "ACH-000009-03",
+          "competition": {
+            "id": "COMP-2024-07",
+            "title": "Кубок по алгоритмическому программированию «Зимний раунд»",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 1500,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-07.pdf"
+          },
+          "discipline": {
+            "code": "algorithmic",
+            "title": "Алгоритмическое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2024-12-07",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "individual",
+          "team": null,
+          "rating_points": 38,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000010",
+      "last_name": "Баранова",
+      "first_name": "Вероника",
+      "middle_name": "Андреевна",
+      "full_name": "Баранова Вероника Андреевна",
+      "region": "Республика Татарстан",
+      "registered_at": "2023-11-27",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000010",
+      "achievements": [
+        {
+          "id": "ACH-000010-01",
+          "competition": {
+            "id": "COMP-2024-02",
+            "title": "Всероссийские соревнования по программированию робототехники",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 36,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-02.pdf"
+          },
+          "discipline": {
+            "code": "robotics",
+            "title": "Программирование робототехники"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2024-04-13",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 3,
+            "label": "Диплом III степени"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Тихие кометы",
+            "size": 4,
+            "role": "инженер компьютерного зрения",
+            "is_captain": false
+          },
+          "rating_points": 112,
+          "verified": true
+        },
+        {
+          "id": "ACH-000010-02",
+          "competition": {
+            "id": "COMP-2025-04",
+            "title": "Региональные соревнования по программированию робототехники",
+            "organizer": "Региональное отделение ФСП (г. Санкт-Петербург)",
+            "region": "г. Санкт-Петербург",
+            "participants_total": 22,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-04.pdf"
+          },
+          "discipline": {
+            "code": "robotics",
+            "title": "Программирование робототехники"
+          },
+          "level": {
+            "code": "regional",
+            "title": "Региональный"
+          },
+          "date": "2025-06-14",
+          "result": {
+            "kind": "place",
+            "place": 4,
+            "diploma_degree": null,
+            "label": "4 место из 22"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Быстрые совы",
+            "size": 3,
+            "role": "инженер компьютерного зрения",
+            "is_captain": true
+          },
+          "rating_points": 45,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000011",
+      "last_name": "Зайцева",
+      "first_name": "Виктория",
+      "middle_name": "Андреевна",
+      "full_name": "Зайцева Виктория Андреевна",
+      "region": "Нижегородская область",
+      "registered_at": "2023-09-28",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000011",
+      "achievements": [
+        {
+          "id": "ACH-000011-01",
+          "competition": {
+            "id": "COMP-2024-06",
+            "title": "Всероссийские соревнования по программированию БАС",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 40,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-06.pdf"
+          },
+          "discipline": {
+            "code": "uav",
+            "title": "Программирование беспилотных авиационных систем"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2024-10-19",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Ночные грифоны",
+            "size": 3,
+            "role": "оператор-испытатель",
+            "is_captain": false
+          },
+          "rating_points": 38,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000012",
+      "last_name": "Латыпова",
+      "first_name": "Ксения",
+      "middle_name": "Андреевна",
+      "full_name": "Латыпова Ксения Андреевна",
+      "region": "Самарская область",
+      "registered_at": "2022-05-17",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000012",
+      "achievements": [
+        {
+          "id": "ACH-000012-01",
+          "competition": {
+            "id": "COMP-2023-02",
+            "title": "Открытые соревнования по алгоритмическому программированию «Весенний раунд»",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 1200,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-02.pdf"
+          },
+          "discipline": {
+            "code": "algorithmic",
+            "title": "Алгоритмическое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2023-05-20",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "individual",
+          "team": null,
+          "rating_points": 38,
+          "verified": true
+        },
+        {
+          "id": "ACH-000012-02",
+          "competition": {
+            "id": "COMP-2024-03",
+            "title": "Международный онлайн-турнир по алгоритмическому программированию",
+            "organizer": "ФСП России и партнёры (международный зачёт)",
+            "region": null,
+            "participants_total": 3400,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-03.pdf"
+          },
+          "discipline": {
+            "code": "algorithmic",
+            "title": "Алгоритмическое программирование"
+          },
+          "level": {
+            "code": "international",
+            "title": "Международный"
+          },
+          "date": "2024-05-25",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 2,
+            "label": "Диплом II степени"
+          },
+          "participation": "individual",
+          "team": null,
+          "rating_points": 240,
+          "verified": true
+        },
+        {
+          "id": "ACH-000012-03",
+          "competition": {
+            "id": "COMP-2024-07",
+            "title": "Кубок по алгоритмическому программированию «Зимний раунд»",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 1500,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-07.pdf"
+          },
+          "discipline": {
+            "code": "algorithmic",
+            "title": "Алгоритмическое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2024-12-07",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "individual",
+          "team": null,
+          "rating_points": 38,
+          "verified": true
+        },
+        {
+          "id": "ACH-000012-04",
+          "competition": {
+            "id": "COMP-2025-07",
+            "title": "Региональный чемпионат по алгоритмическому программированию",
+            "organizer": "Региональное отделение ФСП (Республика Башкортостан)",
+            "region": "Республика Башкортостан",
+            "participants_total": 260,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-07.pdf"
+          },
+          "discipline": {
+            "code": "algorithmic",
+            "title": "Алгоритмическое программирование"
+          },
+          "level": {
+            "code": "regional",
+            "title": "Региональный"
+          },
+          "date": "2025-11-22",
+          "result": {
+            "kind": "place",
+            "place": 35,
+            "diploma_degree": null,
+            "label": "35 место из 260"
+          },
+          "participation": "individual",
+          "team": null,
+          "rating_points": 30,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000013",
+      "last_name": "Морозов",
+      "first_name": "Максим",
+      "middle_name": "Денисович",
+      "full_name": "Морозов Максим Денисович",
+      "region": "Новосибирская область",
+      "registered_at": "2022-05-25",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000013",
+      "achievements": [
+        {
+          "id": "ACH-000013-01",
+          "competition": {
+            "id": "COMP-2023-01",
+            "title": "Региональный чемпионат по продуктовому программированию",
+            "organizer": "Региональное отделение ФСП (Республика Татарстан)",
+            "region": "Республика Татарстан",
+            "participants_total": 64,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-01.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "regional",
+            "title": "Региональный"
+          },
+          "date": "2023-04-15",
+          "result": {
+            "kind": "place",
+            "place": 58,
+            "diploma_degree": null,
+            "label": "58 место из 64"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Рекурсивные ежи",
+            "size": 4,
+            "role": "дизайнер интерфейсов",
+            "is_captain": true
+          },
+          "rating_points": 30,
+          "verified": true
+        },
+        {
+          "id": "ACH-000013-02",
+          "competition": {
+            "id": "COMP-2023-03",
+            "title": "Всероссийские соревнования по программированию систем ИБ (Attack-Defense)",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 90,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-03.pdf"
+          },
+          "discipline": {
+            "code": "security",
+            "title": "Программирование систем информационной безопасности"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2023-10-07",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Квантовые куницы",
+            "size": 5,
+            "role": "специалист по защите сервисов",
+            "is_captain": true
+          },
+          "rating_points": 38,
+          "verified": true
+        },
+        {
+          "id": "ACH-000013-03",
+          "competition": {
+            "id": "COMP-2024-05",
+            "title": "Всероссийский чемпионат по продуктовому программированию, финал",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 120,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-05.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2024-09-28",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Рекурсивные биты",
+            "size": 5,
+            "role": "дизайнер интерфейсов",
+            "is_captain": true
+          },
+          "rating_points": 38,
+          "verified": true
+        },
+        {
+          "id": "ACH-000013-04",
+          "competition": {
+            "id": "COMP-2025-01",
+            "title": "Региональный хакатон по продуктовому программированию",
+            "organizer": "Региональное отделение ФСП (Нижегородская область)",
+            "region": "Нижегородская область",
+            "participants_total": 48,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-01.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "regional",
+            "title": "Региональный"
+          },
+          "date": "2025-03-01",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Тихие куницы",
+            "size": 4,
+            "role": "дизайнер интерфейсов",
+            "is_captain": false
+          },
+          "rating_points": 15,
+          "verified": true
+        },
+        {
+          "id": "ACH-000013-05",
+          "competition": {
+            "id": "COMP-2026-05",
+            "title": "Всероссийский чемпионат по продуктовому программированию, финал",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 140,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2026-05.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2026-09-26",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 2,
+            "label": "Диплом II степени"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Северные грифоны",
+            "size": 5,
+            "role": "дизайнер интерфейсов",
+            "is_captain": false
+          },
+          "rating_points": 150,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000014",
+      "last_name": "Комарова",
+      "first_name": "Анна",
+      "middle_name": "Сергеевна",
+      "full_name": "Комарова Анна Сергеевна",
+      "region": "Томская область",
+      "registered_at": "2024-12-08",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000014",
+      "achievements": [
+        {
+          "id": "ACH-000014-01",
+          "competition": {
+            "id": "COMP-2025-02",
+            "title": "Международные онлайн-соревнования по программированию систем ИБ (CTF)",
+            "organizer": "ФСП России и партнёры (международный зачёт)",
+            "region": null,
+            "participants_total": 600,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-02.pdf"
+          },
+          "discipline": {
+            "code": "security",
+            "title": "Программирование систем информационной безопасности"
+          },
+          "level": {
+            "code": "international",
+            "title": "Международный"
+          },
+          "date": "2025-04-19",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 2,
+            "label": "Диплом II степени"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Ночные сурки",
+            "size": 4,
+            "role": "специалист по веб-уязвимостям",
+            "is_captain": true
+          },
+          "rating_points": 240,
+          "verified": true
+        },
+        {
+          "id": "ACH-000014-02",
+          "competition": {
+            "id": "COMP-2026-02",
+            "title": "Всероссийские соревнования по программированию БАС, финал",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 30,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2026-02.pdf"
+          },
+          "discipline": {
+            "code": "uav",
+            "title": "Программирование беспилотных авиационных систем"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2026-04-25",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Ленивые биты",
+            "size": 3,
+            "role": "инженер компьютерного зрения",
+            "is_captain": true
+          },
+          "rating_points": 38,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000015",
+      "last_name": "Тихонова",
+      "first_name": "Софья",
+      "middle_name": "Романовна",
+      "full_name": "Тихонова Софья Романовна",
+      "region": "Самарская область",
+      "registered_at": "2022-11-11",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000015",
+      "achievements": [
+        {
+          "id": "ACH-000015-01",
+          "competition": {
+            "id": "COMP-2023-02",
+            "title": "Открытые соревнования по алгоритмическому программированию «Весенний раунд»",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 1200,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-02.pdf"
+          },
+          "discipline": {
+            "code": "algorithmic",
+            "title": "Алгоритмическое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2023-05-20",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "individual",
+          "team": null,
+          "rating_points": 38,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000016",
+      "last_name": "Гарипова",
+      "first_name": "Ксения",
+      "middle_name": "Андреевна",
+      "full_name": "Гарипова Ксения Андреевна",
+      "region": "г. Москва",
+      "registered_at": "2023-08-05",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000016",
+      "achievements": [
+        {
+          "id": "ACH-000016-01",
+          "competition": {
+            "id": "COMP-2023-05",
+            "title": "Всероссийский хакатон по продуктовому программированию «Осенний спринт»",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 210,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-05.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2023-11-25",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Ночные куницы",
+            "size": 5,
+            "role": "бэкенд-разработчик",
+            "is_captain": false
+          },
+          "rating_points": 38,
+          "verified": true
+        },
+        {
+          "id": "ACH-000016-02",
+          "competition": {
+            "id": "COMP-2025-05",
+            "title": "Международный онлайн-хакатон по продуктовому программированию",
+            "organizer": "ФСП России и партнёры (международный зачёт)",
+            "region": null,
+            "participants_total": 260,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-05.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "international",
+            "title": "Международный"
+          },
+          "date": "2025-09-13",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 3,
+            "label": "Диплом III степени"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Быстрые дятлы",
+            "size": 5,
+            "role": "бэкенд-разработчик",
+            "is_captain": false
+          },
+          "rating_points": 180,
+          "verified": true
+        },
+        {
+          "id": "ACH-000016-03",
+          "competition": {
+            "id": "COMP-2026-05",
+            "title": "Всероссийский чемпионат по продуктовому программированию, финал",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 140,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2026-05.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2026-09-26",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 3,
+            "label": "Диплом III степени"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Ночные совы",
+            "size": 5,
+            "role": "бэкенд-разработчик",
+            "is_captain": false
+          },
+          "rating_points": 112,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000017",
+      "last_name": "Абрамов",
+      "first_name": "Тимур",
+      "middle_name": "Викторович",
+      "full_name": "Абрамов Тимур Викторович",
+      "region": "Республика Башкортостан",
+      "registered_at": "2023-06-25",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000017",
+      "achievements": [
+        {
+          "id": "ACH-000017-01",
+          "competition": {
+            "id": "COMP-2023-04",
+            "title": "Региональные соревнования по программированию БАС",
+            "organizer": "Региональное отделение ФСП (Новосибирская область)",
+            "region": "Новосибирская область",
+            "participants_total": 18,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-04.pdf"
+          },
+          "discipline": {
+            "code": "uav",
+            "title": "Программирование беспилотных авиационных систем"
+          },
+          "level": {
+            "code": "regional",
+            "title": "Региональный"
+          },
+          "date": "2023-09-16",
+          "result": {
+            "kind": "place",
+            "place": 4,
+            "diploma_degree": null,
+            "label": "4 место из 18"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Бинарные куницы",
+            "size": 3,
+            "role": "оператор-испытатель",
+            "is_captain": false
+          },
+          "rating_points": 45,
+          "verified": true
+        },
+        {
+          "id": "ACH-000017-02",
+          "competition": {
+            "id": "COMP-2023-03",
+            "title": "Всероссийские соревнования по программированию систем ИБ (Attack-Defense)",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 90,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-03.pdf"
+          },
+          "discipline": {
+            "code": "security",
+            "title": "Программирование систем информационной безопасности"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2023-10-07",
+          "result": {
+            "kind": "place",
+            "place": 3,
+            "diploma_degree": null,
+            "label": "3 место"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Асинхронные куницы",
+            "size": 5,
+            "role": "специалист по веб-уязвимостям",
+            "is_captain": false
+          },
+          "rating_points": 175,
+          "verified": true
+        },
+        {
+          "id": "ACH-000017-03",
+          "competition": {
+            "id": "COMP-2024-05",
+            "title": "Всероссийский чемпионат по продуктовому программированию, финал",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 120,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-05.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2024-09-28",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 3,
+            "label": "Диплом III степени"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Красные тюлени",
+            "size": 5,
+            "role": "фулстек-разработчик",
+            "is_captain": false
+          },
+          "rating_points": 112,
+          "verified": true
+        },
+        {
+          "id": "ACH-000017-04",
+          "competition": {
+            "id": "COMP-2024-06",
+            "title": "Всероссийские соревнования по программированию БАС",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 40,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-06.pdf"
+          },
+          "discipline": {
+            "code": "uav",
+            "title": "Программирование беспилотных авиационных систем"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2024-10-19",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Ночные совы",
+            "size": 3,
+            "role": "оператор-испытатель",
+            "is_captain": false
+          },
+          "rating_points": 38,
+          "verified": true
+        },
+        {
+          "id": "ACH-000017-05",
+          "competition": {
+            "id": "COMP-2025-03",
+            "title": "Всероссийские соревнования по алгоритмическому программированию (команды)",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 300,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-03.pdf"
+          },
+          "discipline": {
+            "code": "algorithmic",
+            "title": "Алгоритмическое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2025-05-17",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 3,
+            "label": "Диплом III степени"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Ленивые биты",
+            "size": 3,
+            "role": "участник команды",
+            "is_captain": false
+          },
+          "rating_points": 112,
+          "verified": true
+        },
+        {
+          "id": "ACH-000017-06",
+          "competition": {
+            "id": "COMP-2026-02",
+            "title": "Всероссийские соревнования по программированию БАС, финал",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 30,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2026-02.pdf"
+          },
+          "discipline": {
+            "code": "uav",
+            "title": "Программирование беспилотных авиационных систем"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2026-04-25",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 2,
+            "label": "Диплом II степени"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Рекурсивные ежи",
+            "size": 3,
+            "role": "оператор-испытатель",
+            "is_captain": true
+          },
+          "rating_points": 150,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000018",
+      "last_name": "Тихонова",
+      "first_name": "Анна",
+      "middle_name": "Игоревна",
+      "full_name": "Тихонова Анна Игоревна",
+      "region": "Калининградская область",
+      "registered_at": "2024-03-23",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000018",
+      "achievements": [
+        {
+          "id": "ACH-000018-01",
+          "competition": {
+            "id": "COMP-2024-02",
+            "title": "Всероссийские соревнования по программированию робототехники",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 36,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-02.pdf"
+          },
+          "discipline": {
+            "code": "robotics",
+            "title": "Программирование робототехники"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2024-04-13",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Ленивые биты",
+            "size": 4,
+            "role": "инженер-электроник",
+            "is_captain": false
+          },
+          "rating_points": 38,
+          "verified": true
+        },
+        {
+          "id": "ACH-000018-02",
+          "competition": {
+            "id": "COMP-2026-01",
+            "title": "Всероссийский хакатон по продуктовому программированию «Весна-2026»",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 180,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2026-01.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2026-03-21",
+          "result": {
+            "kind": "place",
+            "place": 49,
+            "diploma_degree": null,
+            "label": "49 место из 180"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Бинарные биты",
+            "size": 5,
+            "role": "бэкенд-разработчик",
+            "is_captain": false
+          },
+          "rating_points": 75,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000019",
+      "last_name": "Медведев",
+      "first_name": "Максим",
+      "middle_name": "Романович",
+      "full_name": "Медведев Максим Романович",
+      "region": "Республика Башкортостан",
+      "registered_at": "2023-02-03",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000019",
+      "achievements": [
+        {
+          "id": "ACH-000019-01",
+          "competition": {
+            "id": "COMP-2024-01",
+            "title": "Региональный чемпионат по алгоритмическому программированию (командный)",
+            "organizer": "Региональное отделение ФСП (Свердловская область)",
+            "region": "Свердловская область",
+            "participants_total": 140,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-01.pdf"
+          },
+          "discipline": {
+            "code": "algorithmic",
+            "title": "Алгоритмическое программирование"
+          },
+          "level": {
+            "code": "regional",
+            "title": "Региональный"
+          },
+          "date": "2024-02-10",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Стальные тюлени",
+            "size": 3,
+            "role": "участник команды",
+            "is_captain": false
+          },
+          "rating_points": 15,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000020",
+      "last_name": "Морозов",
+      "first_name": "Тимур",
+      "middle_name": "Олегович",
+      "full_name": "Морозов Тимур Олегович",
+      "region": "Новосибирская область",
+      "registered_at": "2024-02-11",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000020",
+      "achievements": [
+        {
+          "id": "ACH-000020-01",
+          "competition": {
+            "id": "COMP-2024-02",
+            "title": "Всероссийские соревнования по программированию робототехники",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 36,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-02.pdf"
+          },
+          "discipline": {
+            "code": "robotics",
+            "title": "Программирование робототехники"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2024-04-13",
+          "result": {
+            "kind": "place",
+            "place": 3,
+            "diploma_degree": null,
+            "label": "3 место"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Тихие кодеры",
+            "size": 4,
+            "role": "программист робота",
+            "is_captain": false
+          },
+          "rating_points": 175,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000021",
+      "last_name": "Абрамов",
+      "first_name": "Егор",
+      "middle_name": "Сергеевич",
+      "full_name": "Абрамов Егор Сергеевич",
+      "region": "г. Москва",
+      "registered_at": "2022-05-03",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000021",
+      "achievements": [
+        {
+          "id": "ACH-000021-01",
+          "competition": {
+            "id": "COMP-2023-01",
+            "title": "Региональный чемпионат по продуктовому программированию",
+            "organizer": "Региональное отделение ФСП (Республика Татарстан)",
+            "region": "Республика Татарстан",
+            "participants_total": 64,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-01.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "regional",
+            "title": "Региональный"
+          },
+          "date": "2023-04-15",
+          "result": {
+            "kind": "place",
+            "place": 2,
+            "diploma_degree": null,
+            "label": "2 место"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Цифровые ежи",
+            "size": 4,
+            "role": "дизайнер интерфейсов",
+            "is_captain": true
+          },
+          "rating_points": 85,
+          "verified": true
+        },
+        {
+          "id": "ACH-000021-02",
+          "competition": {
+            "id": "COMP-2025-05",
+            "title": "Международный онлайн-хакатон по продуктовому программированию",
+            "organizer": "ФСП России и партнёры (международный зачёт)",
+            "region": null,
+            "participants_total": 260,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-05.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "international",
+            "title": "Международный"
+          },
+          "date": "2025-09-13",
+          "result": {
+            "kind": "place",
+            "place": 2,
+            "diploma_degree": null,
+            "label": "2 место"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Ночные кодеры",
+            "size": 5,
+            "role": "дизайнер интерфейсов",
+            "is_captain": true
+          },
+          "rating_points": 340,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000022",
+      "last_name": "Ершов",
+      "first_name": "Кирилл",
+      "middle_name": "Игоревич",
+      "full_name": "Ершов Кирилл Игоревич",
+      "region": "Нижегородская область",
+      "registered_at": "2022-07-06",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000022",
+      "achievements": [
+        {
+          "id": "ACH-000022-01",
+          "competition": {
+            "id": "COMP-2023-02",
+            "title": "Открытые соревнования по алгоритмическому программированию «Весенний раунд»",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 1200,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-02.pdf"
+          },
+          "discipline": {
+            "code": "algorithmic",
+            "title": "Алгоритмическое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2023-05-20",
+          "result": {
+            "kind": "place",
+            "place": 1,
+            "diploma_degree": null,
+            "label": "1 место"
+          },
+          "participation": "individual",
+          "team": null,
+          "rating_points": 250,
+          "verified": true
+        },
+        {
+          "id": "ACH-000022-02",
+          "competition": {
+            "id": "COMP-2024-01",
+            "title": "Региональный чемпионат по алгоритмическому программированию (командный)",
+            "organizer": "Региональное отделение ФСП (Свердловская область)",
+            "region": "Свердловская область",
+            "participants_total": 140,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-01.pdf"
+          },
+          "discipline": {
+            "code": "algorithmic",
+            "title": "Алгоритмическое программирование"
+          },
+          "level": {
+            "code": "regional",
+            "title": "Региональный"
+          },
+          "date": "2024-02-10",
+          "result": {
+            "kind": "place",
+            "place": 8,
+            "diploma_degree": null,
+            "label": "8 место из 140"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Ленивые дятлы",
+            "size": 3,
+            "role": "участник команды",
+            "is_captain": false
+          },
+          "rating_points": 45,
+          "verified": true
+        },
+        {
+          "id": "ACH-000022-03",
+          "competition": {
+            "id": "COMP-2025-03",
+            "title": "Всероссийские соревнования по алгоритмическому программированию (команды)",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 300,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-03.pdf"
+          },
+          "discipline": {
+            "code": "algorithmic",
+            "title": "Алгоритмическое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2025-05-17",
+          "result": {
+            "kind": "place",
+            "place": 51,
+            "diploma_degree": null,
+            "label": "51 место из 300"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Цифровые лисы",
+            "size": 3,
+            "role": "участник команды",
+            "is_captain": false
+          },
+          "rating_points": 75,
+          "verified": true
+        },
+        {
+          "id": "ACH-000022-04",
+          "competition": {
+            "id": "COMP-2026-01",
+            "title": "Всероссийский хакатон по продуктовому программированию «Весна-2026»",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 180,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2026-01.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2026-03-21",
+          "result": {
+            "kind": "place",
+            "place": 2,
+            "diploma_degree": null,
+            "label": "2 место"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Асинхронные кодеры",
+            "size": 5,
+            "role": "бэкенд-разработчик",
+            "is_captain": false
+          },
+          "rating_points": 212,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000023",
+      "last_name": "Голубева",
+      "first_name": "Анна",
+      "middle_name": "Романовна",
+      "full_name": "Голубева Анна Романовна",
+      "region": "Самарская область",
+      "registered_at": "2023-06-19",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000023",
+      "achievements": [
+        {
+          "id": "ACH-000023-01",
+          "competition": {
+            "id": "COMP-2023-05",
+            "title": "Всероссийский хакатон по продуктовому программированию «Осенний спринт»",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 210,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-05.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2023-11-25",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Быстрые ежи",
+            "size": 5,
+            "role": "мобильный разработчик",
+            "is_captain": false
+          },
+          "rating_points": 38,
+          "verified": true
+        },
+        {
+          "id": "ACH-000023-02",
+          "competition": {
+            "id": "COMP-2024-07",
+            "title": "Кубок по алгоритмическому программированию «Зимний раунд»",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 1500,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-07.pdf"
+          },
+          "discipline": {
+            "code": "algorithmic",
+            "title": "Алгоритмическое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2024-12-07",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 3,
+            "label": "Диплом III степени"
+          },
+          "participation": "individual",
+          "team": null,
+          "rating_points": 112,
+          "verified": true
+        },
+        {
+          "id": "ACH-000023-03",
+          "competition": {
+            "id": "COMP-2026-01",
+            "title": "Всероссийский хакатон по продуктовому программированию «Весна-2026»",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 180,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2026-01.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2026-03-21",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 1,
+            "label": "Диплом I степени"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Квантовые дятлы",
+            "size": 5,
+            "role": "мобильный разработчик",
+            "is_captain": true
+          },
+          "rating_points": 200,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000024",
+      "last_name": "Филиппов",
+      "first_name": "Павел",
+      "middle_name": "Евгеньевич",
+      "full_name": "Филиппов Павел Евгеньевич",
+      "region": "Самарская область",
+      "registered_at": "2024-02-26",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000024",
+      "achievements": [
+        {
+          "id": "ACH-000024-01",
+          "competition": {
+            "id": "COMP-2024-04",
+            "title": "Региональные соревнования по программированию систем ИБ (CTF)",
+            "organizer": "Региональное отделение ФСП (г. Москва)",
+            "region": "г. Москва",
+            "participants_total": 75,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-04.pdf"
+          },
+          "discipline": {
+            "code": "security",
+            "title": "Программирование систем информационной безопасности"
+          },
+          "level": {
+            "code": "regional",
+            "title": "Региональный"
+          },
+          "date": "2024-06-08",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Ленивые тюлени",
+            "size": 4,
+            "role": "криптограф команды",
+            "is_captain": false
+          },
+          "rating_points": 15,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000025",
+      "last_name": "Ершов",
+      "first_name": "Роман",
+      "middle_name": "Андреевич",
+      "full_name": "Ершов Роман Андреевич",
+      "region": "Нижегородская область",
+      "registered_at": "2024-05-22",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000025",
+      "achievements": [
+        {
+          "id": "ACH-000025-01",
+          "competition": {
+            "id": "COMP-2024-05",
+            "title": "Всероссийский чемпионат по продуктовому программированию, финал",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 120,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-05.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2024-09-28",
+          "result": {
+            "kind": "place",
+            "place": 53,
+            "diploma_degree": null,
+            "label": "53 место из 120"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Квантовые пингвины",
+            "size": 5,
+            "role": "мобильный разработчик",
+            "is_captain": false
+          },
+          "rating_points": 75,
+          "verified": true
+        },
+        {
+          "id": "ACH-000025-02",
+          "competition": {
+            "id": "COMP-2026-04",
+            "title": "Международный онлайн-турнир по алгоритмическому программированию «Лето»",
+            "organizer": "ФСП России и партнёры (международный зачёт)",
+            "region": null,
+            "participants_total": 2800,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2026-04.pdf"
+          },
+          "discipline": {
+            "code": "algorithmic",
+            "title": "Алгоритмическое программирование"
+          },
+          "level": {
+            "code": "international",
+            "title": "Международный"
+          },
+          "date": "2026-07-11",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "individual",
+          "team": null,
+          "rating_points": 60,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000026",
+      "last_name": "Баранов",
+      "first_name": "Егор",
+      "middle_name": "Евгеньевич",
+      "full_name": "Баранов Егор Евгеньевич",
+      "region": "Краснодарский край",
+      "registered_at": "2023-08-11",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000026",
+      "achievements": [
+        {
+          "id": "ACH-000026-01",
+          "competition": {
+            "id": "COMP-2023-05",
+            "title": "Всероссийский хакатон по продуктовому программированию «Осенний спринт»",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 210,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-05.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2023-11-25",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Ночные совы",
+            "size": 5,
+            "role": "ML-инженер",
+            "is_captain": true
+          },
+          "rating_points": 38,
+          "verified": true
+        },
+        {
+          "id": "ACH-000026-02",
+          "competition": {
+            "id": "COMP-2024-05",
+            "title": "Всероссийский чемпионат по продуктовому программированию, финал",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 120,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-05.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2024-09-28",
+          "result": {
+            "kind": "place",
+            "place": 46,
+            "diploma_degree": null,
+            "label": "46 место из 120"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Тихие лисы",
+            "size": 5,
+            "role": "ML-инженер",
+            "is_captain": false
+          },
+          "rating_points": 75,
+          "verified": true
+        },
+        {
+          "id": "ACH-000026-03",
+          "competition": {
+            "id": "COMP-2025-05",
+            "title": "Международный онлайн-хакатон по продуктовому программированию",
+            "organizer": "ФСП России и партнёры (международный зачёт)",
+            "region": null,
+            "participants_total": 260,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-05.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "international",
+            "title": "Международный"
+          },
+          "date": "2025-09-13",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Квантовые биты",
+            "size": 5,
+            "role": "ML-инженер",
+            "is_captain": false
+          },
+          "rating_points": 60,
+          "verified": true
+        },
+        {
+          "id": "ACH-000026-04",
+          "competition": {
+            "id": "COMP-2026-01",
+            "title": "Всероссийский хакатон по продуктовому программированию «Весна-2026»",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 180,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2026-01.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2026-03-21",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 2,
+            "label": "Диплом II степени"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Рекурсивные дятлы",
+            "size": 5,
+            "role": "ML-инженер",
+            "is_captain": true
+          },
+          "rating_points": 150,
+          "verified": true
+        },
+        {
+          "id": "ACH-000026-05",
+          "competition": {
+            "id": "COMP-2026-05",
+            "title": "Всероссийский чемпионат по продуктовому программированию, финал",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 140,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2026-05.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2026-09-26",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Ночные пингвины",
+            "size": 5,
+            "role": "ML-инженер",
+            "is_captain": true
+          },
+          "rating_points": 38,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000027",
+      "last_name": "Медведев",
+      "first_name": "Кирилл",
+      "middle_name": "Викторович",
+      "full_name": "Медведев Кирилл Викторович",
+      "region": "Республика Татарстан",
+      "registered_at": "2024-12-08",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000027",
+      "achievements": [
+        {
+          "id": "ACH-000027-01",
+          "competition": {
+            "id": "COMP-2025-01",
+            "title": "Региональный хакатон по продуктовому программированию",
+            "organizer": "Региональное отделение ФСП (Нижегородская область)",
+            "region": "Нижегородская область",
+            "participants_total": 48,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-01.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "regional",
+            "title": "Региональный"
+          },
+          "date": "2025-03-01",
+          "result": {
+            "kind": "place",
+            "place": 25,
+            "diploma_degree": null,
+            "label": "25 место из 48"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Красные пингвины",
+            "size": 4,
+            "role": "ML-инженер",
+            "is_captain": false
+          },
+          "rating_points": 30,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000028",
+      "last_name": "Филиппов",
+      "first_name": "Илья",
+      "middle_name": "Андреевич",
+      "full_name": "Филиппов Илья Андреевич",
+      "region": "Пермский край",
+      "registered_at": "2022-11-09",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000028",
+      "achievements": [
+        {
+          "id": "ACH-000028-01",
+          "competition": {
+            "id": "COMP-2023-05",
+            "title": "Всероссийский хакатон по продуктовому программированию «Осенний спринт»",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 210,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-05.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2023-11-25",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 3,
+            "label": "Диплом III степени"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Ночные сурки",
+            "size": 5,
+            "role": "фулстек-разработчик",
+            "is_captain": false
+          },
+          "rating_points": 112,
+          "verified": true
+        },
+        {
+          "id": "ACH-000028-02",
+          "competition": {
+            "id": "COMP-2025-01",
+            "title": "Региональный хакатон по продуктовому программированию",
+            "organizer": "Региональное отделение ФСП (Нижегородская область)",
+            "region": "Нижегородская область",
+            "participants_total": 48,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2025-01.pdf"
+          },
+          "discipline": {
+            "code": "product",
+            "title": "Продуктовое программирование"
+          },
+          "level": {
+            "code": "regional",
+            "title": "Региональный"
+          },
+          "date": "2025-03-01",
+          "result": {
+            "kind": "place",
+            "place": 15,
+            "diploma_degree": null,
+            "label": "15 место из 48"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Бинарные куницы",
+            "size": 4,
+            "role": "фулстек-разработчик",
+            "is_captain": false
+          },
+          "rating_points": 30,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000029",
+      "last_name": "Гарипов",
+      "first_name": "Максим",
+      "middle_name": "Романович",
+      "full_name": "Гарипов Максим Романович",
+      "region": "Томская область",
+      "registered_at": "2024-05-01",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000029",
+      "achievements": [
+        {
+          "id": "ACH-000029-01",
+          "competition": {
+            "id": "COMP-2024-03",
+            "title": "Международный онлайн-турнир по алгоритмическому программированию",
+            "organizer": "ФСП России и партнёры (международный зачёт)",
+            "region": null,
+            "participants_total": 3400,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-03.pdf"
+          },
+          "discipline": {
+            "code": "algorithmic",
+            "title": "Алгоритмическое программирование"
+          },
+          "level": {
+            "code": "international",
+            "title": "Международный"
+          },
+          "date": "2024-05-25",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 2,
+            "label": "Диплом II степени"
+          },
+          "participation": "individual",
+          "team": null,
+          "rating_points": 240,
+          "verified": true
+        },
+        {
+          "id": "ACH-000029-02",
+          "competition": {
+            "id": "COMP-2026-02",
+            "title": "Всероссийские соревнования по программированию БАС, финал",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 30,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2026-02.pdf"
+          },
+          "discipline": {
+            "code": "uav",
+            "title": "Программирование беспилотных авиационных систем"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2026-04-25",
+          "result": {
+            "kind": "diploma",
+            "place": null,
+            "diploma_degree": 3,
+            "label": "Диплом III степени"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Красные сурки",
+            "size": 3,
+            "role": "инженер компьютерного зрения",
+            "is_captain": true
+          },
+          "rating_points": 112,
+          "verified": true
+        },
+        {
+          "id": "ACH-000029-03",
+          "competition": {
+            "id": "COMP-2026-04",
+            "title": "Международный онлайн-турнир по алгоритмическому программированию «Лето»",
+            "organizer": "ФСП России и партнёры (международный зачёт)",
+            "region": null,
+            "participants_total": 2800,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2026-04.pdf"
+          },
+          "discipline": {
+            "code": "algorithmic",
+            "title": "Алгоритмическое программирование"
+          },
+          "level": {
+            "code": "international",
+            "title": "Международный"
+          },
+          "date": "2026-07-11",
+          "result": {
+            "kind": "place",
+            "place": 1,
+            "diploma_degree": null,
+            "label": "1 место"
+          },
+          "participation": "individual",
+          "team": null,
+          "rating_points": 400,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000030",
+      "last_name": "Латыпов",
+      "first_name": "Михаил",
+      "middle_name": "Павлович",
+      "full_name": "Латыпов Михаил Павлович",
+      "region": "Томская область",
+      "registered_at": "2024-01-04",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000030",
+      "achievements": [
+        {
+          "id": "ACH-000030-01",
+          "competition": {
+            "id": "COMP-2024-02",
+            "title": "Всероссийские соревнования по программированию робототехники",
+            "organizer": "Федерация спортивного программирования России",
+            "region": null,
+            "participants_total": 36,
+            "protocol_url": "https://registry.fsp.example/protocols/COMP-2024-02.pdf"
+          },
+          "discipline": {
+            "code": "robotics",
+            "title": "Программирование робототехники"
+          },
+          "level": {
+            "code": "national",
+            "title": "Всероссийский"
+          },
+          "date": "2024-04-13",
+          "result": {
+            "kind": "participant",
+            "place": null,
+            "diploma_degree": null,
+            "label": "Участник"
+          },
+          "participation": "team",
+          "team": {
+            "name": "Ночные лисы",
+            "size": 4,
+            "role": "инженер-электроник",
+            "is_captain": false
+          },
+          "rating_points": 38,
+          "verified": true
+        }
+      ]
+    },
+    {
+      "fsp_id": "FSP-000031",
+      "last_name": "Белов",
+      "first_name": "Илья",
+      "middle_name": "Евгеньевич",
+      "full_name": "Белов Илья Евгеньевич",
+      "region": "Пермский край",
+      "registered_at": "2026-01-21",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000031",
+      "achievements": []
+    },
+    {
+      "fsp_id": "FSP-000032",
+      "last_name": "Латыпов",
+      "first_name": "Иван",
+      "middle_name": "Евгеньевич",
+      "full_name": "Латыпов Иван Евгеньевич",
+      "region": "Новосибирская область",
+      "registered_at": "2026-09-08",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000032",
+      "achievements": []
+    },
+    {
+      "fsp_id": "FSP-000033",
+      "last_name": "Карпов",
+      "first_name": "Тимур",
+      "middle_name": "Викторович",
+      "full_name": "Карпов Тимур Викторович",
+      "region": "Томская область",
+      "registered_at": "2026-04-17",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000033",
+      "achievements": []
+    },
+    {
+      "fsp_id": "FSP-000034",
+      "last_name": "Волков",
+      "first_name": "Кирилл",
+      "middle_name": "Андреевич",
+      "full_name": "Волков Кирилл Андреевич",
+      "region": "г. Санкт-Петербург",
+      "registered_at": "2026-03-03",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000034",
+      "achievements": []
+    },
+    {
+      "fsp_id": "FSP-000035",
+      "last_name": "Широков",
+      "first_name": "Тимур",
+      "middle_name": "Олегович",
+      "full_name": "Широков Тимур Олегович",
+      "region": "Новосибирская область",
+      "registered_at": "2026-06-28",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000035",
+      "achievements": []
+    },
+    {
+      "fsp_id": "FSP-000036",
+      "last_name": "Зайцев",
+      "first_name": "Максим",
+      "middle_name": "Алексеевич",
+      "full_name": "Зайцев Максим Алексеевич",
+      "region": "Нижегородская область",
+      "registered_at": "2026-09-14",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000036",
+      "achievements": []
+    },
+    {
+      "fsp_id": "FSP-000037",
+      "last_name": "Соколов",
+      "first_name": "Иван",
+      "middle_name": "Сергеевич",
+      "full_name": "Соколов Иван Сергеевич",
+      "region": "Самарская область",
+      "registered_at": "2026-06-30",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000037",
+      "achievements": []
+    },
+    {
+      "fsp_id": "FSP-000038",
+      "last_name": "Комарова",
+      "first_name": "Екатерина",
+      "middle_name": "Викторовна",
+      "full_name": "Комарова Екатерина Викторовна",
+      "region": "Краснодарский край",
+      "registered_at": "2026-09-09",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000038",
+      "achievements": []
+    },
+    {
+      "fsp_id": "FSP-000039",
+      "last_name": "Ершов",
+      "first_name": "Тимур",
+      "middle_name": "Олегович",
+      "full_name": "Ершов Тимур Олегович",
+      "region": "Республика Башкортостан",
+      "registered_at": "2026-08-21",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000039",
+      "achievements": []
+    },
+    {
+      "fsp_id": "FSP-000040",
+      "last_name": "Карпов",
+      "first_name": "Павел",
+      "middle_name": "Викторович",
+      "full_name": "Карпов Павел Викторович",
+      "region": "г. Москва",
+      "registered_at": "2026-05-26",
+      "profile_url": "https://registry.fsp.example/participants/FSP-000040",
+      "achievements": []
+    }
+  ]
+}
