@@ -1,0 +1,39 @@
+{
+  "id": "vac-02",
+  "file": "02_frontend_react_middle.md",
+  "title": "Frontend-разработчик (React), Middle",
+  "company": {
+    "name": "ООО «Маркет Плюс»",
+    "industry": "Электронная коммерция"
+  },
+  "specialization": "frontend",
+  "grade": "middle",
+  "stack_required": [
+    "React",
+    "TypeScript",
+    "Redux Toolkit",
+    "HTML",
+    "CSS"
+  ],
+  "stack_optional": [
+    "Next.js",
+    "Jest",
+    "React Testing Library",
+    "Storybook"
+  ],
+  "salary_from": 200000,
+  "salary_to": 260000,
+  "currency": "RUB",
+  "salary_gross": false,
+  "work_format": "hybrid",
+  "city": "Москва",
+  "experience_years_min": 2,
+  "team_description": "Команда витрины маркетплейса: 4 фронтенд-разработчика, дизайнер, 2 бэкенда и продакт; каталог, карточка товара, корзина.",
+  "expected_topics": [
+    "React: хуки и жизненный цикл",
+    "TypeScript: типизация компонентов",
+    "Управление состоянием (Redux Toolkit)",
+    "HTML/CSS и адаптивная вёрстка",
+    "Браузер: рендеринг, event loop, производительность"
+  ]
+}

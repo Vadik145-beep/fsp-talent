@@ -1,0 +1,52 @@
+{
+  "file": "05_devops_senior_long.pdf",
+  "layout": "Длинное резюме на 2 полные страницы: стек по группам, подробный опыт, проекты, курсы",
+  "full_name": "Гусев Михаил Олегович",
+  "email": "m.gusev@example.com",
+  "phone": "+79037124058",
+  "city": "Москва",
+  "specialization": "devops",
+  "grade": "senior",
+  "stack": [
+    "Kubernetes",
+    "Docker",
+    "Helm",
+    "Argo CD",
+    "Terraform",
+    "Ansible",
+    "GitLab CI",
+    "Jenkins",
+    "Prometheus",
+    "Grafana",
+    "Loki",
+    "Alertmanager",
+    "Yandex Cloud",
+    "AWS",
+    "PostgreSQL",
+    "Kafka",
+    "Redis",
+    "Nginx",
+    "HAProxy",
+    "Bash",
+    "Python",
+    "Go",
+    "Linux"
+  ],
+  "experience_years": 11.5,
+  "roles": [
+    "DevOps-инженер",
+    "SRE",
+    "Тимлид",
+    "Архитектор"
+  ],
+  "soft_skills": [
+    "Системное мышление",
+    "Ответственность",
+    "Наставничество",
+    "Умение договариваться"
+  ],
+  "work_format": "remote",
+  "links": {
+    "github": "github.com/mgusev-ops"
+  }
+}

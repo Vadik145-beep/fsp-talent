@@ -1,0 +1,34 @@
+{
+  "file": "03_data_ml_junior.pdf",
+  "layout": "Таблица контактов, таблица навыков с уровнями, опыт таблицей; DejaVu Sans",
+  "full_name": "Ахметов Тимур Ринатович",
+  "email": "timur.akhmetov@example.com",
+  "phone": "+79134027715",
+  "city": "Новосибирск",
+  "specialization": "data_ml",
+  "grade": "junior",
+  "stack": [
+    "Python",
+    "Pandas",
+    "NumPy",
+    "scikit-learn",
+    "PyTorch",
+    "SQL",
+    "PostgreSQL",
+    "Jupyter",
+    "Git",
+    "Docker"
+  ],
+  "experience_years": 2.0,
+  "roles": [
+    "Data Scientist",
+    "Аналитик данных"
+  ],
+  "soft_skills": [
+    "Обучаемость",
+    "Аналитическое мышление",
+    "Внимательность к деталям"
+  ],
+  "work_format": "hybrid",
+  "links": {}
+}

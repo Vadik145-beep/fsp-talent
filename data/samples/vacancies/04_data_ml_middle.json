@@ -1,0 +1,39 @@
+{
+  "id": "vac-04",
+  "file": "04_data_ml_middle.md",
+  "title": "ML-инженер (Middle) — рекомендательные системы",
+  "company": {
+    "name": "ООО «Книжная полка онлайн»",
+    "industry": "Онлайн-сервис книг"
+  },
+  "specialization": "data_ml",
+  "grade": "middle",
+  "stack_required": [
+    "Python",
+    "pandas",
+    "scikit-learn",
+    "PyTorch",
+    "SQL"
+  ],
+  "stack_optional": [
+    "Airflow",
+    "Docker",
+    "Spark",
+    "MLflow"
+  ],
+  "salary_from": 250000,
+  "salary_to": 320000,
+  "currency": "RUB",
+  "salary_gross": true,
+  "work_format": "remote",
+  "city": null,
+  "experience_years_min": 2,
+  "team_description": "Команда рекомендаций: 3 ML-инженера, аналитик и дата-инженер; лента рекомендаций и поиск похожих книг, решения по A/B-тестам.",
+  "expected_topics": [
+    "Рекомендательные системы и метрики ранжирования",
+    "SQL: оконные функции и JOIN",
+    "Классическое ML (scikit-learn): валидация, переобучение",
+    "PyTorch: обучение нейросетей",
+    "Статистика A/B-тестов"
+  ]
+}

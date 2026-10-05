@@ -1,0 +1,261 @@
+{
+  "realm": "fsp",
+  "enabled": true,
+  "displayName": "ФСП ID (учебный стенд)",
+  "displayNameHtml": "<div class=\"kc-logo-text\"><span>ФСП ID</span></div>",
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": false,
+  "editUsernameAllowed": false,
+  "rememberMe": true,
+  "bruteForceProtected": true,
+  "failureFactor": 10,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "internationalizationEnabled": true,
+  "supportedLocales": [
+    "ru",
+    "en"
+  ],
+  "defaultLocale": "ru",
+  "users": [
+    {
+      "username": "fsp.user01",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Никита",
+      "lastName": "Латыпов",
+      "email": "nikita.latypov@example.com",
+      "attributes": {
+        "fsp_id": [
+          "FSP-000001"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Fsp-demo-2026",
+          "temporary": false
+        }
+      ],
+      "requiredActions": [],
+      "realmRoles": [
+        "default-roles-fsp"
+      ]
+    },
+    {
+      "username": "fsp.user02",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Артём",
+      "lastName": "Белов",
+      "email": "artem.belov@example.com",
+      "attributes": {
+        "fsp_id": [
+          "FSP-000002"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Fsp-demo-2026",
+          "temporary": false
+        }
+      ],
+      "requiredActions": [],
+      "realmRoles": [
+        "default-roles-fsp"
+      ]
+    },
+    {
+      "username": "fsp.user03",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Кирилл",
+      "lastName": "Волков",
+      "email": "kirill.volkov@example.com",
+      "attributes": {
+        "fsp_id": [
+          "FSP-000003"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Fsp-demo-2026",
+          "temporary": false
+        }
+      ],
+      "requiredActions": [],
+      "realmRoles": [
+        "default-roles-fsp"
+      ]
+    },
+    {
+      "username": "fsp.user04",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Арсений",
+      "lastName": "Лебедев",
+      "email": "arseniy.lebedev@example.com",
+      "attributes": {
+        "fsp_id": [
+          "FSP-000004"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Fsp-demo-2026",
+          "temporary": false
+        }
+      ],
+      "requiredActions": [],
+      "realmRoles": [
+        "default-roles-fsp"
+      ]
+    },
+    {
+      "username": "fsp.user05",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Софья",
+      "lastName": "Зайцева",
+      "email": "sofya.zaytseva@example.com",
+      "attributes": {
+        "fsp_id": [
+          "FSP-000005"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Fsp-demo-2026",
+          "temporary": false
+        }
+      ],
+      "requiredActions": [],
+      "realmRoles": [
+        "default-roles-fsp"
+      ]
+    },
+    {
+      "username": "fsp.nohistory",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Илья",
+      "lastName": "Белов",
+      "email": "ilya.belov@example.com",
+      "attributes": {
+        "fsp_id": [
+          "FSP-000031"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Fsp-demo-2026",
+          "temporary": false
+        }
+      ],
+      "requiredActions": [],
+      "realmRoles": [
+        "default-roles-fsp"
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "fsp-talent",
+      "name": "fsp-talent: платформа подбора",
+      "description": "Вход и привязка профиля через ФСП ID. Public client, Authorization Code + PKCE (S256).",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "frontchannelLogout": true,
+      "rootUrl": "http://localhost:15173",
+      "baseUrl": "/",
+      "redirectUris": [
+        "http://localhost:15173/*",
+        "http://localhost:18000/*"
+      ],
+      "webOrigins": [
+        "http://localhost:15173",
+        "http://localhost:18000"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:15173/*##http://localhost:18000/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "fsp_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "fsp_id",
+            "claim.name": "fsp_id",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true",
+            "multivalued": "false",
+            "aggregate.attrs": "false"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "fsp-talent-test",
+      "name": "fsp-talent: автопроверка",
+      "description": "ТОЛЬКО для автотестов и проверки стенда: Direct Access Grants (логин+пароль -> токен). На проде удалить.",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "protocolMappers": [
+        {
+          "name": "fsp_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "fsp_id",
+            "claim.name": "fsp_id",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true",
+            "multivalued": "false",
+            "aggregate.attrs": "false"
+          }
+        }
+      ]
+    }
+  ],
+  "components": {
+    "org.keycloak.userprofile.UserProfileProvider": [
+      {
+        "providerId": "declarative-user-profile",
+        "subComponents": {},
+        "config": {
+          "kc.user.profile.config": [
+            "{\"attributes\": [{\"name\": \"username\", \"displayName\": \"${username}\", \"validations\": {\"length\": {\"min\": 3, \"max\": 255}, \"username-prohibited-characters\": {}, \"up-username-not-idn-homograph\": {}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"multivalued\": false}, {\"name\": \"email\", \"displayName\": \"${email}\", \"validations\": {\"email\": {}, \"length\": {\"max\": 255}}, \"required\": {\"roles\": [\"user\"]}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"multivalued\": false}, {\"name\": \"firstName\", \"displayName\": \"${firstName}\", \"validations\": {\"length\": {\"max\": 255}, \"person-name-prohibited-characters\": {}}, \"required\": {\"roles\": [\"user\"]}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"multivalued\": false}, {\"name\": \"lastName\", \"displayName\": \"${lastName}\", \"validations\": {\"length\": {\"max\": 255}, \"person-name-prohibited-characters\": {}}, \"required\": {\"roles\": [\"user\"]}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"multivalued\": false}, {\"name\": \"fsp_id\", \"displayName\": \"ФСП ID\", \"validations\": {\"pattern\": {\"pattern\": \"^FSP-\\\\d{6}$\", \"error-message\": \"ФСП ID должен иметь вид FSP-000001\"}}, \"annotations\": {}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\"]}, \"multivalued\": false}], \"groups\": [{\"name\": \"user-metadata\", \"displayHeader\": \"User metadata\", \"displayDescription\": \"Attributes, which refer to user metadata\"}]}"
+          ]
+        }
+      }
+    ]
+  }
+}

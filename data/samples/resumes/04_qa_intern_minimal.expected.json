@@ -1,0 +1,26 @@
+{
+  "file": "04_qa_intern_minimal.pdf",
+  "layout": "Минимум текста: полстраницы, без разделов, без отчества и без опыта работы",
+  "full_name": "Ершова Полина",
+  "email": "polina.ershova@example.com",
+  "phone": "+79005553311",
+  "city": "Екатеринбург",
+  "specialization": "qa",
+  "grade": "intern",
+  "stack": [
+    "Postman",
+    "SQL",
+    "Jira",
+    "Python"
+  ],
+  "experience_years": 0.0,
+  "roles": [
+    "Тестировщик"
+  ],
+  "soft_skills": [
+    "Внимательность",
+    "Усидчивость"
+  ],
+  "work_format": null,
+  "links": {}
+}
