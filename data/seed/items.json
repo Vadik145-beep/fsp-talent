@@ -1,0 +1,3494 @@
+[
+  {
+    "id": 1,
+    "code": "ba-http-001",
+    "title": "Код ответа для отсутствующего ресурса",
+    "description": "Параметрический шаблон: «Код ответа для отсутствующего ресурса». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "backend",
+    "topic": "backend.http_api",
+    "topic_label": "HTTP и REST API",
+    "target_grade": "junior",
+    "format": "single_choice",
+    "a": 1.93,
+    "b": -0.79,
+    "status": "active",
+    "source": "expert",
+    "exposures": 288,
+    "correct_rate": 0.92,
+    "expected_correct_rate": 0.87,
+    "leak_flag": false,
+    "leak_score": 0.29,
+    "variants_count": 60,
+    "created_at": "2026-09-10T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0001-s1003",
+        "format": "single_choice",
+        "topic": "backend.http_api",
+        "topic_label": "HTTP и REST API",
+        "prompt": "Клиент запрашивает счёт по id, которого нет в базе. Какой код ответа вернуть?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "500 Internal Server Error"
+          },
+          {
+            "id": "b",
+            "text": "400 Bad Request"
+          },
+          {
+            "id": "c",
+            "text": "404 Not Found"
+          },
+          {
+            "id": "d",
+            "text": "409 Conflict"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 60,
+        "seed": 1003,
+        "correct_answer": {
+          "choice_ids": [
+            "c"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0001-s1020",
+        "format": "single_choice",
+        "topic": "backend.http_api",
+        "topic_label": "HTTP и REST API",
+        "prompt": "Клиент запрашивает заказ по id, которого нет в базе. Какой код ответа вернуть?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "500 Internal Server Error"
+          },
+          {
+            "id": "b",
+            "text": "409 Conflict"
+          },
+          {
+            "id": "c",
+            "text": "400 Bad Request"
+          },
+          {
+            "id": "d",
+            "text": "404 Not Found"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 60,
+        "seed": 1020,
+        "correct_answer": {
+          "choice_ids": [
+            "d"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0001-s1037",
+        "format": "single_choice",
+        "topic": "backend.http_api",
+        "topic_label": "HTTP и REST API",
+        "prompt": "Клиент запрашивает заказ по id, которого нет в базе. Какой код ответа вернуть?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "404 Not Found"
+          },
+          {
+            "id": "b",
+            "text": "400 Bad Request"
+          },
+          {
+            "id": "c",
+            "text": "409 Conflict"
+          },
+          {
+            "id": "d",
+            "text": "500 Internal Server Error"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 60,
+        "seed": 1037,
+        "correct_answer": {
+          "choice_ids": [
+            "a"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "code": "ba-data-002",
+    "title": "Уровни изоляции транзакций",
+    "description": "Параметрический шаблон: «Уровни изоляции транзакций». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "backend",
+    "topic": "backend.databases",
+    "topic_label": "Базы данных и SQL",
+    "target_grade": "middle",
+    "format": "multiple_choice",
+    "a": 1.07,
+    "b": 0.32,
+    "status": "active",
+    "source": "expert",
+    "exposures": 486,
+    "correct_rate": 0.5,
+    "expected_correct_rate": 0.47,
+    "leak_flag": false,
+    "leak_score": 1.05,
+    "variants_count": 96,
+    "created_at": "2026-09-17T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0002-s2003",
+        "format": "multiple_choice",
+        "topic": "backend.databases",
+        "topic_label": "Базы данных и SQL",
+        "prompt": "Транзакция дважды читает строку из таблицы accounts. Какие уровни изоляции гарантируют, что значение не изменится между чтениями?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "SERIALIZABLE"
+          },
+          {
+            "id": "b",
+            "text": "READ COMMITTED"
+          },
+          {
+            "id": "c",
+            "text": "READ UNCOMMITTED"
+          },
+          {
+            "id": "d",
+            "text": "REPEATABLE READ"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 2003,
+        "correct_answer": {
+          "choice_ids": [
+            "a",
+            "d"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0002-s2020",
+        "format": "multiple_choice",
+        "topic": "backend.databases",
+        "topic_label": "Базы данных и SQL",
+        "prompt": "Транзакция дважды читает строку из таблицы invoices. Какие уровни изоляции гарантируют, что значение не изменится между чтениями?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "REPEATABLE READ"
+          },
+          {
+            "id": "b",
+            "text": "READ COMMITTED"
+          },
+          {
+            "id": "c",
+            "text": "READ UNCOMMITTED"
+          },
+          {
+            "id": "d",
+            "text": "SERIALIZABLE"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 2020,
+        "correct_answer": {
+          "choice_ids": [
+            "a",
+            "d"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0002-s2037",
+        "format": "multiple_choice",
+        "topic": "backend.databases",
+        "topic_label": "Базы данных и SQL",
+        "prompt": "Транзакция дважды читает строку из таблицы accounts. Какие уровни изоляции гарантируют, что значение не изменится между чтениями?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "SERIALIZABLE"
+          },
+          {
+            "id": "b",
+            "text": "REPEATABLE READ"
+          },
+          {
+            "id": "c",
+            "text": "READ COMMITTED"
+          },
+          {
+            "id": "d",
+            "text": "READ UNCOMMITTED"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 2037,
+        "correct_answer": {
+          "choice_ids": [
+            "a",
+            "b"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "code": "ba-conc-003",
+    "title": "Закон Литтла для пропускной способности",
+    "description": "Параметрический шаблон: «Закон Литтла для пропускной способности». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "backend",
+    "topic": "backend.concurrency",
+    "topic_label": "Конкурентность и асинхронность",
+    "target_grade": "middle",
+    "format": "numeric",
+    "a": 1.48,
+    "b": 0.28,
+    "status": "active",
+    "source": "expert",
+    "exposures": 808,
+    "correct_rate": 0.49,
+    "expected_correct_rate": 0.47,
+    "leak_flag": false,
+    "leak_score": 0.82,
+    "variants_count": 36,
+    "created_at": "2026-09-22T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0003-s3003",
+        "format": "numeric",
+        "topic": "backend.concurrency",
+        "topic_label": "Конкурентность и асинхронность",
+        "prompt": "Сервис принимает 500 запросов в секунду, среднее время ответа 80 мс. Сколько запросов в среднем обрабатывается одновременно (закон Литтла)?",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": "запросов",
+        "time_limit_sec": 120,
+        "seed": 3003,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": 40.0,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0003-s3020",
+        "format": "numeric",
+        "topic": "backend.concurrency",
+        "topic_label": "Конкурентность и асинхронность",
+        "prompt": "Сервис принимает 400 запросов в секунду, среднее время ответа 80 мс. Сколько запросов в среднем обрабатывается одновременно (закон Литтла)?",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": "запросов",
+        "time_limit_sec": 120,
+        "seed": 3020,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": 32.0,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0003-s3037",
+        "format": "numeric",
+        "topic": "backend.concurrency",
+        "topic_label": "Конкурентность и асинхронность",
+        "prompt": "Сервис принимает 800 запросов в секунду, среднее время ответа 80 мс. Сколько запросов в среднем обрабатывается одновременно (закон Литтла)?",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": "запросов",
+        "time_limit_sec": 120,
+        "seed": 3037,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": 64.0,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "code": "ba-algo-004",
+    "title": "Ошибка выхода за границы списка",
+    "description": "Параметрический шаблон: «Ошибка выхода за границы списка». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "backend",
+    "topic": "backend.algorithms",
+    "topic_label": "Алгоритмы и структуры данных",
+    "target_grade": "intern",
+    "format": "find_error_line",
+    "a": 1.81,
+    "b": -1.33,
+    "status": "active",
+    "source": "expert",
+    "exposures": 335,
+    "correct_rate": 0.91,
+    "expected_correct_rate": 0.94,
+    "leak_flag": false,
+    "leak_score": 0.12,
+    "variants_count": 70,
+    "created_at": "2026-09-30T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0004-s4003",
+        "format": "find_error_line",
+        "topic": "backend.algorithms",
+        "topic_label": "Алгоритмы и структуры данных",
+        "prompt": "Код падает с ошибкой. В какой строке причина?",
+        "code": "def total(values):\n    s = 0\n    for i in range(len(values) + 1):\n        s += values[i]\n    return s\nprint(total(list(range(8))))",
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 4003,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": null,
+          "line": 3,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0004-s4020",
+        "format": "find_error_line",
+        "topic": "backend.algorithms",
+        "topic_label": "Алгоритмы и структуры данных",
+        "prompt": "Код падает с ошибкой. В какой строке причина?",
+        "code": "def total(values):\n    s = 0\n    for i in range(len(values) + 1):\n        s += values[i]\n    return s\nprint(total(list(range(4))))",
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 4020,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": null,
+          "line": 3,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0004-s4037",
+        "format": "find_error_line",
+        "topic": "backend.algorithms",
+        "topic_label": "Алгоритмы и структуры данных",
+        "prompt": "Код падает с ошибкой. В какой строке причина?",
+        "code": "def total(nums):\n    s = 0\n    for i in range(len(nums) + 1):\n        s += nums[i]\n    return s\nprint(total(list(range(7))))",
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 4037,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": null,
+          "line": 3,
+          "order": null
+        }
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "code": "ba-arch-005",
+    "title": "Шаги паттерна Saga при отмене заказа",
+    "description": "Параметрический шаблон: «Шаги паттерна Saga при отмене заказа». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "backend",
+    "topic": "backend.architecture",
+    "topic_label": "Архитектура и паттерны",
+    "target_grade": "senior",
+    "format": "ordering",
+    "a": 1.44,
+    "b": 1.43,
+    "status": "pilot",
+    "source": "expert",
+    "exposures": 22,
+    "correct_rate": 0.1,
+    "expected_correct_rate": 0.15,
+    "leak_flag": false,
+    "leak_score": 1.07,
+    "variants_count": 120,
+    "created_at": "2026-09-16T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0005-s5003",
+        "format": "ordering",
+        "topic": "backend.architecture",
+        "topic_label": "Архитектура и паттерны",
+        "prompt": "Расположите шаги в правильном порядке.",
+        "code": null,
+        "options": null,
+        "steps": [
+          {
+            "id": "s1",
+            "text": "Сервис заказов создаёт заказ"
+          },
+          {
+            "id": "s3",
+            "text": "Склад сообщает об отсутствии товара"
+          },
+          {
+            "id": "s5",
+            "text": "Заказ переводится в статус «Отменён»"
+          },
+          {
+            "id": "s4",
+            "text": "Сервис оплаты выполняет компенсацию — возврат"
+          },
+          {
+            "id": "s2",
+            "text": "Сервис оплаты списывает деньги"
+          }
+        ],
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 5003,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": [
+            "s1",
+            "s2",
+            "s3",
+            "s4",
+            "s5"
+          ]
+        }
+      },
+      {
+        "instance_id": "it-0005-s5020",
+        "format": "ordering",
+        "topic": "backend.architecture",
+        "topic_label": "Архитектура и паттерны",
+        "prompt": "Расположите шаги в правильном порядке.",
+        "code": null,
+        "options": null,
+        "steps": [
+          {
+            "id": "s2",
+            "text": "Сервис оплаты списывает деньги"
+          },
+          {
+            "id": "s1",
+            "text": "Сервис заказов создаёт заказ"
+          },
+          {
+            "id": "s5",
+            "text": "Заказ переводится в статус «Отменён»"
+          },
+          {
+            "id": "s3",
+            "text": "Склад сообщает об отсутствии товара"
+          },
+          {
+            "id": "s4",
+            "text": "Сервис оплаты выполняет компенсацию — возврат"
+          }
+        ],
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 5020,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": [
+            "s1",
+            "s2",
+            "s3",
+            "s4",
+            "s5"
+          ]
+        }
+      },
+      {
+        "instance_id": "it-0005-s5037",
+        "format": "ordering",
+        "topic": "backend.architecture",
+        "topic_label": "Архитектура и паттерны",
+        "prompt": "Расположите шаги в правильном порядке.",
+        "code": null,
+        "options": null,
+        "steps": [
+          {
+            "id": "s3",
+            "text": "Склад сообщает об отсутствии товара"
+          },
+          {
+            "id": "s5",
+            "text": "Заказ переводится в статус «Отменён»"
+          },
+          {
+            "id": "s1",
+            "text": "Сервис заказов создаёт заказ"
+          },
+          {
+            "id": "s4",
+            "text": "Сервис оплаты выполняет компенсацию — возврат"
+          },
+          {
+            "id": "s2",
+            "text": "Сервис оплаты списывает деньги"
+          }
+        ],
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 5037,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": [
+            "s1",
+            "s2",
+            "s3",
+            "s4",
+            "s5"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "code": "fr-js_c-006",
+    "title": "map и filter над массивом",
+    "description": "Параметрический шаблон: «map и filter над массивом». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "frontend",
+    "topic": "frontend.js_core",
+    "topic_label": "JavaScript",
+    "target_grade": "junior",
+    "format": "code_output",
+    "a": 1.1,
+    "b": -0.33,
+    "status": "active",
+    "source": "expert",
+    "exposures": 839,
+    "correct_rate": 0.68,
+    "expected_correct_rate": 0.64,
+    "leak_flag": false,
+    "leak_score": 0.2,
+    "variants_count": 64,
+    "created_at": "2026-08-28T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0006-s6003",
+        "format": "code_output",
+        "topic": "frontend.js_core",
+        "topic_label": "JavaScript",
+        "prompt": "Что выведет код?",
+        "code": "const arr = [6, 6, 12];\nconst res = arr.map(x => x * 2).filter(x => x > 12);\nconsole.log(res.length);",
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 6003,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": "1",
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0006-s6020",
+        "format": "code_output",
+        "topic": "frontend.js_core",
+        "topic_label": "JavaScript",
+        "prompt": "Что выведет код?",
+        "code": "const arr = [4, 4, 8];\nconst res = arr.map(x => x * 2).filter(x => x > 8);\nconsole.log(res.length);",
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 6020,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": "1",
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0006-s6037",
+        "format": "code_output",
+        "topic": "frontend.js_core",
+        "topic_label": "JavaScript",
+        "prompt": "Что выведет код?",
+        "code": "const arr = [9, 6, 15];\nconst res = arr.map(x => x * 2).filter(x => x > 18);\nconsole.log(res.length);",
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 6037,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": "1",
+          "line": null,
+          "order": null
+        }
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "code": "fr-reac-007",
+    "title": "Зависимости useEffect",
+    "description": "Параметрический шаблон: «Зависимости useEffect». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "frontend",
+    "topic": "frontend.react",
+    "topic_label": "React и состояние",
+    "target_grade": "middle",
+    "format": "single_choice",
+    "a": 1.75,
+    "b": 0.26,
+    "status": "active",
+    "source": "expert",
+    "exposures": 776,
+    "correct_rate": 0.51,
+    "expected_correct_rate": 0.47,
+    "leak_flag": false,
+    "leak_score": 1.18,
+    "variants_count": 96,
+    "created_at": "2026-09-30T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0007-s7003",
+        "format": "single_choice",
+        "topic": "frontend.react",
+        "topic_label": "React и состояние",
+        "prompt": "Эффект должен выполниться один раз после монтирования компонента Profile. Какой массив зависимостей передать?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "[props]"
+          },
+          {
+            "id": "b",
+            "text": "Не передавать массив"
+          },
+          {
+            "id": "c",
+            "text": "Пустой массив []"
+          },
+          {
+            "id": "d",
+            "text": "[state, setState]"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 60,
+        "seed": 7003,
+        "correct_answer": {
+          "choice_ids": [
+            "c"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0007-s7020",
+        "format": "single_choice",
+        "topic": "frontend.react",
+        "topic_label": "React и состояние",
+        "prompt": "Эффект должен выполниться один раз после монтирования компонента Profile. Какой массив зависимостей передать?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "[props]"
+          },
+          {
+            "id": "b",
+            "text": "Не передавать массив"
+          },
+          {
+            "id": "c",
+            "text": "[state, setState]"
+          },
+          {
+            "id": "d",
+            "text": "Пустой массив []"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 60,
+        "seed": 7020,
+        "correct_answer": {
+          "choice_ids": [
+            "d"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0007-s7037",
+        "format": "single_choice",
+        "topic": "frontend.react",
+        "topic_label": "React и состояние",
+        "prompt": "Эффект должен выполниться один раз после монтирования компонента Profile. Какой массив зависимостей передать?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "[state, setState]"
+          },
+          {
+            "id": "b",
+            "text": "Не передавать массив"
+          },
+          {
+            "id": "c",
+            "text": "Пустой массив []"
+          },
+          {
+            "id": "d",
+            "text": "[props]"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 60,
+        "seed": 7037,
+        "correct_answer": {
+          "choice_ids": [
+            "c"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "code": "fr-css_-008",
+    "title": "Блочная модель CSS",
+    "description": "Параметрический шаблон: «Блочная модель CSS». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "frontend",
+    "topic": "frontend.css_layout",
+    "topic_label": "Вёрстка и CSS",
+    "target_grade": "intern",
+    "format": "numeric",
+    "a": 1.9,
+    "b": -1.65,
+    "status": "active",
+    "source": "expert",
+    "exposures": 350,
+    "correct_rate": 0.98,
+    "expected_correct_rate": 0.97,
+    "leak_flag": false,
+    "leak_score": 1.18,
+    "variants_count": 27,
+    "created_at": "2026-09-15T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0008-s8003",
+        "format": "numeric",
+        "topic": "frontend.css_layout",
+        "topic_label": "Вёрстка и CSS",
+        "prompt": "У блока width: 200px, padding: 16px, border: 2px, box-sizing: content-box. Какая итоговая ширина блока в пикселях?",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": "px",
+        "time_limit_sec": 120,
+        "seed": 8003,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": 236,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0008-s8020",
+        "format": "numeric",
+        "topic": "frontend.css_layout",
+        "topic_label": "Вёрстка и CSS",
+        "prompt": "У блока width: 200px, padding: 16px, border: 1px, box-sizing: content-box. Какая итоговая ширина блока в пикселях?",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": "px",
+        "time_limit_sec": 120,
+        "seed": 8020,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": 234,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0008-s8037",
+        "format": "numeric",
+        "topic": "frontend.css_layout",
+        "topic_label": "Вёрстка и CSS",
+        "prompt": "У блока width: 240px, padding: 20px, border: 4px, box-sizing: content-box. Какая итоговая ширина блока в пикселях?",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": "px",
+        "time_limit_sec": 120,
+        "seed": 8037,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": 288,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "code": "fr-brow-009",
+    "title": "Критический путь рендеринга",
+    "description": "Параметрический шаблон: «Критический путь рендеринга». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "frontend",
+    "topic": "frontend.browser",
+    "topic_label": "Браузер и производительность",
+    "target_grade": "senior",
+    "format": "ordering",
+    "a": 1.04,
+    "b": 1.41,
+    "status": "active",
+    "source": "expert",
+    "exposures": 706,
+    "correct_rate": 0.26,
+    "expected_correct_rate": 0.22,
+    "leak_flag": false,
+    "leak_score": 0.54,
+    "variants_count": 120,
+    "created_at": "2026-09-28T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0009-s9003",
+        "format": "ordering",
+        "topic": "frontend.browser",
+        "topic_label": "Браузер и производительность",
+        "prompt": "Расположите шаги в правильном порядке.",
+        "code": null,
+        "options": null,
+        "steps": [
+          {
+            "id": "s3",
+            "text": "Построение дерева рендеринга"
+          },
+          {
+            "id": "s2",
+            "text": "Разбор CSS в CSSOM"
+          },
+          {
+            "id": "s4",
+            "text": "Layout — расчёт геометрии"
+          },
+          {
+            "id": "s1",
+            "text": "Разбор HTML в DOM"
+          },
+          {
+            "id": "s5",
+            "text": "Paint — отрисовка"
+          }
+        ],
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 9003,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": [
+            "s1",
+            "s2",
+            "s3",
+            "s4",
+            "s5"
+          ]
+        }
+      },
+      {
+        "instance_id": "it-0009-s9020",
+        "format": "ordering",
+        "topic": "frontend.browser",
+        "topic_label": "Браузер и производительность",
+        "prompt": "Расположите шаги в правильном порядке.",
+        "code": null,
+        "options": null,
+        "steps": [
+          {
+            "id": "s4",
+            "text": "Layout — расчёт геометрии"
+          },
+          {
+            "id": "s2",
+            "text": "Разбор CSS в CSSOM"
+          },
+          {
+            "id": "s1",
+            "text": "Разбор HTML в DOM"
+          },
+          {
+            "id": "s3",
+            "text": "Построение дерева рендеринга"
+          },
+          {
+            "id": "s5",
+            "text": "Paint — отрисовка"
+          }
+        ],
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 9020,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": [
+            "s1",
+            "s2",
+            "s3",
+            "s4",
+            "s5"
+          ]
+        }
+      },
+      {
+        "instance_id": "it-0009-s9037",
+        "format": "ordering",
+        "topic": "frontend.browser",
+        "topic_label": "Браузер и производительность",
+        "prompt": "Расположите шаги в правильном порядке.",
+        "code": null,
+        "options": null,
+        "steps": [
+          {
+            "id": "s4",
+            "text": "Layout — расчёт геометрии"
+          },
+          {
+            "id": "s1",
+            "text": "Разбор HTML в DOM"
+          },
+          {
+            "id": "s2",
+            "text": "Разбор CSS в CSSOM"
+          },
+          {
+            "id": "s3",
+            "text": "Построение дерева рендеринга"
+          },
+          {
+            "id": "s5",
+            "text": "Paint — отрисовка"
+          }
+        ],
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 9037,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": [
+            "s1",
+            "s2",
+            "s3",
+            "s4",
+            "s5"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "code": "fr-type-010",
+    "title": "Утилитарные типы TypeScript",
+    "description": "Параметрический шаблон: «Утилитарные типы TypeScript». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "frontend",
+    "topic": "frontend.typescript",
+    "topic_label": "TypeScript",
+    "target_grade": "middle",
+    "format": "short_text",
+    "a": 1.36,
+    "b": 0.43,
+    "status": "draft",
+    "source": "llm_vacancy",
+    "exposures": 0,
+    "correct_rate": null,
+    "expected_correct_rate": null,
+    "leak_flag": false,
+    "leak_score": 0.51,
+    "variants_count": 1,
+    "created_at": "2026-09-28T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0010-s10003",
+        "format": "short_text",
+        "topic": "frontend.typescript",
+        "topic_label": "TypeScript",
+        "prompt": "Какой утилитарный тип делает все поля объекта необязательными? (одно слово)",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 10003,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": "Partial",
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0010-s10020",
+        "format": "short_text",
+        "topic": "frontend.typescript",
+        "topic_label": "TypeScript",
+        "prompt": "Какой утилитарный тип делает все поля объекта необязательными? (одно слово)",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 10020,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": "Partial",
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0010-s10037",
+        "format": "short_text",
+        "topic": "frontend.typescript",
+        "topic_label": "TypeScript",
+        "prompt": "Какой утилитарный тип делает все поля объекта необязательными? (одно слово)",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 10037,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": "Partial",
+          "line": null,
+          "order": null
+        }
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "code": "mo-life-011",
+    "title": "Жизненный цикл Activity",
+    "description": "Параметрический шаблон: «Жизненный цикл Activity». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "mobile",
+    "topic": "mobile.lifecycle",
+    "topic_label": "Жизненный цикл приложения",
+    "target_grade": "junior",
+    "format": "single_choice",
+    "a": 0.9,
+    "b": -0.23,
+    "status": "active",
+    "source": "expert",
+    "exposures": 767,
+    "correct_rate": 0.64,
+    "expected_correct_rate": 0.6,
+    "leak_flag": false,
+    "leak_score": 0.78,
+    "variants_count": 96,
+    "created_at": "2026-09-21T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0011-s11003",
+        "format": "single_choice",
+        "topic": "mobile.lifecycle",
+        "topic_label": "Жизненный цикл приложения",
+        "prompt": "Какой метод Activity вызывается, когда пользователь сворачивает приложение «Заметки»?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "onCreate()"
+          },
+          {
+            "id": "b",
+            "text": "onStop()"
+          },
+          {
+            "id": "c",
+            "text": "onRestart()"
+          },
+          {
+            "id": "d",
+            "text": "onDestroy()"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 60,
+        "seed": 11003,
+        "correct_answer": {
+          "choice_ids": [
+            "b"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0011-s11020",
+        "format": "single_choice",
+        "topic": "mobile.lifecycle",
+        "topic_label": "Жизненный цикл приложения",
+        "prompt": "Какой метод Activity вызывается, когда пользователь сворачивает приложение «Карты»?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "onRestart()"
+          },
+          {
+            "id": "b",
+            "text": "onDestroy()"
+          },
+          {
+            "id": "c",
+            "text": "onCreate()"
+          },
+          {
+            "id": "d",
+            "text": "onStop()"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 60,
+        "seed": 11020,
+        "correct_answer": {
+          "choice_ids": [
+            "d"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0011-s11037",
+        "format": "single_choice",
+        "topic": "mobile.lifecycle",
+        "topic_label": "Жизненный цикл приложения",
+        "prompt": "Какой метод Activity вызывается, когда пользователь сворачивает приложение «Карты»?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "onStop()"
+          },
+          {
+            "id": "b",
+            "text": "onRestart()"
+          },
+          {
+            "id": "c",
+            "text": "onDestroy()"
+          },
+          {
+            "id": "d",
+            "text": "onCreate()"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 60,
+        "seed": 11037,
+        "correct_answer": {
+          "choice_ids": [
+            "a"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "code": "mo-netw-012",
+    "title": "Хранение данных на устройстве",
+    "description": "Параметрический шаблон: «Хранение данных на устройстве». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "mobile",
+    "topic": "mobile.networking",
+    "topic_label": "Сеть и хранение данных",
+    "target_grade": "middle",
+    "format": "multiple_choice",
+    "a": 1.92,
+    "b": 0.49,
+    "status": "active",
+    "source": "expert",
+    "exposures": 177,
+    "correct_rate": 0.39,
+    "expected_correct_rate": 0.36,
+    "leak_flag": false,
+    "leak_score": 0.17,
+    "variants_count": 96,
+    "created_at": "2026-09-10T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0012-s12003",
+        "format": "multiple_choice",
+        "topic": "mobile.networking",
+        "topic_label": "Сеть и хранение данных",
+        "prompt": "Где безопасно хранить токен доступа в мобильном приложении?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "EncryptedSharedPreferences (Android)"
+          },
+          {
+            "id": "b",
+            "text": "Обычные SharedPreferences"
+          },
+          {
+            "id": "c",
+            "text": "Keychain (iOS)"
+          },
+          {
+            "id": "d",
+            "text": "Файл в общей папке"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 12003,
+        "correct_answer": {
+          "choice_ids": [
+            "a",
+            "c"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0012-s12020",
+        "format": "multiple_choice",
+        "topic": "mobile.networking",
+        "topic_label": "Сеть и хранение данных",
+        "prompt": "Где безопасно хранить токен доступа в мобильном приложении?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Файл в общей папке"
+          },
+          {
+            "id": "b",
+            "text": "Keychain (iOS)"
+          },
+          {
+            "id": "c",
+            "text": "Обычные SharedPreferences"
+          },
+          {
+            "id": "d",
+            "text": "EncryptedSharedPreferences (Android)"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 12020,
+        "correct_answer": {
+          "choice_ids": [
+            "b",
+            "d"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0012-s12037",
+        "format": "multiple_choice",
+        "topic": "mobile.networking",
+        "topic_label": "Сеть и хранение данных",
+        "prompt": "Где безопасно хранить токен доступа в мобильном приложении?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Обычные SharedPreferences"
+          },
+          {
+            "id": "b",
+            "text": "Keychain (iOS)"
+          },
+          {
+            "id": "c",
+            "text": "EncryptedSharedPreferences (Android)"
+          },
+          {
+            "id": "d",
+            "text": "Файл в общей папке"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 12037,
+        "correct_answer": {
+          "choice_ids": [
+            "b",
+            "c"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "code": "mo-lang-013",
+    "title": "Срезы списков (Kotlin-подобный псевдокод)",
+    "description": "Параметрический шаблон: «Срезы списков (Kotlin-подобный псевдокод)». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "mobile",
+    "topic": "mobile.language",
+    "topic_label": "Kotlin / Swift",
+    "target_grade": "intern",
+    "format": "code_output",
+    "a": 1.38,
+    "b": -1.47,
+    "status": "active",
+    "source": "expert",
+    "exposures": 412,
+    "correct_rate": 0.98,
+    "expected_correct_rate": 0.91,
+    "leak_flag": true,
+    "leak_score": 3.16,
+    "variants_count": 500,
+    "created_at": "2026-09-07T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0013-s13003",
+        "format": "code_output",
+        "topic": "mobile.language",
+        "topic_label": "Kotlin / Swift",
+        "prompt": "Что выведет код?",
+        "code": "xs = [5, 3, 4, 2, 6]\nprint(sum(xs[2:]) * 3)",
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 13003,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": "36",
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0013-s13020",
+        "format": "code_output",
+        "topic": "mobile.language",
+        "topic_label": "Kotlin / Swift",
+        "prompt": "Что выведет код?",
+        "code": "xs = [8, 6, 6, 6, 8]\nprint(sum(xs[1:]) * 2)",
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 13020,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": "52",
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0013-s13037",
+        "format": "code_output",
+        "topic": "mobile.language",
+        "topic_label": "Kotlin / Swift",
+        "prompt": "Что выведет код?",
+        "code": "xs = [8, 2, 6, 7, 3]\nprint(sum(xs[2:]) * 2)",
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 13037,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": "32",
+          "line": null,
+          "order": null
+        }
+      }
+    ]
+  },
+  {
+    "id": 14,
+    "code": "mo-rele-014",
+    "title": "Публикация релиза в стор",
+    "description": "Параметрический шаблон: «Публикация релиза в стор». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "mobile",
+    "topic": "mobile.release",
+    "topic_label": "Сборка и публикация",
+    "target_grade": "senior",
+    "format": "ordering",
+    "a": 1.45,
+    "b": 1.33,
+    "status": "active",
+    "source": "expert",
+    "exposures": 361,
+    "correct_rate": 0.16,
+    "expected_correct_rate": 0.16,
+    "leak_flag": false,
+    "leak_score": 0.72,
+    "variants_count": 120,
+    "created_at": "2026-09-15T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0014-s14003",
+        "format": "ordering",
+        "topic": "mobile.release",
+        "topic_label": "Сборка и публикация",
+        "prompt": "Расположите шаги в правильном порядке.",
+        "code": null,
+        "options": null,
+        "steps": [
+          {
+            "id": "s5",
+            "text": "Выпустить на 10% пользователей"
+          },
+          {
+            "id": "s3",
+            "text": "Загрузить сборку во внутреннее тестирование"
+          },
+          {
+            "id": "s1",
+            "text": "Поднять версию сборки"
+          },
+          {
+            "id": "s2",
+            "text": "Собрать подписанный релиз"
+          },
+          {
+            "id": "s4",
+            "text": "Пройти ревью стора"
+          }
+        ],
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 14003,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": [
+            "s1",
+            "s2",
+            "s3",
+            "s4",
+            "s5"
+          ]
+        }
+      },
+      {
+        "instance_id": "it-0014-s14020",
+        "format": "ordering",
+        "topic": "mobile.release",
+        "topic_label": "Сборка и публикация",
+        "prompt": "Расположите шаги в правильном порядке.",
+        "code": null,
+        "options": null,
+        "steps": [
+          {
+            "id": "s3",
+            "text": "Загрузить сборку во внутреннее тестирование"
+          },
+          {
+            "id": "s1",
+            "text": "Поднять версию сборки"
+          },
+          {
+            "id": "s4",
+            "text": "Пройти ревью стора"
+          },
+          {
+            "id": "s2",
+            "text": "Собрать подписанный релиз"
+          },
+          {
+            "id": "s5",
+            "text": "Выпустить на 10% пользователей"
+          }
+        ],
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 14020,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": [
+            "s1",
+            "s2",
+            "s3",
+            "s4",
+            "s5"
+          ]
+        }
+      },
+      {
+        "instance_id": "it-0014-s14037",
+        "format": "ordering",
+        "topic": "mobile.release",
+        "topic_label": "Сборка и публикация",
+        "prompt": "Расположите шаги в правильном порядке.",
+        "code": null,
+        "options": null,
+        "steps": [
+          {
+            "id": "s1",
+            "text": "Поднять версию сборки"
+          },
+          {
+            "id": "s4",
+            "text": "Пройти ревью стора"
+          },
+          {
+            "id": "s2",
+            "text": "Собрать подписанный релиз"
+          },
+          {
+            "id": "s3",
+            "text": "Загрузить сборку во внутреннее тестирование"
+          },
+          {
+            "id": "s5",
+            "text": "Выпустить на 10% пользователей"
+          }
+        ],
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 14037,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": [
+            "s1",
+            "s2",
+            "s3",
+            "s4",
+            "s5"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": 15,
+    "code": "mo-ui-015",
+    "title": "Навигация в Jetpack Compose",
+    "description": "Параметрический шаблон: «Навигация в Jetpack Compose». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "mobile",
+    "topic": "mobile.ui",
+    "topic_label": "Интерфейс и навигация",
+    "target_grade": "middle",
+    "format": "short_text",
+    "a": 1.82,
+    "b": 0.6,
+    "status": "pilot",
+    "source": "expert",
+    "exposures": 19,
+    "correct_rate": 0.35,
+    "expected_correct_rate": 0.33,
+    "leak_flag": false,
+    "leak_score": 0.04,
+    "variants_count": 1,
+    "created_at": "2026-09-19T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0015-s15003",
+        "format": "short_text",
+        "topic": "mobile.ui",
+        "topic_label": "Интерфейс и навигация",
+        "prompt": "Как называется компонент Compose, который хранит стек экранов навигации? (одно слово, NavHost или NavController)",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 15003,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": "NavController",
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0015-s15020",
+        "format": "short_text",
+        "topic": "mobile.ui",
+        "topic_label": "Интерфейс и навигация",
+        "prompt": "Как называется компонент Compose, который хранит стек экранов навигации? (одно слово, NavHost или NavController)",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 15020,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": "NavController",
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0015-s15037",
+        "format": "short_text",
+        "topic": "mobile.ui",
+        "topic_label": "Интерфейс и навигация",
+        "prompt": "Как называется компонент Compose, который хранит стек экранов навигации? (одно слово, NavHost или NavController)",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 15037,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": "NavController",
+          "line": null,
+          "order": null
+        }
+      }
+    ]
+  },
+  {
+    "id": 16,
+    "code": "da-stat-016",
+    "title": "Выборочное среднее",
+    "description": "Параметрический шаблон: «Выборочное среднее». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "data_ml",
+    "topic": "data_ml.statistics",
+    "topic_label": "Статистика и вероятности",
+    "target_grade": "intern",
+    "format": "numeric",
+    "a": 0.86,
+    "b": -1.36,
+    "status": "active",
+    "source": "expert",
+    "exposures": 110,
+    "correct_rate": 0.77,
+    "expected_correct_rate": 0.79,
+    "leak_flag": false,
+    "leak_score": 1.05,
+    "variants_count": 5000,
+    "created_at": "2026-09-01T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0016-s16003",
+        "format": "numeric",
+        "topic": "data_ml.statistics",
+        "topic_label": "Статистика и вероятности",
+        "prompt": "Выборка: [11, 13, 16, 7, 17]. Чему равно выборочное среднее?",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 16003,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": 12.8,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0016-s16020",
+        "format": "numeric",
+        "topic": "data_ml.statistics",
+        "topic_label": "Статистика и вероятности",
+        "prompt": "Выборка: [13, 3, 18, 3, 3]. Чему равно выборочное среднее?",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 16020,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": 8,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0016-s16037",
+        "format": "numeric",
+        "topic": "data_ml.statistics",
+        "topic_label": "Статистика и вероятности",
+        "prompt": "Выборка: [1, 2, 4, 2, 17]. Чему равно выборочное среднее?",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 16037,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": 5.2,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      }
+    ]
+  },
+  {
+    "id": 17,
+    "code": "da-metr-017",
+    "title": "Precision по матрице ошибок",
+    "description": "Параметрический шаблон: «Precision по матрице ошибок». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "data_ml",
+    "topic": "data_ml.metrics",
+    "topic_label": "Метрики и валидация моделей",
+    "target_grade": "middle",
+    "format": "numeric",
+    "a": 1.93,
+    "b": 0.66,
+    "status": "active",
+    "source": "expert",
+    "exposures": 387,
+    "correct_rate": 0.33,
+    "expected_correct_rate": 0.29,
+    "leak_flag": false,
+    "leak_score": 0.71,
+    "variants_count": 2000,
+    "created_at": "2026-09-08T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0017-s17003",
+        "format": "numeric",
+        "topic": "data_ml.metrics",
+        "topic_label": "Метрики и валидация моделей",
+        "prompt": "Модель отметила 62 объектов как положительные, из них 35 действительно положительные. Чему равна precision? (до 2 знаков)",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 17003,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": 0.56,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0017-s17020",
+        "format": "numeric",
+        "topic": "data_ml.metrics",
+        "topic_label": "Метрики и валидация моделей",
+        "prompt": "Модель отметила 44 объектов как положительные, из них 30 действительно положительные. Чему равна precision? (до 2 знаков)",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 17020,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": 0.68,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0017-s17037",
+        "format": "numeric",
+        "topic": "data_ml.metrics",
+        "topic_label": "Метрики и валидация моделей",
+        "prompt": "Модель отметила 100 объектов как положительные, из них 65 действительно положительные. Чему равна precision? (до 2 знаков)",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 17037,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": 0.65,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      }
+    ]
+  },
+  {
+    "id": 18,
+    "code": "da-ml_b-018",
+    "title": "Переобучение",
+    "description": "Параметрический шаблон: «Переобучение». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "data_ml",
+    "topic": "data_ml.ml_basics",
+    "topic_label": "Классическое ML",
+    "target_grade": "junior",
+    "format": "single_choice",
+    "a": 1.33,
+    "b": -0.35,
+    "status": "active",
+    "source": "expert",
+    "exposures": 493,
+    "correct_rate": 0.64,
+    "expected_correct_rate": 0.68,
+    "leak_flag": false,
+    "leak_score": 0.41,
+    "variants_count": 96,
+    "created_at": "2026-09-14T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0018-s18003",
+        "format": "single_choice",
+        "topic": "data_ml.ml_basics",
+        "topic_label": "Классическое ML",
+        "prompt": "На обучении точность 97%, на валидации 63%. Что это?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Переобучение"
+          },
+          {
+            "id": "b",
+            "text": "Недообучение"
+          },
+          {
+            "id": "c",
+            "text": "Утечка в тест"
+          },
+          {
+            "id": "d",
+            "text": "Норма"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 60,
+        "seed": 18003,
+        "correct_answer": {
+          "choice_ids": [
+            "a"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0018-s18020",
+        "format": "single_choice",
+        "topic": "data_ml.ml_basics",
+        "topic_label": "Классическое ML",
+        "prompt": "На обучении точность 99%, на валидации 60%. Что это?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Недообучение"
+          },
+          {
+            "id": "b",
+            "text": "Переобучение"
+          },
+          {
+            "id": "c",
+            "text": "Утечка в тест"
+          },
+          {
+            "id": "d",
+            "text": "Норма"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 60,
+        "seed": 18020,
+        "correct_answer": {
+          "choice_ids": [
+            "b"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0018-s18037",
+        "format": "single_choice",
+        "topic": "data_ml.ml_basics",
+        "topic_label": "Классическое ML",
+        "prompt": "На обучении точность 96%, на валидации 61%. Что это?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Норма"
+          },
+          {
+            "id": "b",
+            "text": "Недообучение"
+          },
+          {
+            "id": "c",
+            "text": "Переобучение"
+          },
+          {
+            "id": "d",
+            "text": "Утечка в тест"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 60,
+        "seed": 18037,
+        "correct_answer": {
+          "choice_ids": [
+            "c"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      }
+    ]
+  },
+  {
+    "id": 19,
+    "code": "da-sql_-019",
+    "title": "GROUP BY в агрегирующем запросе",
+    "description": "Параметрический шаблон: «GROUP BY в агрегирующем запросе». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "data_ml",
+    "topic": "data_ml.sql_data",
+    "topic_label": "SQL и обработка данных",
+    "target_grade": "middle",
+    "format": "find_error_line",
+    "a": 1.72,
+    "b": 0.26,
+    "status": "active",
+    "source": "expert",
+    "exposures": 524,
+    "correct_rate": 0.43,
+    "expected_correct_rate": 0.47,
+    "leak_flag": false,
+    "leak_score": 1.2,
+    "variants_count": 72,
+    "created_at": "2026-09-01T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0019-s19003",
+        "format": "find_error_line",
+        "topic": "data_ml.sql_data",
+        "topic_label": "SQL и обработка данных",
+        "prompt": "Запрос падает с ошибкой. В какой строке ошибка?",
+        "code": "SELECT customer_id, SUM(amount) AS s\nFROM payments\nWHERE SUM(amount) > 424\nGROUP BY customer_id\nORDER BY s DESC;",
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 19003,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": null,
+          "line": 3,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0019-s19020",
+        "format": "find_error_line",
+        "topic": "data_ml.sql_data",
+        "topic_label": "SQL и обработка данных",
+        "prompt": "Запрос падает с ошибкой. В какой строке ошибка?",
+        "code": "SELECT customer_id, SUM(amount) AS s\nFROM users\nWHERE SUM(amount) > 371\nGROUP BY customer_id\nORDER BY s DESC;",
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 19020,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": null,
+          "line": 3,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0019-s19037",
+        "format": "find_error_line",
+        "topic": "data_ml.sql_data",
+        "topic_label": "SQL и обработка данных",
+        "prompt": "Запрос падает с ошибкой. В какой строке ошибка?",
+        "code": "SELECT customer_id, SUM(total) AS s\nFROM users\nWHERE SUM(total) > 40\nGROUP BY customer_id\nORDER BY s DESC;",
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 19037,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": null,
+          "line": 3,
+          "order": null
+        }
+      }
+    ]
+  },
+  {
+    "id": 20,
+    "code": "da-deep-020",
+    "title": "Борьба с затуханием градиента",
+    "description": "Параметрический шаблон: «Борьба с затуханием градиента». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "data_ml",
+    "topic": "data_ml.deep_learning",
+    "topic_label": "Глубокое обучение",
+    "target_grade": "senior",
+    "format": "multiple_choice",
+    "a": 1.69,
+    "b": 1.28,
+    "status": "active",
+    "source": "expert",
+    "exposures": 369,
+    "correct_rate": 0.1,
+    "expected_correct_rate": 0.14,
+    "leak_flag": false,
+    "leak_score": 0.96,
+    "variants_count": 96,
+    "created_at": "2026-09-29T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0020-s20003",
+        "format": "multiple_choice",
+        "topic": "data_ml.deep_learning",
+        "topic_label": "Глубокое обучение",
+        "prompt": "Что помогает против затухания градиента в глубокой сети?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Нормализация слоёв"
+          },
+          {
+            "id": "b",
+            "text": "Сигмоида во всех слоях"
+          },
+          {
+            "id": "c",
+            "text": "Увеличение глубины без изменений"
+          },
+          {
+            "id": "d",
+            "text": "Residual-связи"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 20003,
+        "correct_answer": {
+          "choice_ids": [
+            "a",
+            "d"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0020-s20020",
+        "format": "multiple_choice",
+        "topic": "data_ml.deep_learning",
+        "topic_label": "Глубокое обучение",
+        "prompt": "Что помогает против затухания градиента в глубокой сети?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Residual-связи"
+          },
+          {
+            "id": "b",
+            "text": "Сигмоида во всех слоях"
+          },
+          {
+            "id": "c",
+            "text": "Нормализация слоёв"
+          },
+          {
+            "id": "d",
+            "text": "Увеличение глубины без изменений"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 20020,
+        "correct_answer": {
+          "choice_ids": [
+            "a",
+            "c"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0020-s20037",
+        "format": "multiple_choice",
+        "topic": "data_ml.deep_learning",
+        "topic_label": "Глубокое обучение",
+        "prompt": "Что помогает против затухания градиента в глубокой сети?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Нормализация слоёв"
+          },
+          {
+            "id": "b",
+            "text": "Увеличение глубины без изменений"
+          },
+          {
+            "id": "c",
+            "text": "Сигмоида во всех слоях"
+          },
+          {
+            "id": "d",
+            "text": "Residual-связи"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 20037,
+        "correct_answer": {
+          "choice_ids": [
+            "a",
+            "d"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      }
+    ]
+  },
+  {
+    "id": 21,
+    "code": "qa-test-021",
+    "title": "Граничные значения",
+    "description": "Параметрический шаблон: «Граничные значения». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "qa",
+    "topic": "qa.test_design",
+    "topic_label": "Тест-дизайн",
+    "target_grade": "junior",
+    "format": "numeric",
+    "a": 0.89,
+    "b": -0.43,
+    "status": "retired",
+    "source": "expert",
+    "exposures": 89,
+    "correct_rate": 0.98,
+    "expected_correct_rate": 0.64,
+    "leak_flag": true,
+    "leak_score": 3.61,
+    "variants_count": 4,
+    "created_at": "2026-09-02T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0021-s21003",
+        "format": "numeric",
+        "topic": "qa.test_design",
+        "topic_label": "Тест-дизайн",
+        "prompt": "Поле принимает целые от 18 до 65 включительно. Сколько значений нужно проверить по методу граничных значений (по два на каждую границу: на границе и за ней)?",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 21003,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": 4,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0021-s21020",
+        "format": "numeric",
+        "topic": "qa.test_design",
+        "topic_label": "Тест-дизайн",
+        "prompt": "Поле принимает целые от 5 до 50 включительно. Сколько значений нужно проверить по методу граничных значений (по два на каждую границу: на границе и за ней)?",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 21020,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": 4,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0021-s21037",
+        "format": "numeric",
+        "topic": "qa.test_design",
+        "topic_label": "Тест-дизайн",
+        "prompt": "Поле принимает целые от 1 до 100 включительно. Сколько значений нужно проверить по методу граничных значений (по два на каждую границу: на границе и за ней)?",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 21037,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": 4,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      }
+    ]
+  },
+  {
+    "id": 22,
+    "code": "qa-api_-022",
+    "title": "Идемпотентность методов HTTP",
+    "description": "Параметрический шаблон: «Идемпотентность методов HTTP». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "qa",
+    "topic": "qa.api_testing",
+    "topic_label": "Тестирование API",
+    "target_grade": "middle",
+    "format": "single_choice",
+    "a": 1.51,
+    "b": 0.23,
+    "status": "active",
+    "source": "expert",
+    "exposures": 102,
+    "correct_rate": 0.54,
+    "expected_correct_rate": 0.49,
+    "leak_flag": false,
+    "leak_score": 0.23,
+    "variants_count": 72,
+    "created_at": "2026-08-29T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0022-s22003",
+        "format": "single_choice",
+        "topic": "qa.api_testing",
+        "topic_label": "Тестирование API",
+        "prompt": "Какой метод НЕ идемпотентен при создании ресурса /orders?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "DELETE"
+          },
+          {
+            "id": "b",
+            "text": "POST"
+          },
+          {
+            "id": "c",
+            "text": "PUT"
+          },
+          {
+            "id": "d",
+            "text": "GET"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 60,
+        "seed": 22003,
+        "correct_answer": {
+          "choice_ids": [
+            "b"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0022-s22020",
+        "format": "single_choice",
+        "topic": "qa.api_testing",
+        "topic_label": "Тестирование API",
+        "prompt": "Какой метод НЕ идемпотентен при создании ресурса /tickets?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "DELETE"
+          },
+          {
+            "id": "b",
+            "text": "GET"
+          },
+          {
+            "id": "c",
+            "text": "POST"
+          },
+          {
+            "id": "d",
+            "text": "PUT"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 60,
+        "seed": 22020,
+        "correct_answer": {
+          "choice_ids": [
+            "c"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0022-s22037",
+        "format": "single_choice",
+        "topic": "qa.api_testing",
+        "topic_label": "Тестирование API",
+        "prompt": "Какой метод НЕ идемпотентен при создании ресурса /orders?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "GET"
+          },
+          {
+            "id": "b",
+            "text": "DELETE"
+          },
+          {
+            "id": "c",
+            "text": "PUT"
+          },
+          {
+            "id": "d",
+            "text": "POST"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 60,
+        "seed": 22037,
+        "correct_answer": {
+          "choice_ids": [
+            "d"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      }
+    ]
+  },
+  {
+    "id": 23,
+    "code": "qa-proc-023",
+    "title": "Жизненный цикл бага",
+    "description": "Параметрический шаблон: «Жизненный цикл бага». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "qa",
+    "topic": "qa.process",
+    "topic_label": "Баг-репорты и процессы",
+    "target_grade": "intern",
+    "format": "ordering",
+    "a": 0.93,
+    "b": -1.46,
+    "status": "retired",
+    "source": "expert",
+    "exposures": 260,
+    "correct_rate": 0.79,
+    "expected_correct_rate": 0.82,
+    "leak_flag": false,
+    "leak_score": 1.08,
+    "variants_count": 120,
+    "created_at": "2026-08-30T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0023-s23003",
+        "format": "ordering",
+        "topic": "qa.process",
+        "topic_label": "Баг-репорты и процессы",
+        "prompt": "Расположите шаги в правильном порядке.",
+        "code": null,
+        "options": null,
+        "steps": [
+          {
+            "id": "s3",
+            "text": "Исправлен"
+          },
+          {
+            "id": "s4",
+            "text": "Проверен"
+          },
+          {
+            "id": "s1",
+            "text": "Новый"
+          },
+          {
+            "id": "s5",
+            "text": "Закрыт"
+          },
+          {
+            "id": "s2",
+            "text": "Назначен"
+          }
+        ],
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 23003,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": [
+            "s1",
+            "s2",
+            "s3",
+            "s4",
+            "s5"
+          ]
+        }
+      },
+      {
+        "instance_id": "it-0023-s23020",
+        "format": "ordering",
+        "topic": "qa.process",
+        "topic_label": "Баг-репорты и процессы",
+        "prompt": "Расположите шаги в правильном порядке.",
+        "code": null,
+        "options": null,
+        "steps": [
+          {
+            "id": "s5",
+            "text": "Закрыт"
+          },
+          {
+            "id": "s2",
+            "text": "Назначен"
+          },
+          {
+            "id": "s3",
+            "text": "Исправлен"
+          },
+          {
+            "id": "s4",
+            "text": "Проверен"
+          },
+          {
+            "id": "s1",
+            "text": "Новый"
+          }
+        ],
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 23020,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": [
+            "s1",
+            "s2",
+            "s3",
+            "s4",
+            "s5"
+          ]
+        }
+      },
+      {
+        "instance_id": "it-0023-s23037",
+        "format": "ordering",
+        "topic": "qa.process",
+        "topic_label": "Баг-репорты и процессы",
+        "prompt": "Расположите шаги в правильном порядке.",
+        "code": null,
+        "options": null,
+        "steps": [
+          {
+            "id": "s1",
+            "text": "Новый"
+          },
+          {
+            "id": "s5",
+            "text": "Закрыт"
+          },
+          {
+            "id": "s3",
+            "text": "Исправлен"
+          },
+          {
+            "id": "s4",
+            "text": "Проверен"
+          },
+          {
+            "id": "s2",
+            "text": "Назначен"
+          }
+        ],
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 23037,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": [
+            "s1",
+            "s2",
+            "s3",
+            "s4",
+            "s5"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": 24,
+    "code": "qa-auto-024",
+    "title": "Ошибка в автотесте",
+    "description": "Параметрический шаблон: «Ошибка в автотесте». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "qa",
+    "topic": "qa.automation",
+    "topic_label": "Автоматизация тестирования",
+    "target_grade": "middle",
+    "format": "find_error_line",
+    "a": 1.24,
+    "b": 0.51,
+    "status": "active",
+    "source": "expert",
+    "exposures": 829,
+    "correct_rate": 0.37,
+    "expected_correct_rate": 0.41,
+    "leak_flag": false,
+    "leak_score": 0.19,
+    "variants_count": 70,
+    "created_at": "2026-08-29T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0024-s24003",
+        "format": "find_error_line",
+        "topic": "qa.automation",
+        "topic_label": "Автоматизация тестирования",
+        "prompt": "Код падает с ошибкой. В какой строке причина?",
+        "code": "def total(values):\n    s = 0\n    for i in range(len(values) + 1):\n        s += values[i]\n    return s\nprint(total(list(range(9))))",
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 24003,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": null,
+          "line": 3,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0024-s24020",
+        "format": "find_error_line",
+        "topic": "qa.automation",
+        "topic_label": "Автоматизация тестирования",
+        "prompt": "Код падает с ошибкой. В какой строке причина?",
+        "code": "def total(values):\n    s = 0\n    for i in range(len(values) + 1):\n        s += values[i]\n    return s\nprint(total(list(range(7))))",
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 24020,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": null,
+          "line": 3,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0024-s24037",
+        "format": "find_error_line",
+        "topic": "qa.automation",
+        "topic_label": "Автоматизация тестирования",
+        "prompt": "Код падает с ошибкой. В какой строке причина?",
+        "code": "def total(items):\n    s = 0\n    for i in range(len(items) + 1):\n        s += items[i]\n    return s\nprint(total(list(range(9))))",
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 24037,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": null,
+          "line": 3,
+          "order": null
+        }
+      }
+    ]
+  },
+  {
+    "id": 25,
+    "code": "qa-perf-025",
+    "title": "Пропускная способность под нагрузкой",
+    "description": "Параметрический шаблон: «Пропускная способность под нагрузкой». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "qa",
+    "topic": "qa.performance",
+    "topic_label": "Нагрузочное тестирование",
+    "target_grade": "senior",
+    "format": "numeric",
+    "a": 1.63,
+    "b": 1.63,
+    "status": "active",
+    "source": "expert",
+    "exposures": 636,
+    "correct_rate": 0.1,
+    "expected_correct_rate": 0.09,
+    "leak_flag": false,
+    "leak_score": 0.87,
+    "variants_count": 36,
+    "created_at": "2026-09-03T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0025-s25003",
+        "format": "numeric",
+        "topic": "qa.performance",
+        "topic_label": "Нагрузочное тестирование",
+        "prompt": "Сервис принимает 100 запросов в секунду, среднее время ответа 120 мс. Сколько запросов в среднем обрабатывается одновременно (закон Литтла)?",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": "запросов",
+        "time_limit_sec": 120,
+        "seed": 25003,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": 12.0,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0025-s25020",
+        "format": "numeric",
+        "topic": "qa.performance",
+        "topic_label": "Нагрузочное тестирование",
+        "prompt": "Сервис принимает 400 запросов в секунду, среднее время ответа 80 мс. Сколько запросов в среднем обрабатывается одновременно (закон Литтла)?",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": "запросов",
+        "time_limit_sec": 120,
+        "seed": 25020,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": 32.0,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0025-s25037",
+        "format": "numeric",
+        "topic": "qa.performance",
+        "topic_label": "Нагрузочное тестирование",
+        "prompt": "Сервис принимает 400 запросов в секунду, среднее время ответа 40 мс. Сколько запросов в среднем обрабатывается одновременно (закон Литтла)?",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": "запросов",
+        "time_limit_sec": 120,
+        "seed": 25037,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": 16.0,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      }
+    ]
+  },
+  {
+    "id": 26,
+    "code": "de-linu-026",
+    "title": "Права доступа в Linux",
+    "description": "Параметрический шаблон: «Права доступа в Linux». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "devops",
+    "topic": "devops.linux",
+    "topic_label": "Linux и сети",
+    "target_grade": "junior",
+    "format": "numeric",
+    "a": 1.89,
+    "b": -0.35,
+    "status": "active",
+    "source": "expert",
+    "exposures": 211,
+    "correct_rate": 0.71,
+    "expected_correct_rate": 0.74,
+    "leak_flag": false,
+    "leak_score": 0.01,
+    "variants_count": 18,
+    "created_at": "2026-09-07T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0026-s26003",
+        "format": "numeric",
+        "topic": "devops.linux",
+        "topic_label": "Linux и сети",
+        "prompt": "Права файла: chmod 504. Сколько бит прав установлено всего?",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 26003,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": 3,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0026-s26020",
+        "format": "numeric",
+        "topic": "devops.linux",
+        "topic_label": "Linux и сети",
+        "prompt": "Права файла: chmod 500. Сколько бит прав установлено всего?",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 26020,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": 2,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0026-s26037",
+        "format": "numeric",
+        "topic": "devops.linux",
+        "topic_label": "Linux и сети",
+        "prompt": "Права файла: chmod 744. Сколько бит прав установлено всего?",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 120,
+        "seed": 26037,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": 5,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      }
+    ]
+  },
+  {
+    "id": 27,
+    "code": "de-ci_c-027",
+    "title": "Расписание cron",
+    "description": "Параметрический шаблон: «Расписание cron». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "devops",
+    "topic": "devops.ci_cd",
+    "topic_label": "CI/CD",
+    "target_grade": "middle",
+    "format": "short_text",
+    "a": 1.32,
+    "b": 0.7,
+    "status": "draft",
+    "source": "llm_vacancy",
+    "exposures": 0,
+    "correct_rate": null,
+    "expected_correct_rate": null,
+    "leak_flag": false,
+    "leak_score": 0.56,
+    "variants_count": 96,
+    "created_at": "2026-09-30T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0027-s27003",
+        "format": "short_text",
+        "topic": "devops.ci_cd",
+        "topic_label": "CI/CD",
+        "prompt": "Задача должна запускаться каждый день в 21:00. Запишите cron-выражение (5 полей).",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 27003,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": "0 21 * * *",
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0027-s27020",
+        "format": "short_text",
+        "topic": "devops.ci_cd",
+        "topic_label": "CI/CD",
+        "prompt": "Задача должна запускаться каждый день в 21:30. Запишите cron-выражение (5 полей).",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 27020,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": "30 21 * * *",
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0027-s27037",
+        "format": "short_text",
+        "topic": "devops.ci_cd",
+        "topic_label": "CI/CD",
+        "prompt": "Задача должна запускаться каждый день в 15:00. Запишите cron-выражение (5 полей).",
+        "code": null,
+        "options": null,
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 27037,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": "0 15 * * *",
+          "line": null,
+          "order": null
+        }
+      }
+    ]
+  },
+  {
+    "id": 28,
+    "code": "de-cont-028",
+    "title": "Kubernetes: перезапуск подов",
+    "description": "Параметрический шаблон: «Kubernetes: перезапуск подов». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "devops",
+    "topic": "devops.containers",
+    "topic_label": "Контейнеры и Kubernetes",
+    "target_grade": "middle",
+    "format": "single_choice",
+    "a": 0.93,
+    "b": 0.63,
+    "status": "active",
+    "source": "expert",
+    "exposures": 595,
+    "correct_rate": 0.74,
+    "expected_correct_rate": 0.4,
+    "leak_flag": true,
+    "leak_score": 4.28,
+    "variants_count": 72,
+    "created_at": "2026-09-01T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0028-s28003",
+        "format": "single_choice",
+        "topic": "devops.containers",
+        "topic_label": "Контейнеры и Kubernetes",
+        "prompt": "Под сервиса billing падает при старте. Какая проба не даст трафику идти в неготовый под?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "livenessProbe"
+          },
+          {
+            "id": "b",
+            "text": "readinessProbe"
+          },
+          {
+            "id": "c",
+            "text": "nodeSelector"
+          },
+          {
+            "id": "d",
+            "text": "startupProbe"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 60,
+        "seed": 28003,
+        "correct_answer": {
+          "choice_ids": [
+            "b"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0028-s28020",
+        "format": "single_choice",
+        "topic": "devops.containers",
+        "topic_label": "Контейнеры и Kubernetes",
+        "prompt": "Под сервиса worker падает при старте. Какая проба не даст трафику идти в неготовый под?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "startupProbe"
+          },
+          {
+            "id": "b",
+            "text": "readinessProbe"
+          },
+          {
+            "id": "c",
+            "text": "nodeSelector"
+          },
+          {
+            "id": "d",
+            "text": "livenessProbe"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 60,
+        "seed": 28020,
+        "correct_answer": {
+          "choice_ids": [
+            "b"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0028-s28037",
+        "format": "single_choice",
+        "topic": "devops.containers",
+        "topic_label": "Контейнеры и Kubernetes",
+        "prompt": "Под сервиса worker падает при старте. Какая проба не даст трафику идти в неготовый под?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "startupProbe"
+          },
+          {
+            "id": "b",
+            "text": "readinessProbe"
+          },
+          {
+            "id": "c",
+            "text": "livenessProbe"
+          },
+          {
+            "id": "d",
+            "text": "nodeSelector"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 60,
+        "seed": 28037,
+        "correct_answer": {
+          "choice_ids": [
+            "b"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      }
+    ]
+  },
+  {
+    "id": 29,
+    "code": "de-moni-029",
+    "title": "Сигналы SRE",
+    "description": "Параметрический шаблон: «Сигналы SRE». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "devops",
+    "topic": "devops.monitoring",
+    "topic_label": "Мониторинг и логирование",
+    "target_grade": "senior",
+    "format": "multiple_choice",
+    "a": 1.81,
+    "b": 1.32,
+    "status": "active",
+    "source": "expert",
+    "exposures": 643,
+    "correct_rate": 0.17,
+    "expected_correct_rate": 0.12,
+    "leak_flag": false,
+    "leak_score": 0.11,
+    "variants_count": 96,
+    "created_at": "2026-09-27T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0029-s29003",
+        "format": "multiple_choice",
+        "topic": "devops.monitoring",
+        "topic_label": "Мониторинг и логирование",
+        "prompt": "Какие из метрик входят в «четыре золотых сигнала»?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Число коммитов"
+          },
+          {
+            "id": "b",
+            "text": "Покрытие тестами"
+          },
+          {
+            "id": "c",
+            "text": "Насыщение (saturation)"
+          },
+          {
+            "id": "d",
+            "text": "Задержка (latency)"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 29003,
+        "correct_answer": {
+          "choice_ids": [
+            "c",
+            "d"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0029-s29020",
+        "format": "multiple_choice",
+        "topic": "devops.monitoring",
+        "topic_label": "Мониторинг и логирование",
+        "prompt": "Какие из метрик входят в «четыре золотых сигнала»?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Насыщение (saturation)"
+          },
+          {
+            "id": "b",
+            "text": "Число коммитов"
+          },
+          {
+            "id": "c",
+            "text": "Покрытие тестами"
+          },
+          {
+            "id": "d",
+            "text": "Задержка (latency)"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 29020,
+        "correct_answer": {
+          "choice_ids": [
+            "a",
+            "d"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      },
+      {
+        "instance_id": "it-0029-s29037",
+        "format": "multiple_choice",
+        "topic": "devops.monitoring",
+        "topic_label": "Мониторинг и логирование",
+        "prompt": "Какие из метрик входят в «четыре золотых сигнала»?",
+        "code": null,
+        "options": [
+          {
+            "id": "a",
+            "text": "Задержка (latency)"
+          },
+          {
+            "id": "b",
+            "text": "Насыщение (saturation)"
+          },
+          {
+            "id": "c",
+            "text": "Число коммитов"
+          },
+          {
+            "id": "d",
+            "text": "Покрытие тестами"
+          }
+        ],
+        "steps": null,
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 29037,
+        "correct_answer": {
+          "choice_ids": [
+            "a",
+            "b"
+          ],
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": null
+        }
+      }
+    ]
+  },
+  {
+    "id": 30,
+    "code": "de-iac-030",
+    "title": "Цикл работы Terraform",
+    "description": "Параметрический шаблон: «Цикл работы Terraform». Числа, имена и порядок вариантов меняются от seed, ответ вычисляет генератор.",
+    "specialization": "devops",
+    "topic": "devops.iac",
+    "topic_label": "Инфраструктура как код",
+    "target_grade": "junior",
+    "format": "ordering",
+    "a": 1.39,
+    "b": -0.48,
+    "status": "active",
+    "source": "expert",
+    "exposures": 680,
+    "correct_rate": 0.75,
+    "expected_correct_rate": 0.72,
+    "leak_flag": false,
+    "leak_score": 0.73,
+    "variants_count": 24,
+    "created_at": "2026-08-30T12:00:00+03:00",
+    "preview_variants": [
+      {
+        "instance_id": "it-0030-s30003",
+        "format": "ordering",
+        "topic": "devops.iac",
+        "topic_label": "Инфраструктура как код",
+        "prompt": "Расположите шаги в правильном порядке.",
+        "code": null,
+        "options": null,
+        "steps": [
+          {
+            "id": "s3",
+            "text": "terraform apply"
+          },
+          {
+            "id": "s4",
+            "text": "terraform destroy"
+          },
+          {
+            "id": "s1",
+            "text": "terraform init"
+          },
+          {
+            "id": "s2",
+            "text": "terraform plan"
+          }
+        ],
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 30003,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": [
+            "s1",
+            "s2",
+            "s3",
+            "s4"
+          ]
+        }
+      },
+      {
+        "instance_id": "it-0030-s30020",
+        "format": "ordering",
+        "topic": "devops.iac",
+        "topic_label": "Инфраструктура как код",
+        "prompt": "Расположите шаги в правильном порядке.",
+        "code": null,
+        "options": null,
+        "steps": [
+          {
+            "id": "s3",
+            "text": "terraform apply"
+          },
+          {
+            "id": "s2",
+            "text": "terraform plan"
+          },
+          {
+            "id": "s1",
+            "text": "terraform init"
+          },
+          {
+            "id": "s4",
+            "text": "terraform destroy"
+          }
+        ],
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 30020,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": [
+            "s1",
+            "s2",
+            "s3",
+            "s4"
+          ]
+        }
+      },
+      {
+        "instance_id": "it-0030-s30037",
+        "format": "ordering",
+        "topic": "devops.iac",
+        "topic_label": "Инфраструктура как код",
+        "prompt": "Расположите шаги в правильном порядке.",
+        "code": null,
+        "options": null,
+        "steps": [
+          {
+            "id": "s2",
+            "text": "terraform plan"
+          },
+          {
+            "id": "s1",
+            "text": "terraform init"
+          },
+          {
+            "id": "s3",
+            "text": "terraform apply"
+          },
+          {
+            "id": "s4",
+            "text": "terraform destroy"
+          }
+        ],
+        "unit": null,
+        "time_limit_sec": 90,
+        "seed": 30037,
+        "correct_answer": {
+          "choice_ids": null,
+          "value": null,
+          "text": null,
+          "line": null,
+          "order": [
+            "s1",
+            "s2",
+            "s3",
+            "s4"
+          ]
+        }
+      }
+    ]
+  }
+]

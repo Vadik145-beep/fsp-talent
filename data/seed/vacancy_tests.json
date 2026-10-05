@@ -1,0 +1,153 @@
+[
+  {
+    "id": 1,
+    "vacancy_title": "Middle Python-разработчик (платежи)",
+    "vacancy_text": "Ищем Middle Python-разработчика в команду платежей. FastAPI, PostgreSQL, Redis, Kafka. Нужно понимать транзакции, конкурентный доступ и уметь проектировать REST API. Плюсом будет опыт с OAuth 2.0.",
+    "specialization": "backend",
+    "grade": "middle",
+    "parser": "rules",
+    "topics": [
+      {
+        "topic": "backend.http_api",
+        "label": "HTTP и REST API",
+        "matched_by": [
+          "REST API",
+          "FastAPI"
+        ],
+        "confidence": 0.9,
+        "covered": true
+      },
+      {
+        "topic": "backend.databases",
+        "label": "Базы данных и SQL",
+        "matched_by": [
+          "PostgreSQL",
+          "транзакции"
+        ],
+        "confidence": 0.95,
+        "covered": true
+      },
+      {
+        "topic": "backend.concurrency",
+        "label": "Конкурентность и асинхронность",
+        "matched_by": [
+          "конкурентный доступ"
+        ],
+        "confidence": 0.7,
+        "covered": true
+      },
+      {
+        "topic": "backend.security",
+        "label": "Безопасность веб-приложений",
+        "matched_by": [
+          "OAuth 2.0"
+        ],
+        "confidence": 0.6,
+        "covered": false
+      }
+    ],
+    "items": [
+      {
+        "item_id": 1,
+        "code": "ba-http-001",
+        "title": "Код ответа для отсутствующего ресурса",
+        "topic": "backend.http_api",
+        "reason": "Тема «HTTP и REST API» найдена в тексте вакансии"
+      },
+      {
+        "item_id": 2,
+        "code": "ba-data-002",
+        "title": "Уровни изоляции транзакций",
+        "topic": "backend.databases",
+        "reason": "Тема «Базы данных и SQL» найдена в тексте вакансии"
+      },
+      {
+        "item_id": 3,
+        "code": "ba-conc-003",
+        "title": "Закон Литтла для пропускной способности",
+        "topic": "backend.concurrency",
+        "reason": "Тема «Конкурентность и асинхронность» найдена в тексте вакансии"
+      }
+    ],
+    "drafts": [
+      {
+        "topic": "backend.security",
+        "label": "Безопасность веб-приложений",
+        "title": "Поток Authorization Code в OAuth 2.0",
+        "format": "ordering",
+        "prompt": "Расположите шаги потока Authorization Code + PKCE в правильном порядке.",
+        "status": "draft"
+      }
+    ],
+    "explanation": [
+      "Грейд Middle взят из заголовка вакансии",
+      "3 темы покрыты активными шаблонами банка",
+      "Для темы «Безопасность веб-приложений» шаблонов нет — создан черновик, после одобрения админом он пойдёт в тесты как непроверочный"
+    ]
+  },
+  {
+    "id": 2,
+    "vacancy_title": "Junior Data Scientist",
+    "vacancy_text": "Junior DS в ритейл: pandas, scikit-learn, SQL, базовая статистика, метрики качества классификации.",
+    "specialization": "data_ml",
+    "grade": "junior",
+    "parser": "rules",
+    "topics": [
+      {
+        "topic": "data_ml.statistics",
+        "label": "Статистика и вероятности",
+        "matched_by": [
+          "статистика"
+        ],
+        "confidence": 0.85,
+        "covered": true
+      },
+      {
+        "topic": "data_ml.ml_basics",
+        "label": "Классическое ML",
+        "matched_by": [
+          "scikit-learn"
+        ],
+        "confidence": 0.9,
+        "covered": true
+      },
+      {
+        "topic": "data_ml.metrics",
+        "label": "Метрики и валидация моделей",
+        "matched_by": [
+          "метрики качества"
+        ],
+        "confidence": 0.8,
+        "covered": true
+      }
+    ],
+    "items": [
+      {
+        "item_id": 16,
+        "code": "da-stat-016",
+        "title": "Выборочное среднее",
+        "topic": "data_ml.statistics",
+        "reason": "Тема «Статистика и вероятности» найдена в тексте вакансии"
+      },
+      {
+        "item_id": 18,
+        "code": "da-ml_b-018",
+        "title": "Переобучение",
+        "topic": "data_ml.ml_basics",
+        "reason": "Тема «Классическое ML» найдена в тексте вакансии"
+      },
+      {
+        "item_id": 17,
+        "code": "da-metr-017",
+        "title": "Precision по матрице ошибок",
+        "topic": "data_ml.metrics",
+        "reason": "Тема «Метрики и валидация моделей» найдена в тексте вакансии"
+      }
+    ],
+    "drafts": [],
+    "explanation": [
+      "Грейд Junior взят из заголовка вакансии",
+      "Все темы покрыты банком"
+    ]
+  }
+]

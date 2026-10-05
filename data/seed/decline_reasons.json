@@ -1,0 +1,22 @@
+[
+  {
+    "id": "salary_too_low",
+    "label": "Мала зарплата"
+  },
+  {
+    "id": "wrong_stack",
+    "label": "Не тот стек"
+  },
+  {
+    "id": "not_interested_domain",
+    "label": "Не интересна сфера"
+  },
+  {
+    "id": "not_looking",
+    "label": "Не ищу работу сейчас"
+  },
+  {
+    "id": "other",
+    "label": "Другое"
+  }
+]

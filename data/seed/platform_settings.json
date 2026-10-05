@@ -1,0 +1,59 @@
+[
+  {
+    "id": "default",
+    "grade_thresholds": [
+      {
+        "specialization": "backend",
+        "junior_from": -1.0,
+        "middle_from": 0.0,
+        "senior_from": 1.0
+      },
+      {
+        "specialization": "frontend",
+        "junior_from": -1.0,
+        "middle_from": 0.0,
+        "senior_from": 1.0
+      },
+      {
+        "specialization": "mobile",
+        "junior_from": -1.0,
+        "middle_from": 0.0,
+        "senior_from": 1.0
+      },
+      {
+        "specialization": "data_ml",
+        "junior_from": -1.0,
+        "middle_from": 0.0,
+        "senior_from": 1.0
+      },
+      {
+        "specialization": "qa",
+        "junior_from": -1.0,
+        "middle_from": 0.0,
+        "senior_from": 1.0
+      },
+      {
+        "specialization": "devops",
+        "junior_from": -1.0,
+        "middle_from": 0.0,
+        "senior_from": 1.0
+      }
+    ],
+    "grade_change_cooldown_days": 90,
+    "retry_cooldown_days": 30,
+    "invitation_quota": 20,
+    "invitation_ttl_days": 7,
+    "cat_se_stop": 0.35,
+    "cat_max_items": 15,
+    "exposure_max_share": 0.25,
+    "ranking_weights": {
+      "stack": 0.3,
+      "theta": 0.25,
+      "fsp": 0.15,
+      "freshness": 0.1,
+      "salary": 0.1,
+      "work_format": 0.1
+    },
+    "consent_version": "2026-10-01"
+  }
+]

@@ -1,0 +1,136 @@
+[
+  {
+    "id": 1,
+    "company_id": 1,
+    "recruiter_id": 1,
+    "title": "Middle Python-разработчик в платёжный шлюз",
+    "raw_text": "Нужен мидл на Python в платёжный шлюз, гибрид или удалёнка, 200–280к",
+    "specialization": "backend",
+    "grade": "middle",
+    "skills_required": [
+      "python",
+      "postgresql"
+    ],
+    "skills_desired": [
+      "kafka",
+      "redis"
+    ],
+    "team_description": "Платёжный шлюз, команда 6 человек",
+    "work_format": "remote",
+    "city": null,
+    "salary_from": 200000,
+    "salary_to": 280000,
+    "category": "backend:middle",
+    "category_label": "Backend · Middle",
+    "status": "active",
+    "candidates_count": 3,
+    "created_at": "2026-09-30T12:00:00+03:00"
+  },
+  {
+    "id": 2,
+    "company_id": 1,
+    "recruiter_id": 2,
+    "title": "Senior Go-разработчик",
+    "raw_text": "нужен сеньор на Go в финтех, удалёнка, 300–400к",
+    "specialization": "backend",
+    "grade": "senior",
+    "skills_required": [
+      "go",
+      "postgresql"
+    ],
+    "skills_desired": [
+      "kafka",
+      "kubernetes"
+    ],
+    "team_description": "Ядро процессинга",
+    "work_format": "remote",
+    "city": null,
+    "salary_from": 300000,
+    "salary_to": 400000,
+    "category": "backend:senior",
+    "category_label": "Backend · Senior",
+    "status": "active",
+    "candidates_count": 1,
+    "created_at": "2026-10-03T12:00:00+03:00"
+  },
+  {
+    "id": 3,
+    "company_id": 2,
+    "recruiter_id": 4,
+    "title": "Junior Data Scientist",
+    "raw_text": "Ищем джуна в DS: pandas, sklearn, SQL. Питер, гибрид, 90–130к",
+    "specialization": "data_ml",
+    "grade": "junior",
+    "skills_required": [
+      "python",
+      "pandas",
+      "sql"
+    ],
+    "skills_desired": [
+      "scikit_learn"
+    ],
+    "team_description": "Прогноз спроса для магазинов",
+    "work_format": "hybrid",
+    "city": "Санкт-Петербург",
+    "salary_from": 90000,
+    "salary_to": 130000,
+    "category": "data_ml:junior",
+    "category_label": "Data Science / ML · Junior",
+    "status": "active",
+    "candidates_count": 2,
+    "created_at": "2026-09-28T12:00:00+03:00"
+  },
+  {
+    "id": 4,
+    "company_id": 2,
+    "recruiter_id": 5,
+    "title": "QA Automation Middle",
+    "raw_text": "Автотестировщик мидл, Playwright или Selenium, удалённо, 160–220к",
+    "specialization": "qa",
+    "grade": "middle",
+    "skills_required": [
+      "python",
+      "playwright"
+    ],
+    "skills_desired": [
+      "allure",
+      "postman"
+    ],
+    "team_description": "Команда качества",
+    "work_format": "remote",
+    "city": null,
+    "salary_from": 160000,
+    "salary_to": 220000,
+    "category": "qa:middle",
+    "category_label": "QA · Middle",
+    "status": "active",
+    "candidates_count": 1,
+    "created_at": "2026-10-02T12:00:00+03:00"
+  },
+  {
+    "id": 5,
+    "company_id": 3,
+    "recruiter_id": 6,
+    "title": "DevOps-инженер",
+    "raw_text": "DevOps мидл, k8s, terraform, офис Новосибирск, 180–250к",
+    "specialization": "devops",
+    "grade": "middle",
+    "skills_required": [
+      "kubernetes",
+      "terraform"
+    ],
+    "skills_desired": [
+      "prometheus"
+    ],
+    "team_description": "Платформенная команда",
+    "work_format": "office",
+    "city": "Новосибирск",
+    "salary_from": 180000,
+    "salary_to": 250000,
+    "category": "devops:middle",
+    "category_label": "DevOps · Middle",
+    "status": "closed",
+    "candidates_count": 3,
+    "created_at": "2026-09-21T12:00:00+03:00"
+  }
+]

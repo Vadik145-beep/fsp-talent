@@ -1,0 +1,492 @@
+[
+  {
+    "id": 1,
+    "email": "candidate@example.com",
+    "role": "candidate",
+    "full_name": "Алексей Смирнов",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-09-05T18:00:00+03:00",
+    "last_login_at": "2026-10-03T12:00:00.407539+03:00"
+  },
+  {
+    "id": 2,
+    "email": "n.andreeva.02@example.com",
+    "role": "candidate",
+    "full_name": "Наталья Андреева",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-09-11T14:00:00+03:00",
+    "last_login_at": "2026-10-02T16:00:00.577673+03:00"
+  },
+  {
+    "id": 3,
+    "email": "a.nikolaeva.03@example.com",
+    "role": "candidate",
+    "full_name": "Анна Николаева",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-09-18T12:00:00+03:00",
+    "last_login_at": "2026-10-03T21:00:00.151354+03:00"
+  },
+  {
+    "id": 4,
+    "email": "a.volkov.04@example.com",
+    "role": "candidate",
+    "full_name": "Алексей Волков",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-18T11:00:00+03:00",
+    "last_login_at": "2026-10-04T16:00:00.036616+03:00"
+  },
+  {
+    "id": 5,
+    "email": "m.solovev.05@example.com",
+    "role": "candidate",
+    "full_name": "Максим Соловьёв",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-09-30T12:00:00+03:00",
+    "last_login_at": "2026-10-03T11:00:00.595146+03:00"
+  },
+  {
+    "id": 6,
+    "email": "p.orlova.06@example.com",
+    "role": "candidate",
+    "full_name": "Полина Орлова",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-13T10:00:00+03:00",
+    "last_login_at": "2026-10-04T15:00:00.492442+03:00"
+  },
+  {
+    "id": 7,
+    "email": "v.vorobev.07@example.com",
+    "role": "candidate",
+    "full_name": "Владимир Воробьёв",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-07T11:00:00+03:00",
+    "last_login_at": "2026-10-06T13:00:00.263284+03:00"
+  },
+  {
+    "id": 8,
+    "email": "i.romanov.08@example.com",
+    "role": "candidate",
+    "full_name": "Илья Романов",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-23T17:00:00+03:00",
+    "last_login_at": "2026-10-04T14:00:00.889583+03:00"
+  },
+  {
+    "id": 9,
+    "email": "e.sokolova.09@example.com",
+    "role": "candidate",
+    "full_name": "Екатерина Соколова",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-08T14:00:00+03:00",
+    "last_login_at": "2026-10-03T14:00:00.229284+03:00"
+  },
+  {
+    "id": 10,
+    "email": "d.soloveva.10@example.com",
+    "role": "candidate",
+    "full_name": "Дарья Соловьёва",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-30T11:00:00+03:00",
+    "last_login_at": "2026-10-04T12:00:00.422626+03:00"
+  },
+  {
+    "id": 11,
+    "email": "v.borisov.11@example.com",
+    "role": "candidate",
+    "full_name": "Владимир Борисов",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-22T12:00:00+03:00",
+    "last_login_at": "2026-10-03T22:00:00.982560+03:00"
+  },
+  {
+    "id": 12,
+    "email": "d.stepanov.12@example.com",
+    "role": "candidate",
+    "full_name": "Дмитрий Степанов",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-12T10:00:00+03:00",
+    "last_login_at": "2026-10-03T21:00:00.408945+03:00"
+  },
+  {
+    "id": 13,
+    "email": "i.solovev.13@example.com",
+    "role": "candidate",
+    "full_name": "Иван Соловьёв",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-20T19:00:00+03:00",
+    "last_login_at": "2026-10-04T12:00:00.764386+03:00"
+  },
+  {
+    "id": 14,
+    "email": "t.alekseeva.14@example.com",
+    "role": "candidate",
+    "full_name": "Татьяна Алексеева",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-09-13T11:00:00+03:00",
+    "last_login_at": "2026-10-05T13:00:00.055463+03:00"
+  },
+  {
+    "id": 15,
+    "email": "p.zakharova.15@example.com",
+    "role": "candidate",
+    "full_name": "Полина Захарова",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-09T20:00:00+03:00",
+    "last_login_at": "2026-10-05T09:00:00.375783+03:00"
+  },
+  {
+    "id": 16,
+    "email": "p.grigorev.16@example.com",
+    "role": "candidate",
+    "full_name": "Павел Григорьев",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-09-19T16:00:00+03:00",
+    "last_login_at": "2026-10-06T21:00:00.519416+03:00"
+  },
+  {
+    "id": 17,
+    "email": "i.pavlov.17@example.com",
+    "role": "candidate",
+    "full_name": "Илья Павлов",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-09-07T12:00:00+03:00",
+    "last_login_at": "2026-10-04T10:00:00.872812+03:00"
+  },
+  {
+    "id": 18,
+    "email": "k.vasilev.18@example.com",
+    "role": "candidate",
+    "full_name": "Константин Васильев",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-09-26T17:00:00+03:00",
+    "last_login_at": "2026-10-06T18:00:00.358283+03:00"
+  },
+  {
+    "id": 19,
+    "email": "i.gusev.19@example.com",
+    "role": "candidate",
+    "full_name": "Иван Гусев",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-26T20:00:00+03:00",
+    "last_login_at": "2026-10-05T11:00:00.222310+03:00"
+  },
+  {
+    "id": 20,
+    "email": "n.grigoreva.20@example.com",
+    "role": "candidate",
+    "full_name": "Наталья Григорьева",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-08T10:00:00+03:00",
+    "last_login_at": "2026-10-02T15:00:00.225784+03:00"
+  },
+  {
+    "id": 21,
+    "email": "m.romanov.21@example.com",
+    "role": "candidate",
+    "full_name": "Михаил Романов",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-22T14:00:00+03:00",
+    "last_login_at": "2026-10-06T17:00:00.314678+03:00"
+  },
+  {
+    "id": 22,
+    "email": "p.sokolova.22@example.com",
+    "role": "candidate",
+    "full_name": "Полина Соколова",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-09-26T16:00:00+03:00",
+    "last_login_at": "2026-10-04T14:00:00.651381+03:00"
+  },
+  {
+    "id": 23,
+    "email": "k.gusev.23@example.com",
+    "role": "candidate",
+    "full_name": "Константин Гусев",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-26T13:00:00+03:00",
+    "last_login_at": "2026-10-05T08:00:00.918392+03:00"
+  },
+  {
+    "id": 24,
+    "email": "v.romanova.24@example.com",
+    "role": "candidate",
+    "full_name": "Вероника Романова",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-29T20:00:00+03:00",
+    "last_login_at": "2026-10-03T18:00:00.282425+03:00"
+  },
+  {
+    "id": 25,
+    "email": "t.smirnov.25@example.com",
+    "role": "candidate",
+    "full_name": "Тимур Смирнов",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-16T09:00:00+03:00",
+    "last_login_at": "2026-10-05T11:00:00.485510+03:00"
+  },
+  {
+    "id": 26,
+    "email": "candidate.nofsp@example.com",
+    "role": "candidate",
+    "full_name": "Иван Андреев",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-14T12:00:00+03:00",
+    "last_login_at": "2026-10-03T19:00:00.915529+03:00"
+  },
+  {
+    "id": 27,
+    "email": "p.zaytsev.27@example.com",
+    "role": "candidate",
+    "full_name": "Павел Зайцев",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-21T09:00:00+03:00",
+    "last_login_at": "2026-10-03T09:00:00.928487+03:00"
+  },
+  {
+    "id": 28,
+    "email": "a.ilin.28@example.com",
+    "role": "candidate",
+    "full_name": "Артём Ильин",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-09-12T11:00:00+03:00",
+    "last_login_at": "2026-10-05T09:00:00.657236+03:00"
+  },
+  {
+    "id": 29,
+    "email": "m.romanov.29@example.com",
+    "role": "candidate",
+    "full_name": "Максим Романов",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-21T12:00:00+03:00",
+    "last_login_at": "2026-10-06T20:00:00.198124+03:00"
+  },
+  {
+    "id": 30,
+    "email": "d.dmitriev.30@example.com",
+    "role": "candidate",
+    "full_name": "Дмитрий Дмитриев",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-09-13T18:00:00+03:00",
+    "last_login_at": "2026-10-04T09:00:00.304289+03:00"
+  },
+  {
+    "id": 31,
+    "email": "d.popov.31@example.com",
+    "role": "candidate",
+    "full_name": "Дмитрий Попов",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-09-30T10:00:00+03:00",
+    "last_login_at": "2026-10-05T10:00:00.894407+03:00"
+  },
+  {
+    "id": 32,
+    "email": "v.stepanova.32@example.com",
+    "role": "candidate",
+    "full_name": "Виктория Степанова",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-13T13:00:00+03:00",
+    "last_login_at": "2026-10-03T10:00:00.496807+03:00"
+  },
+  {
+    "id": 33,
+    "email": "k.sergeeva.33@example.com",
+    "role": "candidate",
+    "full_name": "Ксения Сергеева",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-14T11:00:00+03:00",
+    "last_login_at": "2026-10-02T13:00:00.792979+03:00"
+  },
+  {
+    "id": 34,
+    "email": "e.aleksandrov.34@example.com",
+    "role": "candidate",
+    "full_name": "Егор Александров",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-10T19:00:00+03:00",
+    "last_login_at": "2026-10-03T14:00:00.218925+03:00"
+  },
+  {
+    "id": 35,
+    "email": "r.frolov.35@example.com",
+    "role": "candidate",
+    "full_name": "Роман Фролов",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-09-29T12:00:00+03:00",
+    "last_login_at": "2026-10-05T14:00:00.456773+03:00"
+  },
+  {
+    "id": 36,
+    "email": "g.orlov.36@example.com",
+    "role": "candidate",
+    "full_name": "Глеб Орлов",
+    "email_verified": true,
+    "blocked": true,
+    "created_at": "2026-09-28T09:00:00+03:00",
+    "last_login_at": "2026-10-05T13:00:00.890954+03:00"
+  },
+  {
+    "id": 37,
+    "email": "a.kozlov.37@example.com",
+    "role": "candidate",
+    "full_name": "Алексей Козлов",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-27T13:00:00+03:00",
+    "last_login_at": "2026-10-06T15:00:00.969226+03:00"
+  },
+  {
+    "id": 38,
+    "email": "a.nikitin.38@example.com",
+    "role": "candidate",
+    "full_name": "Артём Никитин",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-09-22T20:00:00+03:00",
+    "last_login_at": "2026-10-03T14:00:00.037644+03:00"
+  },
+  {
+    "id": 39,
+    "email": "v.makarov.39@example.com",
+    "role": "candidate",
+    "full_name": "Владимир Макаров",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-15T12:00:00+03:00",
+    "last_login_at": "2026-10-04T11:00:00.763140+03:00"
+  },
+  {
+    "id": 40,
+    "email": "n.smirnova.40@example.com",
+    "role": "candidate",
+    "full_name": "Наталья Смирнова",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-24T17:00:00+03:00",
+    "last_login_at": "2026-10-04T17:00:00.890467+03:00"
+  },
+  {
+    "id": 41,
+    "email": "recruiter@example.com",
+    "role": "recruiter",
+    "full_name": "Ирина Белова",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-08T12:00:00+03:00",
+    "last_login_at": "2026-10-04T12:00:00.547768+03:00"
+  },
+  {
+    "id": 42,
+    "email": "o.karpov.hr@example.com",
+    "role": "recruiter",
+    "full_name": "Олег Карпов",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-09-08T12:00:00+03:00",
+    "last_login_at": "2026-10-04T12:00:00.174171+03:00"
+  },
+  {
+    "id": 43,
+    "email": "s.zhukova.hr@example.com",
+    "role": "recruiter",
+    "full_name": "Светлана Жукова",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-27T12:00:00+03:00",
+    "last_login_at": "2026-10-05T12:00:00.148194+03:00"
+  },
+  {
+    "id": 44,
+    "email": "m.titova.hr@example.com",
+    "role": "recruiter",
+    "full_name": "Марина Титова",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-25T12:00:00+03:00",
+    "last_login_at": "2026-10-05T12:00:00.281479+03:00"
+  },
+  {
+    "id": 45,
+    "email": "g.laptev.hr@example.com",
+    "role": "recruiter",
+    "full_name": "Георгий Лаптев",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-23T12:00:00+03:00",
+    "last_login_at": "2026-10-04T12:00:00.848977+03:00"
+  },
+  {
+    "id": 46,
+    "email": "v.ershov.hr@example.com",
+    "role": "recruiter",
+    "full_name": "Виталий Ершов",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-08-13T12:00:00+03:00",
+    "last_login_at": "2026-10-04T12:00:00.175307+03:00"
+  },
+  {
+    "id": 47,
+    "email": "a.pestova.hr@example.com",
+    "role": "recruiter",
+    "full_name": "Алёна Пестова",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-09-08T12:00:00+03:00",
+    "last_login_at": "2026-10-05T12:00:00.939705+03:00"
+  },
+  {
+    "id": 48,
+    "email": "admin@example.com",
+    "role": "admin",
+    "full_name": "Администратор платформы",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-05-09T12:00:00+03:00",
+    "last_login_at": "2026-10-06T12:00:00+03:00"
+  },
+  {
+    "id": 49,
+    "email": "moderator@example.com",
+    "role": "admin",
+    "full_name": "Модератор ФСП",
+    "email_verified": true,
+    "blocked": false,
+    "created_at": "2026-05-09T12:00:00+03:00",
+    "last_login_at": "2026-10-06T12:00:00+03:00"
+  }
+]

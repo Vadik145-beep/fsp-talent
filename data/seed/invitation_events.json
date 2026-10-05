@@ -1,0 +1,352 @@
+[
+  {
+    "id": 1,
+    "invitation_id": 1,
+    "type": "created",
+    "at": "2026-09-27T11:00:00+03:00",
+    "actor_role": "recruiter"
+  },
+  {
+    "id": 2,
+    "invitation_id": 1,
+    "type": "viewed",
+    "at": "2026-09-27T21:00:00+03:00",
+    "actor_role": "candidate"
+  },
+  {
+    "id": 3,
+    "invitation_id": 1,
+    "type": "accepted",
+    "at": "2026-09-28T06:00:00+03:00",
+    "actor_role": "candidate"
+  },
+  {
+    "id": 4,
+    "invitation_id": 1,
+    "type": "contacts_revealed",
+    "at": "2026-09-28T06:00:00+03:00",
+    "actor_role": null
+  },
+  {
+    "id": 5,
+    "invitation_id": 2,
+    "type": "created",
+    "at": "2026-10-05T12:00:00+03:00",
+    "actor_role": "recruiter"
+  },
+  {
+    "id": 6,
+    "invitation_id": 3,
+    "type": "created",
+    "at": "2026-09-24T13:00:00+03:00",
+    "actor_role": "recruiter"
+  },
+  {
+    "id": 7,
+    "invitation_id": 3,
+    "type": "viewed",
+    "at": "2026-09-24T17:00:00+03:00",
+    "actor_role": "candidate"
+  },
+  {
+    "id": 8,
+    "invitation_id": 3,
+    "type": "declined",
+    "at": "2026-09-25T00:00:00+03:00",
+    "actor_role": "candidate"
+  },
+  {
+    "id": 9,
+    "invitation_id": 4,
+    "type": "created",
+    "at": "2026-10-03T14:00:00+03:00",
+    "actor_role": "recruiter"
+  },
+  {
+    "id": 10,
+    "invitation_id": 4,
+    "type": "viewed",
+    "at": "2026-10-04T08:00:00+03:00",
+    "actor_role": "candidate"
+  },
+  {
+    "id": 11,
+    "invitation_id": 5,
+    "type": "created",
+    "at": "2026-10-04T15:00:00+03:00",
+    "actor_role": "recruiter"
+  },
+  {
+    "id": 12,
+    "invitation_id": 5,
+    "type": "viewed",
+    "at": "2026-10-05T01:00:00+03:00",
+    "actor_role": "candidate"
+  },
+  {
+    "id": 13,
+    "invitation_id": 6,
+    "type": "created",
+    "at": "2026-10-05T16:00:00+03:00",
+    "actor_role": "recruiter"
+  },
+  {
+    "id": 14,
+    "invitation_id": 7,
+    "type": "created",
+    "at": "2026-09-26T17:00:00+03:00",
+    "actor_role": "recruiter"
+  },
+  {
+    "id": 15,
+    "invitation_id": 7,
+    "type": "viewed",
+    "at": "2026-09-27T09:00:00+03:00",
+    "actor_role": "candidate"
+  },
+  {
+    "id": 16,
+    "invitation_id": 7,
+    "type": "declined",
+    "at": "2026-09-28T05:00:00+03:00",
+    "actor_role": "candidate"
+  },
+  {
+    "id": 17,
+    "invitation_id": 8,
+    "type": "created",
+    "at": "2026-09-22T10:00:00+03:00",
+    "actor_role": "recruiter"
+  },
+  {
+    "id": 18,
+    "invitation_id": 8,
+    "type": "viewed",
+    "at": "2026-09-22T14:00:00+03:00",
+    "actor_role": "candidate"
+  },
+  {
+    "id": 19,
+    "invitation_id": 8,
+    "type": "accepted",
+    "at": "2026-09-23T03:00:00+03:00",
+    "actor_role": "candidate"
+  },
+  {
+    "id": 20,
+    "invitation_id": 8,
+    "type": "contacts_revealed",
+    "at": "2026-09-23T03:00:00+03:00",
+    "actor_role": null
+  },
+  {
+    "id": 21,
+    "invitation_id": 9,
+    "type": "created",
+    "at": "2026-09-21T11:00:00+03:00",
+    "actor_role": "recruiter"
+  },
+  {
+    "id": 22,
+    "invitation_id": 9,
+    "type": "expired",
+    "at": "2026-09-28T11:00:00+03:00",
+    "actor_role": null
+  },
+  {
+    "id": 23,
+    "invitation_id": 10,
+    "type": "created",
+    "at": "2026-09-28T12:00:00+03:00",
+    "actor_role": "recruiter"
+  },
+  {
+    "id": 24,
+    "invitation_id": 10,
+    "type": "withdrawn",
+    "at": "2026-09-30T12:00:00+03:00",
+    "actor_role": "recruiter"
+  },
+  {
+    "id": 25,
+    "invitation_id": 11,
+    "type": "created",
+    "at": "2026-09-25T13:00:00+03:00",
+    "actor_role": "recruiter"
+  },
+  {
+    "id": 26,
+    "invitation_id": 11,
+    "type": "viewed",
+    "at": "2026-09-26T08:00:00+03:00",
+    "actor_role": "candidate"
+  },
+  {
+    "id": 27,
+    "invitation_id": 11,
+    "type": "accepted",
+    "at": "2026-09-26T17:00:00+03:00",
+    "actor_role": "candidate"
+  },
+  {
+    "id": 28,
+    "invitation_id": 11,
+    "type": "contacts_revealed",
+    "at": "2026-09-26T17:00:00+03:00",
+    "actor_role": null
+  },
+  {
+    "id": 29,
+    "invitation_id": 12,
+    "type": "created",
+    "at": "2026-10-04T14:00:00+03:00",
+    "actor_role": "recruiter"
+  },
+  {
+    "id": 30,
+    "invitation_id": 13,
+    "type": "created",
+    "at": "2026-09-30T15:00:00+03:00",
+    "actor_role": "recruiter"
+  },
+  {
+    "id": 31,
+    "invitation_id": 13,
+    "type": "viewed",
+    "at": "2026-10-01T00:00:00+03:00",
+    "actor_role": "candidate"
+  },
+  {
+    "id": 32,
+    "invitation_id": 13,
+    "type": "declined",
+    "at": "2026-10-02T03:00:00+03:00",
+    "actor_role": "candidate"
+  },
+  {
+    "id": 33,
+    "invitation_id": 14,
+    "type": "created",
+    "at": "2026-10-02T16:00:00+03:00",
+    "actor_role": "recruiter"
+  },
+  {
+    "id": 34,
+    "invitation_id": 14,
+    "type": "viewed",
+    "at": "2026-10-02T20:00:00+03:00",
+    "actor_role": "candidate"
+  },
+  {
+    "id": 35,
+    "invitation_id": 15,
+    "type": "created",
+    "at": "2026-09-16T17:00:00+03:00",
+    "actor_role": "recruiter"
+  },
+  {
+    "id": 36,
+    "invitation_id": 15,
+    "type": "expired",
+    "at": "2026-09-23T17:00:00+03:00",
+    "actor_role": null
+  },
+  {
+    "id": 37,
+    "invitation_id": 16,
+    "type": "created",
+    "at": "2026-09-23T10:00:00+03:00",
+    "actor_role": "recruiter"
+  },
+  {
+    "id": 38,
+    "invitation_id": 16,
+    "type": "viewed",
+    "at": "2026-09-23T23:00:00+03:00",
+    "actor_role": "candidate"
+  },
+  {
+    "id": 39,
+    "invitation_id": 16,
+    "type": "accepted",
+    "at": "2026-09-24T06:00:00+03:00",
+    "actor_role": "candidate"
+  },
+  {
+    "id": 40,
+    "invitation_id": 16,
+    "type": "contacts_revealed",
+    "at": "2026-09-24T06:00:00+03:00",
+    "actor_role": null
+  },
+  {
+    "id": 41,
+    "invitation_id": 17,
+    "type": "created",
+    "at": "2026-10-01T11:00:00+03:00",
+    "actor_role": "recruiter"
+  },
+  {
+    "id": 42,
+    "invitation_id": 17,
+    "type": "viewed",
+    "at": "2026-10-01T18:00:00+03:00",
+    "actor_role": "candidate"
+  },
+  {
+    "id": 43,
+    "invitation_id": 18,
+    "type": "created",
+    "at": "2026-09-29T12:00:00+03:00",
+    "actor_role": "recruiter"
+  },
+  {
+    "id": 44,
+    "invitation_id": 18,
+    "type": "viewed",
+    "at": "2026-09-29T18:00:00+03:00",
+    "actor_role": "candidate"
+  },
+  {
+    "id": 45,
+    "invitation_id": 18,
+    "type": "declined",
+    "at": "2026-09-29T23:00:00+03:00",
+    "actor_role": "candidate"
+  },
+  {
+    "id": 46,
+    "invitation_id": 19,
+    "type": "created",
+    "at": "2026-09-20T13:00:00+03:00",
+    "actor_role": "recruiter"
+  },
+  {
+    "id": 47,
+    "invitation_id": 19,
+    "type": "viewed",
+    "at": "2026-09-20T18:00:00+03:00",
+    "actor_role": "candidate"
+  },
+  {
+    "id": 48,
+    "invitation_id": 19,
+    "type": "accepted",
+    "at": "2026-09-21T00:00:00+03:00",
+    "actor_role": "candidate"
+  },
+  {
+    "id": 49,
+    "invitation_id": 19,
+    "type": "contacts_revealed",
+    "at": "2026-09-21T00:00:00+03:00",
+    "actor_role": null
+  },
+  {
+    "id": 50,
+    "invitation_id": 20,
+    "type": "created",
+    "at": "2026-10-06T14:00:00+03:00",
+    "actor_role": "recruiter"
+  }
+]

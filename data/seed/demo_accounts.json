@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "role": "candidate",
+    "email": "candidate@example.com",
+    "password": "demo1234",
+    "user_id": 1,
+    "is_default": true,
+    "description": "Соискатель с ФСП ID: Backend · Middle, есть приглашения и задание"
+  },
+  {
+    "id": 2,
+    "role": "candidate",
+    "email": "candidate.nofsp@example.com",
+    "password": "demo1234",
+    "user_id": 26,
+    "is_default": false,
+    "description": "Соискатель без истории ФСП: Frontend · Junior"
+  },
+  {
+    "id": 3,
+    "role": "recruiter",
+    "email": "recruiter@example.com",
+    "password": "demo1234",
+    "user_id": 41,
+    "is_default": true,
+    "description": "Рекрутер компании «Северный код», есть потребности и приглашения"
+  },
+  {
+    "id": 4,
+    "role": "admin",
+    "email": "admin@example.com",
+    "password": "demo1234",
+    "user_id": 48,
+    "is_default": true,
+    "description": "Администратор платформы"
+  }
+]

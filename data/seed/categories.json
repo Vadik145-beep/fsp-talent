@@ -1,0 +1,146 @@
+[
+  {
+    "id": "backend:intern",
+    "specialization": "backend",
+    "grade": "intern",
+    "label": "Backend · Стажёр"
+  },
+  {
+    "id": "backend:junior",
+    "specialization": "backend",
+    "grade": "junior",
+    "label": "Backend · Junior"
+  },
+  {
+    "id": "backend:middle",
+    "specialization": "backend",
+    "grade": "middle",
+    "label": "Backend · Middle"
+  },
+  {
+    "id": "backend:senior",
+    "specialization": "backend",
+    "grade": "senior",
+    "label": "Backend · Senior"
+  },
+  {
+    "id": "frontend:intern",
+    "specialization": "frontend",
+    "grade": "intern",
+    "label": "Frontend · Стажёр"
+  },
+  {
+    "id": "frontend:junior",
+    "specialization": "frontend",
+    "grade": "junior",
+    "label": "Frontend · Junior"
+  },
+  {
+    "id": "frontend:middle",
+    "specialization": "frontend",
+    "grade": "middle",
+    "label": "Frontend · Middle"
+  },
+  {
+    "id": "frontend:senior",
+    "specialization": "frontend",
+    "grade": "senior",
+    "label": "Frontend · Senior"
+  },
+  {
+    "id": "mobile:intern",
+    "specialization": "mobile",
+    "grade": "intern",
+    "label": "Mobile · Стажёр"
+  },
+  {
+    "id": "mobile:junior",
+    "specialization": "mobile",
+    "grade": "junior",
+    "label": "Mobile · Junior"
+  },
+  {
+    "id": "mobile:middle",
+    "specialization": "mobile",
+    "grade": "middle",
+    "label": "Mobile · Middle"
+  },
+  {
+    "id": "mobile:senior",
+    "specialization": "mobile",
+    "grade": "senior",
+    "label": "Mobile · Senior"
+  },
+  {
+    "id": "data_ml:intern",
+    "specialization": "data_ml",
+    "grade": "intern",
+    "label": "Data Science / ML · Стажёр"
+  },
+  {
+    "id": "data_ml:junior",
+    "specialization": "data_ml",
+    "grade": "junior",
+    "label": "Data Science / ML · Junior"
+  },
+  {
+    "id": "data_ml:middle",
+    "specialization": "data_ml",
+    "grade": "middle",
+    "label": "Data Science / ML · Middle"
+  },
+  {
+    "id": "data_ml:senior",
+    "specialization": "data_ml",
+    "grade": "senior",
+    "label": "Data Science / ML · Senior"
+  },
+  {
+    "id": "qa:intern",
+    "specialization": "qa",
+    "grade": "intern",
+    "label": "QA · Стажёр"
+  },
+  {
+    "id": "qa:junior",
+    "specialization": "qa",
+    "grade": "junior",
+    "label": "QA · Junior"
+  },
+  {
+    "id": "qa:middle",
+    "specialization": "qa",
+    "grade": "middle",
+    "label": "QA · Middle"
+  },
+  {
+    "id": "qa:senior",
+    "specialization": "qa",
+    "grade": "senior",
+    "label": "QA · Senior"
+  },
+  {
+    "id": "devops:intern",
+    "specialization": "devops",
+    "grade": "intern",
+    "label": "DevOps · Стажёр"
+  },
+  {
+    "id": "devops:junior",
+    "specialization": "devops",
+    "grade": "junior",
+    "label": "DevOps · Junior"
+  },
+  {
+    "id": "devops:middle",
+    "specialization": "devops",
+    "grade": "middle",
+    "label": "DevOps · Middle"
+  },
+  {
+    "id": "devops:senior",
+    "specialization": "devops",
+    "grade": "senior",
+    "label": "DevOps · Senior"
+  }
+]

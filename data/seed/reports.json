@@ -1,0 +1,58 @@
+[
+  {
+    "id": 1,
+    "company_id": 3,
+    "company_name": "Облачные системы «Тайга»",
+    "reporter_candidate_id": 11,
+    "invitation_id": 11,
+    "vacancy_id": null,
+    "reason": "fake_vacancy",
+    "text": "После созвона попросили оплатить «обучение» за 15 000 ₽.",
+    "status": "new",
+    "resolution": null,
+    "created_at": "2026-10-05T12:00:00+03:00",
+    "resolved_at": null
+  },
+  {
+    "id": 2,
+    "company_id": 3,
+    "company_name": "Облачные системы «Тайга»",
+    "reporter_candidate_id": 12,
+    "invitation_id": 12,
+    "vacancy_id": null,
+    "reason": "salary_mismatch",
+    "text": "В приглашении 180 тысяч, на звонке сказали 90.",
+    "status": "in_review",
+    "resolution": null,
+    "created_at": "2026-10-03T12:00:00+03:00",
+    "resolved_at": null
+  },
+  {
+    "id": 3,
+    "company_id": 3,
+    "company_name": "Облачные системы «Тайга»",
+    "reporter_candidate_id": 22,
+    "invitation_id": null,
+    "vacancy_id": 7,
+    "reason": "spam",
+    "text": "Одно и то же приглашение приходит каждый день.",
+    "status": "new",
+    "resolution": null,
+    "created_at": "2026-10-04T12:00:00+03:00",
+    "resolved_at": null
+  },
+  {
+    "id": 4,
+    "company_id": 2,
+    "company_name": "Лаборатория данных «Вектор»",
+    "reporter_candidate_id": 15,
+    "invitation_id": 15,
+    "vacancy_id": null,
+    "reason": "rude",
+    "text": "Грубо разговаривали на собеседовании.",
+    "status": "rejected",
+    "resolution": "Проверили переписку: нарушений не найдено.",
+    "created_at": "2026-09-30T12:00:00+03:00",
+    "resolved_at": "2026-10-01T12:00:00+03:00"
+  }
+]

@@ -1,0 +1,47 @@
+[
+  {
+    "id": 1,
+    "name": "Северный код",
+    "description": "Разрабатываем платёжные сервисы и мобильный банк для региональных банков.",
+    "industry": "Финтех",
+    "website": "https://severny-kod.example.com",
+    "city": "Москва",
+    "contact_email": "hr.severny@example.com",
+    "contact_phone": "+7 900 000-10-00",
+    "inn": "7700000001",
+    "verified_domain": true,
+    "trust_score": 86.0,
+    "blocked": false,
+    "created_at": "2026-06-08T12:00:00+03:00"
+  },
+  {
+    "id": 2,
+    "name": "Лаборатория данных «Вектор»",
+    "description": "Аналитика и ML для сетей магазинов: прогноз спроса, рекомендации.",
+    "industry": "Ритейл-аналитика",
+    "website": "https://vektor-lab.example.com",
+    "city": "Санкт-Петербург",
+    "contact_email": "jobs.vektor@example.com",
+    "contact_phone": "+7 900 000-20-00",
+    "inn": "7800000002",
+    "verified_domain": true,
+    "trust_score": 78.0,
+    "blocked": false,
+    "created_at": "2026-07-08T12:00:00+03:00"
+  },
+  {
+    "id": 3,
+    "name": "Облачные системы «Тайга»",
+    "description": "B2B-платформа для учёта в логистике. Молодая компания.",
+    "industry": "B2B SaaS",
+    "website": "https://taiga-cloud.example.com",
+    "city": "Новосибирск",
+    "contact_email": "taiga.hr@example.com",
+    "contact_phone": null,
+    "inn": null,
+    "verified_domain": false,
+    "trust_score": 41.0,
+    "blocked": false,
+    "created_at": "2026-09-16T12:00:00+03:00"
+  }
+]

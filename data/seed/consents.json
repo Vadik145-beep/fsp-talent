@@ -1,0 +1,803 @@
+[
+  {
+    "id": 1,
+    "user_id": 1,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-05T18:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 2,
+    "user_id": 1,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-05T18:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 3,
+    "user_id": 2,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-11T14:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 4,
+    "user_id": 2,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-11T14:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 5,
+    "user_id": 3,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-18T12:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 6,
+    "user_id": 3,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-18T12:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 7,
+    "user_id": 4,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-18T11:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 8,
+    "user_id": 4,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-18T11:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 9,
+    "user_id": 5,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-30T12:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 10,
+    "user_id": 5,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-30T12:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 11,
+    "user_id": 6,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-13T10:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 12,
+    "user_id": 6,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-13T10:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 13,
+    "user_id": 7,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-07T11:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 14,
+    "user_id": 7,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-07T11:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 15,
+    "user_id": 8,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-23T17:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 16,
+    "user_id": 8,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-23T17:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 17,
+    "user_id": 9,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-08T14:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 18,
+    "user_id": 9,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-08T14:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 19,
+    "user_id": 10,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-30T11:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 20,
+    "user_id": 10,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-30T11:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 21,
+    "user_id": 11,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-22T12:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 22,
+    "user_id": 11,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-22T12:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 23,
+    "user_id": 12,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-12T10:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 24,
+    "user_id": 12,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-12T10:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 25,
+    "user_id": 13,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-20T19:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 26,
+    "user_id": 13,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-20T19:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 27,
+    "user_id": 14,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-13T11:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 28,
+    "user_id": 14,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-13T11:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 29,
+    "user_id": 15,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-09T20:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 30,
+    "user_id": 15,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-09T20:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 31,
+    "user_id": 16,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-19T16:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 32,
+    "user_id": 16,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-19T16:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 33,
+    "user_id": 17,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-07T12:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 34,
+    "user_id": 17,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-07T12:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 35,
+    "user_id": 18,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-26T17:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 36,
+    "user_id": 18,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-26T17:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 37,
+    "user_id": 19,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-26T20:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 38,
+    "user_id": 19,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-26T20:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 39,
+    "user_id": 20,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-08T10:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 40,
+    "user_id": 20,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-08T10:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 41,
+    "user_id": 21,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-22T14:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 42,
+    "user_id": 21,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-22T14:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 43,
+    "user_id": 22,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-26T16:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 44,
+    "user_id": 22,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-26T16:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 45,
+    "user_id": 23,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-26T13:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 46,
+    "user_id": 23,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-26T13:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 47,
+    "user_id": 24,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-29T20:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 48,
+    "user_id": 24,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-29T20:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 49,
+    "user_id": 25,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-16T09:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 50,
+    "user_id": 25,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-16T09:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 51,
+    "user_id": 26,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-14T12:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 52,
+    "user_id": 26,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-14T12:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 53,
+    "user_id": 27,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-21T09:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 54,
+    "user_id": 27,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-21T09:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 55,
+    "user_id": 28,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-12T11:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 56,
+    "user_id": 28,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-12T11:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 57,
+    "user_id": 29,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-21T12:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 58,
+    "user_id": 29,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-21T12:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 59,
+    "user_id": 30,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-13T18:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 60,
+    "user_id": 30,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-13T18:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 61,
+    "user_id": 31,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-30T10:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 62,
+    "user_id": 31,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-30T10:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 63,
+    "user_id": 32,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-13T13:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 64,
+    "user_id": 32,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-13T13:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 65,
+    "user_id": 33,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-14T11:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 66,
+    "user_id": 33,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-14T11:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 67,
+    "user_id": 34,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-10T19:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 68,
+    "user_id": 34,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-10T19:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 69,
+    "user_id": 35,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-29T12:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 70,
+    "user_id": 35,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-29T12:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 71,
+    "user_id": 36,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-28T09:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 72,
+    "user_id": 36,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-28T09:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 73,
+    "user_id": 37,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-27T13:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 74,
+    "user_id": 37,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": false,
+    "granted_at": "2026-08-27T13:00:00+03:00",
+    "revoked_at": "2026-10-04T12:00:00+03:00"
+  },
+  {
+    "id": 75,
+    "user_id": 38,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-22T20:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 76,
+    "user_id": 38,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-22T20:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 77,
+    "user_id": 39,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-15T12:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 78,
+    "user_id": 39,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-15T12:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 79,
+    "user_id": 40,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-24T17:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 80,
+    "user_id": 40,
+    "type": "publication",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-24T17:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 81,
+    "user_id": 41,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-08T12:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 82,
+    "user_id": 42,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-08T12:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 83,
+    "user_id": 43,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-27T12:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 84,
+    "user_id": 44,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-25T12:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 85,
+    "user_id": 45,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-23T12:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 86,
+    "user_id": 46,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-08-13T12:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 87,
+    "user_id": 47,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-09-08T12:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 88,
+    "user_id": 48,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-05-09T12:00:00+03:00",
+    "revoked_at": null
+  },
+  {
+    "id": 89,
+    "user_id": 49,
+    "type": "processing",
+    "version": "2026-10-01",
+    "granted": true,
+    "granted_at": "2026-05-09T12:00:00+03:00",
+    "revoked_at": null
+  }
+]
