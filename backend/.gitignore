@@ -1,0 +1,3 @@
+# артефакты editable-установки (pip install -e .)
+*.egg-info/
+build/
