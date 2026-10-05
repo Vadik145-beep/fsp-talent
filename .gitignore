@@ -1,0 +1,38 @@
+# env и секреты
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node
+node_modules/
+dist/
+.vite/
+coverage/
+playwright-report/
+test-results/
+
+# Данные и артефакты
+*.sqlite
+*.db
+*.dump
+*.log
+models/
+data/generated/
+tmp/
+
+# IDE / ОС
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
