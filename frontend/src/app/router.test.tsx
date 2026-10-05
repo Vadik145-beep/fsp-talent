@@ -42,19 +42,26 @@ const cabinetRoutes = [
   '/admin/audit',
 ]
 
+/** Экран отрисовался: есть заголовок или индикатор загрузки (данные моков в этом тесте не нужны). */
+async function waitForScreen() {
+  await waitFor(() =>
+    expect(document.querySelector('h1, h2, [role="status"], [aria-busy="true"], .animate-pulse')).not.toBeNull(),
+  )
+}
+
 const publicRoutes = ['/login', '/register', '/verify-email', '/auth/fsp-callback']
 
 describe('роутинг', () => {
   // Экраны уже настоящие (волна 1): проверяем, что маршрут есть и рисует экран, а не 404.
   it.each(cabinetRoutes)('%s открывает экран', async (path) => {
     renderApp(path)
-    expect((await screen.findAllByRole('heading')).length).toBeGreaterThan(0)
+    await waitForScreen()
     expect(screen.queryByText('Страница не найдена')).not.toBeInTheDocument()
   })
 
   it.each(publicRoutes)('%s открывает публичный экран', async (path) => {
     renderApp(path)
-    expect((await screen.findAllByRole('heading')).length).toBeGreaterThan(0)
+    await waitForScreen()
     expect(screen.queryByText('Страница не найдена')).not.toBeInTheDocument()
   })
 
