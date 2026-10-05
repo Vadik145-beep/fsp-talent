@@ -177,6 +177,38 @@ class CatalogLabelUpdate(ApiModel):
     active: bool | None = None
 
 
+class SpecializationCreate(ApiModel):
+    """Вернуть специализацию в справочник (коды фиксированы общими соглашениями)."""
+
+    model_config = ConfigDict(
+        json_schema_extra={"examples": [{"id": "qa", "label": "QA", "description": "Тестирование"}]}
+    )
+
+    id: SpecializationCode
+    label: str = Field(min_length=1, max_length=60)
+    description: str = Field(default="", max_length=500)
+
+
+class LabelUpdate(ApiModel):
+    model_config = ConfigDict(json_schema_extra={"examples": [{"label": "Backend · Middle"}]})
+
+    label: str = Field(min_length=1, max_length=120)
+
+
+class TopicCreate(ApiModel):
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {"id": "backend.caching", "specialization": "backend", "label": "Кэширование"}
+            ]
+        }
+    )
+
+    id: str = Field(pattern=r"^[a-z_]+\.[a-z0-9_]+$", max_length=64)
+    specialization: SpecializationCode
+    label: str = Field(min_length=1, max_length=120)
+
+
 # ---------- банк задач ----------
 
 

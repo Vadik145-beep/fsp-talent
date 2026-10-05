@@ -2,9 +2,11 @@
 
 from typing import Annotated, Any
 
-from fastapi import APIRouter, File, Query, UploadFile
+from fastapi import APIRouter, Depends, File, Query, UploadFile
 from fastapi.responses import Response
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.candidates.grade_schemas import CandidateGradeStatus
 from app.candidates.schemas import (
     AnonymousCandidateProfile,
     CandidateCard,
@@ -14,19 +16,21 @@ from app.candidates.schemas import (
     CandidateSettings,
     JobSearchUpdate,
     PrivacySettings,
+    PublicationConsentUpdate,
     ResumeParseResult,
 )
-from app.candidates.service import CandidateService
+from app.candidates.service import CandidateProfileService
 from app.common.enums import GradeCode, SpecializationCode, WorkFormat
 from app.common.pdf import placeholder_pdf
 from app.common.schemas import Page
+from app.core.db import get_session
 from app.core.errors import AppError, error_responses
 from app.core.security import CandidateUser, CurrentUser, RecruiterUser
 
 router = APIRouter(prefix="/candidates", tags=["candidates"])
-service = CandidateService()
 
 AUTH_ERRORS = (401, 403)
+SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 
 def _me_id(user: CurrentUser) -> int:
@@ -41,8 +45,8 @@ def _me_id(user: CurrentUser) -> int:
     summary="Главная соискателя",
     responses=error_responses(*AUTH_ERRORS, 404),
 )
-async def my_dashboard(user: CandidateUser) -> Any:
-    return service.dashboard(_me_id(user))
+async def my_dashboard(user: CandidateUser, session: SessionDep) -> Any:
+    return await CandidateProfileService(session).dashboard(_me_id(user))
 
 
 @router.get(
@@ -51,21 +55,29 @@ async def my_dashboard(user: CandidateUser) -> Any:
     summary="Свой полный профиль",
     responses=error_responses(*AUTH_ERRORS, 404),
 )
-async def my_profile(user: CandidateUser) -> Any:
-    return service.get_or_404(_me_id(user))
+async def my_profile(user: CandidateUser, session: SessionDep) -> Any:
+    return await CandidateProfileService(session).get_or_404(_me_id(user))
 
 
 @router.put(
     "/me/profile",
     response_model=CandidateProfile,
     summary="Сохранить профиль",
-    description="Заглушка: возвращает профиль с применёнными изменениями, но не сохраняет их.",
-    responses=error_responses(*AUTH_ERRORS, 404, 422),
+    description=(
+        "Сохраняет профиль. Стек — коды из справочника `skills` (порядок сохраняется). "
+        "Минимальная зарплата видна только системе: рекрутеру не отдаётся никогда."
+    ),
+    responses=error_responses(
+        *AUTH_ERRORS,
+        404,
+        422,
+        (422, "unknown_skills", "Технологий нет в справочнике стека"),
+    ),
 )
-async def update_my_profile(body: CandidateProfileUpdate, user: CandidateUser) -> Any:
-    profile = dict(service.get_or_404(_me_id(user)))
-    profile.update(body.model_dump())
-    return profile
+async def update_my_profile(
+    body: CandidateProfileUpdate, user: CandidateUser, session: SessionDep
+) -> Any:
+    return await CandidateProfileService(session).update_profile(_me_id(user), body)
 
 
 @router.post(
@@ -82,11 +94,12 @@ async def update_my_profile(body: CandidateProfileUpdate, user: CandidateUser) -
 )
 async def upload_resume(
     user: CandidateUser,
+    session: SessionDep,
     file: Annotated[UploadFile, File(description="PDF до 5 МБ")],
 ) -> Any:
     if file.content_type not in ("application/pdf", "application/x-pdf"):
         raise AppError(415, "unsupported_file", "Нужен PDF", {"content_type": file.content_type})
-    cand = service.get_or_404(_me_id(user))
+    cand = await CandidateProfileService(session).get_or_404(_me_id(user))
     return {
         "resume_id": 1,
         "filename": file.filename or "resume.pdf",
@@ -114,8 +127,8 @@ async def upload_resume(
         **error_responses(*AUTH_ERRORS, 404),
     },
 )
-async def my_profile_pdf(user: CandidateUser) -> Response:
-    cand = service.get_or_404(_me_id(user))
+async def my_profile_pdf(user: CandidateUser, session: SessionDep) -> Response:
+    cand = await CandidateProfileService(session).get_or_404(_me_id(user))
     content = placeholder_pdf(f"fsp-talent profile: {cand['pseudonym'].split('#')[-1]}")
     return Response(
         content,
@@ -130,8 +143,8 @@ async def my_profile_pdf(user: CandidateUser) -> Response:
     summary="Настройки: приватность, согласия, ФСП ID",
     responses=error_responses(*AUTH_ERRORS, 404),
 )
-async def my_settings(user: CandidateUser) -> Any:
-    return service.settings(_me_id(user))
+async def my_settings(user: CandidateUser, session: SessionDep) -> Any:
+    return await CandidateProfileService(session).settings(_me_id(user))
 
 
 @router.put(
@@ -140,10 +153,8 @@ async def my_settings(user: CandidateUser) -> Any:
     summary="Что видно работодателю до принятия приглашения",
     responses=error_responses(*AUTH_ERRORS, 404, 422),
 )
-async def update_privacy(body: PrivacySettings, user: CandidateUser) -> Any:
-    settings = service.settings(_me_id(user))
-    settings["privacy"] = body.model_dump()
-    return settings
+async def update_privacy(body: PrivacySettings, user: CandidateUser, session: SessionDep) -> Any:
+    return await CandidateProfileService(session).update_privacy(_me_id(user), body)
 
 
 @router.put(
@@ -152,10 +163,41 @@ async def update_privacy(body: PrivacySettings, user: CandidateUser) -> Any:
     summary="Пауза поиска («не ищу работу»)",
     responses=error_responses(*AUTH_ERRORS, 404, 422),
 )
-async def update_job_search(body: JobSearchUpdate, user: CandidateUser) -> Any:
-    settings = service.settings(_me_id(user))
-    settings["job_search_paused"] = body.paused
-    return settings
+async def update_job_search(body: JobSearchUpdate, user: CandidateUser, session: SessionDep) -> Any:
+    return await CandidateProfileService(session).update_job_search(_me_id(user), body.paused)
+
+
+@router.put(
+    "/me/settings/publication",
+    response_model=CandidateSettings,
+    summary="Согласие на публикацию профиля работодателям",
+    description=(
+        "Без согласия кандидата нет в банке кандидатов и подборках. Отзыв действует сразу; "
+        "история выдачи и отзыва хранится в согласиях (версия текста и даты)."
+    ),
+    responses=error_responses(*AUTH_ERRORS, 404, 422),
+)
+async def update_publication_consent(
+    body: PublicationConsentUpdate, user: CandidateUser, session: SessionDep
+) -> Any:
+    return await CandidateProfileService(session).set_publication_consent(
+        _me_id(user), body.granted, user
+    )
+
+
+@router.get(
+    "/me/grade",
+    response_model=CandidateGradeStatus,
+    summary="Категория и грейд: статус, история, доступность теста ниже/выше",
+    description=(
+        "Правила частоты — движок теста: смена грейда не чаще раза в 90 дней "
+        "(первое присвоение не считается), повтор неудачной попытки — через 30 дней. "
+        "Интервалы берутся из настроек платформы."
+    ),
+    responses=error_responses(*AUTH_ERRORS, 404),
+)
+async def my_grade(user: CandidateUser, session: SessionDep) -> Any:
+    return await CandidateProfileService(session).grade(_me_id(user))
 
 
 @router.get(
@@ -170,6 +212,7 @@ async def update_job_search(body: JobSearchUpdate, user: CandidateUser) -> Any:
 )
 async def search_candidates(
     user: RecruiterUser,
+    session: SessionDep,
     specialization: SpecializationCode | None = None,
     grade: GradeCode | None = None,
     category: str | None = Query(default=None, examples=["backend:middle"]),
@@ -181,7 +224,7 @@ async def search_candidates(
     page: Annotated[int, Query(ge=1)] = 1,
     page_size: Annotated[int, Query(ge=1, le=100)] = 20,
 ) -> Any:
-    return service.search(
+    return await CandidateProfileService(session).search(
         specialization=specialization,
         grade=grade,
         category=category,
@@ -205,6 +248,7 @@ async def search_candidates(
     ),
     responses=error_responses(*AUTH_ERRORS, 404),
 )
-async def get_candidate(candidate_id: int, user: RecruiterUser) -> Any:
-    assert user.company_id is not None
-    return service.anonymous_profile(candidate_id, user.company_id)
+async def get_candidate(candidate_id: int, user: RecruiterUser, session: SessionDep) -> Any:
+    if user.company_id is None:
+        raise AppError(404, "not_found", "Компания не найдена")
+    return await CandidateProfileService(session).anonymous_profile(candidate_id, user.company_id)

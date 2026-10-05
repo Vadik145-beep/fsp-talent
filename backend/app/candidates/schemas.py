@@ -359,3 +359,11 @@ class CandidateDashboard(OutModel):
     profile_completeness: int
     fsp_linked: bool
     hints: list[str]
+
+
+class PublicationConsentUpdate(ApiModel):
+    """Согласие на публикацию профиля работодателям [T2.4]."""
+
+    model_config = ConfigDict(json_schema_extra={"examples": [{"granted": False}]})
+
+    granted: bool = Field(description="false — отозвать: профиль сразу пропадает из выдачи")

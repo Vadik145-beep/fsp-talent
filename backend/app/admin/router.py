@@ -1,9 +1,16 @@
-"""Кабинет администратора + приём жалоб от соискателей (`POST /api/reports`)."""
+"""Кабинет администратора + приём жалоб от соискателей (`POST /api/reports`).
+
+Пользователи, компании, справочники, настройки и журнал — на БД (`AdminDbService`),
+каждое действие админа пишется в журнал. Дашборд, банк задач, задания из вакансий и жалобы —
+пока на фикстурах (`AdminService`, волны 3, 4c, 5b).
+"""
 
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Query, Response, status
+from fastapi import APIRouter, Depends, Query, Response, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.admin.db_service import AdminDbService
 from app.admin.schemas import (
     AdminCompany,
     AdminDashboard,
@@ -14,6 +21,7 @@ from app.admin.schemas import (
     CoverageCell,
     ItemDetail,
     ItemSummary,
+    LabelUpdate,
     PlatformSettings,
     PlatformSettingsUpdate,
     RecalibrationResult,
@@ -21,14 +29,17 @@ from app.admin.schemas import (
     ReportCreate,
     ReportUpdate,
     SkillUpsert,
+    SpecializationCreate,
+    TopicCreate,
     VacancyTestRequest,
     VacancyTestResult,
 )
 from app.admin.service import AdminService
-from app.catalog.schemas import Grade, Skill, Specialization
+from app.catalog.schemas import Category, Grade, Skill, Specialization, Topic
 from app.common.enums import GradeCode, ItemStatus, ReportStatus, Role, SpecializationCode
 from app.common.schemas import Page
-from app.core.errors import AppError, error_responses, not_found
+from app.core.db import get_session
+from app.core.errors import AppError, error_responses
 from app.core.security import AdminUser, CandidateUser
 from app.users.schemas import UserRecord
 
@@ -40,6 +51,7 @@ AUTH = (401, 403)
 TRANSITION = (409, "invalid_transition", "Действие недоступно в текущем статусе")
 PageNum = Annotated[int, Query(ge=1)]
 PageSize = Annotated[int, Query(ge=1, le=200)]
+SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 
 @router.get(
@@ -63,26 +75,37 @@ async def dashboard(user: AdminUser) -> Any:
 )
 async def list_users(
     user: AdminUser,
+    session: SessionDep,
     q: Annotated[str | None, Query(max_length=100, description="Почта или ФИО")] = None,
     role: Role | None = None,
     blocked: bool | None = None,
     page: PageNum = 1,
     page_size: PageSize = 50,
 ) -> Any:
-    return service.users(q, role, blocked, page, page_size)
+    return await AdminDbService(session, user).users(q, role, blocked, page, page_size)
 
 
 @router.patch(
     "/users/{user_id}",
     response_model=UserRecord,
     summary="Сменить роль или заблокировать пользователя",
-    description="Повысить до админа может только админ. Заглушка: не сохраняется.",
+    description=(
+        "Повысить до админа может только админ. Роль «соискатель» или «рекрутер» назначается, "
+        "только если у пользователя есть профиль соискателя / он состоит в компании. "
+        "Действие пишется в журнал."
+    ),
     responses=error_responses(
-        *AUTH, 404, (409, "cannot_change_self", "Нельзя заблокировать или понизить себя"), 422
+        *AUTH,
+        404,
+        (409, "cannot_change_self", "Нельзя заблокировать или понизить себя"),
+        (409, "role_profile_missing", "Нет профиля для этой роли"),
+        422,
     ),
 )
-async def update_user(user_id: int, body: AdminUserUpdate, user: AdminUser) -> Any:
-    return service.update_user(user_id, body, user.user_id)
+async def update_user(
+    user_id: int, body: AdminUserUpdate, user: AdminUser, session: SessionDep
+) -> Any:
+    return await AdminDbService(session, user).update_user(user_id, body)
 
 
 @router.get(
@@ -91,18 +114,22 @@ async def update_user(user_id: int, body: AdminUserUpdate, user: AdminUser) -> A
     summary="Журнал действий по пользователю",
     responses=error_responses(*AUTH, 404),
 )
-async def user_audit(user_id: int, user: AdminUser) -> Any:
-    return service.user_audit(user_id)
+async def user_audit(user_id: int, user: AdminUser, session: SessionDep) -> Any:
+    return await AdminDbService(session, user).user_audit(user_id)
 
 
 @router.get(
     "/companies",
     response_model=list[AdminCompany],
     summary="Компании со скорингом надёжности",
+    description=(
+        "Скоринг 0..100: 30 + 50 × доля отвеченных приглашений (нет данных — 50), "
+        "+10 за подтверждённый домен, −15 за подтверждённую жалобу, −5 за жалобу в работе."
+    ),
     responses=error_responses(*AUTH),
 )
-async def list_companies(user: AdminUser) -> Any:
-    return service.companies()
+async def list_companies(user: AdminUser, session: SessionDep) -> Any:
+    return await AdminDbService(session, user).companies()
 
 
 @router.patch(
@@ -111,8 +138,10 @@ async def list_companies(user: AdminUser) -> Any:
     summary="Заблокировать / разблокировать компанию",
     responses=error_responses(*AUTH, 404, 422),
 )
-async def update_company(company_id: int, body: CompanyAdminUpdate, user: AdminUser) -> Any:
-    return service.update_company(company_id, body.blocked)
+async def update_company(
+    company_id: int, body: CompanyAdminUpdate, user: AdminUser, session: SessionDep
+) -> Any:
+    return await AdminDbService(session, user).update_company(company_id, body.blocked)
 
 
 # ---------- справочники и настройки ----------
@@ -124,19 +153,26 @@ async def update_company(company_id: int, body: CompanyAdminUpdate, user: AdminU
     summary="Настройки: пороги θ, кулдауны, квота, веса ранжирования",
     responses=error_responses(*AUTH),
 )
-async def get_settings(user: AdminUser) -> Any:
-    return service.settings()
+async def get_settings(user: AdminUser, session: SessionDep) -> Any:
+    return await AdminDbService(session, user).settings()
 
 
 @router.put(
     "/settings",
     response_model=PlatformSettings,
     summary="Изменить настройки платформы",
-    description="Передаются только меняемые поля. Заглушка: не сохраняется.",
-    responses=error_responses(*AUTH, 422),
+    description="Передаются только меняемые поля. Изменение пишется в журнал.",
+    responses=error_responses(
+        *AUTH,
+        422,
+        (422, "invalid_thresholds", "Пороги θ должны возрастать"),
+        (422, "invalid_weights", "Хотя бы один вес больше нуля"),
+    ),
 )
-async def update_settings(body: PlatformSettingsUpdate, user: AdminUser) -> Any:
-    return service.update_settings(body)
+async def update_settings(
+    body: PlatformSettingsUpdate, user: AdminUser, session: SessionDep
+) -> Any:
+    return await AdminDbService(session, user).update_settings(body)
 
 
 @router.post(
@@ -144,12 +180,15 @@ async def update_settings(body: PlatformSettingsUpdate, user: AdminUser) -> Any:
     response_model=Skill,
     status_code=status.HTTP_201_CREATED,
     summary="Добавить технологию в справочник стека",
-    responses=error_responses(*AUTH, (409, "skill_exists", "Такая технология уже есть"), 422),
+    responses=error_responses(
+        *AUTH,
+        (409, "skill_exists", "Такая технология уже есть"),
+        422,
+        (422, "unknown_specialization", "Нет такой специализации"),
+    ),
 )
-async def create_skill(body: SkillUpsert, user: AdminUser) -> Any:
-    if any(s["id"] == body.id for s in service.repo.skills()):
-        raise AppError(409, "skill_exists", "Такая технология уже есть", {"id": body.id})
-    return body.model_dump()
+async def create_skill(body: SkillUpsert, user: AdminUser, session: SessionDep) -> Any:
+    return await AdminDbService(session, user).create_skill(body)
 
 
 @router.put(
@@ -158,10 +197,10 @@ async def create_skill(body: SkillUpsert, user: AdminUser) -> Any:
     summary="Изменить технологию",
     responses=error_responses(*AUTH, 404, 422),
 )
-async def update_skill(skill_id: str, body: SkillUpsert, user: AdminUser) -> Any:
-    if not any(s["id"] == skill_id for s in service.repo.skills()):
-        raise not_found("skill", skill_id)
-    return body.model_dump()
+async def update_skill(
+    skill_id: str, body: SkillUpsert, user: AdminUser, session: SessionDep
+) -> Any:
+    return await AdminDbService(session, user).update_skill(skill_id, body)
 
 
 @router.delete(
@@ -173,38 +212,124 @@ async def update_skill(skill_id: str, body: SkillUpsert, user: AdminUser) -> Any
         *AUTH, 404, (409, "skill_in_use", "Технология используется в профилях или вакансиях")
     ),
 )
-async def delete_skill(skill_id: str, user: AdminUser) -> Response:
-    if not any(s["id"] == skill_id for s in service.repo.skills()):
-        raise not_found("skill", skill_id)
+async def delete_skill(skill_id: str, user: AdminUser, session: SessionDep) -> Response:
+    await AdminDbService(session, user).delete_skill(skill_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post(
+    "/catalog/specializations",
+    response_model=Specialization,
+    status_code=status.HTTP_201_CREATED,
+    summary="Вернуть специализацию в справочник (код из фиксированного списка)",
+    description="Вместе со специализацией создаются её категории (× все грейды).",
+    responses=error_responses(
+        *AUTH, (409, "specialization_exists", "Такая специализация уже есть"), 422
+    ),
+)
+async def create_specialization(
+    body: SpecializationCreate, user: AdminUser, session: SessionDep
+) -> Any:
+    return await AdminDbService(session, user).create_specialization(body)
 
 
 @router.patch(
     "/catalog/specializations/{spec_id}",
     response_model=Specialization,
     summary="Изменить подпись или активность специализации (код фиксирован)",
+    description="Подписи категорий этой специализации пересобираются автоматически.",
     responses=error_responses(*AUTH, 404, 422),
 )
 async def update_specialization(
-    spec_id: SpecializationCode, body: CatalogLabelUpdate, user: AdminUser
+    spec_id: SpecializationCode, body: CatalogLabelUpdate, user: AdminUser, session: SessionDep
 ) -> Any:
-    spec = service.repo.specialization(spec_id)
-    if spec is None:
-        raise not_found("specialization", spec_id)
-    return {**spec, **body.model_dump(exclude_none=True)}
+    return await AdminDbService(session, user).update_specialization(spec_id, body)
+
+
+@router.delete(
+    "/catalog/specializations/{spec_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    summary="Удалить специализацию",
+    description=(
+        "Нельзя, если по ней есть кандидаты, вакансии, потребности, шаблоны задач, тесты "
+        "или приглашения — тогда её можно скрыть (`active = false`)."
+    ),
+    responses=error_responses(
+        *AUTH, 404, (409, "specialization_in_use", "Специализация используется")
+    ),
+)
+async def delete_specialization(
+    spec_id: SpecializationCode, user: AdminUser, session: SessionDep
+) -> Response:
+    await AdminDbService(session, user).delete_specialization(spec_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.patch(
     "/catalog/grades/{grade_id}",
     response_model=Grade,
     summary="Изменить подпись грейда (код фиксирован)",
+    description="Подписи категорий этого грейда пересобираются автоматически.",
     responses=error_responses(*AUTH, 404, 422),
 )
-async def update_grade(grade_id: GradeCode, body: CatalogLabelUpdate, user: AdminUser) -> Any:
-    grade = service.repo.grade(grade_id)
-    if grade is None:
-        raise not_found("grade", grade_id)
-    return {**grade, "label": body.label}
+async def update_grade(
+    grade_id: GradeCode, body: CatalogLabelUpdate, user: AdminUser, session: SessionDep
+) -> Any:
+    return await AdminDbService(session, user).update_grade(grade_id, body.label)
+
+
+@router.patch(
+    "/catalog/categories/{category_id}",
+    response_model=Category,
+    summary="Изменить подпись категории",
+    responses=error_responses(*AUTH, 404, 422),
+)
+async def update_category(
+    category_id: str, body: LabelUpdate, user: AdminUser, session: SessionDep
+) -> Any:
+    return await AdminDbService(session, user).update_category(category_id, body.label)
+
+
+@router.post(
+    "/catalog/topics",
+    response_model=Topic,
+    status_code=status.HTTP_201_CREATED,
+    summary="Добавить тему теста",
+    responses=error_responses(
+        *AUTH,
+        404,
+        (409, "topic_exists", "Такая тема уже есть"),
+        422,
+        (422, "topic_code_invalid", "Код темы — <специализация>.<тема>"),
+    ),
+)
+async def create_topic(body: TopicCreate, user: AdminUser, session: SessionDep) -> Any:
+    return await AdminDbService(session, user).create_topic(body)
+
+
+@router.patch(
+    "/catalog/topics/{topic_id}",
+    response_model=Topic,
+    summary="Изменить подпись темы",
+    responses=error_responses(*AUTH, 404, 422),
+)
+async def update_topic(
+    topic_id: str, body: LabelUpdate, user: AdminUser, session: SessionDep
+) -> Any:
+    return await AdminDbService(session, user).update_topic(topic_id, body.label)
+
+
+@router.delete(
+    "/catalog/topics/{topic_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    summary="Удалить тему",
+    responses=error_responses(*AUTH, 404, (409, "topic_in_use", "По теме есть шаблоны задач")),
+)
+async def delete_topic(topic_id: str, user: AdminUser, session: SessionDep) -> Response:
+    await AdminDbService(session, user).delete_topic(topic_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 # ---------- банк задач ----------
@@ -340,12 +465,13 @@ async def update_report(report_id: int, body: ReportUpdate, user: AdminUser) -> 
 )
 async def audit_log(
     user: AdminUser,
+    session: SessionDep,
     action: str | None = None,
     target_type: str | None = None,
     page: PageNum = 1,
     page_size: PageSize = 50,
 ) -> Any:
-    return service.audit(action, target_type, page, page_size)
+    return await AdminDbService(session, user).audit(action, target_type, page, page_size)
 
 
 @reports_router.post(

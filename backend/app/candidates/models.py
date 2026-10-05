@@ -16,6 +16,7 @@ from sqlalchemy import (
     Table,
     Text,
     func,
+    text,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
@@ -31,6 +32,8 @@ candidate_skills = Table(
         primary_key=True,
     ),
     Column("skill_code", ForeignKey("skills.code"), primary_key=True),
+    # порядок технологий, как его ввёл кандидат (миграция 0002_2b)
+    Column("position", Integer, nullable=False, default=0, server_default="0"),
 )
 
 
@@ -60,6 +63,15 @@ class CandidateProfile(TimestampMixin, Base):
     min_salary: Mapped[int | None] = mapped_column(Integer)
     privacy: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
     job_search_paused: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    # согласие на публикацию профиля работодателям (T2.4); история — в таблице consents
+    publication_consent: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default="false"
+    )
+    # снимок ФСП-скора и бейджей (T5.3), пересчитывается после синхронизации достижений
+    fsp_score: Mapped[float | None] = mapped_column(Float)
+    fsp_badges: Mapped[list[dict[str, Any]]] = mapped_column(
+        JSONB, default=list, server_default=text("'[]'::jsonb")
+    )
     freshness: Mapped[float] = mapped_column(Float, default=0)
     last_test_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     grade_changed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
