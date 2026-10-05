@@ -1,0 +1,3901 @@
+[
+  {
+    "id": 1,
+    "user_id": 1,
+    "pseudonym": "Кандидат #CFAD",
+    "full_name": "Алексей Смирнов",
+    "email": "candidate@example.com",
+    "phone": "+7 900 101-55-37",
+    "telegram": "@example_aleksey1",
+    "city": "Казань",
+    "work_formats": [
+      "remote",
+      "hybrid"
+    ],
+    "specialization": "backend",
+    "grade": "middle",
+    "category": "backend:middle",
+    "category_label": "Backend · Middle",
+    "theta": 0.42,
+    "theta_se": 0.3,
+    "topic_scores": [
+      {
+        "topic": "backend.http_api",
+        "label": "HTTP и REST API",
+        "score": 0.7,
+        "level": "strong"
+      },
+      {
+        "topic": "backend.databases",
+        "label": "Базы данных и SQL",
+        "score": 0.64,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.concurrency",
+        "label": "Конкурентность и асинхронность",
+        "score": 0.4,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.architecture",
+        "label": "Архитектура и паттерны",
+        "score": 0.64,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.algorithms",
+        "label": "Алгоритмы и структуры данных",
+        "score": 0.7,
+        "level": "strong"
+      },
+      {
+        "topic": "backend.security",
+        "label": "Безопасность веб-приложений",
+        "score": 0.47,
+        "level": "ok"
+      }
+    ],
+    "stack": [
+      "python",
+      "fastapi",
+      "postgresql",
+      "redis",
+      "docker",
+      "kafka"
+    ],
+    "roles_in_team": [
+      "Аналитик",
+      "Ментор"
+    ],
+    "experience_years": 2.0,
+    "soft_skills": [
+      "Коммуникация",
+      "Ответственность"
+    ],
+    "about": "Пишу серверную часть: API, работа с базами, очереди. Люблю понятный код и тесты.",
+    "links": [
+      {
+        "type": "github",
+        "url": "https://github.com/example-aleksey1"
+      }
+    ],
+    "min_salary": 180000,
+    "fsp_id": "FSP-000001",
+    "fsp_score": 41.1,
+    "fsp_badges": [
+      {
+        "id": "participant_many",
+        "title": "Участник 3 соревнований ФСП",
+        "level": null,
+        "verified": true
+      }
+    ],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": false,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.72,
+    "profile_completeness": 100,
+    "last_test_at": "2026-09-10T15:30:00+03:00",
+    "grade_changed_at": "2026-09-10T15:30:00+03:00",
+    "created_at": "2026-09-05T18:00:00+03:00"
+  },
+  {
+    "id": 2,
+    "user_id": 2,
+    "pseudonym": "Кандидат #ABCD",
+    "full_name": "Наталья Андреева",
+    "email": "n.andreeva.02@example.com",
+    "phone": "+7 900 102-76-88",
+    "telegram": null,
+    "city": "Новосибирск",
+    "work_formats": [
+      "hybrid",
+      "office",
+      "remote"
+    ],
+    "specialization": "devops",
+    "grade": "junior",
+    "category": "devops:junior",
+    "category_label": "DevOps · Junior",
+    "theta": -0.6,
+    "theta_se": 0.27,
+    "topic_scores": [
+      {
+        "topic": "devops.linux",
+        "label": "Linux и сети",
+        "score": 0.41,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.containers",
+        "label": "Контейнеры и Kubernetes",
+        "score": 0.23,
+        "level": "weak"
+      },
+      {
+        "topic": "devops.ci_cd",
+        "label": "CI/CD",
+        "score": 0.26,
+        "level": "weak"
+      },
+      {
+        "topic": "devops.monitoring",
+        "label": "Мониторинг и логирование",
+        "score": 0.5,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.iac",
+        "label": "Инфраструктура как код",
+        "score": 0.37,
+        "level": "weak"
+      }
+    ],
+    "stack": [
+      "linux",
+      "bash",
+      "grafana",
+      "prometheus",
+      "airflow",
+      "github_actions",
+      "terraform"
+    ],
+    "roles_in_team": [
+      "Тимлид",
+      "Ментор"
+    ],
+    "experience_years": 2.0,
+    "soft_skills": [
+      "Коммуникация",
+      "Самостоятельность",
+      "Публичные выступления",
+      "Тайм-менеджмент"
+    ],
+    "about": "Настраиваю CI/CD, контейнеры и мониторинг, чтобы релизы были скучными.",
+    "links": [
+      {
+        "type": "github",
+        "url": "https://github.com/example-natalya2"
+      },
+      {
+        "type": "portfolio",
+        "url": "https://portfolio.example.com/2"
+      }
+    ],
+    "min_salary": 110000,
+    "fsp_id": "FSP-000002",
+    "fsp_score": 36.4,
+    "fsp_badges": [
+      {
+        "id": "international_prize",
+        "title": "Призёр международного соревнования",
+        "level": "international",
+        "verified": true
+      },
+      {
+        "id": "participant_many",
+        "title": "Участник 2 соревнований ФСП",
+        "level": null,
+        "verified": true
+      }
+    ],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": false,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.38,
+    "profile_completeness": 90,
+    "last_test_at": "2026-08-26T12:00:00+03:00",
+    "grade_changed_at": "2026-08-26T12:00:00+03:00",
+    "created_at": "2026-09-11T14:00:00+03:00"
+  },
+  {
+    "id": 3,
+    "user_id": 3,
+    "pseudonym": "Кандидат #47DA",
+    "full_name": "Анна Николаева",
+    "email": "a.nikolaeva.03@example.com",
+    "phone": "+7 900 103-12-29",
+    "telegram": "@example_anna3",
+    "city": "Иннополис",
+    "work_formats": [
+      "office"
+    ],
+    "specialization": "qa",
+    "grade": "senior",
+    "category": "qa:senior",
+    "category_label": "QA · Senior",
+    "theta": 1.44,
+    "theta_se": 0.29,
+    "topic_scores": [
+      {
+        "topic": "qa.test_design",
+        "label": "Тест-дизайн",
+        "score": 0.84,
+        "level": "strong"
+      },
+      {
+        "topic": "qa.automation",
+        "label": "Автоматизация тестирования",
+        "score": 0.85,
+        "level": "strong"
+      },
+      {
+        "topic": "qa.api_testing",
+        "label": "Тестирование API",
+        "score": 0.73,
+        "level": "strong"
+      },
+      {
+        "topic": "qa.process",
+        "label": "Баг-репорты и процессы",
+        "score": 0.8,
+        "level": "strong"
+      },
+      {
+        "topic": "qa.performance",
+        "label": "Нагрузочное тестирование",
+        "score": 0.88,
+        "level": "strong"
+      }
+    ],
+    "stack": [
+      "python",
+      "cypress",
+      "jest",
+      "selenium",
+      "pytest"
+    ],
+    "roles_in_team": [
+      "Разработчик",
+      "Тимлид"
+    ],
+    "experience_years": 10.0,
+    "soft_skills": [
+      "Наставничество",
+      "Коммуникация",
+      "Работа в команде",
+      "Обучаемость"
+    ],
+    "about": "Тестирую веб и API, пишу автотесты, выстраиваю процессы качества.",
+    "links": [
+      {
+        "type": "github",
+        "url": "https://github.com/example-anna3"
+      }
+    ],
+    "min_salary": 290000,
+    "fsp_id": "FSP-000003",
+    "fsp_score": 44.5,
+    "fsp_badges": [
+      {
+        "id": "participant_many",
+        "title": "Участник 4 соревнований ФСП",
+        "level": null,
+        "verified": true
+      }
+    ],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": false,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.8,
+    "profile_completeness": 100,
+    "last_test_at": "2026-08-21T12:00:00+03:00",
+    "grade_changed_at": "2026-08-21T12:00:00+03:00",
+    "created_at": "2026-09-18T12:00:00+03:00"
+  },
+  {
+    "id": 4,
+    "user_id": 4,
+    "pseudonym": "Кандидат #D3C3",
+    "full_name": "Алексей Волков",
+    "email": "a.volkov.04@example.com",
+    "phone": "+7 900 104-27-61",
+    "telegram": null,
+    "city": "Томск",
+    "work_formats": [
+      "office"
+    ],
+    "specialization": "frontend",
+    "grade": "senior",
+    "category": "frontend:senior",
+    "category_label": "Frontend · Senior",
+    "theta": 1.79,
+    "theta_se": 0.29,
+    "topic_scores": [
+      {
+        "topic": "frontend.js_core",
+        "label": "JavaScript",
+        "score": 0.82,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.react",
+        "label": "React и состояние",
+        "score": 0.72,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.css_layout",
+        "label": "Вёрстка и CSS",
+        "score": 0.74,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.browser",
+        "label": "Браузер и производительность",
+        "score": 0.82,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.typescript",
+        "label": "TypeScript",
+        "score": 0.84,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.testing",
+        "label": "Тестирование фронтенда",
+        "score": 0.93,
+        "level": "strong"
+      }
+    ],
+    "stack": [
+      "react",
+      "playwright",
+      "webpack",
+      "redux",
+      "vite",
+      "tailwind"
+    ],
+    "roles_in_team": [
+      "Архитектор",
+      "Разработчик"
+    ],
+    "experience_years": 10.0,
+    "soft_skills": [
+      "Критическое мышление",
+      "Работа в команде"
+    ],
+    "about": "Делаю интерфейсы, которые удобно использовать. Слежу за производительностью.",
+    "links": [
+      {
+        "type": "github",
+        "url": "https://github.com/example-aleksey4"
+      }
+    ],
+    "min_salary": 420000,
+    "fsp_id": "FSP-000004",
+    "fsp_score": 55.9,
+    "fsp_badges": [
+      {
+        "id": "national_prize",
+        "title": "Призёр всероссийского соревнования",
+        "level": "national",
+        "verified": true
+      },
+      {
+        "id": "participant_many",
+        "title": "Участник 3 соревнований ФСП",
+        "level": null,
+        "verified": true
+      }
+    ],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": false,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.27,
+    "profile_completeness": 90,
+    "last_test_at": "2026-08-30T12:00:00+03:00",
+    "grade_changed_at": "2026-08-30T12:00:00+03:00",
+    "created_at": "2026-08-18T11:00:00+03:00"
+  },
+  {
+    "id": 5,
+    "user_id": 5,
+    "pseudonym": "Кандидат #0DE0",
+    "full_name": "Максим Соловьёв",
+    "email": "m.solovev.05@example.com",
+    "phone": "+7 900 105-12-25",
+    "telegram": "@example_maksim5",
+    "city": "Екатеринбург",
+    "work_formats": [
+      "hybrid",
+      "office",
+      "remote"
+    ],
+    "specialization": "qa",
+    "grade": "senior",
+    "category": "qa:senior",
+    "category_label": "QA · Senior",
+    "theta": 1.41,
+    "theta_se": 0.28,
+    "topic_scores": [
+      {
+        "topic": "qa.test_design",
+        "label": "Тест-дизайн",
+        "score": 0.76,
+        "level": "strong"
+      },
+      {
+        "topic": "qa.automation",
+        "label": "Автоматизация тестирования",
+        "score": 0.8,
+        "level": "strong"
+      },
+      {
+        "topic": "qa.api_testing",
+        "label": "Тестирование API",
+        "score": 0.67,
+        "level": "ok"
+      },
+      {
+        "topic": "qa.process",
+        "label": "Баг-репорты и процессы",
+        "score": 0.88,
+        "level": "strong"
+      },
+      {
+        "topic": "qa.performance",
+        "label": "Нагрузочное тестирование",
+        "score": 0.88,
+        "level": "strong"
+      }
+    ],
+    "stack": [
+      "jmeter",
+      "playwright",
+      "jest",
+      "pytest",
+      "cypress"
+    ],
+    "roles_in_team": [
+      "Архитектор"
+    ],
+    "experience_years": 9.5,
+    "soft_skills": [
+      "Тайм-менеджмент",
+      "Самостоятельность"
+    ],
+    "about": "Тестирую веб и API, пишу автотесты, выстраиваю процессы качества.",
+    "links": [
+      {
+        "type": "github",
+        "url": "https://github.com/example-maksim5"
+      }
+    ],
+    "min_salary": 360000,
+    "fsp_id": "FSP-000005",
+    "fsp_score": 50.9,
+    "fsp_badges": [
+      {
+        "id": "national_prize",
+        "title": "Призёр всероссийского соревнования",
+        "level": "national",
+        "verified": true
+      },
+      {
+        "id": "participant_many",
+        "title": "Участник 3 соревнований ФСП",
+        "level": null,
+        "verified": true
+      }
+    ],
+    "privacy": {
+      "show_city": false,
+      "show_experience": true,
+      "show_links": false,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.55,
+    "profile_completeness": 100,
+    "last_test_at": "2026-08-31T12:00:00+03:00",
+    "grade_changed_at": "2026-08-31T12:00:00+03:00",
+    "created_at": "2026-09-30T12:00:00+03:00"
+  },
+  {
+    "id": 6,
+    "user_id": 6,
+    "pseudonym": "Кандидат #232A",
+    "full_name": "Полина Орлова",
+    "email": "p.orlova.06@example.com",
+    "phone": "+7 900 106-80-51",
+    "telegram": "@example_polina6",
+    "city": "Москва",
+    "work_formats": [
+      "hybrid",
+      "office",
+      "remote"
+    ],
+    "specialization": "frontend",
+    "grade": "middle",
+    "category": "frontend:middle",
+    "category_label": "Frontend · Middle",
+    "theta": 0.62,
+    "theta_se": 0.3,
+    "topic_scores": [
+      {
+        "topic": "frontend.js_core",
+        "label": "JavaScript",
+        "score": 0.67,
+        "level": "ok"
+      },
+      {
+        "topic": "frontend.react",
+        "label": "React и состояние",
+        "score": 0.66,
+        "level": "ok"
+      },
+      {
+        "topic": "frontend.css_layout",
+        "label": "Вёрстка и CSS",
+        "score": 0.71,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.browser",
+        "label": "Браузер и производительность",
+        "score": 0.79,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.typescript",
+        "label": "TypeScript",
+        "score": 0.5,
+        "level": "ok"
+      },
+      {
+        "topic": "frontend.testing",
+        "label": "Тестирование фронтенда",
+        "score": 0.75,
+        "level": "strong"
+      }
+    ],
+    "stack": [
+      "webpack",
+      "angular",
+      "react",
+      "react_native",
+      "html_css"
+    ],
+    "roles_in_team": [
+      "Архитектор"
+    ],
+    "experience_years": 3.5,
+    "soft_skills": [
+      "Работа в команде",
+      "Публичные выступления",
+      "Коммуникация",
+      "Обучаемость"
+    ],
+    "about": "Делаю интерфейсы, которые удобно использовать. Слежу за производительностью.",
+    "links": [],
+    "min_salary": 180000,
+    "fsp_id": "FSP-000006",
+    "fsp_score": 23.4,
+    "fsp_badges": [
+      {
+        "id": "regional_prize",
+        "title": "Призёр регионального соревнования",
+        "level": "regional",
+        "verified": true
+      }
+    ],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": false,
+      "show_fsp_achievements": false
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.25,
+    "profile_completeness": 90,
+    "last_test_at": "2026-09-10T12:00:00+03:00",
+    "grade_changed_at": "2026-09-10T12:00:00+03:00",
+    "created_at": "2026-08-13T10:00:00+03:00"
+  },
+  {
+    "id": 7,
+    "user_id": 7,
+    "pseudonym": "Кандидат #C1D5",
+    "full_name": "Владимир Воробьёв",
+    "email": "v.vorobev.07@example.com",
+    "phone": "+7 900 107-98-64",
+    "telegram": "@example_vladimir7",
+    "city": "Самара",
+    "work_formats": [
+      "office"
+    ],
+    "specialization": "devops",
+    "grade": "middle",
+    "category": "devops:middle",
+    "category_label": "DevOps · Middle",
+    "theta": 0.64,
+    "theta_se": 0.33,
+    "topic_scores": [
+      {
+        "topic": "devops.linux",
+        "label": "Linux и сети",
+        "score": 0.46,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.containers",
+        "label": "Контейнеры и Kubernetes",
+        "score": 0.56,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.ci_cd",
+        "label": "CI/CD",
+        "score": 0.82,
+        "level": "strong"
+      },
+      {
+        "topic": "devops.monitoring",
+        "label": "Мониторинг и логирование",
+        "score": 0.78,
+        "level": "strong"
+      },
+      {
+        "topic": "devops.iac",
+        "label": "Инфраструктура как код",
+        "score": 0.76,
+        "level": "strong"
+      }
+    ],
+    "stack": [
+      "airflow",
+      "prometheus",
+      "redis",
+      "gitlab_ci",
+      "terraform",
+      "grafana"
+    ],
+    "roles_in_team": [
+      "Ментор",
+      "Аналитик"
+    ],
+    "experience_years": 3.5,
+    "soft_skills": [
+      "Публичные выступления",
+      "Коммуникация",
+      "Критическое мышление"
+    ],
+    "about": "Настраиваю CI/CD, контейнеры и мониторинг, чтобы релизы были скучными.",
+    "links": [
+      {
+        "type": "github",
+        "url": "https://github.com/example-vladimir7"
+      }
+    ],
+    "min_salary": 240000,
+    "fsp_id": "FSP-000007",
+    "fsp_score": 43.6,
+    "fsp_badges": [
+      {
+        "id": "national_prize",
+        "title": "Призёр всероссийского соревнования",
+        "level": "national",
+        "verified": true
+      }
+    ],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": false,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.94,
+    "profile_completeness": 100,
+    "last_test_at": "2026-08-21T12:00:00+03:00",
+    "grade_changed_at": "2026-08-21T12:00:00+03:00",
+    "created_at": "2026-08-07T11:00:00+03:00"
+  },
+  {
+    "id": 8,
+    "user_id": 8,
+    "pseudonym": "Кандидат #B480",
+    "full_name": "Илья Романов",
+    "email": "i.romanov.08@example.com",
+    "phone": "+7 900 108-15-19",
+    "telegram": "@example_ilya8",
+    "city": "Санкт-Петербург",
+    "work_formats": [
+      "hybrid",
+      "office"
+    ],
+    "specialization": "mobile",
+    "grade": "junior",
+    "category": "mobile:junior",
+    "category_label": "Mobile · Junior",
+    "theta": -0.82,
+    "theta_se": 0.25,
+    "topic_scores": [
+      {
+        "topic": "mobile.lifecycle",
+        "label": "Жизненный цикл приложения",
+        "score": 0.19,
+        "level": "weak"
+      },
+      {
+        "topic": "mobile.ui",
+        "label": "Интерфейс и навигация",
+        "score": 0.18,
+        "level": "weak"
+      },
+      {
+        "topic": "mobile.networking",
+        "label": "Сеть и хранение данных",
+        "score": 0.18,
+        "level": "weak"
+      },
+      {
+        "topic": "mobile.language",
+        "label": "Kotlin / Swift",
+        "score": 0.22,
+        "level": "weak"
+      },
+      {
+        "topic": "mobile.release",
+        "label": "Сборка и публикация",
+        "score": 0.31,
+        "level": "weak"
+      }
+    ],
+    "stack": [
+      "jetpack_compose",
+      "flutter",
+      "dart",
+      "swiftui",
+      "swift"
+    ],
+    "roles_in_team": [
+      "Ревьюер кода",
+      "Разработчик"
+    ],
+    "experience_years": 1.0,
+    "soft_skills": [
+      "Работа в команде",
+      "Самостоятельность"
+    ],
+    "about": "Разрабатываю мобильные приложения от прототипа до публикации в сторах.",
+    "links": [
+      {
+        "type": "github",
+        "url": "https://github.com/example-ilya8"
+      },
+      {
+        "type": "portfolio",
+        "url": "https://portfolio.example.com/8"
+      }
+    ],
+    "min_salary": 110000,
+    "fsp_id": "FSP-000008",
+    "fsp_score": 13.0,
+    "fsp_badges": [
+      {
+        "id": "regional_prize",
+        "title": "Призёр регионального соревнования",
+        "level": "regional",
+        "verified": true
+      }
+    ],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": true,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.26,
+    "profile_completeness": 100,
+    "last_test_at": "2026-09-17T12:00:00+03:00",
+    "grade_changed_at": "2026-09-17T12:00:00+03:00",
+    "created_at": "2026-08-23T17:00:00+03:00"
+  },
+  {
+    "id": 9,
+    "user_id": 9,
+    "pseudonym": "Кандидат #25FD",
+    "full_name": "Екатерина Соколова",
+    "email": "e.sokolova.09@example.com",
+    "phone": "+7 900 109-85-63",
+    "telegram": "@example_ekaterina9",
+    "city": "Екатеринбург",
+    "work_formats": [
+      "remote"
+    ],
+    "specialization": "data_ml",
+    "grade": "junior",
+    "category": "data_ml:junior",
+    "category_label": "Data Science / ML · Junior",
+    "theta": -0.34,
+    "theta_se": 0.32,
+    "topic_scores": [
+      {
+        "topic": "data_ml.statistics",
+        "label": "Статистика и вероятности",
+        "score": 0.29,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.ml_basics",
+        "label": "Классическое ML",
+        "score": 0.32,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.deep_learning",
+        "label": "Глубокое обучение",
+        "score": 0.54,
+        "level": "ok"
+      },
+      {
+        "topic": "data_ml.sql_data",
+        "label": "SQL и обработка данных",
+        "score": 0.4,
+        "level": "ok"
+      },
+      {
+        "topic": "data_ml.metrics",
+        "label": "Метрики и валидация моделей",
+        "score": 0.42,
+        "level": "ok"
+      }
+    ],
+    "stack": [
+      "spark",
+      "postgresql",
+      "sql",
+      "mlflow"
+    ],
+    "roles_in_team": [
+      "Архитектор"
+    ],
+    "experience_years": 0.5,
+    "soft_skills": [
+      "Публичные выступления",
+      "Коммуникация",
+      "Работа в команде"
+    ],
+    "about": "Работаю с данными: от SQL-выгрузок до обучения и вывода моделей в прод.",
+    "links": [],
+    "min_salary": 130000,
+    "fsp_id": "FSP-000009",
+    "fsp_score": 15.8,
+    "fsp_badges": [
+      {
+        "id": "regional_prize",
+        "title": "Призёр регионального соревнования",
+        "level": "regional",
+        "verified": true
+      }
+    ],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": true,
+      "show_fsp_achievements": false
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.21,
+    "profile_completeness": 90,
+    "last_test_at": "2026-09-26T12:00:00+03:00",
+    "grade_changed_at": "2026-09-26T12:00:00+03:00",
+    "created_at": "2026-08-08T14:00:00+03:00"
+  },
+  {
+    "id": 10,
+    "user_id": 10,
+    "pseudonym": "Кандидат #9779",
+    "full_name": "Дарья Соловьёва",
+    "email": "d.soloveva.10@example.com",
+    "phone": "+7 900 110-85-86",
+    "telegram": "@example_darya10",
+    "city": "Томск",
+    "work_formats": [
+      "hybrid",
+      "office",
+      "remote"
+    ],
+    "specialization": "backend",
+    "grade": "junior",
+    "category": "backend:junior",
+    "category_label": "Backend · Junior",
+    "theta": -0.31,
+    "theta_se": 0.34,
+    "topic_scores": [
+      {
+        "topic": "backend.http_api",
+        "label": "HTTP и REST API",
+        "score": 0.29,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.databases",
+        "label": "Базы данных и SQL",
+        "score": 0.62,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.concurrency",
+        "label": "Конкурентность и асинхронность",
+        "score": 0.42,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.architecture",
+        "label": "Архитектура и паттерны",
+        "score": 0.43,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.algorithms",
+        "label": "Алгоритмы и структуры данных",
+        "score": 0.61,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.security",
+        "label": "Безопасность веб-приложений",
+        "score": 0.51,
+        "level": "ok"
+      }
+    ],
+    "stack": [
+      "kafka",
+      "fastapi",
+      "redis",
+      "mongodb",
+      "mysql",
+      "nodejs"
+    ],
+    "roles_in_team": [
+      "Ревьюер кода"
+    ],
+    "experience_years": 1.5,
+    "soft_skills": [
+      "Самостоятельность",
+      "Обучаемость"
+    ],
+    "about": "Пишу серверную часть: API, работа с базами, очереди. Люблю понятный код и тесты.",
+    "links": [
+      {
+        "type": "github",
+        "url": "https://github.com/example-darya10"
+      }
+    ],
+    "min_salary": 100000,
+    "fsp_id": "FSP-000010",
+    "fsp_score": 46.7,
+    "fsp_badges": [
+      {
+        "id": "national_prize",
+        "title": "Призёр всероссийского соревнования",
+        "level": "national",
+        "verified": true
+      },
+      {
+        "id": "regional_prize",
+        "title": "Призёр регионального соревнования",
+        "level": "regional",
+        "verified": true
+      },
+      {
+        "id": "participant_many",
+        "title": "Участник 2 соревнований ФСП",
+        "level": null,
+        "verified": true
+      }
+    ],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": true,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.48,
+    "profile_completeness": 100,
+    "last_test_at": "2026-08-19T12:00:00+03:00",
+    "grade_changed_at": "2026-08-19T12:00:00+03:00",
+    "created_at": "2026-08-30T11:00:00+03:00"
+  },
+  {
+    "id": 11,
+    "user_id": 11,
+    "pseudonym": "Кандидат #142C",
+    "full_name": "Владимир Борисов",
+    "email": "v.borisov.11@example.com",
+    "phone": "+7 900 111-54-99",
+    "telegram": null,
+    "city": "Томск",
+    "work_formats": [
+      "hybrid",
+      "office"
+    ],
+    "specialization": "backend",
+    "grade": "senior",
+    "category": "backend:senior",
+    "category_label": "Backend · Senior",
+    "theta": 1.62,
+    "theta_se": 0.29,
+    "topic_scores": [
+      {
+        "topic": "backend.http_api",
+        "label": "HTTP и REST API",
+        "score": 0.91,
+        "level": "strong"
+      },
+      {
+        "topic": "backend.databases",
+        "label": "Базы данных и SQL",
+        "score": 0.68,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.concurrency",
+        "label": "Конкурентность и асинхронность",
+        "score": 0.88,
+        "level": "strong"
+      },
+      {
+        "topic": "backend.architecture",
+        "label": "Архитектура и паттерны",
+        "score": 0.69,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.algorithms",
+        "label": "Алгоритмы и структуры данных",
+        "score": 0.85,
+        "level": "strong"
+      },
+      {
+        "topic": "backend.security",
+        "label": "Безопасность веб-приложений",
+        "score": 0.88,
+        "level": "strong"
+      }
+    ],
+    "stack": [
+      "nodejs",
+      "java",
+      "sql",
+      "typescript",
+      "pytest",
+      "python"
+    ],
+    "roles_in_team": [
+      "Разработчик"
+    ],
+    "experience_years": 11.0,
+    "soft_skills": [
+      "Самостоятельность",
+      "Коммуникация",
+      "Ответственность",
+      "Тайм-менеджмент"
+    ],
+    "about": "Пишу серверную часть: API, работа с базами, очереди. Люблю понятный код и тесты.",
+    "links": [],
+    "min_salary": 440000,
+    "fsp_id": "FSP-000011",
+    "fsp_score": 42.8,
+    "fsp_badges": [
+      {
+        "id": "regional_prize",
+        "title": "Призёр регионального соревнования",
+        "level": "regional",
+        "verified": true
+      },
+      {
+        "id": "participant_many",
+        "title": "Участник 4 соревнований ФСП",
+        "level": null,
+        "verified": true
+      }
+    ],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": true,
+      "show_fsp_achievements": false
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.36,
+    "profile_completeness": 80,
+    "last_test_at": "2026-08-26T12:00:00+03:00",
+    "grade_changed_at": "2026-08-26T12:00:00+03:00",
+    "created_at": "2026-08-22T12:00:00+03:00"
+  },
+  {
+    "id": 12,
+    "user_id": 12,
+    "pseudonym": "Кандидат #927E",
+    "full_name": "Дмитрий Степанов",
+    "email": "d.stepanov.12@example.com",
+    "phone": "+7 900 112-90-69",
+    "telegram": "@example_dmitriy12",
+    "city": "Москва",
+    "work_formats": [
+      "remote"
+    ],
+    "specialization": "frontend",
+    "grade": "senior",
+    "category": "frontend:senior",
+    "category_label": "Frontend · Senior",
+    "theta": 1.76,
+    "theta_se": 0.33,
+    "topic_scores": [
+      {
+        "topic": "frontend.js_core",
+        "label": "JavaScript",
+        "score": 0.78,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.react",
+        "label": "React и состояние",
+        "score": 0.89,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.css_layout",
+        "label": "Вёрстка и CSS",
+        "score": 0.73,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.browser",
+        "label": "Браузер и производительность",
+        "score": 0.93,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.typescript",
+        "label": "TypeScript",
+        "score": 0.92,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.testing",
+        "label": "Тестирование фронтенда",
+        "score": 0.87,
+        "level": "strong"
+      }
+    ],
+    "stack": [
+      "webpack",
+      "javascript",
+      "nodejs",
+      "angular",
+      "html_css"
+    ],
+    "roles_in_team": [
+      "Архитектор",
+      "Ментор"
+    ],
+    "experience_years": 11.0,
+    "soft_skills": [
+      "Коммуникация",
+      "Ответственность",
+      "Наставничество"
+    ],
+    "about": "Делаю интерфейсы, которые удобно использовать. Слежу за производительностью.",
+    "links": [
+      {
+        "type": "portfolio",
+        "url": "https://portfolio.example.com/12"
+      }
+    ],
+    "min_salary": 310000,
+    "fsp_id": "FSP-000012",
+    "fsp_score": 48.5,
+    "fsp_badges": [
+      {
+        "id": "international_prize",
+        "title": "Призёр международного соревнования",
+        "level": "international",
+        "verified": true
+      },
+      {
+        "id": "participant_many",
+        "title": "Участник 2 соревнований ФСП",
+        "level": null,
+        "verified": true
+      }
+    ],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": false,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.55,
+    "profile_completeness": 100,
+    "last_test_at": "2026-09-16T12:00:00+03:00",
+    "grade_changed_at": "2026-09-16T12:00:00+03:00",
+    "created_at": "2026-08-12T10:00:00+03:00"
+  },
+  {
+    "id": 13,
+    "user_id": 13,
+    "pseudonym": "Кандидат #371B",
+    "full_name": "Иван Соловьёв",
+    "email": "i.solovev.13@example.com",
+    "phone": "+7 900 113-10-68",
+    "telegram": "@example_ivan13",
+    "city": "Москва",
+    "work_formats": [
+      "hybrid",
+      "remote"
+    ],
+    "specialization": "mobile",
+    "grade": "middle",
+    "category": "mobile:middle",
+    "category_label": "Mobile · Middle",
+    "theta": 0.26,
+    "theta_se": 0.26,
+    "topic_scores": [
+      {
+        "topic": "mobile.lifecycle",
+        "label": "Жизненный цикл приложения",
+        "score": 0.57,
+        "level": "ok"
+      },
+      {
+        "topic": "mobile.ui",
+        "label": "Интерфейс и навигация",
+        "score": 0.5,
+        "level": "ok"
+      },
+      {
+        "topic": "mobile.networking",
+        "label": "Сеть и хранение данных",
+        "score": 0.64,
+        "level": "ok"
+      },
+      {
+        "topic": "mobile.language",
+        "label": "Kotlin / Swift",
+        "score": 0.37,
+        "level": "weak"
+      },
+      {
+        "topic": "mobile.release",
+        "label": "Сборка и публикация",
+        "score": 0.69,
+        "level": "ok"
+      }
+    ],
+    "stack": [
+      "flutter",
+      "swift",
+      "kotlin",
+      "android_sdk"
+    ],
+    "roles_in_team": [
+      "Разработчик",
+      "Тимлид"
+    ],
+    "experience_years": 3.0,
+    "soft_skills": [
+      "Наставничество",
+      "Самостоятельность",
+      "Ответственность",
+      "Коммуникация"
+    ],
+    "about": "Разрабатываю мобильные приложения от прототипа до публикации в сторах.",
+    "links": [
+      {
+        "type": "github",
+        "url": "https://github.com/example-ivan13"
+      }
+    ],
+    "min_salary": 210000,
+    "fsp_id": "FSP-000013",
+    "fsp_score": 33.0,
+    "fsp_badges": [
+      {
+        "id": "participant_many",
+        "title": "Участник 3 соревнований ФСП",
+        "level": null,
+        "verified": true
+      }
+    ],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": false,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.79,
+    "profile_completeness": 100,
+    "last_test_at": "2026-08-25T12:00:00+03:00",
+    "grade_changed_at": "2026-08-25T12:00:00+03:00",
+    "created_at": "2026-08-20T19:00:00+03:00"
+  },
+  {
+    "id": 14,
+    "user_id": 14,
+    "pseudonym": "Кандидат #F668",
+    "full_name": "Татьяна Алексеева",
+    "email": "t.alekseeva.14@example.com",
+    "phone": "+7 900 114-81-72",
+    "telegram": null,
+    "city": "Томск",
+    "work_formats": [
+      "remote"
+    ],
+    "specialization": "frontend",
+    "grade": "junior",
+    "category": "frontend:junior",
+    "category_label": "Frontend · Junior",
+    "theta": -0.17,
+    "theta_se": 0.3,
+    "topic_scores": [
+      {
+        "topic": "frontend.js_core",
+        "label": "JavaScript",
+        "score": 0.52,
+        "level": "ok"
+      },
+      {
+        "topic": "frontend.react",
+        "label": "React и состояние",
+        "score": 0.35,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.css_layout",
+        "label": "Вёрстка и CSS",
+        "score": 0.36,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.browser",
+        "label": "Браузер и производительность",
+        "score": 0.29,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.typescript",
+        "label": "TypeScript",
+        "score": 0.54,
+        "level": "ok"
+      },
+      {
+        "topic": "frontend.testing",
+        "label": "Тестирование фронтенда",
+        "score": 0.67,
+        "level": "ok"
+      }
+    ],
+    "stack": [
+      "react_native",
+      "cypress",
+      "vite",
+      "tailwind"
+    ],
+    "roles_in_team": [
+      "Тимлид"
+    ],
+    "experience_years": 2.0,
+    "soft_skills": [
+      "Тайм-менеджмент",
+      "Наставничество",
+      "Критическое мышление"
+    ],
+    "about": "Делаю интерфейсы, которые удобно использовать. Слежу за производительностью.",
+    "links": [
+      {
+        "type": "github",
+        "url": "https://github.com/example-tatyana14"
+      }
+    ],
+    "min_salary": 110000,
+    "fsp_id": "FSP-000014",
+    "fsp_score": 21.0,
+    "fsp_badges": [
+      {
+        "id": "participant_many",
+        "title": "Участник 2 соревнований ФСП",
+        "level": null,
+        "verified": true
+      }
+    ],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": false,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.72,
+    "profile_completeness": 90,
+    "last_test_at": "2026-09-27T12:00:00+03:00",
+    "grade_changed_at": "2026-09-27T12:00:00+03:00",
+    "created_at": "2026-09-13T11:00:00+03:00"
+  },
+  {
+    "id": 15,
+    "user_id": 15,
+    "pseudonym": "Кандидат #70ED",
+    "full_name": "Полина Захарова",
+    "email": "p.zakharova.15@example.com",
+    "phone": "+7 900 115-87-88",
+    "telegram": "@example_polina15",
+    "city": "Екатеринбург",
+    "work_formats": [
+      "hybrid",
+      "office",
+      "remote"
+    ],
+    "specialization": "devops",
+    "grade": "middle",
+    "category": "devops:middle",
+    "category_label": "DevOps · Middle",
+    "theta": 0.16,
+    "theta_se": 0.31,
+    "topic_scores": [
+      {
+        "topic": "devops.linux",
+        "label": "Linux и сети",
+        "score": 0.61,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.containers",
+        "label": "Контейнеры и Kubernetes",
+        "score": 0.45,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.ci_cd",
+        "label": "CI/CD",
+        "score": 0.46,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.monitoring",
+        "label": "Мониторинг и логирование",
+        "score": 0.68,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.iac",
+        "label": "Инфраструктура как код",
+        "score": 0.59,
+        "level": "ok"
+      }
+    ],
+    "stack": [
+      "prometheus",
+      "linux",
+      "helm",
+      "github_actions"
+    ],
+    "roles_in_team": [
+      "Ментор",
+      "Ревьюер кода"
+    ],
+    "experience_years": 3.5,
+    "soft_skills": [
+      "Критическое мышление",
+      "Тайм-менеджмент",
+      "Самостоятельность",
+      "Работа в команде"
+    ],
+    "about": "Настраиваю CI/CD, контейнеры и мониторинг, чтобы релизы были скучными.",
+    "links": [
+      {
+        "type": "github",
+        "url": "https://github.com/example-polina15"
+      }
+    ],
+    "min_salary": 250000,
+    "fsp_id": "FSP-000015",
+    "fsp_score": 52.0,
+    "fsp_badges": [
+      {
+        "id": "participant_many",
+        "title": "Участник 3 соревнований ФСП",
+        "level": null,
+        "verified": true
+      }
+    ],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": true,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.79,
+    "profile_completeness": 100,
+    "last_test_at": "2026-09-05T12:00:00+03:00",
+    "grade_changed_at": "2026-09-05T12:00:00+03:00",
+    "created_at": "2026-08-09T20:00:00+03:00"
+  },
+  {
+    "id": 16,
+    "user_id": 16,
+    "pseudonym": "Кандидат #1939",
+    "full_name": "Павел Григорьев",
+    "email": "p.grigorev.16@example.com",
+    "phone": "+7 900 116-12-72",
+    "telegram": "@example_pavel16",
+    "city": "Екатеринбург",
+    "work_formats": [
+      "hybrid",
+      "office"
+    ],
+    "specialization": "data_ml",
+    "grade": "intern",
+    "category": "data_ml:intern",
+    "category_label": "Data Science / ML · Стажёр",
+    "theta": -1.87,
+    "theta_se": 0.29,
+    "topic_scores": [
+      {
+        "topic": "data_ml.statistics",
+        "label": "Статистика и вероятности",
+        "score": 0.12,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.ml_basics",
+        "label": "Классическое ML",
+        "score": 0.17,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.deep_learning",
+        "label": "Глубокое обучение",
+        "score": 0.23,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.sql_data",
+        "label": "SQL и обработка данных",
+        "score": 0.2,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.metrics",
+        "label": "Метрики и валидация моделей",
+        "score": 0.12,
+        "level": "weak"
+      }
+    ],
+    "stack": [
+      "python",
+      "scikit_learn",
+      "kafka",
+      "jupyter"
+    ],
+    "roles_in_team": [
+      "Тимлид"
+    ],
+    "experience_years": 0.0,
+    "soft_skills": [
+      "Публичные выступления",
+      "Самостоятельность",
+      "Критическое мышление"
+    ],
+    "about": "Работаю с данными: от SQL-выгрузок до обучения и вывода моделей в прод.",
+    "links": [
+      {
+        "type": "github",
+        "url": "https://github.com/example-pavel16"
+      }
+    ],
+    "min_salary": 60000,
+    "fsp_id": "FSP-000016",
+    "fsp_score": 12.0,
+    "fsp_badges": [
+      {
+        "id": "regional_prize",
+        "title": "Призёр регионального соревнования",
+        "level": "regional",
+        "verified": true
+      }
+    ],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": true,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.41,
+    "profile_completeness": 100,
+    "last_test_at": "2026-09-21T12:00:00+03:00",
+    "grade_changed_at": "2026-09-21T12:00:00+03:00",
+    "created_at": "2026-09-19T16:00:00+03:00"
+  },
+  {
+    "id": 17,
+    "user_id": 17,
+    "pseudonym": "Кандидат #18A5",
+    "full_name": "Илья Павлов",
+    "email": "i.pavlov.17@example.com",
+    "phone": "+7 900 117-15-42",
+    "telegram": null,
+    "city": "Санкт-Петербург",
+    "work_formats": [
+      "hybrid",
+      "office"
+    ],
+    "specialization": "qa",
+    "grade": "middle",
+    "category": "qa:middle",
+    "category_label": "QA · Middle",
+    "theta": 0.42,
+    "theta_se": 0.29,
+    "topic_scores": [
+      {
+        "topic": "qa.test_design",
+        "label": "Тест-дизайн",
+        "score": 0.69,
+        "level": "ok"
+      },
+      {
+        "topic": "qa.automation",
+        "label": "Автоматизация тестирования",
+        "score": 0.63,
+        "level": "ok"
+      },
+      {
+        "topic": "qa.api_testing",
+        "label": "Тестирование API",
+        "score": 0.72,
+        "level": "strong"
+      },
+      {
+        "topic": "qa.process",
+        "label": "Баг-репорты и процессы",
+        "score": 0.52,
+        "level": "ok"
+      },
+      {
+        "topic": "qa.performance",
+        "label": "Нагрузочное тестирование",
+        "score": 0.61,
+        "level": "ok"
+      }
+    ],
+    "stack": [
+      "pytest",
+      "java",
+      "playwright",
+      "postman",
+      "allure",
+      "jest",
+      "jmeter"
+    ],
+    "roles_in_team": [
+      "Ментор"
+    ],
+    "experience_years": 4.5,
+    "soft_skills": [
+      "Тайм-менеджмент",
+      "Обучаемость",
+      "Самостоятельность",
+      "Коммуникация"
+    ],
+    "about": "Тестирую веб и API, пишу автотесты, выстраиваю процессы качества.",
+    "links": [
+      {
+        "type": "portfolio",
+        "url": "https://portfolio.example.com/17"
+      }
+    ],
+    "min_salary": 180000,
+    "fsp_id": "FSP-000017",
+    "fsp_score": 52.1,
+    "fsp_badges": [
+      {
+        "id": "regional_prize",
+        "title": "Призёр регионального соревнования",
+        "level": "regional",
+        "verified": true
+      },
+      {
+        "id": "participant_many",
+        "title": "Участник 3 соревнований ФСП",
+        "level": null,
+        "verified": true
+      }
+    ],
+    "privacy": {
+      "show_city": false,
+      "show_experience": false,
+      "show_links": false,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.61,
+    "profile_completeness": 90,
+    "last_test_at": "2026-08-19T12:00:00+03:00",
+    "grade_changed_at": "2026-08-19T12:00:00+03:00",
+    "created_at": "2026-09-07T12:00:00+03:00"
+  },
+  {
+    "id": 18,
+    "user_id": 18,
+    "pseudonym": "Кандидат #52D9",
+    "full_name": "Константин Васильев",
+    "email": "k.vasilev.18@example.com",
+    "phone": "+7 900 118-87-11",
+    "telegram": null,
+    "city": "Самара",
+    "work_formats": [
+      "hybrid"
+    ],
+    "specialization": "devops",
+    "grade": "middle",
+    "category": "devops:middle",
+    "category_label": "DevOps · Middle",
+    "theta": 0.81,
+    "theta_se": 0.28,
+    "topic_scores": [
+      {
+        "topic": "devops.linux",
+        "label": "Linux и сети",
+        "score": 0.55,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.containers",
+        "label": "Контейнеры и Kubernetes",
+        "score": 0.73,
+        "level": "strong"
+      },
+      {
+        "topic": "devops.ci_cd",
+        "label": "CI/CD",
+        "score": 0.54,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.monitoring",
+        "label": "Мониторинг и логирование",
+        "score": 0.76,
+        "level": "strong"
+      },
+      {
+        "topic": "devops.iac",
+        "label": "Инфраструктура как код",
+        "score": 0.76,
+        "level": "strong"
+      }
+    ],
+    "stack": [
+      "bash",
+      "terraform",
+      "docker",
+      "redis",
+      "kubernetes",
+      "gitlab_ci"
+    ],
+    "roles_in_team": [
+      "Ревьюер кода"
+    ],
+    "experience_years": 3.5,
+    "soft_skills": [
+      "Критическое мышление",
+      "Работа в команде",
+      "Тайм-менеджмент"
+    ],
+    "about": "Настраиваю CI/CD, контейнеры и мониторинг, чтобы релизы были скучными.",
+    "links": [],
+    "min_salary": 160000,
+    "fsp_id": "FSP-000018",
+    "fsp_score": 18.4,
+    "fsp_badges": [
+      {
+        "id": "participant",
+        "title": "Участник соревнования ФСП",
+        "level": null,
+        "verified": true
+      }
+    ],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": false,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.8,
+    "profile_completeness": 80,
+    "last_test_at": "2026-09-19T12:00:00+03:00",
+    "grade_changed_at": "2026-09-19T12:00:00+03:00",
+    "created_at": "2026-09-26T17:00:00+03:00"
+  },
+  {
+    "id": 19,
+    "user_id": 19,
+    "pseudonym": "Кандидат #1869",
+    "full_name": "Иван Гусев",
+    "email": "i.gusev.19@example.com",
+    "phone": "+7 900 119-89-60",
+    "telegram": "@example_ivan19",
+    "city": "Санкт-Петербург",
+    "work_formats": [
+      "remote"
+    ],
+    "specialization": "backend",
+    "grade": "intern",
+    "category": "backend:intern",
+    "category_label": "Backend · Стажёр",
+    "theta": -1.82,
+    "theta_se": 0.29,
+    "topic_scores": [
+      {
+        "topic": "backend.http_api",
+        "label": "HTTP и REST API",
+        "score": 0.19,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.databases",
+        "label": "Базы данных и SQL",
+        "score": 0.07,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.concurrency",
+        "label": "Конкурентность и асинхронность",
+        "score": 0.1,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.architecture",
+        "label": "Архитектура и паттерны",
+        "score": 0.15,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.algorithms",
+        "label": "Алгоритмы и структуры данных",
+        "score": 0.15,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.security",
+        "label": "Безопасность веб-приложений",
+        "score": 0.09,
+        "level": "weak"
+      }
+    ],
+    "stack": [
+      "docker",
+      "csharp",
+      "pytest",
+      "django",
+      "python",
+      "linux",
+      "graphql"
+    ],
+    "roles_in_team": [
+      "Аналитик"
+    ],
+    "experience_years": 0.0,
+    "soft_skills": [
+      "Коммуникация",
+      "Тайм-менеджмент",
+      "Публичные выступления",
+      "Работа в команде"
+    ],
+    "about": "Пишу серверную часть: API, работа с базами, очереди. Люблю понятный код и тесты.",
+    "links": [
+      {
+        "type": "portfolio",
+        "url": "https://portfolio.example.com/19"
+      }
+    ],
+    "min_salary": 60000,
+    "fsp_id": "FSP-000019",
+    "fsp_score": 5.2,
+    "fsp_badges": [
+      {
+        "id": "participant",
+        "title": "Участник соревнования ФСП",
+        "level": null,
+        "verified": true
+      }
+    ],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": true,
+      "show_fsp_achievements": false
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.56,
+    "profile_completeness": 100,
+    "last_test_at": "2026-10-01T12:00:00+03:00",
+    "grade_changed_at": "2026-10-01T12:00:00+03:00",
+    "created_at": "2026-08-26T20:00:00+03:00"
+  },
+  {
+    "id": 20,
+    "user_id": 20,
+    "pseudonym": "Кандидат #38DC",
+    "full_name": "Наталья Григорьева",
+    "email": "n.grigoreva.20@example.com",
+    "phone": "+7 900 120-36-75",
+    "telegram": "@example_natalya20",
+    "city": "Екатеринбург",
+    "work_formats": [
+      "office",
+      "remote"
+    ],
+    "specialization": "data_ml",
+    "grade": "intern",
+    "category": "data_ml:intern",
+    "category_label": "Data Science / ML · Стажёр",
+    "theta": -1.84,
+    "theta_se": 0.25,
+    "topic_scores": [
+      {
+        "topic": "data_ml.statistics",
+        "label": "Статистика и вероятности",
+        "score": 0.12,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.ml_basics",
+        "label": "Классическое ML",
+        "score": 0.07,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.deep_learning",
+        "label": "Глубокое обучение",
+        "score": 0.15,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.sql_data",
+        "label": "SQL и обработка данных",
+        "score": 0.16,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.metrics",
+        "label": "Метрики и валидация моделей",
+        "score": 0.28,
+        "level": "weak"
+      }
+    ],
+    "stack": [
+      "python",
+      "jupyter",
+      "spark",
+      "kafka",
+      "scikit_learn",
+      "mlflow"
+    ],
+    "roles_in_team": [
+      "Тимлид",
+      "Разработчик"
+    ],
+    "experience_years": 0.0,
+    "soft_skills": [
+      "Самостоятельность",
+      "Ответственность",
+      "Коммуникация"
+    ],
+    "about": "Работаю с данными: от SQL-выгрузок до обучения и вывода моделей в прод.",
+    "links": [
+      {
+        "type": "github",
+        "url": "https://github.com/example-natalya20"
+      }
+    ],
+    "min_salary": 60000,
+    "fsp_id": "FSP-000020",
+    "fsp_score": 11.5,
+    "fsp_badges": [
+      {
+        "id": "participant",
+        "title": "Участник соревнования ФСП",
+        "level": null,
+        "verified": true
+      }
+    ],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": false,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.82,
+    "profile_completeness": 100,
+    "last_test_at": "2026-09-01T12:00:00+03:00",
+    "grade_changed_at": "2026-09-01T12:00:00+03:00",
+    "created_at": "2026-08-08T10:00:00+03:00"
+  },
+  {
+    "id": 21,
+    "user_id": 21,
+    "pseudonym": "Кандидат #7C27",
+    "full_name": "Михаил Романов",
+    "email": "m.romanov.21@example.com",
+    "phone": "+7 900 121-17-24",
+    "telegram": "@example_mikhail21",
+    "city": "Самара",
+    "work_formats": [
+      "hybrid"
+    ],
+    "specialization": "data_ml",
+    "grade": "middle",
+    "category": "data_ml:middle",
+    "category_label": "Data Science / ML · Middle",
+    "theta": 0.67,
+    "theta_se": 0.3,
+    "topic_scores": [
+      {
+        "topic": "data_ml.statistics",
+        "label": "Статистика и вероятности",
+        "score": 0.7,
+        "level": "strong"
+      },
+      {
+        "topic": "data_ml.ml_basics",
+        "label": "Классическое ML",
+        "score": 0.67,
+        "level": "ok"
+      },
+      {
+        "topic": "data_ml.deep_learning",
+        "label": "Глубокое обучение",
+        "score": 0.71,
+        "level": "strong"
+      },
+      {
+        "topic": "data_ml.sql_data",
+        "label": "SQL и обработка данных",
+        "score": 0.47,
+        "level": "ok"
+      },
+      {
+        "topic": "data_ml.metrics",
+        "label": "Метрики и валидация моделей",
+        "score": 0.78,
+        "level": "strong"
+      }
+    ],
+    "stack": [
+      "pandas",
+      "python",
+      "clickhouse",
+      "sql",
+      "airflow"
+    ],
+    "roles_in_team": [
+      "Ревьюер кода"
+    ],
+    "experience_years": 2.0,
+    "soft_skills": [
+      "Обучаемость",
+      "Ответственность",
+      "Тайм-менеджмент"
+    ],
+    "about": "Работаю с данными: от SQL-выгрузок до обучения и вывода моделей в прод.",
+    "links": [
+      {
+        "type": "github",
+        "url": "https://github.com/example-mikhail21"
+      }
+    ],
+    "min_salary": 250000,
+    "fsp_id": "FSP-000031",
+    "fsp_score": null,
+    "fsp_badges": [],
+    "privacy": {
+      "show_city": false,
+      "show_experience": true,
+      "show_links": true,
+      "show_fsp_achievements": false
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.9,
+    "profile_completeness": 100,
+    "last_test_at": "2026-09-30T12:00:00+03:00",
+    "grade_changed_at": "2026-09-30T12:00:00+03:00",
+    "created_at": "2026-08-22T14:00:00+03:00"
+  },
+  {
+    "id": 22,
+    "user_id": 22,
+    "pseudonym": "Кандидат #FA38",
+    "full_name": "Полина Соколова",
+    "email": "p.sokolova.22@example.com",
+    "phone": "+7 900 122-51-37",
+    "telegram": null,
+    "city": "Казань",
+    "work_formats": [
+      "remote"
+    ],
+    "specialization": "backend",
+    "grade": "junior",
+    "category": "backend:junior",
+    "category_label": "Backend · Junior",
+    "theta": -0.56,
+    "theta_se": 0.31,
+    "topic_scores": [
+      {
+        "topic": "backend.http_api",
+        "label": "HTTP и REST API",
+        "score": 0.35,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.databases",
+        "label": "Базы данных и SQL",
+        "score": 0.19,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.concurrency",
+        "label": "Конкурентность и асинхронность",
+        "score": 0.57,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.architecture",
+        "label": "Архитектура и паттерны",
+        "score": 0.43,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.algorithms",
+        "label": "Алгоритмы и структуры данных",
+        "score": 0.41,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.security",
+        "label": "Безопасность веб-приложений",
+        "score": 0.58,
+        "level": "ok"
+      }
+    ],
+    "stack": [
+      "kafka",
+      "java",
+      "sql",
+      "nodejs",
+      "grpc",
+      "linux"
+    ],
+    "roles_in_team": [
+      "Ревьюер кода",
+      "Тимлид"
+    ],
+    "experience_years": 1.0,
+    "soft_skills": [
+      "Обучаемость",
+      "Критическое мышление",
+      "Ответственность"
+    ],
+    "about": "Пишу серверную часть: API, работа с базами, очереди. Люблю понятный код и тесты.",
+    "links": [],
+    "min_salary": 120000,
+    "fsp_id": "FSP-000032",
+    "fsp_score": null,
+    "fsp_badges": [],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": true,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.56,
+    "profile_completeness": 80,
+    "last_test_at": "2026-09-28T12:00:00+03:00",
+    "grade_changed_at": "2026-09-28T12:00:00+03:00",
+    "created_at": "2026-09-26T16:00:00+03:00"
+  },
+  {
+    "id": 23,
+    "user_id": 23,
+    "pseudonym": "Кандидат #F96C",
+    "full_name": "Константин Гусев",
+    "email": "k.gusev.23@example.com",
+    "phone": "+7 900 123-40-70",
+    "telegram": "@example_konstantin23",
+    "city": "Екатеринбург",
+    "work_formats": [
+      "hybrid",
+      "office",
+      "remote"
+    ],
+    "specialization": "devops",
+    "grade": "senior",
+    "category": "devops:senior",
+    "category_label": "DevOps · Senior",
+    "theta": 1.25,
+    "theta_se": 0.28,
+    "topic_scores": [
+      {
+        "topic": "devops.linux",
+        "label": "Linux и сети",
+        "score": 0.62,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.containers",
+        "label": "Контейнеры и Kubernetes",
+        "score": 0.68,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.ci_cd",
+        "label": "CI/CD",
+        "score": 0.82,
+        "level": "strong"
+      },
+      {
+        "topic": "devops.monitoring",
+        "label": "Мониторинг и логирование",
+        "score": 0.62,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.iac",
+        "label": "Инфраструктура как код",
+        "score": 0.63,
+        "level": "ok"
+      }
+    ],
+    "stack": [
+      "kubernetes",
+      "aws",
+      "gitlab_ci",
+      "github_actions",
+      "go",
+      "terraform"
+    ],
+    "roles_in_team": [
+      "Ревьюер кода",
+      "Ментор"
+    ],
+    "experience_years": 6.5,
+    "soft_skills": [
+      "Самостоятельность",
+      "Работа в команде",
+      "Критическое мышление"
+    ],
+    "about": "Настраиваю CI/CD, контейнеры и мониторинг, чтобы релизы были скучными.",
+    "links": [
+      {
+        "type": "github",
+        "url": "https://github.com/example-konstantin23"
+      }
+    ],
+    "min_salary": 340000,
+    "fsp_id": "FSP-000033",
+    "fsp_score": null,
+    "fsp_badges": [],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": false,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.66,
+    "profile_completeness": 100,
+    "last_test_at": "2026-08-28T12:00:00+03:00",
+    "grade_changed_at": "2026-08-28T12:00:00+03:00",
+    "created_at": "2026-08-26T13:00:00+03:00"
+  },
+  {
+    "id": 24,
+    "user_id": 24,
+    "pseudonym": "Кандидат #2A14",
+    "full_name": "Вероника Романова",
+    "email": "v.romanova.24@example.com",
+    "phone": "+7 900 124-75-90",
+    "telegram": "@example_veronika24",
+    "city": "Екатеринбург",
+    "work_formats": [
+      "office"
+    ],
+    "specialization": "mobile",
+    "grade": "middle",
+    "category": "mobile:middle",
+    "category_label": "Mobile · Middle",
+    "theta": 0.44,
+    "theta_se": 0.27,
+    "topic_scores": [
+      {
+        "topic": "mobile.lifecycle",
+        "label": "Жизненный цикл приложения",
+        "score": 0.53,
+        "level": "ok"
+      },
+      {
+        "topic": "mobile.ui",
+        "label": "Интерфейс и навигация",
+        "score": 0.55,
+        "level": "ok"
+      },
+      {
+        "topic": "mobile.networking",
+        "label": "Сеть и хранение данных",
+        "score": 0.66,
+        "level": "ok"
+      },
+      {
+        "topic": "mobile.language",
+        "label": "Kotlin / Swift",
+        "score": 0.79,
+        "level": "strong"
+      },
+      {
+        "topic": "mobile.release",
+        "label": "Сборка и публикация",
+        "score": 0.44,
+        "level": "ok"
+      }
+    ],
+    "stack": [
+      "dart",
+      "ios_sdk",
+      "flutter",
+      "jetpack_compose",
+      "kotlin"
+    ],
+    "roles_in_team": [
+      "Ревьюер кода",
+      "Ментор"
+    ],
+    "experience_years": 3.5,
+    "soft_skills": [
+      "Коммуникация",
+      "Ответственность",
+      "Наставничество",
+      "Самостоятельность"
+    ],
+    "about": "Разрабатываю мобильные приложения от прототипа до публикации в сторах.",
+    "links": [
+      {
+        "type": "github",
+        "url": "https://github.com/example-veronika24"
+      },
+      {
+        "type": "portfolio",
+        "url": "https://portfolio.example.com/24"
+      }
+    ],
+    "min_salary": 180000,
+    "fsp_id": "FSP-000034",
+    "fsp_score": null,
+    "fsp_badges": [],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": true,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.18,
+    "profile_completeness": 100,
+    "last_test_at": "2026-09-24T12:00:00+03:00",
+    "grade_changed_at": "2026-09-24T12:00:00+03:00",
+    "created_at": "2026-08-29T20:00:00+03:00"
+  },
+  {
+    "id": 25,
+    "user_id": 25,
+    "pseudonym": "Кандидат #187C",
+    "full_name": "Тимур Смирнов",
+    "email": "t.smirnov.25@example.com",
+    "phone": "+7 900 125-51-28",
+    "telegram": "@example_timur25",
+    "city": "Москва",
+    "work_formats": [
+      "hybrid"
+    ],
+    "specialization": "qa",
+    "grade": "junior",
+    "category": "qa:junior",
+    "category_label": "QA · Junior",
+    "theta": -0.43,
+    "theta_se": 0.27,
+    "topic_scores": [
+      {
+        "topic": "qa.test_design",
+        "label": "Тест-дизайн",
+        "score": 0.22,
+        "level": "weak"
+      },
+      {
+        "topic": "qa.automation",
+        "label": "Автоматизация тестирования",
+        "score": 0.51,
+        "level": "ok"
+      },
+      {
+        "topic": "qa.api_testing",
+        "label": "Тестирование API",
+        "score": 0.31,
+        "level": "weak"
+      },
+      {
+        "topic": "qa.process",
+        "label": "Баг-репорты и процессы",
+        "score": 0.53,
+        "level": "ok"
+      },
+      {
+        "topic": "qa.performance",
+        "label": "Нагрузочное тестирование",
+        "score": 0.37,
+        "level": "weak"
+      }
+    ],
+    "stack": [
+      "postman",
+      "jest",
+      "jmeter",
+      "python",
+      "playwright",
+      "selenium"
+    ],
+    "roles_in_team": [
+      "Ревьюер кода"
+    ],
+    "experience_years": 1.0,
+    "soft_skills": [
+      "Обучаемость",
+      "Работа в команде"
+    ],
+    "about": "Тестирую веб и API, пишу автотесты, выстраиваю процессы качества.",
+    "links": [
+      {
+        "type": "portfolio",
+        "url": "https://portfolio.example.com/25"
+      }
+    ],
+    "min_salary": 130000,
+    "fsp_id": "FSP-000035",
+    "fsp_score": null,
+    "fsp_badges": [],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": false,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.16,
+    "profile_completeness": 100,
+    "last_test_at": "2026-08-17T12:00:00+03:00",
+    "grade_changed_at": "2026-08-17T12:00:00+03:00",
+    "created_at": "2026-08-16T09:00:00+03:00"
+  },
+  {
+    "id": 26,
+    "user_id": 26,
+    "pseudonym": "Кандидат #61E3",
+    "full_name": "Иван Андреев",
+    "email": "candidate.nofsp@example.com",
+    "phone": "+7 900 126-93-19",
+    "telegram": null,
+    "city": "Москва",
+    "work_formats": [
+      "remote"
+    ],
+    "specialization": "frontend",
+    "grade": "junior",
+    "category": "frontend:junior",
+    "category_label": "Frontend · Junior",
+    "theta": -0.38,
+    "theta_se": 0.28,
+    "topic_scores": [
+      {
+        "topic": "frontend.js_core",
+        "label": "JavaScript",
+        "score": 0.28,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.react",
+        "label": "React и состояние",
+        "score": 0.31,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.css_layout",
+        "label": "Вёрстка и CSS",
+        "score": 0.26,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.browser",
+        "label": "Браузер и производительность",
+        "score": 0.26,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.typescript",
+        "label": "TypeScript",
+        "score": 0.24,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.testing",
+        "label": "Тестирование фронтенда",
+        "score": 0.3,
+        "level": "weak"
+      }
+    ],
+    "stack": [
+      "javascript",
+      "react",
+      "tailwind",
+      "nextjs",
+      "graphql",
+      "playwright"
+    ],
+    "roles_in_team": [
+      "Ментор"
+    ],
+    "experience_years": 1.0,
+    "soft_skills": [
+      "Публичные выступления",
+      "Наставничество",
+      "Работа в команде",
+      "Критическое мышление"
+    ],
+    "about": "Делаю интерфейсы, которые удобно использовать. Слежу за производительностью.",
+    "links": [
+      {
+        "type": "github",
+        "url": "https://github.com/example-ivan26"
+      }
+    ],
+    "min_salary": 120000,
+    "fsp_id": null,
+    "fsp_score": null,
+    "fsp_badges": [],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": true,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.57,
+    "profile_completeness": 80,
+    "last_test_at": "2026-09-13T12:00:00+03:00",
+    "grade_changed_at": "2026-09-13T12:00:00+03:00",
+    "created_at": "2026-08-14T12:00:00+03:00"
+  },
+  {
+    "id": 27,
+    "user_id": 27,
+    "pseudonym": "Кандидат #D6C6",
+    "full_name": "Павел Зайцев",
+    "email": "p.zaytsev.27@example.com",
+    "phone": "+7 900 127-31-66",
+    "telegram": "@example_pavel27",
+    "city": "Краснодар",
+    "work_formats": [
+      "hybrid",
+      "office",
+      "remote"
+    ],
+    "specialization": "backend",
+    "grade": "middle",
+    "category": "backend:middle",
+    "category_label": "Backend · Middle",
+    "theta": 0.63,
+    "theta_se": 0.27,
+    "topic_scores": [
+      {
+        "topic": "backend.http_api",
+        "label": "HTTP и REST API",
+        "score": 0.68,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.databases",
+        "label": "Базы данных и SQL",
+        "score": 0.78,
+        "level": "strong"
+      },
+      {
+        "topic": "backend.concurrency",
+        "label": "Конкурентность и асинхронность",
+        "score": 0.61,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.architecture",
+        "label": "Архитектура и паттерны",
+        "score": 0.48,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.algorithms",
+        "label": "Алгоритмы и структуры данных",
+        "score": 0.7,
+        "level": "strong"
+      },
+      {
+        "topic": "backend.security",
+        "label": "Безопасность веб-приложений",
+        "score": 0.44,
+        "level": "ok"
+      }
+    ],
+    "stack": [
+      "linux",
+      "redis",
+      "nginx",
+      "graphql",
+      "postgresql",
+      "grpc"
+    ],
+    "roles_in_team": [
+      "Ментор",
+      "Аналитик"
+    ],
+    "experience_years": 2.0,
+    "soft_skills": [
+      "Наставничество",
+      "Самостоятельность",
+      "Тайм-менеджмент"
+    ],
+    "about": "Пишу серверную часть: API, работа с базами, очереди. Люблю понятный код и тесты.",
+    "links": [
+      {
+        "type": "github",
+        "url": "https://github.com/example-pavel27"
+      }
+    ],
+    "min_salary": 190000,
+    "fsp_id": null,
+    "fsp_score": null,
+    "fsp_badges": [],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": true,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.15,
+    "profile_completeness": 90,
+    "last_test_at": "2026-09-12T12:00:00+03:00",
+    "grade_changed_at": "2026-09-12T12:00:00+03:00",
+    "created_at": "2026-08-21T09:00:00+03:00"
+  },
+  {
+    "id": 28,
+    "user_id": 28,
+    "pseudonym": "Кандидат #FB5D",
+    "full_name": "Артём Ильин",
+    "email": "a.ilin.28@example.com",
+    "phone": "+7 900 128-11-28",
+    "telegram": "@example_artem28",
+    "city": "Казань",
+    "work_formats": [
+      "office"
+    ],
+    "specialization": "mobile",
+    "grade": "senior",
+    "category": "mobile:senior",
+    "category_label": "Mobile · Senior",
+    "theta": 1.14,
+    "theta_se": 0.32,
+    "topic_scores": [
+      {
+        "topic": "mobile.lifecycle",
+        "label": "Жизненный цикл приложения",
+        "score": 0.88,
+        "level": "strong"
+      },
+      {
+        "topic": "mobile.ui",
+        "label": "Интерфейс и навигация",
+        "score": 0.8,
+        "level": "strong"
+      },
+      {
+        "topic": "mobile.networking",
+        "label": "Сеть и хранение данных",
+        "score": 0.73,
+        "level": "strong"
+      },
+      {
+        "topic": "mobile.language",
+        "label": "Kotlin / Swift",
+        "score": 0.86,
+        "level": "strong"
+      },
+      {
+        "topic": "mobile.release",
+        "label": "Сборка и публикация",
+        "score": 0.82,
+        "level": "strong"
+      }
+    ],
+    "stack": [
+      "swiftui",
+      "jetpack_compose",
+      "flutter",
+      "swift",
+      "java",
+      "kotlin",
+      "android_sdk"
+    ],
+    "roles_in_team": [
+      "Разработчик",
+      "Ментор"
+    ],
+    "experience_years": 8.5,
+    "soft_skills": [
+      "Самостоятельность",
+      "Работа в команде",
+      "Коммуникация",
+      "Критическое мышление"
+    ],
+    "about": "Разрабатываю мобильные приложения от прототипа до публикации в сторах.",
+    "links": [],
+    "min_salary": 350000,
+    "fsp_id": null,
+    "fsp_score": null,
+    "fsp_badges": [],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": true,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.2,
+    "profile_completeness": 80,
+    "last_test_at": "2026-08-25T12:00:00+03:00",
+    "grade_changed_at": "2026-08-25T12:00:00+03:00",
+    "created_at": "2026-09-12T11:00:00+03:00"
+  },
+  {
+    "id": 29,
+    "user_id": 29,
+    "pseudonym": "Кандидат #25FE",
+    "full_name": "Максим Романов",
+    "email": "m.romanov.29@example.com",
+    "phone": "+7 900 129-77-82",
+    "telegram": null,
+    "city": "Москва",
+    "work_formats": [
+      "remote"
+    ],
+    "specialization": "backend",
+    "grade": "junior",
+    "category": "backend:junior",
+    "category_label": "Backend · Junior",
+    "theta": -0.39,
+    "theta_se": 0.29,
+    "topic_scores": [
+      {
+        "topic": "backend.http_api",
+        "label": "HTTP и REST API",
+        "score": 0.27,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.databases",
+        "label": "Базы данных и SQL",
+        "score": 0.34,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.concurrency",
+        "label": "Конкурентность и асинхронность",
+        "score": 0.37,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.architecture",
+        "label": "Архитектура и паттерны",
+        "score": 0.54,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.algorithms",
+        "label": "Алгоритмы и структуры данных",
+        "score": 0.27,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.security",
+        "label": "Безопасность веб-приложений",
+        "score": 0.49,
+        "level": "ok"
+      }
+    ],
+    "stack": [
+      "mysql",
+      "kotlin",
+      "java",
+      "pytest"
+    ],
+    "roles_in_team": [
+      "Ментор"
+    ],
+    "experience_years": 0.5,
+    "soft_skills": [
+      "Обучаемость",
+      "Тайм-менеджмент",
+      "Наставничество"
+    ],
+    "about": "Пишу серверную часть: API, работа с базами, очереди. Люблю понятный код и тесты.",
+    "links": [],
+    "min_salary": 90000,
+    "fsp_id": null,
+    "fsp_score": null,
+    "fsp_badges": [],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": true,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.95,
+    "profile_completeness": 70,
+    "last_test_at": "2026-09-02T12:00:00+03:00",
+    "grade_changed_at": "2026-09-02T12:00:00+03:00",
+    "created_at": "2026-08-21T12:00:00+03:00"
+  },
+  {
+    "id": 30,
+    "user_id": 30,
+    "pseudonym": "Кандидат #4BB0",
+    "full_name": "Дмитрий Дмитриев",
+    "email": "d.dmitriev.30@example.com",
+    "phone": "+7 900 130-33-94",
+    "telegram": "@example_dmitriy30",
+    "city": "Екатеринбург",
+    "work_formats": [
+      "office"
+    ],
+    "specialization": "frontend",
+    "grade": "middle",
+    "category": "frontend:middle",
+    "category_label": "Frontend · Middle",
+    "theta": 0.18,
+    "theta_se": 0.27,
+    "topic_scores": [
+      {
+        "topic": "frontend.js_core",
+        "label": "JavaScript",
+        "score": 0.71,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.react",
+        "label": "React и состояние",
+        "score": 0.48,
+        "level": "ok"
+      },
+      {
+        "topic": "frontend.css_layout",
+        "label": "Вёрстка и CSS",
+        "score": 0.7,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.browser",
+        "label": "Браузер и производительность",
+        "score": 0.74,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.typescript",
+        "label": "TypeScript",
+        "score": 0.46,
+        "level": "ok"
+      },
+      {
+        "topic": "frontend.testing",
+        "label": "Тестирование фронтенда",
+        "score": 0.47,
+        "level": "ok"
+      }
+    ],
+    "stack": [
+      "react",
+      "typescript",
+      "redux",
+      "react_native"
+    ],
+    "roles_in_team": [
+      "Ревьюер кода",
+      "Архитектор"
+    ],
+    "experience_years": 3.0,
+    "soft_skills": [
+      "Тайм-менеджмент",
+      "Наставничество",
+      "Публичные выступления"
+    ],
+    "about": "Делаю интерфейсы, которые удобно использовать. Слежу за производительностью.",
+    "links": [
+      {
+        "type": "portfolio",
+        "url": "https://portfolio.example.com/30"
+      }
+    ],
+    "min_salary": 220000,
+    "fsp_id": null,
+    "fsp_score": null,
+    "fsp_badges": [],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": true,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.14,
+    "profile_completeness": 90,
+    "last_test_at": "2026-09-12T12:00:00+03:00",
+    "grade_changed_at": "2026-09-12T12:00:00+03:00",
+    "created_at": "2026-09-13T18:00:00+03:00"
+  },
+  {
+    "id": 31,
+    "user_id": 31,
+    "pseudonym": "Кандидат #7187",
+    "full_name": "Дмитрий Попов",
+    "email": "d.popov.31@example.com",
+    "phone": "+7 900 131-62-32",
+    "telegram": null,
+    "city": "Томск",
+    "work_formats": [
+      "hybrid"
+    ],
+    "specialization": "frontend",
+    "grade": "intern",
+    "category": "frontend:intern",
+    "category_label": "Frontend · Стажёр",
+    "theta": -1.71,
+    "theta_se": 0.27,
+    "topic_scores": [
+      {
+        "topic": "frontend.js_core",
+        "label": "JavaScript",
+        "score": 0.13,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.react",
+        "label": "React и состояние",
+        "score": 0.11,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.css_layout",
+        "label": "Вёрстка и CSS",
+        "score": 0.27,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.browser",
+        "label": "Браузер и производительность",
+        "score": 0.27,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.typescript",
+        "label": "TypeScript",
+        "score": 0.1,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.testing",
+        "label": "Тестирование фронтенда",
+        "score": 0.13,
+        "level": "weak"
+      }
+    ],
+    "stack": [
+      "playwright",
+      "vite",
+      "vue",
+      "angular",
+      "webpack"
+    ],
+    "roles_in_team": [
+      "Архитектор"
+    ],
+    "experience_years": 0.0,
+    "soft_skills": [
+      "Критическое мышление",
+      "Ответственность"
+    ],
+    "about": "Делаю интерфейсы, которые удобно использовать. Слежу за производительностью.",
+    "links": [
+      {
+        "type": "github",
+        "url": "https://github.com/example-dmitriy31"
+      }
+    ],
+    "min_salary": 40000,
+    "fsp_id": null,
+    "fsp_score": null,
+    "fsp_badges": [],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": false,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.13,
+    "profile_completeness": 80,
+    "last_test_at": "2026-09-04T12:00:00+03:00",
+    "grade_changed_at": "2026-09-04T12:00:00+03:00",
+    "created_at": "2026-09-30T10:00:00+03:00"
+  },
+  {
+    "id": 32,
+    "user_id": 32,
+    "pseudonym": "Кандидат #4BF1",
+    "full_name": "Виктория Степанова",
+    "email": "v.stepanova.32@example.com",
+    "phone": "+7 900 132-33-26",
+    "telegram": "@example_viktoriya32",
+    "city": "Москва",
+    "work_formats": [
+      "hybrid",
+      "office",
+      "remote"
+    ],
+    "specialization": "backend",
+    "grade": "middle",
+    "category": "backend:middle",
+    "category_label": "Backend · Middle",
+    "theta": 0.69,
+    "theta_se": 0.32,
+    "topic_scores": [
+      {
+        "topic": "backend.http_api",
+        "label": "HTTP и REST API",
+        "score": 0.6,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.databases",
+        "label": "Базы данных и SQL",
+        "score": 0.5,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.concurrency",
+        "label": "Конкурентность и асинхронность",
+        "score": 0.48,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.architecture",
+        "label": "Архитектура и паттерны",
+        "score": 0.62,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.algorithms",
+        "label": "Алгоритмы и структуры данных",
+        "score": 0.73,
+        "level": "strong"
+      },
+      {
+        "topic": "backend.security",
+        "label": "Безопасность веб-приложений",
+        "score": 0.61,
+        "level": "ok"
+      }
+    ],
+    "stack": [
+      "kubernetes",
+      "nginx",
+      "graphql",
+      "mysql",
+      "spring",
+      "kotlin",
+      "csharp"
+    ],
+    "roles_in_team": [
+      "Разработчик",
+      "Аналитик"
+    ],
+    "experience_years": 3.5,
+    "soft_skills": [
+      "Наставничество",
+      "Тайм-менеджмент",
+      "Работа в команде",
+      "Ответственность"
+    ],
+    "about": "Пишу серверную часть: API, работа с базами, очереди. Люблю понятный код и тесты.",
+    "links": [
+      {
+        "type": "github",
+        "url": "https://github.com/example-viktoriya32"
+      }
+    ],
+    "min_salary": 230000,
+    "fsp_id": null,
+    "fsp_score": null,
+    "fsp_badges": [],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": false,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.49,
+    "profile_completeness": 90,
+    "last_test_at": "2026-09-15T12:00:00+03:00",
+    "grade_changed_at": "2026-09-15T12:00:00+03:00",
+    "created_at": "2026-08-13T13:00:00+03:00"
+  },
+  {
+    "id": 33,
+    "user_id": 33,
+    "pseudonym": "Кандидат #1CA7",
+    "full_name": "Ксения Сергеева",
+    "email": "k.sergeeva.33@example.com",
+    "phone": "+7 900 133-61-11",
+    "telegram": null,
+    "city": "Нижний Новгород",
+    "work_formats": [
+      "office",
+      "remote"
+    ],
+    "specialization": "backend",
+    "grade": "junior",
+    "category": "backend:junior",
+    "category_label": "Backend · Junior",
+    "theta": -0.33,
+    "theta_se": 0.32,
+    "topic_scores": [
+      {
+        "topic": "backend.http_api",
+        "label": "HTTP и REST API",
+        "score": 0.62,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.databases",
+        "label": "Базы данных и SQL",
+        "score": 0.33,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.concurrency",
+        "label": "Конкурентность и асинхронность",
+        "score": 0.45,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.architecture",
+        "label": "Архитектура и паттерны",
+        "score": 0.63,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.algorithms",
+        "label": "Алгоритмы и структуры данных",
+        "score": 0.59,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.security",
+        "label": "Безопасность веб-приложений",
+        "score": 0.37,
+        "level": "weak"
+      }
+    ],
+    "stack": [
+      "java",
+      "mongodb",
+      "graphql",
+      "linux",
+      "nginx",
+      "typescript"
+    ],
+    "roles_in_team": [
+      "Ревьюер кода",
+      "Ментор"
+    ],
+    "experience_years": 0.5,
+    "soft_skills": [
+      "Тайм-менеджмент",
+      "Самостоятельность",
+      "Ответственность",
+      "Обучаемость"
+    ],
+    "about": "Пишу серверную часть: API, работа с базами, очереди. Люблю понятный код и тесты.",
+    "links": [
+      {
+        "type": "portfolio",
+        "url": "https://portfolio.example.com/33"
+      }
+    ],
+    "min_salary": 110000,
+    "fsp_id": null,
+    "fsp_score": null,
+    "fsp_badges": [],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": false,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.86,
+    "profile_completeness": 80,
+    "last_test_at": "2026-08-22T12:00:00+03:00",
+    "grade_changed_at": "2026-08-22T12:00:00+03:00",
+    "created_at": "2026-08-14T11:00:00+03:00"
+  },
+  {
+    "id": 34,
+    "user_id": 34,
+    "pseudonym": "Кандидат #6034",
+    "full_name": "Егор Александров",
+    "email": "e.aleksandrov.34@example.com",
+    "phone": "+7 900 134-48-78",
+    "telegram": "@example_egor34",
+    "city": "Самара",
+    "work_formats": [
+      "hybrid",
+      "office"
+    ],
+    "specialization": "data_ml",
+    "grade": "junior",
+    "category": "data_ml:junior",
+    "category_label": "Data Science / ML · Junior",
+    "theta": -0.49,
+    "theta_se": 0.3,
+    "topic_scores": [
+      {
+        "topic": "data_ml.statistics",
+        "label": "Статистика и вероятности",
+        "score": 0.46,
+        "level": "ok"
+      },
+      {
+        "topic": "data_ml.ml_basics",
+        "label": "Классическое ML",
+        "score": 0.37,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.deep_learning",
+        "label": "Глубокое обучение",
+        "score": 0.54,
+        "level": "ok"
+      },
+      {
+        "topic": "data_ml.sql_data",
+        "label": "SQL и обработка данных",
+        "score": 0.43,
+        "level": "ok"
+      },
+      {
+        "topic": "data_ml.metrics",
+        "label": "Метрики и валидация моделей",
+        "score": 0.22,
+        "level": "weak"
+      }
+    ],
+    "stack": [
+      "postgresql",
+      "tensorflow",
+      "pytorch",
+      "clickhouse"
+    ],
+    "roles_in_team": [
+      "Ментор",
+      "Тимлид"
+    ],
+    "experience_years": 1.0,
+    "soft_skills": [
+      "Ответственность",
+      "Обучаемость",
+      "Наставничество"
+    ],
+    "about": "Работаю с данными: от SQL-выгрузок до обучения и вывода моделей в прод.",
+    "links": [
+      {
+        "type": "github",
+        "url": "https://github.com/example-egor34"
+      }
+    ],
+    "min_salary": 130000,
+    "fsp_id": null,
+    "fsp_score": null,
+    "fsp_badges": [],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": false,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.51,
+    "profile_completeness": 90,
+    "last_test_at": "2026-09-02T12:00:00+03:00",
+    "grade_changed_at": "2026-09-02T12:00:00+03:00",
+    "created_at": "2026-08-10T19:00:00+03:00"
+  },
+  {
+    "id": 35,
+    "user_id": 35,
+    "pseudonym": "Кандидат #5009",
+    "full_name": "Роман Фролов",
+    "email": "r.frolov.35@example.com",
+    "phone": "+7 900 135-74-11",
+    "telegram": "@example_roman35",
+    "city": "Краснодар",
+    "work_formats": [
+      "hybrid",
+      "office",
+      "remote"
+    ],
+    "specialization": "data_ml",
+    "grade": "senior",
+    "category": "data_ml:senior",
+    "category_label": "Data Science / ML · Senior",
+    "theta": 1.62,
+    "theta_se": 0.33,
+    "topic_scores": [
+      {
+        "topic": "data_ml.statistics",
+        "label": "Статистика и вероятности",
+        "score": 0.92,
+        "level": "strong"
+      },
+      {
+        "topic": "data_ml.ml_basics",
+        "label": "Классическое ML",
+        "score": 0.92,
+        "level": "strong"
+      },
+      {
+        "topic": "data_ml.deep_learning",
+        "label": "Глубокое обучение",
+        "score": 0.68,
+        "level": "ok"
+      },
+      {
+        "topic": "data_ml.sql_data",
+        "label": "SQL и обработка данных",
+        "score": 0.68,
+        "level": "ok"
+      },
+      {
+        "topic": "data_ml.metrics",
+        "label": "Метрики и валидация моделей",
+        "score": 0.79,
+        "level": "strong"
+      }
+    ],
+    "stack": [
+      "pandas",
+      "kafka",
+      "pytorch",
+      "spark"
+    ],
+    "roles_in_team": [
+      "Тимлид"
+    ],
+    "experience_years": 11.0,
+    "soft_skills": [
+      "Коммуникация",
+      "Самостоятельность",
+      "Обучаемость",
+      "Критическое мышление"
+    ],
+    "about": "Работаю с данными: от SQL-выгрузок до обучения и вывода моделей в прод.",
+    "links": [],
+    "min_salary": 330000,
+    "fsp_id": null,
+    "fsp_score": null,
+    "fsp_badges": [],
+    "privacy": {
+      "show_city": false,
+      "show_experience": true,
+      "show_links": true,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.81,
+    "profile_completeness": 80,
+    "last_test_at": "2026-08-20T12:00:00+03:00",
+    "grade_changed_at": "2026-08-20T12:00:00+03:00",
+    "created_at": "2026-09-29T12:00:00+03:00"
+  },
+  {
+    "id": 36,
+    "user_id": 36,
+    "pseudonym": "Кандидат #4398",
+    "full_name": "Глеб Орлов",
+    "email": "g.orlov.36@example.com",
+    "phone": "+7 900 136-14-77",
+    "telegram": "@example_gleb36",
+    "city": "Москва",
+    "work_formats": [
+      "hybrid",
+      "office"
+    ],
+    "specialization": "mobile",
+    "grade": "middle",
+    "category": "mobile:middle",
+    "category_label": "Mobile · Middle",
+    "theta": 0.78,
+    "theta_se": 0.33,
+    "topic_scores": [
+      {
+        "topic": "mobile.lifecycle",
+        "label": "Жизненный цикл приложения",
+        "score": 0.48,
+        "level": "ok"
+      },
+      {
+        "topic": "mobile.ui",
+        "label": "Интерфейс и навигация",
+        "score": 0.56,
+        "level": "ok"
+      },
+      {
+        "topic": "mobile.networking",
+        "label": "Сеть и хранение данных",
+        "score": 0.7,
+        "level": "strong"
+      },
+      {
+        "topic": "mobile.language",
+        "label": "Kotlin / Swift",
+        "score": 0.77,
+        "level": "strong"
+      },
+      {
+        "topic": "mobile.release",
+        "label": "Сборка и публикация",
+        "score": 0.74,
+        "level": "strong"
+      }
+    ],
+    "stack": [
+      "java",
+      "react_native",
+      "ios_sdk",
+      "kotlin",
+      "swiftui",
+      "android_sdk"
+    ],
+    "roles_in_team": [
+      "Аналитик",
+      "Разработчик"
+    ],
+    "experience_years": 3.5,
+    "soft_skills": [
+      "Самостоятельность",
+      "Тайм-менеджмент",
+      "Ответственность"
+    ],
+    "about": "Разрабатываю мобильные приложения от прототипа до публикации в сторах.",
+    "links": [
+      {
+        "type": "github",
+        "url": "https://github.com/example-gleb36"
+      }
+    ],
+    "min_salary": 200000,
+    "fsp_id": null,
+    "fsp_score": null,
+    "fsp_badges": [],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": false,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.19,
+    "profile_completeness": 90,
+    "last_test_at": "2026-09-28T12:00:00+03:00",
+    "grade_changed_at": "2026-09-28T12:00:00+03:00",
+    "created_at": "2026-09-28T09:00:00+03:00"
+  },
+  {
+    "id": 37,
+    "user_id": 37,
+    "pseudonym": "Кандидат #757D",
+    "full_name": "Алексей Козлов",
+    "email": "a.kozlov.37@example.com",
+    "phone": "+7 900 137-44-74",
+    "telegram": "@example_aleksey37",
+    "city": "Томск",
+    "work_formats": [
+      "hybrid"
+    ],
+    "specialization": "qa",
+    "grade": "junior",
+    "category": "qa:junior",
+    "category_label": "QA · Junior",
+    "theta": -0.61,
+    "theta_se": 0.32,
+    "topic_scores": [
+      {
+        "topic": "qa.test_design",
+        "label": "Тест-дизайн",
+        "score": 0.31,
+        "level": "weak"
+      },
+      {
+        "topic": "qa.automation",
+        "label": "Автоматизация тестирования",
+        "score": 0.24,
+        "level": "weak"
+      },
+      {
+        "topic": "qa.api_testing",
+        "label": "Тестирование API",
+        "score": 0.26,
+        "level": "weak"
+      },
+      {
+        "topic": "qa.process",
+        "label": "Баг-репорты и процессы",
+        "score": 0.19,
+        "level": "weak"
+      },
+      {
+        "topic": "qa.performance",
+        "label": "Нагрузочное тестирование",
+        "score": 0.27,
+        "level": "weak"
+      }
+    ],
+    "stack": [
+      "javascript",
+      "postman",
+      "jmeter",
+      "python"
+    ],
+    "roles_in_team": [
+      "Разработчик"
+    ],
+    "experience_years": 1.5,
+    "soft_skills": [
+      "Публичные выступления",
+      "Работа в команде"
+    ],
+    "about": "Тестирую веб и API, пишу автотесты, выстраиваю процессы качества.",
+    "links": [
+      {
+        "type": "github",
+        "url": "https://github.com/example-aleksey37"
+      }
+    ],
+    "min_salary": 100000,
+    "fsp_id": null,
+    "fsp_score": null,
+    "fsp_badges": [],
+    "privacy": {
+      "show_city": true,
+      "show_experience": false,
+      "show_links": true,
+      "show_fsp_achievements": false
+    },
+    "job_search_paused": false,
+    "publication_consent": false,
+    "freshness": 0.72,
+    "profile_completeness": 90,
+    "last_test_at": "2026-09-06T12:00:00+03:00",
+    "grade_changed_at": "2026-09-06T12:00:00+03:00",
+    "created_at": "2026-08-27T13:00:00+03:00"
+  },
+  {
+    "id": 38,
+    "user_id": 38,
+    "pseudonym": "Кандидат #8732",
+    "full_name": "Артём Никитин",
+    "email": "a.nikitin.38@example.com",
+    "phone": "+7 900 138-94-73",
+    "telegram": "@example_artem38",
+    "city": "Томск",
+    "work_formats": [
+      "hybrid",
+      "office",
+      "remote"
+    ],
+    "specialization": "devops",
+    "grade": "middle",
+    "category": "devops:middle",
+    "category_label": "DevOps · Middle",
+    "theta": 0.84,
+    "theta_se": 0.31,
+    "topic_scores": [
+      {
+        "topic": "devops.linux",
+        "label": "Linux и сети",
+        "score": 0.72,
+        "level": "strong"
+      },
+      {
+        "topic": "devops.containers",
+        "label": "Контейнеры и Kubernetes",
+        "score": 0.56,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.ci_cd",
+        "label": "CI/CD",
+        "score": 0.84,
+        "level": "strong"
+      },
+      {
+        "topic": "devops.monitoring",
+        "label": "Мониторинг и логирование",
+        "score": 0.79,
+        "level": "strong"
+      },
+      {
+        "topic": "devops.iac",
+        "label": "Инфраструктура как код",
+        "score": 0.82,
+        "level": "strong"
+      }
+    ],
+    "stack": [
+      "kubernetes",
+      "grafana",
+      "docker",
+      "terraform"
+    ],
+    "roles_in_team": [
+      "Архитектор"
+    ],
+    "experience_years": 3.0,
+    "soft_skills": [
+      "Критическое мышление",
+      "Работа в команде"
+    ],
+    "about": "Настраиваю CI/CD, контейнеры и мониторинг, чтобы релизы были скучными.",
+    "links": [
+      {
+        "type": "github",
+        "url": "https://github.com/example-artem38"
+      }
+    ],
+    "min_salary": 220000,
+    "fsp_id": null,
+    "fsp_score": null,
+    "fsp_badges": [],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": true,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": true,
+    "publication_consent": true,
+    "freshness": 0.22,
+    "profile_completeness": 90,
+    "last_test_at": "2026-09-04T12:00:00+03:00",
+    "grade_changed_at": "2026-09-04T12:00:00+03:00",
+    "created_at": "2026-09-22T20:00:00+03:00"
+  },
+  {
+    "id": 39,
+    "user_id": 39,
+    "pseudonym": "Кандидат #1F6F",
+    "full_name": "Владимир Макаров",
+    "email": "v.makarov.39@example.com",
+    "phone": "+7 900 139-57-81",
+    "telegram": "@example_vladimir39",
+    "city": "Нижний Новгород",
+    "work_formats": [
+      "office"
+    ],
+    "specialization": "backend",
+    "grade": null,
+    "category": null,
+    "category_label": null,
+    "theta": null,
+    "theta_se": null,
+    "topic_scores": [],
+    "stack": [
+      "rabbitmq",
+      "mysql",
+      "go",
+      "csharp"
+    ],
+    "roles_in_team": [
+      "Тимлид"
+    ],
+    "experience_years": 1.5,
+    "soft_skills": [
+      "Тайм-менеджмент",
+      "Работа в команде",
+      "Ответственность"
+    ],
+    "about": "Пишу серверную часть: API, работа с базами, очереди. Люблю понятный код и тесты.",
+    "links": [],
+    "min_salary": 90000,
+    "fsp_id": null,
+    "fsp_score": null,
+    "fsp_badges": [],
+    "privacy": {
+      "show_city": true,
+      "show_experience": true,
+      "show_links": false,
+      "show_fsp_achievements": false
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.24,
+    "profile_completeness": 70,
+    "last_test_at": null,
+    "grade_changed_at": null,
+    "created_at": "2026-08-15T12:00:00+03:00"
+  },
+  {
+    "id": 40,
+    "user_id": 40,
+    "pseudonym": "Кандидат #27EC",
+    "full_name": "Наталья Смирнова",
+    "email": "n.smirnova.40@example.com",
+    "phone": "+7 900 140-16-30",
+    "telegram": "@example_natalya40",
+    "city": "Новосибирск",
+    "work_formats": [
+      "office"
+    ],
+    "specialization": "qa",
+    "grade": null,
+    "category": null,
+    "category_label": null,
+    "theta": null,
+    "theta_se": null,
+    "topic_scores": [],
+    "stack": [
+      "cypress",
+      "postman",
+      "selenium",
+      "playwright",
+      "jest",
+      "sql"
+    ],
+    "roles_in_team": [
+      "Ревьюер кода",
+      "Ментор"
+    ],
+    "experience_years": 1.5,
+    "soft_skills": [
+      "Наставничество",
+      "Критическое мышление",
+      "Обучаемость",
+      "Тайм-менеджмент"
+    ],
+    "about": "Тестирую веб и API, пишу автотесты, выстраиваю процессы качества.",
+    "links": [
+      {
+        "type": "github",
+        "url": "https://github.com/example-natalya40"
+      }
+    ],
+    "min_salary": 90000,
+    "fsp_id": null,
+    "fsp_score": null,
+    "fsp_badges": [],
+    "privacy": {
+      "show_city": false,
+      "show_experience": true,
+      "show_links": true,
+      "show_fsp_achievements": true
+    },
+    "job_search_paused": false,
+    "publication_consent": true,
+    "freshness": 0.69,
+    "profile_completeness": 80,
+    "last_test_at": null,
+    "grade_changed_at": null,
+    "created_at": "2026-08-24T17:00:00+03:00"
+  }
+]

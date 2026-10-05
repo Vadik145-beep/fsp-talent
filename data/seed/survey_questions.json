@@ -1,0 +1,314 @@
+[
+  {
+    "id": "q1",
+    "text": "Чем вам больше всего нравится заниматься?",
+    "kind": "single",
+    "required": true,
+    "options": [
+      {
+        "id": "q1_api",
+        "label": "Писать серверную логику и API",
+        "specializations": [
+          "backend"
+        ]
+      },
+      {
+        "id": "q1_ui",
+        "label": "Делать интерфейсы в браузере",
+        "specializations": [
+          "frontend"
+        ]
+      },
+      {
+        "id": "q1_apps",
+        "label": "Делать мобильные приложения",
+        "specializations": [
+          "mobile"
+        ]
+      },
+      {
+        "id": "q1_data",
+        "label": "Искать закономерности в данных",
+        "specializations": [
+          "data_ml"
+        ]
+      },
+      {
+        "id": "q1_bugs",
+        "label": "Находить ошибки и ломать системы",
+        "specializations": [
+          "qa"
+        ]
+      },
+      {
+        "id": "q1_infra",
+        "label": "Настраивать серверы и автоматизацию",
+        "specializations": [
+          "devops"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "q2",
+    "text": "Какие технологии вы использовали в последних проектах?",
+    "kind": "multi",
+    "required": true,
+    "options": [
+      {
+        "id": "q2_python",
+        "label": "Python",
+        "specializations": [
+          "backend",
+          "data_ml",
+          "qa"
+        ]
+      },
+      {
+        "id": "q2_go_java",
+        "label": "Go / Java / C#",
+        "specializations": [
+          "backend"
+        ]
+      },
+      {
+        "id": "q2_js",
+        "label": "JavaScript / TypeScript",
+        "specializations": [
+          "frontend"
+        ]
+      },
+      {
+        "id": "q2_mobile",
+        "label": "Kotlin / Swift / Flutter",
+        "specializations": [
+          "mobile"
+        ]
+      },
+      {
+        "id": "q2_sql",
+        "label": "SQL",
+        "specializations": [
+          "backend",
+          "data_ml"
+        ]
+      },
+      {
+        "id": "q2_ml",
+        "label": "pandas / PyTorch / scikit-learn",
+        "specializations": [
+          "data_ml"
+        ]
+      },
+      {
+        "id": "q2_tests",
+        "label": "Selenium / Playwright / Postman",
+        "specializations": [
+          "qa"
+        ]
+      },
+      {
+        "id": "q2_ops",
+        "label": "Docker / Kubernetes / Terraform",
+        "specializations": [
+          "devops"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "q3",
+    "text": "Какая задача из списка вам ближе?",
+    "kind": "single",
+    "required": true,
+    "options": [
+      {
+        "id": "q3_db",
+        "label": "Ускорить медленный запрос к базе",
+        "specializations": [
+          "backend"
+        ]
+      },
+      {
+        "id": "q3_render",
+        "label": "Убрать лишние перерисовки страницы",
+        "specializations": [
+          "frontend"
+        ]
+      },
+      {
+        "id": "q3_offline",
+        "label": "Сделать офлайн-режим приложения",
+        "specializations": [
+          "mobile"
+        ]
+      },
+      {
+        "id": "q3_model",
+        "label": "Улучшить качество модели",
+        "specializations": [
+          "data_ml"
+        ]
+      },
+      {
+        "id": "q3_regress",
+        "label": "Составить регресс-набор тестов",
+        "specializations": [
+          "qa"
+        ]
+      },
+      {
+        "id": "q3_deploy",
+        "label": "Сделать выкладку без простоя",
+        "specializations": [
+          "devops"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "q4",
+    "text": "Сколько лет коммерческого опыта в IT?",
+    "kind": "single",
+    "required": true,
+    "options": [
+      {
+        "id": "q4_0",
+        "label": "Нет опыта",
+        "specializations": []
+      },
+      {
+        "id": "q4_1",
+        "label": "До 2 лет",
+        "specializations": []
+      },
+      {
+        "id": "q4_3",
+        "label": "2–5 лет",
+        "specializations": []
+      },
+      {
+        "id": "q4_5",
+        "label": "Больше 5 лет",
+        "specializations": []
+      }
+    ]
+  },
+  {
+    "id": "q5",
+    "text": "Какую роль в команде вы обычно берёте?",
+    "kind": "single",
+    "required": false,
+    "options": [
+      {
+        "id": "q5_dev",
+        "label": "Исполнитель задач",
+        "specializations": []
+      },
+      {
+        "id": "q5_lead",
+        "label": "Веду задачи других и ревьюю",
+        "specializations": []
+      },
+      {
+        "id": "q5_arch",
+        "label": "Проектирую решения",
+        "specializations": [
+          "backend",
+          "devops"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "q6",
+    "text": "Что вам интереснее изучать дальше?",
+    "kind": "multi",
+    "required": false,
+    "options": [
+      {
+        "id": "q6_arch",
+        "label": "Архитектуру распределённых систем",
+        "specializations": [
+          "backend",
+          "devops"
+        ]
+      },
+      {
+        "id": "q6_ux",
+        "label": "UX и доступность интерфейсов",
+        "specializations": [
+          "frontend",
+          "mobile"
+        ]
+      },
+      {
+        "id": "q6_dl",
+        "label": "Нейросети и LLM",
+        "specializations": [
+          "data_ml"
+        ]
+      },
+      {
+        "id": "q6_auto",
+        "label": "Автоматизацию тестирования",
+        "specializations": [
+          "qa"
+        ]
+      },
+      {
+        "id": "q6_sec",
+        "label": "Безопасность",
+        "specializations": [
+          "backend",
+          "devops",
+          "qa"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "q7",
+    "text": "Где вы чаще всего запускаете свой код?",
+    "kind": "single",
+    "required": false,
+    "options": [
+      {
+        "id": "q7_server",
+        "label": "На сервере",
+        "specializations": [
+          "backend",
+          "devops"
+        ]
+      },
+      {
+        "id": "q7_browser",
+        "label": "В браузере",
+        "specializations": [
+          "frontend"
+        ]
+      },
+      {
+        "id": "q7_phone",
+        "label": "На телефоне",
+        "specializations": [
+          "mobile"
+        ]
+      },
+      {
+        "id": "q7_notebook",
+        "label": "В Jupyter-ноутбуке",
+        "specializations": [
+          "data_ml"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "q8",
+    "text": "Опишите в двух словах последний проект",
+    "kind": "text",
+    "required": false,
+    "options": []
+  }
+]

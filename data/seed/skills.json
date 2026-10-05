@@ -1,0 +1,518 @@
+[
+  {
+    "id": "python",
+    "label": "Python",
+    "specializations": [
+      "backend",
+      "data_ml",
+      "qa"
+    ]
+  },
+  {
+    "id": "go",
+    "label": "Go",
+    "specializations": [
+      "backend",
+      "devops"
+    ]
+  },
+  {
+    "id": "java",
+    "label": "Java",
+    "specializations": [
+      "backend",
+      "mobile",
+      "qa"
+    ]
+  },
+  {
+    "id": "kotlin",
+    "label": "Kotlin",
+    "specializations": [
+      "backend",
+      "mobile"
+    ]
+  },
+  {
+    "id": "csharp",
+    "label": "C#",
+    "specializations": [
+      "backend"
+    ]
+  },
+  {
+    "id": "php",
+    "label": "PHP",
+    "specializations": [
+      "backend"
+    ]
+  },
+  {
+    "id": "nodejs",
+    "label": "Node.js",
+    "specializations": [
+      "backend",
+      "frontend"
+    ]
+  },
+  {
+    "id": "fastapi",
+    "label": "FastAPI",
+    "specializations": [
+      "backend"
+    ]
+  },
+  {
+    "id": "django",
+    "label": "Django",
+    "specializations": [
+      "backend"
+    ]
+  },
+  {
+    "id": "spring",
+    "label": "Spring",
+    "specializations": [
+      "backend"
+    ]
+  },
+  {
+    "id": "postgresql",
+    "label": "PostgreSQL",
+    "specializations": [
+      "backend",
+      "data_ml"
+    ]
+  },
+  {
+    "id": "mysql",
+    "label": "MySQL",
+    "specializations": [
+      "backend"
+    ]
+  },
+  {
+    "id": "mongodb",
+    "label": "MongoDB",
+    "specializations": [
+      "backend"
+    ]
+  },
+  {
+    "id": "redis",
+    "label": "Redis",
+    "specializations": [
+      "backend",
+      "devops"
+    ]
+  },
+  {
+    "id": "kafka",
+    "label": "Kafka",
+    "specializations": [
+      "backend",
+      "data_ml"
+    ]
+  },
+  {
+    "id": "rabbitmq",
+    "label": "RabbitMQ",
+    "specializations": [
+      "backend"
+    ]
+  },
+  {
+    "id": "grpc",
+    "label": "gRPC",
+    "specializations": [
+      "backend"
+    ]
+  },
+  {
+    "id": "graphql",
+    "label": "GraphQL",
+    "specializations": [
+      "backend",
+      "frontend"
+    ]
+  },
+  {
+    "id": "sql",
+    "label": "SQL",
+    "specializations": [
+      "backend",
+      "data_ml",
+      "qa"
+    ]
+  },
+  {
+    "id": "javascript",
+    "label": "JavaScript",
+    "specializations": [
+      "frontend",
+      "qa"
+    ]
+  },
+  {
+    "id": "typescript",
+    "label": "TypeScript",
+    "specializations": [
+      "frontend",
+      "backend"
+    ]
+  },
+  {
+    "id": "react",
+    "label": "React",
+    "specializations": [
+      "frontend"
+    ]
+  },
+  {
+    "id": "vue",
+    "label": "Vue",
+    "specializations": [
+      "frontend"
+    ]
+  },
+  {
+    "id": "angular",
+    "label": "Angular",
+    "specializations": [
+      "frontend"
+    ]
+  },
+  {
+    "id": "nextjs",
+    "label": "Next.js",
+    "specializations": [
+      "frontend"
+    ]
+  },
+  {
+    "id": "html_css",
+    "label": "HTML и CSS",
+    "specializations": [
+      "frontend"
+    ]
+  },
+  {
+    "id": "redux",
+    "label": "Redux",
+    "specializations": [
+      "frontend"
+    ]
+  },
+  {
+    "id": "webpack",
+    "label": "Webpack",
+    "specializations": [
+      "frontend"
+    ]
+  },
+  {
+    "id": "vite",
+    "label": "Vite",
+    "specializations": [
+      "frontend"
+    ]
+  },
+  {
+    "id": "tailwind",
+    "label": "Tailwind CSS",
+    "specializations": [
+      "frontend"
+    ]
+  },
+  {
+    "id": "jest",
+    "label": "Jest",
+    "specializations": [
+      "frontend",
+      "qa"
+    ]
+  },
+  {
+    "id": "swift",
+    "label": "Swift",
+    "specializations": [
+      "mobile"
+    ]
+  },
+  {
+    "id": "swiftui",
+    "label": "SwiftUI",
+    "specializations": [
+      "mobile"
+    ]
+  },
+  {
+    "id": "ios_sdk",
+    "label": "iOS SDK",
+    "specializations": [
+      "mobile"
+    ]
+  },
+  {
+    "id": "android_sdk",
+    "label": "Android SDK",
+    "specializations": [
+      "mobile"
+    ]
+  },
+  {
+    "id": "jetpack_compose",
+    "label": "Jetpack Compose",
+    "specializations": [
+      "mobile"
+    ]
+  },
+  {
+    "id": "flutter",
+    "label": "Flutter",
+    "specializations": [
+      "mobile"
+    ]
+  },
+  {
+    "id": "dart",
+    "label": "Dart",
+    "specializations": [
+      "mobile"
+    ]
+  },
+  {
+    "id": "react_native",
+    "label": "React Native",
+    "specializations": [
+      "mobile",
+      "frontend"
+    ]
+  },
+  {
+    "id": "pandas",
+    "label": "pandas",
+    "specializations": [
+      "data_ml"
+    ]
+  },
+  {
+    "id": "numpy",
+    "label": "NumPy",
+    "specializations": [
+      "data_ml"
+    ]
+  },
+  {
+    "id": "scikit_learn",
+    "label": "scikit-learn",
+    "specializations": [
+      "data_ml"
+    ]
+  },
+  {
+    "id": "pytorch",
+    "label": "PyTorch",
+    "specializations": [
+      "data_ml"
+    ]
+  },
+  {
+    "id": "tensorflow",
+    "label": "TensorFlow",
+    "specializations": [
+      "data_ml"
+    ]
+  },
+  {
+    "id": "spark",
+    "label": "Apache Spark",
+    "specializations": [
+      "data_ml"
+    ]
+  },
+  {
+    "id": "airflow",
+    "label": "Apache Airflow",
+    "specializations": [
+      "data_ml",
+      "devops"
+    ]
+  },
+  {
+    "id": "clickhouse",
+    "label": "ClickHouse",
+    "specializations": [
+      "data_ml",
+      "backend"
+    ]
+  },
+  {
+    "id": "mlflow",
+    "label": "MLflow",
+    "specializations": [
+      "data_ml"
+    ]
+  },
+  {
+    "id": "jupyter",
+    "label": "Jupyter",
+    "specializations": [
+      "data_ml"
+    ]
+  },
+  {
+    "id": "selenium",
+    "label": "Selenium",
+    "specializations": [
+      "qa"
+    ]
+  },
+  {
+    "id": "playwright",
+    "label": "Playwright",
+    "specializations": [
+      "qa",
+      "frontend"
+    ]
+  },
+  {
+    "id": "pytest",
+    "label": "pytest",
+    "specializations": [
+      "qa",
+      "backend"
+    ]
+  },
+  {
+    "id": "postman",
+    "label": "Postman",
+    "specializations": [
+      "qa"
+    ]
+  },
+  {
+    "id": "jmeter",
+    "label": "JMeter",
+    "specializations": [
+      "qa"
+    ]
+  },
+  {
+    "id": "allure",
+    "label": "Allure",
+    "specializations": [
+      "qa"
+    ]
+  },
+  {
+    "id": "cypress",
+    "label": "Cypress",
+    "specializations": [
+      "qa",
+      "frontend"
+    ]
+  },
+  {
+    "id": "testrail",
+    "label": "TestRail",
+    "specializations": [
+      "qa"
+    ]
+  },
+  {
+    "id": "docker",
+    "label": "Docker",
+    "specializations": [
+      "devops",
+      "backend"
+    ]
+  },
+  {
+    "id": "kubernetes",
+    "label": "Kubernetes",
+    "specializations": [
+      "devops",
+      "backend"
+    ]
+  },
+  {
+    "id": "helm",
+    "label": "Helm",
+    "specializations": [
+      "devops"
+    ]
+  },
+  {
+    "id": "terraform",
+    "label": "Terraform",
+    "specializations": [
+      "devops"
+    ]
+  },
+  {
+    "id": "ansible",
+    "label": "Ansible",
+    "specializations": [
+      "devops"
+    ]
+  },
+  {
+    "id": "gitlab_ci",
+    "label": "GitLab CI",
+    "specializations": [
+      "devops"
+    ]
+  },
+  {
+    "id": "github_actions",
+    "label": "GitHub Actions",
+    "specializations": [
+      "devops"
+    ]
+  },
+  {
+    "id": "prometheus",
+    "label": "Prometheus",
+    "specializations": [
+      "devops"
+    ]
+  },
+  {
+    "id": "grafana",
+    "label": "Grafana",
+    "specializations": [
+      "devops"
+    ]
+  },
+  {
+    "id": "nginx",
+    "label": "Nginx",
+    "specializations": [
+      "devops",
+      "backend"
+    ]
+  },
+  {
+    "id": "linux",
+    "label": "Linux",
+    "specializations": [
+      "devops",
+      "backend"
+    ]
+  },
+  {
+    "id": "bash",
+    "label": "Bash",
+    "specializations": [
+      "devops"
+    ]
+  },
+  {
+    "id": "aws",
+    "label": "AWS",
+    "specializations": [
+      "devops"
+    ]
+  }
+]

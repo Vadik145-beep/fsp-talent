@@ -1,0 +1,162 @@
+[
+  {
+    "id": "backend.http_api",
+    "specialization": "backend",
+    "label": "HTTP и REST API"
+  },
+  {
+    "id": "backend.databases",
+    "specialization": "backend",
+    "label": "Базы данных и SQL"
+  },
+  {
+    "id": "backend.concurrency",
+    "specialization": "backend",
+    "label": "Конкурентность и асинхронность"
+  },
+  {
+    "id": "backend.architecture",
+    "specialization": "backend",
+    "label": "Архитектура и паттерны"
+  },
+  {
+    "id": "backend.algorithms",
+    "specialization": "backend",
+    "label": "Алгоритмы и структуры данных"
+  },
+  {
+    "id": "backend.security",
+    "specialization": "backend",
+    "label": "Безопасность веб-приложений"
+  },
+  {
+    "id": "frontend.js_core",
+    "specialization": "frontend",
+    "label": "JavaScript"
+  },
+  {
+    "id": "frontend.react",
+    "specialization": "frontend",
+    "label": "React и состояние"
+  },
+  {
+    "id": "frontend.css_layout",
+    "specialization": "frontend",
+    "label": "Вёрстка и CSS"
+  },
+  {
+    "id": "frontend.browser",
+    "specialization": "frontend",
+    "label": "Браузер и производительность"
+  },
+  {
+    "id": "frontend.typescript",
+    "specialization": "frontend",
+    "label": "TypeScript"
+  },
+  {
+    "id": "frontend.testing",
+    "specialization": "frontend",
+    "label": "Тестирование фронтенда"
+  },
+  {
+    "id": "mobile.lifecycle",
+    "specialization": "mobile",
+    "label": "Жизненный цикл приложения"
+  },
+  {
+    "id": "mobile.ui",
+    "specialization": "mobile",
+    "label": "Интерфейс и навигация"
+  },
+  {
+    "id": "mobile.networking",
+    "specialization": "mobile",
+    "label": "Сеть и хранение данных"
+  },
+  {
+    "id": "mobile.language",
+    "specialization": "mobile",
+    "label": "Kotlin / Swift"
+  },
+  {
+    "id": "mobile.release",
+    "specialization": "mobile",
+    "label": "Сборка и публикация"
+  },
+  {
+    "id": "data_ml.statistics",
+    "specialization": "data_ml",
+    "label": "Статистика и вероятности"
+  },
+  {
+    "id": "data_ml.ml_basics",
+    "specialization": "data_ml",
+    "label": "Классическое ML"
+  },
+  {
+    "id": "data_ml.deep_learning",
+    "specialization": "data_ml",
+    "label": "Глубокое обучение"
+  },
+  {
+    "id": "data_ml.sql_data",
+    "specialization": "data_ml",
+    "label": "SQL и обработка данных"
+  },
+  {
+    "id": "data_ml.metrics",
+    "specialization": "data_ml",
+    "label": "Метрики и валидация моделей"
+  },
+  {
+    "id": "qa.test_design",
+    "specialization": "qa",
+    "label": "Тест-дизайн"
+  },
+  {
+    "id": "qa.automation",
+    "specialization": "qa",
+    "label": "Автоматизация тестирования"
+  },
+  {
+    "id": "qa.api_testing",
+    "specialization": "qa",
+    "label": "Тестирование API"
+  },
+  {
+    "id": "qa.process",
+    "specialization": "qa",
+    "label": "Баг-репорты и процессы"
+  },
+  {
+    "id": "qa.performance",
+    "specialization": "qa",
+    "label": "Нагрузочное тестирование"
+  },
+  {
+    "id": "devops.linux",
+    "specialization": "devops",
+    "label": "Linux и сети"
+  },
+  {
+    "id": "devops.containers",
+    "specialization": "devops",
+    "label": "Контейнеры и Kubernetes"
+  },
+  {
+    "id": "devops.ci_cd",
+    "specialization": "devops",
+    "label": "CI/CD"
+  },
+  {
+    "id": "devops.monitoring",
+    "specialization": "devops",
+    "label": "Мониторинг и логирование"
+  },
+  {
+    "id": "devops.iac",
+    "specialization": "devops",
+    "label": "Инфраструктура как код"
+  }
+]

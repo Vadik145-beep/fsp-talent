@@ -1,0 +1,22 @@
+[
+  {
+    "id": "intern",
+    "label": "Стажёр",
+    "order": 0
+  },
+  {
+    "id": "junior",
+    "label": "Junior",
+    "order": 1
+  },
+  {
+    "id": "middle",
+    "label": "Middle",
+    "order": 2
+  },
+  {
+    "id": "senior",
+    "label": "Senior",
+    "order": 3
+  }
+]

@@ -1,0 +1,79 @@
+[
+  {
+    "id": 1,
+    "user_id": 41,
+    "company_id": 1,
+    "full_name": "Ирина Белова",
+    "position": "HR-директор",
+    "email": "recruiter@example.com",
+    "phone": "+7 900 201-00-11",
+    "telegram": "@hr_belova",
+    "is_company_admin": true
+  },
+  {
+    "id": 2,
+    "user_id": 42,
+    "company_id": 1,
+    "full_name": "Олег Карпов",
+    "position": "Технический рекрутер",
+    "email": "o.karpov.hr@example.com",
+    "phone": "+7 900 202-00-12",
+    "telegram": "@hr_karpov",
+    "is_company_admin": false
+  },
+  {
+    "id": 3,
+    "user_id": 43,
+    "company_id": 1,
+    "full_name": "Светлана Жукова",
+    "position": "Рекрутер",
+    "email": "s.zhukova.hr@example.com",
+    "phone": "+7 900 203-00-13",
+    "telegram": "@hr_zhukova",
+    "is_company_admin": false
+  },
+  {
+    "id": 4,
+    "user_id": 44,
+    "company_id": 2,
+    "full_name": "Марина Титова",
+    "position": "Руководитель подбора",
+    "email": "m.titova.hr@example.com",
+    "phone": "+7 900 204-00-14",
+    "telegram": "@hr_titova",
+    "is_company_admin": true
+  },
+  {
+    "id": 5,
+    "user_id": 45,
+    "company_id": 2,
+    "full_name": "Георгий Лаптев",
+    "position": "IT-рекрутер",
+    "email": "g.laptev.hr@example.com",
+    "phone": "+7 900 205-00-15",
+    "telegram": "@hr_laptev",
+    "is_company_admin": false
+  },
+  {
+    "id": 6,
+    "user_id": 46,
+    "company_id": 3,
+    "full_name": "Виталий Ершов",
+    "position": "Основатель",
+    "email": "v.ershov.hr@example.com",
+    "phone": "+7 900 206-00-16",
+    "telegram": "@hr_ershov",
+    "is_company_admin": true
+  },
+  {
+    "id": 7,
+    "user_id": 47,
+    "company_id": 3,
+    "full_name": "Алёна Пестова",
+    "position": "HR-менеджер",
+    "email": "a.pestova.hr@example.com",
+    "phone": "+7 900 207-00-17",
+    "telegram": "@hr_pestova",
+    "is_company_admin": false
+  }
+]

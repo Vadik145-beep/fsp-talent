@@ -1,0 +1,38 @@
+[
+  {
+    "id": "backend",
+    "label": "Backend",
+    "description": "Серверная разработка: API, базы данных, интеграции",
+    "active": true
+  },
+  {
+    "id": "frontend",
+    "label": "Frontend",
+    "description": "Веб-интерфейсы: вёрстка, JavaScript/TypeScript, фреймворки",
+    "active": true
+  },
+  {
+    "id": "mobile",
+    "label": "Mobile",
+    "description": "Мобильные приложения для iOS и Android",
+    "active": true
+  },
+  {
+    "id": "data_ml",
+    "label": "Data Science / ML",
+    "description": "Анализ данных, машинное обучение, ML-инженерия",
+    "active": true
+  },
+  {
+    "id": "qa",
+    "label": "QA",
+    "description": "Тестирование: ручное и автоматизированное",
+    "active": true
+  },
+  {
+    "id": "devops",
+    "label": "DevOps",
+    "description": "Инфраструктура, CI/CD, контейнеры, мониторинг",
+    "active": true
+  }
+]

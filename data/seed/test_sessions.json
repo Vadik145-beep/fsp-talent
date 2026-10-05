@@ -1,0 +1,2380 @@
+[
+  {
+    "id": 1,
+    "candidate_id": 1,
+    "specialization": "backend",
+    "target_grade": "middle",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-09-10T15:30:00+03:00",
+    "finished_at": "2026-09-10T15:51:00+03:00",
+    "items_answered": 13,
+    "max_items": 15,
+    "theta": 0.42,
+    "se": 0.28,
+    "ci_low": -0.13,
+    "ci_high": 0.97,
+    "result_grade": "middle",
+    "result_category": "backend:middle",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "backend.http_api",
+        "label": "HTTP и REST API",
+        "score": 0.7,
+        "level": "strong"
+      },
+      {
+        "topic": "backend.databases",
+        "label": "Базы данных и SQL",
+        "score": 0.64,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.concurrency",
+        "label": "Конкурентность и асинхронность",
+        "score": 0.4,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.architecture",
+        "label": "Архитектура и паттерны",
+        "score": 0.64,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.algorithms",
+        "label": "Алгоритмы и структуры данных",
+        "score": 0.7,
+        "level": "strong"
+      },
+      {
+        "topic": "backend.security",
+        "label": "Безопасность веб-приложений",
+        "score": 0.47,
+        "level": "ok"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "candidate_id": 2,
+    "specialization": "devops",
+    "target_grade": "junior",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-08-26T12:00:00+03:00",
+    "finished_at": "2026-08-26T12:26:00+03:00",
+    "items_answered": 14,
+    "max_items": 15,
+    "theta": -0.6,
+    "se": 0.28,
+    "ci_low": -1.15,
+    "ci_high": -0.05,
+    "result_grade": "junior",
+    "result_category": "devops:junior",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "devops.linux",
+        "label": "Linux и сети",
+        "score": 0.41,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.containers",
+        "label": "Контейнеры и Kubernetes",
+        "score": 0.23,
+        "level": "weak"
+      },
+      {
+        "topic": "devops.ci_cd",
+        "label": "CI/CD",
+        "score": 0.26,
+        "level": "weak"
+      },
+      {
+        "topic": "devops.monitoring",
+        "label": "Мониторинг и логирование",
+        "score": 0.5,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.iac",
+        "label": "Инфраструктура как код",
+        "score": 0.37,
+        "level": "weak"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "candidate_id": 3,
+    "specialization": "qa",
+    "target_grade": "senior",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-08-21T12:00:00+03:00",
+    "finished_at": "2026-08-21T12:23:00+03:00",
+    "items_answered": 11,
+    "max_items": 15,
+    "theta": 1.44,
+    "se": 0.28,
+    "ci_low": 0.89,
+    "ci_high": 1.99,
+    "result_grade": "senior",
+    "result_category": "qa:senior",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "qa.test_design",
+        "label": "Тест-дизайн",
+        "score": 0.84,
+        "level": "strong"
+      },
+      {
+        "topic": "qa.automation",
+        "label": "Автоматизация тестирования",
+        "score": 0.85,
+        "level": "strong"
+      },
+      {
+        "topic": "qa.api_testing",
+        "label": "Тестирование API",
+        "score": 0.73,
+        "level": "strong"
+      },
+      {
+        "topic": "qa.process",
+        "label": "Баг-репорты и процессы",
+        "score": 0.8,
+        "level": "strong"
+      },
+      {
+        "topic": "qa.performance",
+        "label": "Нагрузочное тестирование",
+        "score": 0.88,
+        "level": "strong"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "candidate_id": 4,
+    "specialization": "frontend",
+    "target_grade": "senior",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-08-30T12:00:00+03:00",
+    "finished_at": "2026-08-30T12:22:00+03:00",
+    "items_answered": 14,
+    "max_items": 15,
+    "theta": 1.79,
+    "se": 0.28,
+    "ci_low": 1.24,
+    "ci_high": 2.34,
+    "result_grade": "senior",
+    "result_category": "frontend:senior",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "frontend.js_core",
+        "label": "JavaScript",
+        "score": 0.82,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.react",
+        "label": "React и состояние",
+        "score": 0.72,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.css_layout",
+        "label": "Вёрстка и CSS",
+        "score": 0.74,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.browser",
+        "label": "Браузер и производительность",
+        "score": 0.82,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.typescript",
+        "label": "TypeScript",
+        "score": 0.84,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.testing",
+        "label": "Тестирование фронтенда",
+        "score": 0.93,
+        "level": "strong"
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "candidate_id": 5,
+    "specialization": "qa",
+    "target_grade": "senior",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-08-31T12:00:00+03:00",
+    "finished_at": "2026-08-31T12:24:00+03:00",
+    "items_answered": 11,
+    "max_items": 15,
+    "theta": 1.41,
+    "se": 0.32,
+    "ci_low": 0.78,
+    "ci_high": 2.04,
+    "result_grade": "senior",
+    "result_category": "qa:senior",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "qa.test_design",
+        "label": "Тест-дизайн",
+        "score": 0.76,
+        "level": "strong"
+      },
+      {
+        "topic": "qa.automation",
+        "label": "Автоматизация тестирования",
+        "score": 0.8,
+        "level": "strong"
+      },
+      {
+        "topic": "qa.api_testing",
+        "label": "Тестирование API",
+        "score": 0.67,
+        "level": "ok"
+      },
+      {
+        "topic": "qa.process",
+        "label": "Баг-репорты и процессы",
+        "score": 0.88,
+        "level": "strong"
+      },
+      {
+        "topic": "qa.performance",
+        "label": "Нагрузочное тестирование",
+        "score": 0.88,
+        "level": "strong"
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "candidate_id": 6,
+    "specialization": "frontend",
+    "target_grade": "middle",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-09-10T12:00:00+03:00",
+    "finished_at": "2026-09-10T12:33:00+03:00",
+    "items_answered": 12,
+    "max_items": 15,
+    "theta": 0.62,
+    "se": 0.32,
+    "ci_low": -0.01,
+    "ci_high": 1.25,
+    "result_grade": "middle",
+    "result_category": "frontend:middle",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "frontend.js_core",
+        "label": "JavaScript",
+        "score": 0.67,
+        "level": "ok"
+      },
+      {
+        "topic": "frontend.react",
+        "label": "React и состояние",
+        "score": 0.66,
+        "level": "ok"
+      },
+      {
+        "topic": "frontend.css_layout",
+        "label": "Вёрстка и CSS",
+        "score": 0.71,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.browser",
+        "label": "Браузер и производительность",
+        "score": 0.79,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.typescript",
+        "label": "TypeScript",
+        "score": 0.5,
+        "level": "ok"
+      },
+      {
+        "topic": "frontend.testing",
+        "label": "Тестирование фронтенда",
+        "score": 0.75,
+        "level": "strong"
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "candidate_id": 7,
+    "specialization": "devops",
+    "target_grade": "middle",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-08-21T12:00:00+03:00",
+    "finished_at": "2026-08-21T12:29:00+03:00",
+    "items_answered": 11,
+    "max_items": 15,
+    "theta": 0.64,
+    "se": 0.3,
+    "ci_low": 0.05,
+    "ci_high": 1.23,
+    "result_grade": "middle",
+    "result_category": "devops:middle",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "devops.linux",
+        "label": "Linux и сети",
+        "score": 0.46,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.containers",
+        "label": "Контейнеры и Kubernetes",
+        "score": 0.56,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.ci_cd",
+        "label": "CI/CD",
+        "score": 0.82,
+        "level": "strong"
+      },
+      {
+        "topic": "devops.monitoring",
+        "label": "Мониторинг и логирование",
+        "score": 0.78,
+        "level": "strong"
+      },
+      {
+        "topic": "devops.iac",
+        "label": "Инфраструктура как код",
+        "score": 0.76,
+        "level": "strong"
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "candidate_id": 8,
+    "specialization": "mobile",
+    "target_grade": "junior",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-09-17T12:00:00+03:00",
+    "finished_at": "2026-09-17T12:19:00+03:00",
+    "items_answered": 14,
+    "max_items": 15,
+    "theta": -0.82,
+    "se": 0.33,
+    "ci_low": -1.47,
+    "ci_high": -0.17,
+    "result_grade": "junior",
+    "result_category": "mobile:junior",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "mobile.lifecycle",
+        "label": "Жизненный цикл приложения",
+        "score": 0.19,
+        "level": "weak"
+      },
+      {
+        "topic": "mobile.ui",
+        "label": "Интерфейс и навигация",
+        "score": 0.18,
+        "level": "weak"
+      },
+      {
+        "topic": "mobile.networking",
+        "label": "Сеть и хранение данных",
+        "score": 0.18,
+        "level": "weak"
+      },
+      {
+        "topic": "mobile.language",
+        "label": "Kotlin / Swift",
+        "score": 0.22,
+        "level": "weak"
+      },
+      {
+        "topic": "mobile.release",
+        "label": "Сборка и публикация",
+        "score": 0.31,
+        "level": "weak"
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "candidate_id": 9,
+    "specialization": "data_ml",
+    "target_grade": "junior",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-09-26T12:00:00+03:00",
+    "finished_at": "2026-09-26T12:30:00+03:00",
+    "items_answered": 15,
+    "max_items": 15,
+    "theta": -0.34,
+    "se": 0.28,
+    "ci_low": -0.89,
+    "ci_high": 0.21,
+    "result_grade": "junior",
+    "result_category": "data_ml:junior",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "data_ml.statistics",
+        "label": "Статистика и вероятности",
+        "score": 0.29,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.ml_basics",
+        "label": "Классическое ML",
+        "score": 0.32,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.deep_learning",
+        "label": "Глубокое обучение",
+        "score": 0.54,
+        "level": "ok"
+      },
+      {
+        "topic": "data_ml.sql_data",
+        "label": "SQL и обработка данных",
+        "score": 0.4,
+        "level": "ok"
+      },
+      {
+        "topic": "data_ml.metrics",
+        "label": "Метрики и валидация моделей",
+        "score": 0.42,
+        "level": "ok"
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "candidate_id": 10,
+    "specialization": "backend",
+    "target_grade": "middle",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-08-16T12:00:00+03:00",
+    "finished_at": "2026-08-16T12:33:00+03:00",
+    "items_answered": 15,
+    "max_items": 15,
+    "theta": -0.41,
+    "se": 0.29,
+    "ci_low": -0.98,
+    "ci_high": 0.16,
+    "result_grade": "junior",
+    "result_category": "backend:junior",
+    "passed": false,
+    "topic_scores": [
+      {
+        "topic": "backend.http_api",
+        "label": "HTTP и REST API",
+        "score": 0.23,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.databases",
+        "label": "Базы данных и SQL",
+        "score": 0.4,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.concurrency",
+        "label": "Конкурентность и асинхронность",
+        "score": 0.41,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.architecture",
+        "label": "Архитектура и паттерны",
+        "score": 0.61,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.algorithms",
+        "label": "Алгоритмы и структуры данных",
+        "score": 0.29,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.security",
+        "label": "Безопасность веб-приложений",
+        "score": 0.22,
+        "level": "weak"
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "candidate_id": 10,
+    "specialization": "backend",
+    "target_grade": "junior",
+    "kind": "lower",
+    "status": "finished",
+    "started_at": "2026-08-19T12:00:00+03:00",
+    "finished_at": "2026-08-19T12:26:00+03:00",
+    "items_answered": 12,
+    "max_items": 15,
+    "theta": -0.31,
+    "se": 0.33,
+    "ci_low": -0.96,
+    "ci_high": 0.34,
+    "result_grade": "junior",
+    "result_category": "backend:junior",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "backend.http_api",
+        "label": "HTTP и REST API",
+        "score": 0.29,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.databases",
+        "label": "Базы данных и SQL",
+        "score": 0.62,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.concurrency",
+        "label": "Конкурентность и асинхронность",
+        "score": 0.42,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.architecture",
+        "label": "Архитектура и паттерны",
+        "score": 0.43,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.algorithms",
+        "label": "Алгоритмы и структуры данных",
+        "score": 0.61,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.security",
+        "label": "Безопасность веб-приложений",
+        "score": 0.51,
+        "level": "ok"
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "candidate_id": 11,
+    "specialization": "backend",
+    "target_grade": "senior",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-08-26T12:00:00+03:00",
+    "finished_at": "2026-08-26T12:27:00+03:00",
+    "items_answered": 14,
+    "max_items": 15,
+    "theta": 1.62,
+    "se": 0.29,
+    "ci_low": 1.05,
+    "ci_high": 2.19,
+    "result_grade": "senior",
+    "result_category": "backend:senior",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "backend.http_api",
+        "label": "HTTP и REST API",
+        "score": 0.91,
+        "level": "strong"
+      },
+      {
+        "topic": "backend.databases",
+        "label": "Базы данных и SQL",
+        "score": 0.68,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.concurrency",
+        "label": "Конкурентность и асинхронность",
+        "score": 0.88,
+        "level": "strong"
+      },
+      {
+        "topic": "backend.architecture",
+        "label": "Архитектура и паттерны",
+        "score": 0.69,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.algorithms",
+        "label": "Алгоритмы и структуры данных",
+        "score": 0.85,
+        "level": "strong"
+      },
+      {
+        "topic": "backend.security",
+        "label": "Безопасность веб-приложений",
+        "score": 0.88,
+        "level": "strong"
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "candidate_id": 12,
+    "specialization": "frontend",
+    "target_grade": "senior",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-09-16T12:00:00+03:00",
+    "finished_at": "2026-09-16T12:30:00+03:00",
+    "items_answered": 13,
+    "max_items": 15,
+    "theta": 1.76,
+    "se": 0.28,
+    "ci_low": 1.21,
+    "ci_high": 2.31,
+    "result_grade": "senior",
+    "result_category": "frontend:senior",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "frontend.js_core",
+        "label": "JavaScript",
+        "score": 0.78,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.react",
+        "label": "React и состояние",
+        "score": 0.89,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.css_layout",
+        "label": "Вёрстка и CSS",
+        "score": 0.73,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.browser",
+        "label": "Браузер и производительность",
+        "score": 0.93,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.typescript",
+        "label": "TypeScript",
+        "score": 0.92,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.testing",
+        "label": "Тестирование фронтенда",
+        "score": 0.87,
+        "level": "strong"
+      }
+    ]
+  },
+  {
+    "id": 14,
+    "candidate_id": 13,
+    "specialization": "mobile",
+    "target_grade": "middle",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-08-25T12:00:00+03:00",
+    "finished_at": "2026-08-25T12:28:00+03:00",
+    "items_answered": 11,
+    "max_items": 15,
+    "theta": 0.26,
+    "se": 0.28,
+    "ci_low": -0.29,
+    "ci_high": 0.81,
+    "result_grade": "middle",
+    "result_category": "mobile:middle",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "mobile.lifecycle",
+        "label": "Жизненный цикл приложения",
+        "score": 0.57,
+        "level": "ok"
+      },
+      {
+        "topic": "mobile.ui",
+        "label": "Интерфейс и навигация",
+        "score": 0.5,
+        "level": "ok"
+      },
+      {
+        "topic": "mobile.networking",
+        "label": "Сеть и хранение данных",
+        "score": 0.64,
+        "level": "ok"
+      },
+      {
+        "topic": "mobile.language",
+        "label": "Kotlin / Swift",
+        "score": 0.37,
+        "level": "weak"
+      },
+      {
+        "topic": "mobile.release",
+        "label": "Сборка и публикация",
+        "score": 0.69,
+        "level": "ok"
+      }
+    ]
+  },
+  {
+    "id": 15,
+    "candidate_id": 14,
+    "specialization": "frontend",
+    "target_grade": "middle",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-09-25T12:00:00+03:00",
+    "finished_at": "2026-09-25T12:34:00+03:00",
+    "items_answered": 14,
+    "max_items": 15,
+    "theta": -0.27,
+    "se": 0.33,
+    "ci_low": -0.92,
+    "ci_high": 0.38,
+    "result_grade": "junior",
+    "result_category": "frontend:junior",
+    "passed": false,
+    "topic_scores": [
+      {
+        "topic": "frontend.js_core",
+        "label": "JavaScript",
+        "score": 0.55,
+        "level": "ok"
+      },
+      {
+        "topic": "frontend.react",
+        "label": "React и состояние",
+        "score": 0.48,
+        "level": "ok"
+      },
+      {
+        "topic": "frontend.css_layout",
+        "label": "Вёрстка и CSS",
+        "score": 0.4,
+        "level": "ok"
+      },
+      {
+        "topic": "frontend.browser",
+        "label": "Браузер и производительность",
+        "score": 0.24,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.typescript",
+        "label": "TypeScript",
+        "score": 0.63,
+        "level": "ok"
+      },
+      {
+        "topic": "frontend.testing",
+        "label": "Тестирование фронтенда",
+        "score": 0.44,
+        "level": "ok"
+      }
+    ]
+  },
+  {
+    "id": 16,
+    "candidate_id": 14,
+    "specialization": "frontend",
+    "target_grade": "junior",
+    "kind": "lower",
+    "status": "finished",
+    "started_at": "2026-09-27T12:00:00+03:00",
+    "finished_at": "2026-09-27T12:25:00+03:00",
+    "items_answered": 11,
+    "max_items": 15,
+    "theta": -0.17,
+    "se": 0.32,
+    "ci_low": -0.8,
+    "ci_high": 0.46,
+    "result_grade": "junior",
+    "result_category": "frontend:junior",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "frontend.js_core",
+        "label": "JavaScript",
+        "score": 0.52,
+        "level": "ok"
+      },
+      {
+        "topic": "frontend.react",
+        "label": "React и состояние",
+        "score": 0.35,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.css_layout",
+        "label": "Вёрстка и CSS",
+        "score": 0.36,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.browser",
+        "label": "Браузер и производительность",
+        "score": 0.29,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.typescript",
+        "label": "TypeScript",
+        "score": 0.54,
+        "level": "ok"
+      },
+      {
+        "topic": "frontend.testing",
+        "label": "Тестирование фронтенда",
+        "score": 0.67,
+        "level": "ok"
+      }
+    ]
+  },
+  {
+    "id": 17,
+    "candidate_id": 15,
+    "specialization": "devops",
+    "target_grade": "middle",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-09-05T12:00:00+03:00",
+    "finished_at": "2026-09-05T12:33:00+03:00",
+    "items_answered": 14,
+    "max_items": 15,
+    "theta": 0.16,
+    "se": 0.29,
+    "ci_low": -0.41,
+    "ci_high": 0.73,
+    "result_grade": "middle",
+    "result_category": "devops:middle",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "devops.linux",
+        "label": "Linux и сети",
+        "score": 0.61,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.containers",
+        "label": "Контейнеры и Kubernetes",
+        "score": 0.45,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.ci_cd",
+        "label": "CI/CD",
+        "score": 0.46,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.monitoring",
+        "label": "Мониторинг и логирование",
+        "score": 0.68,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.iac",
+        "label": "Инфраструктура как код",
+        "score": 0.59,
+        "level": "ok"
+      }
+    ]
+  },
+  {
+    "id": 18,
+    "candidate_id": 16,
+    "specialization": "data_ml",
+    "target_grade": "junior",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-09-20T12:00:00+03:00",
+    "finished_at": "2026-09-20T12:30:00+03:00",
+    "items_answered": 11,
+    "max_items": 15,
+    "theta": -1.97,
+    "se": 0.32,
+    "ci_low": -2.6,
+    "ci_high": -1.34,
+    "result_grade": "intern",
+    "result_category": "data_ml:intern",
+    "passed": false,
+    "topic_scores": [
+      {
+        "topic": "data_ml.statistics",
+        "label": "Статистика и вероятности",
+        "score": 0.15,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.ml_basics",
+        "label": "Классическое ML",
+        "score": 0.07,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.deep_learning",
+        "label": "Глубокое обучение",
+        "score": 0.12,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.sql_data",
+        "label": "SQL и обработка данных",
+        "score": 0.13,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.metrics",
+        "label": "Метрики и валидация моделей",
+        "score": 0.1,
+        "level": "weak"
+      }
+    ]
+  },
+  {
+    "id": 19,
+    "candidate_id": 16,
+    "specialization": "data_ml",
+    "target_grade": "intern",
+    "kind": "lower",
+    "status": "finished",
+    "started_at": "2026-09-21T12:00:00+03:00",
+    "finished_at": "2026-09-21T12:24:00+03:00",
+    "items_answered": 13,
+    "max_items": 15,
+    "theta": -1.87,
+    "se": 0.29,
+    "ci_low": -2.44,
+    "ci_high": -1.3,
+    "result_grade": "intern",
+    "result_category": "data_ml:intern",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "data_ml.statistics",
+        "label": "Статистика и вероятности",
+        "score": 0.12,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.ml_basics",
+        "label": "Классическое ML",
+        "score": 0.17,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.deep_learning",
+        "label": "Глубокое обучение",
+        "score": 0.23,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.sql_data",
+        "label": "SQL и обработка данных",
+        "score": 0.2,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.metrics",
+        "label": "Метрики и валидация моделей",
+        "score": 0.12,
+        "level": "weak"
+      }
+    ]
+  },
+  {
+    "id": 20,
+    "candidate_id": 17,
+    "specialization": "qa",
+    "target_grade": "senior",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-08-16T12:00:00+03:00",
+    "finished_at": "2026-08-16T12:23:00+03:00",
+    "items_answered": 13,
+    "max_items": 15,
+    "theta": 0.32,
+    "se": 0.31,
+    "ci_low": -0.29,
+    "ci_high": 0.93,
+    "result_grade": "middle",
+    "result_category": "qa:middle",
+    "passed": false,
+    "topic_scores": [
+      {
+        "topic": "qa.test_design",
+        "label": "Тест-дизайн",
+        "score": 0.63,
+        "level": "ok"
+      },
+      {
+        "topic": "qa.automation",
+        "label": "Автоматизация тестирования",
+        "score": 0.71,
+        "level": "strong"
+      },
+      {
+        "topic": "qa.api_testing",
+        "label": "Тестирование API",
+        "score": 0.51,
+        "level": "ok"
+      },
+      {
+        "topic": "qa.process",
+        "label": "Баг-репорты и процессы",
+        "score": 0.4,
+        "level": "ok"
+      },
+      {
+        "topic": "qa.performance",
+        "label": "Нагрузочное тестирование",
+        "score": 0.71,
+        "level": "strong"
+      }
+    ]
+  },
+  {
+    "id": 21,
+    "candidate_id": 17,
+    "specialization": "qa",
+    "target_grade": "middle",
+    "kind": "lower",
+    "status": "finished",
+    "started_at": "2026-08-19T12:00:00+03:00",
+    "finished_at": "2026-08-19T12:21:00+03:00",
+    "items_answered": 13,
+    "max_items": 15,
+    "theta": 0.42,
+    "se": 0.29,
+    "ci_low": -0.15,
+    "ci_high": 0.99,
+    "result_grade": "middle",
+    "result_category": "qa:middle",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "qa.test_design",
+        "label": "Тест-дизайн",
+        "score": 0.69,
+        "level": "ok"
+      },
+      {
+        "topic": "qa.automation",
+        "label": "Автоматизация тестирования",
+        "score": 0.63,
+        "level": "ok"
+      },
+      {
+        "topic": "qa.api_testing",
+        "label": "Тестирование API",
+        "score": 0.72,
+        "level": "strong"
+      },
+      {
+        "topic": "qa.process",
+        "label": "Баг-репорты и процессы",
+        "score": 0.52,
+        "level": "ok"
+      },
+      {
+        "topic": "qa.performance",
+        "label": "Нагрузочное тестирование",
+        "score": 0.61,
+        "level": "ok"
+      }
+    ]
+  },
+  {
+    "id": 22,
+    "candidate_id": 18,
+    "specialization": "devops",
+    "target_grade": "middle",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-09-19T12:00:00+03:00",
+    "finished_at": "2026-09-19T12:24:00+03:00",
+    "items_answered": 12,
+    "max_items": 15,
+    "theta": 0.81,
+    "se": 0.28,
+    "ci_low": 0.26,
+    "ci_high": 1.36,
+    "result_grade": "middle",
+    "result_category": "devops:middle",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "devops.linux",
+        "label": "Linux и сети",
+        "score": 0.55,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.containers",
+        "label": "Контейнеры и Kubernetes",
+        "score": 0.73,
+        "level": "strong"
+      },
+      {
+        "topic": "devops.ci_cd",
+        "label": "CI/CD",
+        "score": 0.54,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.monitoring",
+        "label": "Мониторинг и логирование",
+        "score": 0.76,
+        "level": "strong"
+      },
+      {
+        "topic": "devops.iac",
+        "label": "Инфраструктура как код",
+        "score": 0.76,
+        "level": "strong"
+      }
+    ]
+  },
+  {
+    "id": 23,
+    "candidate_id": 19,
+    "specialization": "backend",
+    "target_grade": "intern",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-10-01T12:00:00+03:00",
+    "finished_at": "2026-10-01T12:18:00+03:00",
+    "items_answered": 11,
+    "max_items": 15,
+    "theta": -1.82,
+    "se": 0.27,
+    "ci_low": -2.35,
+    "ci_high": -1.29,
+    "result_grade": "intern",
+    "result_category": "backend:intern",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "backend.http_api",
+        "label": "HTTP и REST API",
+        "score": 0.19,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.databases",
+        "label": "Базы данных и SQL",
+        "score": 0.07,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.concurrency",
+        "label": "Конкурентность и асинхронность",
+        "score": 0.1,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.architecture",
+        "label": "Архитектура и паттерны",
+        "score": 0.15,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.algorithms",
+        "label": "Алгоритмы и структуры данных",
+        "score": 0.15,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.security",
+        "label": "Безопасность веб-приложений",
+        "score": 0.09,
+        "level": "weak"
+      }
+    ]
+  },
+  {
+    "id": 24,
+    "candidate_id": 20,
+    "specialization": "data_ml",
+    "target_grade": "junior",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-08-29T12:00:00+03:00",
+    "finished_at": "2026-08-29T12:20:00+03:00",
+    "items_answered": 13,
+    "max_items": 15,
+    "theta": -1.94,
+    "se": 0.29,
+    "ci_low": -2.51,
+    "ci_high": -1.37,
+    "result_grade": "intern",
+    "result_category": "data_ml:intern",
+    "passed": false,
+    "topic_scores": [
+      {
+        "topic": "data_ml.statistics",
+        "label": "Статистика и вероятности",
+        "score": 0.1,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.ml_basics",
+        "label": "Классическое ML",
+        "score": 0.26,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.deep_learning",
+        "label": "Глубокое обучение",
+        "score": 0.11,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.sql_data",
+        "label": "SQL и обработка данных",
+        "score": 0.18,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.metrics",
+        "label": "Метрики и валидация моделей",
+        "score": 0.15,
+        "level": "weak"
+      }
+    ]
+  },
+  {
+    "id": 25,
+    "candidate_id": 20,
+    "specialization": "data_ml",
+    "target_grade": "intern",
+    "kind": "lower",
+    "status": "finished",
+    "started_at": "2026-09-01T12:00:00+03:00",
+    "finished_at": "2026-09-01T12:25:00+03:00",
+    "items_answered": 11,
+    "max_items": 15,
+    "theta": -1.84,
+    "se": 0.28,
+    "ci_low": -2.39,
+    "ci_high": -1.29,
+    "result_grade": "intern",
+    "result_category": "data_ml:intern",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "data_ml.statistics",
+        "label": "Статистика и вероятности",
+        "score": 0.12,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.ml_basics",
+        "label": "Классическое ML",
+        "score": 0.07,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.deep_learning",
+        "label": "Глубокое обучение",
+        "score": 0.15,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.sql_data",
+        "label": "SQL и обработка данных",
+        "score": 0.16,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.metrics",
+        "label": "Метрики и валидация моделей",
+        "score": 0.28,
+        "level": "weak"
+      }
+    ]
+  },
+  {
+    "id": 26,
+    "candidate_id": 21,
+    "specialization": "data_ml",
+    "target_grade": "middle",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-09-30T12:00:00+03:00",
+    "finished_at": "2026-09-30T12:28:00+03:00",
+    "items_answered": 11,
+    "max_items": 15,
+    "theta": 0.67,
+    "se": 0.31,
+    "ci_low": 0.06,
+    "ci_high": 1.28,
+    "result_grade": "middle",
+    "result_category": "data_ml:middle",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "data_ml.statistics",
+        "label": "Статистика и вероятности",
+        "score": 0.7,
+        "level": "strong"
+      },
+      {
+        "topic": "data_ml.ml_basics",
+        "label": "Классическое ML",
+        "score": 0.67,
+        "level": "ok"
+      },
+      {
+        "topic": "data_ml.deep_learning",
+        "label": "Глубокое обучение",
+        "score": 0.71,
+        "level": "strong"
+      },
+      {
+        "topic": "data_ml.sql_data",
+        "label": "SQL и обработка данных",
+        "score": 0.47,
+        "level": "ok"
+      },
+      {
+        "topic": "data_ml.metrics",
+        "label": "Метрики и валидация моделей",
+        "score": 0.78,
+        "level": "strong"
+      }
+    ]
+  },
+  {
+    "id": 27,
+    "candidate_id": 22,
+    "specialization": "backend",
+    "target_grade": "junior",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-09-28T12:00:00+03:00",
+    "finished_at": "2026-09-28T12:32:00+03:00",
+    "items_answered": 12,
+    "max_items": 15,
+    "theta": -0.56,
+    "se": 0.32,
+    "ci_low": -1.19,
+    "ci_high": 0.07,
+    "result_grade": "junior",
+    "result_category": "backend:junior",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "backend.http_api",
+        "label": "HTTP и REST API",
+        "score": 0.35,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.databases",
+        "label": "Базы данных и SQL",
+        "score": 0.19,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.concurrency",
+        "label": "Конкурентность и асинхронность",
+        "score": 0.57,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.architecture",
+        "label": "Архитектура и паттерны",
+        "score": 0.43,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.algorithms",
+        "label": "Алгоритмы и структуры данных",
+        "score": 0.41,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.security",
+        "label": "Безопасность веб-приложений",
+        "score": 0.58,
+        "level": "ok"
+      }
+    ]
+  },
+  {
+    "id": 28,
+    "candidate_id": 23,
+    "specialization": "devops",
+    "target_grade": "senior",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-08-28T12:00:00+03:00",
+    "finished_at": "2026-08-28T12:22:00+03:00",
+    "items_answered": 14,
+    "max_items": 15,
+    "theta": 1.25,
+    "se": 0.3,
+    "ci_low": 0.66,
+    "ci_high": 1.84,
+    "result_grade": "senior",
+    "result_category": "devops:senior",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "devops.linux",
+        "label": "Linux и сети",
+        "score": 0.62,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.containers",
+        "label": "Контейнеры и Kubernetes",
+        "score": 0.68,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.ci_cd",
+        "label": "CI/CD",
+        "score": 0.82,
+        "level": "strong"
+      },
+      {
+        "topic": "devops.monitoring",
+        "label": "Мониторинг и логирование",
+        "score": 0.62,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.iac",
+        "label": "Инфраструктура как код",
+        "score": 0.63,
+        "level": "ok"
+      }
+    ]
+  },
+  {
+    "id": 29,
+    "candidate_id": 24,
+    "specialization": "mobile",
+    "target_grade": "middle",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-09-24T12:00:00+03:00",
+    "finished_at": "2026-09-24T12:22:00+03:00",
+    "items_answered": 11,
+    "max_items": 15,
+    "theta": 0.44,
+    "se": 0.33,
+    "ci_low": -0.21,
+    "ci_high": 1.09,
+    "result_grade": "middle",
+    "result_category": "mobile:middle",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "mobile.lifecycle",
+        "label": "Жизненный цикл приложения",
+        "score": 0.53,
+        "level": "ok"
+      },
+      {
+        "topic": "mobile.ui",
+        "label": "Интерфейс и навигация",
+        "score": 0.55,
+        "level": "ok"
+      },
+      {
+        "topic": "mobile.networking",
+        "label": "Сеть и хранение данных",
+        "score": 0.66,
+        "level": "ok"
+      },
+      {
+        "topic": "mobile.language",
+        "label": "Kotlin / Swift",
+        "score": 0.79,
+        "level": "strong"
+      },
+      {
+        "topic": "mobile.release",
+        "label": "Сборка и публикация",
+        "score": 0.44,
+        "level": "ok"
+      }
+    ]
+  },
+  {
+    "id": 30,
+    "candidate_id": 25,
+    "specialization": "qa",
+    "target_grade": "junior",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-08-17T12:00:00+03:00",
+    "finished_at": "2026-08-17T12:26:00+03:00",
+    "items_answered": 11,
+    "max_items": 15,
+    "theta": -0.43,
+    "se": 0.32,
+    "ci_low": -1.06,
+    "ci_high": 0.2,
+    "result_grade": "junior",
+    "result_category": "qa:junior",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "qa.test_design",
+        "label": "Тест-дизайн",
+        "score": 0.22,
+        "level": "weak"
+      },
+      {
+        "topic": "qa.automation",
+        "label": "Автоматизация тестирования",
+        "score": 0.51,
+        "level": "ok"
+      },
+      {
+        "topic": "qa.api_testing",
+        "label": "Тестирование API",
+        "score": 0.31,
+        "level": "weak"
+      },
+      {
+        "topic": "qa.process",
+        "label": "Баг-репорты и процессы",
+        "score": 0.53,
+        "level": "ok"
+      },
+      {
+        "topic": "qa.performance",
+        "label": "Нагрузочное тестирование",
+        "score": 0.37,
+        "level": "weak"
+      }
+    ]
+  },
+  {
+    "id": 31,
+    "candidate_id": 26,
+    "specialization": "frontend",
+    "target_grade": "junior",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-09-13T12:00:00+03:00",
+    "finished_at": "2026-09-13T12:29:00+03:00",
+    "items_answered": 14,
+    "max_items": 15,
+    "theta": -0.38,
+    "se": 0.28,
+    "ci_low": -0.93,
+    "ci_high": 0.17,
+    "result_grade": "junior",
+    "result_category": "frontend:junior",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "frontend.js_core",
+        "label": "JavaScript",
+        "score": 0.28,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.react",
+        "label": "React и состояние",
+        "score": 0.31,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.css_layout",
+        "label": "Вёрстка и CSS",
+        "score": 0.26,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.browser",
+        "label": "Браузер и производительность",
+        "score": 0.26,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.typescript",
+        "label": "TypeScript",
+        "score": 0.24,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.testing",
+        "label": "Тестирование фронтенда",
+        "score": 0.3,
+        "level": "weak"
+      }
+    ]
+  },
+  {
+    "id": 32,
+    "candidate_id": 27,
+    "specialization": "backend",
+    "target_grade": "middle",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-09-12T12:00:00+03:00",
+    "finished_at": "2026-09-12T12:30:00+03:00",
+    "items_answered": 13,
+    "max_items": 15,
+    "theta": 0.63,
+    "se": 0.33,
+    "ci_low": -0.02,
+    "ci_high": 1.28,
+    "result_grade": "middle",
+    "result_category": "backend:middle",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "backend.http_api",
+        "label": "HTTP и REST API",
+        "score": 0.68,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.databases",
+        "label": "Базы данных и SQL",
+        "score": 0.78,
+        "level": "strong"
+      },
+      {
+        "topic": "backend.concurrency",
+        "label": "Конкурентность и асинхронность",
+        "score": 0.61,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.architecture",
+        "label": "Архитектура и паттерны",
+        "score": 0.48,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.algorithms",
+        "label": "Алгоритмы и структуры данных",
+        "score": 0.7,
+        "level": "strong"
+      },
+      {
+        "topic": "backend.security",
+        "label": "Безопасность веб-приложений",
+        "score": 0.44,
+        "level": "ok"
+      }
+    ]
+  },
+  {
+    "id": 33,
+    "candidate_id": 28,
+    "specialization": "mobile",
+    "target_grade": "senior",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-08-25T12:00:00+03:00",
+    "finished_at": "2026-08-25T12:35:00+03:00",
+    "items_answered": 12,
+    "max_items": 15,
+    "theta": 1.14,
+    "se": 0.3,
+    "ci_low": 0.55,
+    "ci_high": 1.73,
+    "result_grade": "senior",
+    "result_category": "mobile:senior",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "mobile.lifecycle",
+        "label": "Жизненный цикл приложения",
+        "score": 0.88,
+        "level": "strong"
+      },
+      {
+        "topic": "mobile.ui",
+        "label": "Интерфейс и навигация",
+        "score": 0.8,
+        "level": "strong"
+      },
+      {
+        "topic": "mobile.networking",
+        "label": "Сеть и хранение данных",
+        "score": 0.73,
+        "level": "strong"
+      },
+      {
+        "topic": "mobile.language",
+        "label": "Kotlin / Swift",
+        "score": 0.86,
+        "level": "strong"
+      },
+      {
+        "topic": "mobile.release",
+        "label": "Сборка и публикация",
+        "score": 0.82,
+        "level": "strong"
+      }
+    ]
+  },
+  {
+    "id": 34,
+    "candidate_id": 29,
+    "specialization": "backend",
+    "target_grade": "junior",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-09-02T12:00:00+03:00",
+    "finished_at": "2026-09-02T12:35:00+03:00",
+    "items_answered": 14,
+    "max_items": 15,
+    "theta": -0.39,
+    "se": 0.34,
+    "ci_low": -1.06,
+    "ci_high": 0.28,
+    "result_grade": "junior",
+    "result_category": "backend:junior",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "backend.http_api",
+        "label": "HTTP и REST API",
+        "score": 0.27,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.databases",
+        "label": "Базы данных и SQL",
+        "score": 0.34,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.concurrency",
+        "label": "Конкурентность и асинхронность",
+        "score": 0.37,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.architecture",
+        "label": "Архитектура и паттерны",
+        "score": 0.54,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.algorithms",
+        "label": "Алгоритмы и структуры данных",
+        "score": 0.27,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.security",
+        "label": "Безопасность веб-приложений",
+        "score": 0.49,
+        "level": "ok"
+      }
+    ]
+  },
+  {
+    "id": 35,
+    "candidate_id": 30,
+    "specialization": "frontend",
+    "target_grade": "middle",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-09-12T12:00:00+03:00",
+    "finished_at": "2026-09-12T12:26:00+03:00",
+    "items_answered": 14,
+    "max_items": 15,
+    "theta": 0.18,
+    "se": 0.33,
+    "ci_low": -0.47,
+    "ci_high": 0.83,
+    "result_grade": "middle",
+    "result_category": "frontend:middle",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "frontend.js_core",
+        "label": "JavaScript",
+        "score": 0.71,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.react",
+        "label": "React и состояние",
+        "score": 0.48,
+        "level": "ok"
+      },
+      {
+        "topic": "frontend.css_layout",
+        "label": "Вёрстка и CSS",
+        "score": 0.7,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.browser",
+        "label": "Браузер и производительность",
+        "score": 0.74,
+        "level": "strong"
+      },
+      {
+        "topic": "frontend.typescript",
+        "label": "TypeScript",
+        "score": 0.46,
+        "level": "ok"
+      },
+      {
+        "topic": "frontend.testing",
+        "label": "Тестирование фронтенда",
+        "score": 0.47,
+        "level": "ok"
+      }
+    ]
+  },
+  {
+    "id": 36,
+    "candidate_id": 31,
+    "specialization": "frontend",
+    "target_grade": "junior",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-09-02T12:00:00+03:00",
+    "finished_at": "2026-09-02T12:29:00+03:00",
+    "items_answered": 11,
+    "max_items": 15,
+    "theta": -1.81,
+    "se": 0.31,
+    "ci_low": -2.42,
+    "ci_high": -1.2,
+    "result_grade": "intern",
+    "result_category": "frontend:intern",
+    "passed": false,
+    "topic_scores": [
+      {
+        "topic": "frontend.js_core",
+        "label": "JavaScript",
+        "score": 0.07,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.react",
+        "label": "React и состояние",
+        "score": 0.11,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.css_layout",
+        "label": "Вёрстка и CSS",
+        "score": 0.1,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.browser",
+        "label": "Браузер и производительность",
+        "score": 0.27,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.typescript",
+        "label": "TypeScript",
+        "score": 0.16,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.testing",
+        "label": "Тестирование фронтенда",
+        "score": 0.19,
+        "level": "weak"
+      }
+    ]
+  },
+  {
+    "id": 37,
+    "candidate_id": 31,
+    "specialization": "frontend",
+    "target_grade": "intern",
+    "kind": "lower",
+    "status": "finished",
+    "started_at": "2026-09-04T12:00:00+03:00",
+    "finished_at": "2026-09-04T12:21:00+03:00",
+    "items_answered": 15,
+    "max_items": 15,
+    "theta": -1.71,
+    "se": 0.27,
+    "ci_low": -2.24,
+    "ci_high": -1.18,
+    "result_grade": "intern",
+    "result_category": "frontend:intern",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "frontend.js_core",
+        "label": "JavaScript",
+        "score": 0.13,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.react",
+        "label": "React и состояние",
+        "score": 0.11,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.css_layout",
+        "label": "Вёрстка и CSS",
+        "score": 0.27,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.browser",
+        "label": "Браузер и производительность",
+        "score": 0.27,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.typescript",
+        "label": "TypeScript",
+        "score": 0.1,
+        "level": "weak"
+      },
+      {
+        "topic": "frontend.testing",
+        "label": "Тестирование фронтенда",
+        "score": 0.13,
+        "level": "weak"
+      }
+    ]
+  },
+  {
+    "id": 38,
+    "candidate_id": 32,
+    "specialization": "backend",
+    "target_grade": "middle",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-09-15T12:00:00+03:00",
+    "finished_at": "2026-09-15T12:22:00+03:00",
+    "items_answered": 11,
+    "max_items": 15,
+    "theta": 0.69,
+    "se": 0.28,
+    "ci_low": 0.14,
+    "ci_high": 1.24,
+    "result_grade": "middle",
+    "result_category": "backend:middle",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "backend.http_api",
+        "label": "HTTP и REST API",
+        "score": 0.6,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.databases",
+        "label": "Базы данных и SQL",
+        "score": 0.5,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.concurrency",
+        "label": "Конкурентность и асинхронность",
+        "score": 0.48,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.architecture",
+        "label": "Архитектура и паттерны",
+        "score": 0.62,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.algorithms",
+        "label": "Алгоритмы и структуры данных",
+        "score": 0.73,
+        "level": "strong"
+      },
+      {
+        "topic": "backend.security",
+        "label": "Безопасность веб-приложений",
+        "score": 0.61,
+        "level": "ok"
+      }
+    ]
+  },
+  {
+    "id": 39,
+    "candidate_id": 33,
+    "specialization": "backend",
+    "target_grade": "junior",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-08-22T12:00:00+03:00",
+    "finished_at": "2026-08-22T12:31:00+03:00",
+    "items_answered": 15,
+    "max_items": 15,
+    "theta": -0.33,
+    "se": 0.31,
+    "ci_low": -0.94,
+    "ci_high": 0.28,
+    "result_grade": "junior",
+    "result_category": "backend:junior",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "backend.http_api",
+        "label": "HTTP и REST API",
+        "score": 0.62,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.databases",
+        "label": "Базы данных и SQL",
+        "score": 0.33,
+        "level": "weak"
+      },
+      {
+        "topic": "backend.concurrency",
+        "label": "Конкурентность и асинхронность",
+        "score": 0.45,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.architecture",
+        "label": "Архитектура и паттерны",
+        "score": 0.63,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.algorithms",
+        "label": "Алгоритмы и структуры данных",
+        "score": 0.59,
+        "level": "ok"
+      },
+      {
+        "topic": "backend.security",
+        "label": "Безопасность веб-приложений",
+        "score": 0.37,
+        "level": "weak"
+      }
+    ]
+  },
+  {
+    "id": 40,
+    "candidate_id": 34,
+    "specialization": "data_ml",
+    "target_grade": "junior",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-09-02T12:00:00+03:00",
+    "finished_at": "2026-09-02T12:24:00+03:00",
+    "items_answered": 14,
+    "max_items": 15,
+    "theta": -0.49,
+    "se": 0.32,
+    "ci_low": -1.12,
+    "ci_high": 0.14,
+    "result_grade": "junior",
+    "result_category": "data_ml:junior",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "data_ml.statistics",
+        "label": "Статистика и вероятности",
+        "score": 0.46,
+        "level": "ok"
+      },
+      {
+        "topic": "data_ml.ml_basics",
+        "label": "Классическое ML",
+        "score": 0.37,
+        "level": "weak"
+      },
+      {
+        "topic": "data_ml.deep_learning",
+        "label": "Глубокое обучение",
+        "score": 0.54,
+        "level": "ok"
+      },
+      {
+        "topic": "data_ml.sql_data",
+        "label": "SQL и обработка данных",
+        "score": 0.43,
+        "level": "ok"
+      },
+      {
+        "topic": "data_ml.metrics",
+        "label": "Метрики и валидация моделей",
+        "score": 0.22,
+        "level": "weak"
+      }
+    ]
+  },
+  {
+    "id": 41,
+    "candidate_id": 35,
+    "specialization": "data_ml",
+    "target_grade": "senior",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-08-20T12:00:00+03:00",
+    "finished_at": "2026-08-20T12:19:00+03:00",
+    "items_answered": 13,
+    "max_items": 15,
+    "theta": 1.62,
+    "se": 0.29,
+    "ci_low": 1.05,
+    "ci_high": 2.19,
+    "result_grade": "senior",
+    "result_category": "data_ml:senior",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "data_ml.statistics",
+        "label": "Статистика и вероятности",
+        "score": 0.92,
+        "level": "strong"
+      },
+      {
+        "topic": "data_ml.ml_basics",
+        "label": "Классическое ML",
+        "score": 0.92,
+        "level": "strong"
+      },
+      {
+        "topic": "data_ml.deep_learning",
+        "label": "Глубокое обучение",
+        "score": 0.68,
+        "level": "ok"
+      },
+      {
+        "topic": "data_ml.sql_data",
+        "label": "SQL и обработка данных",
+        "score": 0.68,
+        "level": "ok"
+      },
+      {
+        "topic": "data_ml.metrics",
+        "label": "Метрики и валидация моделей",
+        "score": 0.79,
+        "level": "strong"
+      }
+    ]
+  },
+  {
+    "id": 42,
+    "candidate_id": 36,
+    "specialization": "mobile",
+    "target_grade": "middle",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-09-28T12:00:00+03:00",
+    "finished_at": "2026-09-28T12:31:00+03:00",
+    "items_answered": 11,
+    "max_items": 15,
+    "theta": 0.78,
+    "se": 0.33,
+    "ci_low": 0.13,
+    "ci_high": 1.43,
+    "result_grade": "middle",
+    "result_category": "mobile:middle",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "mobile.lifecycle",
+        "label": "Жизненный цикл приложения",
+        "score": 0.48,
+        "level": "ok"
+      },
+      {
+        "topic": "mobile.ui",
+        "label": "Интерфейс и навигация",
+        "score": 0.56,
+        "level": "ok"
+      },
+      {
+        "topic": "mobile.networking",
+        "label": "Сеть и хранение данных",
+        "score": 0.7,
+        "level": "strong"
+      },
+      {
+        "topic": "mobile.language",
+        "label": "Kotlin / Swift",
+        "score": 0.77,
+        "level": "strong"
+      },
+      {
+        "topic": "mobile.release",
+        "label": "Сборка и публикация",
+        "score": 0.74,
+        "level": "strong"
+      }
+    ]
+  },
+  {
+    "id": 43,
+    "candidate_id": 37,
+    "specialization": "qa",
+    "target_grade": "junior",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-09-06T12:00:00+03:00",
+    "finished_at": "2026-09-06T12:34:00+03:00",
+    "items_answered": 12,
+    "max_items": 15,
+    "theta": -0.61,
+    "se": 0.28,
+    "ci_low": -1.16,
+    "ci_high": -0.06,
+    "result_grade": "junior",
+    "result_category": "qa:junior",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "qa.test_design",
+        "label": "Тест-дизайн",
+        "score": 0.31,
+        "level": "weak"
+      },
+      {
+        "topic": "qa.automation",
+        "label": "Автоматизация тестирования",
+        "score": 0.24,
+        "level": "weak"
+      },
+      {
+        "topic": "qa.api_testing",
+        "label": "Тестирование API",
+        "score": 0.26,
+        "level": "weak"
+      },
+      {
+        "topic": "qa.process",
+        "label": "Баг-репорты и процессы",
+        "score": 0.19,
+        "level": "weak"
+      },
+      {
+        "topic": "qa.performance",
+        "label": "Нагрузочное тестирование",
+        "score": 0.27,
+        "level": "weak"
+      }
+    ]
+  },
+  {
+    "id": 44,
+    "candidate_id": 38,
+    "specialization": "devops",
+    "target_grade": "middle",
+    "kind": "placement",
+    "status": "finished",
+    "started_at": "2026-09-04T12:00:00+03:00",
+    "finished_at": "2026-09-04T12:31:00+03:00",
+    "items_answered": 12,
+    "max_items": 15,
+    "theta": 0.84,
+    "se": 0.3,
+    "ci_low": 0.25,
+    "ci_high": 1.43,
+    "result_grade": "middle",
+    "result_category": "devops:middle",
+    "passed": true,
+    "topic_scores": [
+      {
+        "topic": "devops.linux",
+        "label": "Linux и сети",
+        "score": 0.72,
+        "level": "strong"
+      },
+      {
+        "topic": "devops.containers",
+        "label": "Контейнеры и Kubernetes",
+        "score": 0.56,
+        "level": "ok"
+      },
+      {
+        "topic": "devops.ci_cd",
+        "label": "CI/CD",
+        "score": 0.84,
+        "level": "strong"
+      },
+      {
+        "topic": "devops.monitoring",
+        "label": "Мониторинг и логирование",
+        "score": 0.79,
+        "level": "strong"
+      },
+      {
+        "topic": "devops.iac",
+        "label": "Инфраструктура как код",
+        "score": 0.82,
+        "level": "strong"
+      }
+    ]
+  },
+  {
+    "id": 45,
+    "candidate_id": 39,
+    "specialization": "backend",
+    "target_grade": "junior",
+    "kind": "placement",
+    "status": "in_progress",
+    "started_at": "2026-10-06T11:53:00+03:00",
+    "finished_at": null,
+    "items_answered": 4,
+    "max_items": 15,
+    "theta": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "result_grade": null,
+    "result_category": null,
+    "passed": null,
+    "topic_scores": []
+  }
+]
