@@ -1,0 +1,125 @@
+import type { CandidateProfile, CandidateProfileUpdate, S, WorkFormat } from '../api'
+
+/** Состояние формы профиля (строки для числовых полей — чтобы можно было стереть значение). */
+export interface ProfileFormState {
+  full_name: string
+  phone: string
+  telegram: string
+  city: string
+  work_formats: WorkFormat[]
+  stack: string[]
+  roles_in_team: string[]
+  experience_years: string
+  soft_skills: string[]
+  about: string
+  links: S['ProfileLink'][]
+  min_salary: string
+}
+
+/** Уверенность распознавания по полям формы (из PDF). */
+export type ParsedConfidence = Partial<Record<keyof ProfileFormState, number>>
+
+export function formFromProfile(p: Partial<CandidateProfile> | undefined): ProfileFormState {
+  return {
+    full_name: p?.full_name ?? '',
+    phone: p?.phone ?? '',
+    telegram: p?.telegram ?? '',
+    city: p?.city ?? '',
+    work_formats: p?.work_formats ?? [],
+    stack: p?.stack ?? [],
+    roles_in_team: p?.roles_in_team ?? [],
+    experience_years: p?.experience_years != null ? String(p.experience_years).replace('.', ',') : '',
+    soft_skills: p?.soft_skills ?? [],
+    about: p?.about ?? '',
+    links: p?.links ?? [],
+    min_salary: p?.min_salary != null ? String(p.min_salary) : '',
+  }
+}
+
+function guessLinkType(url: string): S['LinkType'] {
+  if (/github\.com/i.test(url)) return 'github'
+  if (/gitlab\./i.test(url)) return 'gitlab'
+  if (/linkedin\./i.test(url)) return 'linkedin'
+  return 'portfolio'
+}
+
+const asString = (v: unknown) => (typeof v === 'string' ? v : typeof v === 'number' ? String(v) : '')
+const asList = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [])
+
+/** Подставить распознанные из PDF поля в форму. Возвращает форму и уверенность по полям. */
+export function applyParsedResume(
+  base: ProfileFormState,
+  parsed: S['ResumeParseResult'],
+): { form: ProfileFormState; confidence: ParsedConfidence } {
+  const form = { ...base }
+  const confidence: ParsedConfidence = {}
+  for (const [key, field] of Object.entries(parsed.fields)) {
+    const v = field.value
+    if (v === null || v === undefined || (Array.isArray(v) && v.length === 0) || v === '') continue
+    switch (key) {
+      case 'full_name':
+      case 'phone':
+      case 'telegram':
+      case 'city':
+      case 'about':
+        form[key] = asString(v)
+        confidence[key] = field.confidence
+        break
+      case 'experience_years':
+        form.experience_years = asString(v).replace('.', ',')
+        confidence.experience_years = field.confidence
+        break
+      case 'stack':
+      case 'roles_in_team':
+      case 'soft_skills':
+        form[key] = asList(v)
+        confidence[key] = field.confidence
+        break
+      case 'links':
+        form.links = asList(v).map((url) => ({ type: guessLinkType(url), url }))
+        confidence.links = field.confidence
+        break
+      default:
+        break
+    }
+  }
+  return { form, confidence }
+}
+
+const URL_RE = /^https?:\/\/\S+\.\S+/i
+
+export function parseYears(raw: string): number | null {
+  const n = Number(raw.replace(',', '.').trim())
+  return raw.trim() && Number.isFinite(n) ? n : null
+}
+
+export function validateProfile(f: ProfileFormState): Record<string, string> {
+  const e: Record<string, string> = {}
+  if (f.full_name.trim().length < 2) e.full_name = 'Укажите имя и фамилию'
+  if (!f.work_formats.length) e.work_formats = 'Выберите хотя бы один формат'
+  const years = parseYears(f.experience_years)
+  if (years === null || years < 0 || years > 50) e.experience_years = 'Стаж — число от 0 до 50'
+  if (f.min_salary.trim() && !/^\d+$/.test(f.min_salary.replace(/\s/g, ''))) e.min_salary = 'Только цифры, в рублях'
+  if (f.links.some((l) => !URL_RE.test(l.url.trim()))) e.links = 'Ссылка должна начинаться с https://'
+  if (f.telegram.trim() && !/^@?[A-Za-z0-9_]{4,}$/.test(f.telegram.trim())) e.telegram = 'Ник в Telegram: латиница, цифры, «_»'
+  return e
+}
+
+export function toUpdate(f: ProfileFormState): CandidateProfileUpdate {
+  const salary = f.min_salary.replace(/\s/g, '')
+  const tg = f.telegram.trim()
+  return {
+    full_name: f.full_name.trim(),
+    phone: f.phone.trim() || null,
+    telegram: tg ? (tg.startsWith('@') ? tg : `@${tg}`) : null,
+    city: f.city.trim() || null,
+    work_formats: f.work_formats,
+    stack: f.stack,
+    roles_in_team: f.roles_in_team,
+    experience_years: parseYears(f.experience_years) ?? 0,
+    soft_skills: f.soft_skills,
+    about: f.about.trim(),
+    links: f.links.map((l) => ({ ...l, url: l.url.trim() })).filter((l) => l.url),
+    min_salary: salary ? Number(salary) : null,
+  }
+}
