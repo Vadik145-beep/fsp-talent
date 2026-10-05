@@ -34,7 +34,7 @@ def test_contacts_open_after_accepted_invitation(client: TestClient) -> None:
     # кандидат 1 принял приглашение компании 1
     body = client.get("/api/candidates/1", headers=RECRUITER).json()
     assert body["contacts_visible"] is True
-    assert body["contacts"]["full_name"] == "Алексей Смирнов"
+    assert body["contacts"]["full_name"] == _private_values(1)[0]
 
 
 def test_contacts_closed_for_other_company(client: TestClient) -> None:
