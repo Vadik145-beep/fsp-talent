@@ -21,6 +21,7 @@ from app.core.db import dispose_engine, get_engine
 from app.core.errors import error_responses, register_error_handlers
 from app.core.logging import register_request_logging, setup_logging
 from app.eval.router import router as eval_router
+from app.fsp.auth_router import router as fsp_auth_router
 from app.fsp.router import router as fsp_router
 from app.invitations.router import router as invitations_router
 from app.matching.router import router as matching_router
@@ -126,6 +127,7 @@ def create_app() -> FastAPI:
     for router in (
         system_router,
         auth_router,
+        fsp_auth_router,
         users_router,
         catalog_router,
         candidates_router,

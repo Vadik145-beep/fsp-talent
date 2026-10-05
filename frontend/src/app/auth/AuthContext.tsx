@@ -25,14 +25,14 @@ const AuthContext = createContext<AuthState | null>(null)
 function readInitialRole(): Role | null {
   const stored = readStorage(STORAGE_KEY)
   const role = isRole(stored) ? stored : null
-  setApiRole(role)
+  setApiRole(role, role ? DEMO_USERS[role].userId : null)
   return role
 }
 
 export function AuthProvider({ children, initialRole }: { children: ReactNode; initialRole?: Role | null }) {
   const [role, setRole] = useState<Role | null>(() => {
     if (initialRole !== undefined) {
-      setApiRole(initialRole)
+      setApiRole(initialRole, initialRole ? DEMO_USERS[initialRole].userId : null)
       return initialRole
     }
     return readInitialRole()
@@ -40,7 +40,7 @@ export function AuthProvider({ children, initialRole }: { children: ReactNode; i
 
   const switchRole = useCallback((next: Role) => {
     // Заголовок обновляем сразу, до перерисовки: запросы нового экрана уйдут с новой ролью.
-    setApiRole(next)
+    setApiRole(next, DEMO_USERS[next].userId)
     writeStorage(STORAGE_KEY, next)
     setRole(next)
   }, [])

@@ -37,6 +37,14 @@ export function DemoBar() {
     void queryClient.resetQueries()
   }
 
+  function resetData() {
+    // Динамический импорт: база моков (все фикстуры) не попадает в основной бандл.
+    void import('@/mocks/db').then(({ db }) => {
+      db.reset()
+      void queryClient.resetQueries()
+    })
+  }
+
   return (
     <div className="relative z-40 border-b border-fsp-blush bg-primary-soft text-[13px] text-ink">
       <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-x-4 gap-y-1.5 px-4 py-1.5">
@@ -77,6 +85,14 @@ export function DemoBar() {
             ))}
           </select>
         </label>
+        <button
+          type="button"
+          onClick={resetData}
+          title="Вернуть исходные демо-данные (приглашения, отклики, ответы)"
+          className="rounded-full px-2.5 py-0.5 font-semibold text-fsp-plum ring-1 ring-fsp-blush hover:bg-violet-soft"
+        >
+          Сбросить данные
+        </button>
       </div>
     </div>
   )

@@ -34,9 +34,16 @@ export function getErrorMessage(error: unknown): string {
 // AuthProvider обновляет её при смене пользователя. Хранится вне React, чтобы клиент можно
 // было вызывать откуда угодно (queryFn, хендлеры событий).
 let currentRole: Role | null = null
+let currentUserId: number | null = null
 
-export function setApiRole(role: Role | null): void {
+export function setApiRole(role: Role | null, userId: number | null = null): void {
   currentRole = role
+  currentUserId = role ? userId : null
+}
+
+/** id демо-пользователя (X-Demo-User-Id) — для MSW-хендлеров и отладки. */
+export function getApiUserId(): number | null {
+  return currentUserId
 }
 
 export function getApiRole(): Role | null {
@@ -110,6 +117,7 @@ export async function apiFetch<T = unknown>(path: string, options: RequestOption
   const { method = 'GET', body, query, headers = {}, signal } = options
   const finalHeaders: Record<string, string> = { Accept: 'application/json', ...headers }
   if (currentRole) finalHeaders['X-Demo-Role'] = currentRole
+  if (currentUserId !== null) finalHeaders['X-Demo-User-Id'] = String(currentUserId)
 
   let finalBody: BodyInit | undefined
   if (body !== undefined) {

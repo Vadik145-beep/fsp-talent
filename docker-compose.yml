@@ -73,19 +73,21 @@ services:
       context: ./frontend
     command: ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
     environment:
-      VITE_API_URL: ${VITE_API_URL:-http://localhost:18000/api}
       VITE_USE_MOCKS: ${VITE_USE_MOCKS:-true}
+      # vite проксирует /api на бэкенд внутри сети compose
+      VITE_PROXY_TARGET: http://backend:8000
     volumes:
-      - ./frontend:/app
-      - ./data/seed:/data/seed:ro
-      - frontend_node_modules:/app/node_modules
+      # рабочая папка образа /app/frontend, alias @seed = ../data/seed = /app/data/seed
+      - ./frontend:/app/frontend
+      - ./data/seed:/app/data/seed:ro
+      - frontend_node_modules:/app/frontend/node_modules
     ports:
       - "15173:5173"
     healthcheck:
       <<: *hc
       test: ["CMD", "node", "-e", "fetch('http://localhost:5173').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       start_period: 30s
-    mem_limit: 512m
+    mem_limit: 1g
 
   mailpit:
     image: axllent/mailpit:latest
