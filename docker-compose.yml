@@ -1,0 +1,140 @@
+# fsp-talent — dev-стек. Запуск: docker compose up --build
+# Порты на хосте: backend 18000, frontend 15173, postgres 15432, mailpit 18025/11025,
+# keycloak 18180, fsp-registry-mock 18100.
+# Только бэкенд: docker compose up backend postgres mailpit
+name: fsp-talent
+
+x-healthcheck-defaults: &hc
+  interval: 10s
+  timeout: 5s
+  retries: 10
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-fsp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fsp}
+      POSTGRES_DB: ${POSTGRES_DB:-fsp_talent}
+    ports:
+      - "15432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      <<: *hc
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      start_period: 5s
+    mem_limit: 512m
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      APP_ENV: ${APP_ENV:-dev}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-fsp}:${POSTGRES_PASSWORD:-fsp}@postgres:5432/${POSTGRES_DB:-fsp_talent}
+      SEED_DIR: /app/data/seed
+      DEMO_AUTH_ENABLED: ${DEMO_AUTH_ENABLED:-true}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      PUBLIC_FRONTEND_URL: ${PUBLIC_FRONTEND_URL:-http://localhost:15173}
+      KEYCLOAK_PUBLIC_URL: ${KEYCLOAK_PUBLIC_URL:-http://localhost:18180}
+      KEYCLOAK_INTERNAL_URL: http://keycloak:8080
+      KEYCLOAK_REALM: fsp
+      KEYCLOAK_CLIENT_ID: fsp-talent
+      FSP_REGISTRY_URL: http://fsp-registry-mock:8000
+      LLM_PROVIDER: ${LLM_PROVIDER:-}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-}
+    # dev: горячая перезагрузка кода и фикстур
+    command: ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/backend/app"]
+    volumes:
+      - ./backend/app:/app/backend/app
+      - ./backend/alembic:/app/backend/alembic
+      - ./data/seed:/app/data/seed:ro
+    ports:
+      - "18000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    healthcheck:
+      <<: *hc
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health', timeout=3)"]
+      start_period: 20s
+    mem_limit: 512m
+
+  frontend:
+    build:
+      context: ./frontend
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:18000/api}
+      VITE_USE_MOCKS: ${VITE_USE_MOCKS:-true}
+    volumes:
+      - ./frontend:/app
+      - ./data/seed:/data/seed:ro
+      - frontend_node_modules:/app/node_modules
+    ports:
+      - "15173:5173"
+    healthcheck:
+      <<: *hc
+      test: ["CMD", "node", "-e", "fetch('http://localhost:5173').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      start_period: 30s
+    mem_limit: 512m
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "18025:8025"
+      - "11025:1025"
+    healthcheck:
+      <<: *hc
+      test: ["CMD", "/mailpit", "readyz"]
+      start_period: 5s
+    mem_limit: 128m
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_HEALTH_ENABLED: "true"
+      KC_HTTP_PORT: "8080"
+      # браузер ходит на localhost:18180, бэкенд — на keycloak:8080
+      KC_HOSTNAME: ${KEYCLOAK_PUBLIC_URL:-http://localhost:18180}
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      JAVA_OPTS_KC_HEAP: "-XX:InitialRAMPercentage=10 -XX:MaxRAMPercentage=60"
+    volumes:
+      - ./infra/keycloak:/opt/keycloak/data/import:ro
+    ports:
+      - "18180:8080"
+    healthcheck:
+      <<: *hc
+      # в образе нет curl: проверяем /health/ready на management-порту 9000 через bash
+      test:
+        - "CMD-SHELL"
+        - "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q '\"UP\"' <&3"
+      start_period: 60s
+      retries: 20
+    mem_limit: 1g
+
+  fsp-registry-mock:
+    build:
+      context: ./services/fsp-registry-mock
+    ports:
+      - "18100:8000"
+    healthcheck:
+      <<: *hc
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)"]
+      start_period: 10s
+    mem_limit: 192m
+
+volumes:
+  pgdata:
+  frontend_node_modules:
