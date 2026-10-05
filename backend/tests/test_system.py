@@ -15,7 +15,16 @@ def test_health_checks_db_and_migration(client: TestClient) -> None:
     body = response.json()
     assert body["status"] == "ok"
     assert body["db"] == "ok"
-    assert body["db_revision"] == "0001"
+    # ревизия БД = текущая голова миграций (у треков свои 0002_*, потом слитые головы)
+    assert body["db_revision"] in _migration_heads()
+
+
+def _migration_heads() -> set[str]:
+    from alembic.config import Config
+    from alembic.script import ScriptDirectory
+
+    script = ScriptDirectory.from_config(Config(str(REPO_ROOT / "backend" / "alembic.ini")))
+    return set(script.get_heads())
 
 
 def test_docs_available(client: TestClient) -> None:

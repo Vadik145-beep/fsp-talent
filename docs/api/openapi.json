@@ -43,7 +43,7 @@
           "auth"
         ],
         "summary": "Регистрация по почте",
-        "description": "Соискатель или рекрутер (рекрутер создаёт компанию или вступает по коду). Согласие на обработку ПДн обязательно. Отправляется письмо со ссылкой (24 ч).",
+        "description": "Соискатель или рекрутер (рекрутер создаёт компанию или вступает по коду). Согласие на обработку ПДн обязательно — сохраняется с версией текста и датой. Отправляется письмо со ссылкой `/verify-email?token=...` (24 ч). Повторная регистрация неподтверждённой почты не меняет данные, а только отправляет письмо заново.",
         "operationId": "register_api_auth_register_post",
         "requestBody": {
           "content": {
@@ -226,6 +226,7 @@
           "auth"
         ],
         "summary": "Отправить письмо повторно",
+        "description": "Ответ одинаковый, есть такая почта или нет. Не чаще раза в минуту на почту.",
         "operationId": "resend_verification_api_auth_resend_verification_post",
         "requestBody": {
           "content": {
@@ -297,7 +298,7 @@
           "auth"
         ],
         "summary": "Вход по почте и паролю",
-        "description": "Access-токен в теле, refresh — в httpOnly cookie `refresh_token`.",
+        "description": "Access-токен (JWT, 15 мин) в теле — передавать в `Authorization: Bearer <token>`; refresh — в httpOnly cookie `refresh_token`. Не больше 5 неудачных попыток за 15 минут на пару почта+IP.",
         "operationId": "login_api_auth_login_post",
         "requestBody": {
           "content": {
@@ -417,6 +418,7 @@
           "auth"
         ],
         "summary": "Обновить access-токен по refresh-cookie",
+        "description": "Refresh-токен ротируется: старый перестаёт действовать, в cookie — новый.",
         "operationId": "refresh_api_auth_refresh_post",
         "parameters": [
           {
@@ -467,6 +469,26 @@
               }
             }
           },
+          "403": {
+            "description": "`user_blocked` — Учётная запись заблокирована",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "user_blocked": {
+                    "summary": "Учётная запись заблокирована",
+                    "value": {
+                      "code": "user_blocked",
+                      "message": "Учётная запись заблокирована",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -486,10 +508,39 @@
           "auth"
         ],
         "summary": "Выход",
+        "description": "Отзывает refresh-сессию из cookie и удаляет cookie.",
         "operationId": "logout_api_auth_logout_post",
+        "parameters": [
+          {
+            "name": "refresh_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Refresh Token"
+            }
+          }
+        ],
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
         }
       }
@@ -501,6 +552,11 @@
         ],
         "summary": "Текущий пользователь",
         "operationId": "me_api_auth_me_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -515,10 +571,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -533,10 +589,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -589,6 +645,7 @@
           "auth"
         ],
         "summary": "Запросить сброс пароля",
+        "description": "Письмо со ссылкой `/reset-password?token=...` (60 мин). Ответ одинаковый, есть такая почта или нет. Не чаще раза в минуту на почту.",
         "operationId": "password_reset_request_api_auth_password_reset_request_post",
         "requestBody": {
           "content": {
@@ -660,6 +717,7 @@
           "auth"
         ],
         "summary": "Задать новый пароль по токену",
+        "description": "Все refresh-сессии пользователя отзываются.",
         "operationId": "password_reset_confirm_api_auth_password_reset_confirm_post",
         "requestBody": {
           "content": {
@@ -952,6 +1010,11 @@
         "summary": "Привязать ФСП ID к профилю",
         "description": "Обмен кода Keycloak, claim `fsp_id` → профиль, синхронизация достижений.",
         "operationId": "fsp_link_api_auth_fsp_link_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -966,10 +1029,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -984,10 +1047,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -1140,6 +1203,11 @@
         "summary": "Отвязать ФСП ID",
         "description": "Достижения скрываются из профиля и выдачи; основной вход не меняется.",
         "operationId": "fsp_unlink_api_auth_fsp_link_delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -1154,10 +1222,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -1172,10 +1240,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -1269,6 +1337,11 @@
         ],
         "summary": "Мои согласия: версия текста и даты",
         "operationId": "my_consents_api_users_me_consents_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -1283,10 +1356,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -1301,10 +1374,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -1363,6 +1436,11 @@
         "summary": "Дать или отозвать согласие",
         "description": "Отзыв согласия на публикацию сразу скрывает профиль из выдачи. Согласие на обработку ПДн отозвать можно только удалением аккаунта (409).",
         "operationId": "update_consent_api_users_me_consents__consent_type__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "consent_type",
@@ -1385,10 +1463,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -1403,10 +1481,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -1753,6 +1831,11 @@
         ],
         "summary": "Главная соискателя",
         "operationId": "my_dashboard_api_candidates_me_dashboard_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -1767,10 +1850,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -1785,10 +1868,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -1882,6 +1965,11 @@
         ],
         "summary": "Свой полный профиль",
         "operationId": "my_profile_api_candidates_me_profile_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -1896,10 +1984,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -1914,10 +2002,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -2010,6 +2098,11 @@
         "summary": "Сохранить профиль",
         "description": "Заглушка: возвращает профиль с применёнными изменениями, но не сохраняет их.",
         "operationId": "update_my_profile_api_candidates_me_profile_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -2024,10 +2117,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -2042,10 +2135,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -2160,6 +2253,11 @@
         "summary": "Загрузить PDF-резюме и получить предзаполнение",
         "description": "Заглушка: разбор PDF появится в волне 3 (T3.2); сейчас поля берутся из профиля.",
         "operationId": "upload_resume_api_candidates_me_resume_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -2174,10 +2272,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -2192,10 +2290,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -2330,6 +2428,11 @@
         "summary": "Скачать стандартизированный PDF-профиль",
         "description": "Заглушка: настоящий PDF в стиле ФСП — волна 3 (T3.3).",
         "operationId": "my_profile_pdf_api_candidates_me_profile_pdf_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -2344,10 +2447,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -2362,10 +2465,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -2455,6 +2558,11 @@
         ],
         "summary": "Настройки: приватность, согласия, ФСП ID",
         "operationId": "my_settings_api_candidates_me_settings_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -2469,10 +2577,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -2487,10 +2595,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -2584,6 +2692,11 @@
         ],
         "summary": "Что видно работодателю до принятия приглашения",
         "operationId": "update_privacy_api_candidates_me_settings_privacy_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -2598,10 +2711,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -2616,10 +2729,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -2733,6 +2846,11 @@
         ],
         "summary": "Пауза поиска («не ищу работу»)",
         "operationId": "update_job_search_api_candidates_me_settings_job_search_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -2747,10 +2865,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -2765,10 +2883,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -2883,6 +3001,11 @@
         "summary": "Банк кандидатов (обезличенно)",
         "description": "Поиск по всей базе. В выдаче только кандидаты с грейдом, согласием на публикацию и без паузы поиска. ФИО и контактов в ответе нет.",
         "operationId": "search_candidates_api_candidates_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "specialization",
@@ -3051,10 +3174,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -3069,10 +3192,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -3157,6 +3280,11 @@
         "summary": "Обезличенный профиль кандидата",
         "description": "Псевдоним вместо ФИО. Поле `contacts` заполнено только после принятия приглашения компании рекрутера или отклика кандидата на её вакансию.",
         "operationId": "get_candidate_api_candidates__candidate_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "candidate_id",
@@ -3180,10 +3308,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -3198,10 +3326,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -3295,6 +3423,11 @@
         ],
         "summary": "Профиль моей компании",
         "operationId": "my_company_api_companies_my_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -3309,10 +3442,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -3327,10 +3460,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -3423,6 +3556,11 @@
         "summary": "Изменить профиль компании",
         "description": "Только администратор компании. Заглушка: изменения не сохраняются.",
         "operationId": "update_my_company_api_companies_my_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -3437,10 +3575,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -3455,10 +3593,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -3572,6 +3710,11 @@
         ],
         "summary": "Рекрутеры компании",
         "operationId": "my_recruiters_api_companies_my_recruiters_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -3586,10 +3729,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -3604,10 +3747,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -3705,6 +3848,11 @@
         ],
         "summary": "Главная рекрутера",
         "operationId": "recruiter_dashboard_api_companies_my_dashboard_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -3719,10 +3867,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -3737,10 +3885,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -3834,6 +3982,11 @@
         ],
         "summary": "Вопросы опроса по специализации",
         "operationId": "get_survey_api_testing_survey_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -3848,10 +4001,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -3866,10 +4019,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -3945,6 +4098,11 @@
         ],
         "summary": "Отправить опрос → рекомендованная специализация и темы",
         "operationId": "submit_survey_api_testing_survey_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -3959,10 +4117,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -3977,10 +4135,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -4074,6 +4232,11 @@
         ],
         "summary": "Категория и грейд: статус, кулдауны, история",
         "operationId": "grade_status_api_testing_grade_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -4088,10 +4251,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -4106,10 +4269,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -4203,6 +4366,11 @@
         ],
         "summary": "Мои тесты",
         "operationId": "list_sessions_api_testing_sessions_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -4217,10 +4385,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -4235,10 +4403,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -4315,6 +4483,11 @@
         "summary": "Начать тест",
         "description": "Пересдача на грейд ниже/выше — не чаще раза в 90 дней (409 `cooldown_active`).",
         "operationId": "start_session_api_testing_sessions_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -4329,10 +4502,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -4347,10 +4520,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -4472,6 +4645,11 @@
         ],
         "summary": "Экран теста: текущая задача, прогресс, таймер",
         "operationId": "get_session_api_testing_sessions__session_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "session_id",
@@ -4495,10 +4673,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -4513,10 +4691,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -4611,6 +4789,11 @@
         "summary": "Ответить на текущую задачу",
         "description": "Верно/неверно не сообщается. Время считает сервер.",
         "operationId": "submit_answer_api_testing_sessions__session_id__answers_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "session_id",
@@ -4634,10 +4817,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -4652,10 +4835,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -4797,6 +4980,11 @@
         ],
         "summary": "Результат теста: категория, θ и интервал, разбор по темам",
         "operationId": "get_result_api_testing_sessions__session_id__result_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "session_id",
@@ -4820,10 +5008,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -4838,10 +5026,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -4956,6 +5144,11 @@
         "summary": "Статус привязки ФСП ID, ФСП-скор и бейджи",
         "description": "Без истории ФСП — нейтральное состояние без штрафа (T5.4).",
         "operationId": "fsp_status_api_fsp_status_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -4970,10 +5163,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -4988,10 +5181,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -5086,6 +5279,11 @@
         "summary": "Достижения ФСП (подтверждено ФСП)",
         "description": "Пустой список, если ФСП ID не привязан или истории нет.",
         "operationId": "fsp_achievements_api_fsp_achievements_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -5100,10 +5298,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -5118,10 +5316,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -5220,6 +5418,11 @@
         "summary": "Обновить достижения из реестра ФСП",
         "description": "Заглушка: синхронизация с `fsp-registry-mock` — волна 2c.",
         "operationId": "fsp_sync_api_fsp_sync_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -5234,10 +5437,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -5252,10 +5455,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -5370,6 +5573,11 @@
         "summary": "Разобрать свободный текст потребности в поля",
         "description": "Правила без LLM; с ключом LLM — точнее (волна 3c).",
         "operationId": "parse_need_api_matching_needs_parse_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -5384,10 +5592,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -5402,10 +5610,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -5499,6 +5707,11 @@
         ],
         "summary": "Потребности моей компании",
         "operationId": "list_needs_api_matching_needs_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -5513,10 +5726,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -5531,10 +5744,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -5611,6 +5824,11 @@
         "summary": "Создать потребность",
         "description": "Вилка от–до обязательна, от ≤ до. Заглушка: не сохраняется.",
         "operationId": "create_need_api_matching_needs_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -5625,10 +5843,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -5643,10 +5861,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -5740,6 +5958,11 @@
         ],
         "summary": "Потребность",
         "operationId": "get_need_api_matching_needs__need_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "need_id",
@@ -5763,10 +5986,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -5781,10 +6004,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -5879,6 +6102,11 @@
         "summary": "Рекомендованные категории с числом кандидатов",
         "description": "Основная категория, грейд ±1 и смежные специализации.",
         "operationId": "need_categories_api_matching_needs__need_id__categories_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "need_id",
@@ -5902,10 +6130,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -5920,10 +6148,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -6022,6 +6250,11 @@
         "summary": "Подборка: кандидаты категории с объяснением и разбивкой счёта",
         "description": "Кандидаты обезличены. Фильтры сужают подборку, `total_before_filters` — исходный размер; без фильтров возвращается исходный список.",
         "operationId": "need_candidates_api_matching_needs__need_id__candidates_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "need_id",
@@ -6131,10 +6364,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -6149,10 +6382,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -6257,6 +6490,11 @@
         "summary": "Мои приглашения",
         "description": "Кандидат видит полученные приглашения, рекрутер — приглашения своей компании. Контакты другой стороны — только при статусе `accepted`.",
         "operationId": "list_invitations_api_invitations_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "status",
@@ -6287,10 +6525,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -6305,10 +6543,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -6385,6 +6623,11 @@
         "summary": "Отправить приглашение",
         "description": "Вилка от–до обязательна (от ≤ до). Если максимум вилки ниже минимальной зарплаты кандидата — 422 `salary_below_expectations`, сумма кандидата не раскрывается.",
         "operationId": "create_invitation_api_invitations_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -6399,10 +6642,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -6417,10 +6660,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -6570,6 +6813,11 @@
         ],
         "summary": "Квота активных приглашений рекрутера",
         "operationId": "get_quota_api_invitations_quota_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -6584,10 +6832,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -6602,10 +6850,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -6679,6 +6927,11 @@
         ],
         "summary": "Рыночная подсказка зарплаты по категории",
         "operationId": "market_hint_api_invitations_market_hint_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "category",
@@ -6739,10 +6992,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -6757,10 +7010,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -6865,6 +7118,11 @@
         "summary": "Карточка приглашения с журналом событий",
         "description": "Открытие кандидатом переводит `sent` → `viewed`.",
         "operationId": "get_invitation_api_invitations__invitation_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "invitation_id",
@@ -6888,10 +7146,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -6906,10 +7164,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -7004,6 +7262,11 @@
         "summary": "Принять приглашение (кандидат)",
         "description": "После принятия обе стороны видят контакты; раскрытие пишется в журнал.",
         "operationId": "accept_invitation_api_invitations__invitation_id__accept_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "invitation_id",
@@ -7027,10 +7290,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -7045,10 +7308,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -7162,6 +7425,11 @@
         ],
         "summary": "Отклонить приглашение с причиной (кандидат)",
         "operationId": "decline_invitation_api_invitations__invitation_id__decline_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "invitation_id",
@@ -7185,10 +7453,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -7203,10 +7471,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -7340,6 +7608,11 @@
         ],
         "summary": "Отозвать приглашение (рекрутер)",
         "operationId": "withdraw_invitation_api_invitations__invitation_id__withdraw_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "invitation_id",
@@ -7363,10 +7636,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -7381,10 +7654,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -7499,6 +7772,11 @@
         "summary": "Вакансии",
         "description": "Кандидат — лента опубликованных вакансий с фильтрами (и `my_application_id`). Рекрутер — все вакансии своей компании в любом статусе.",
         "operationId": "list_vacancies_api_vacancies_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "specialization",
@@ -7616,10 +7894,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -7634,10 +7912,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -7724,6 +8002,11 @@
         "summary": "Создать вакансию (черновик)",
         "description": "Зарплата от–до обязательна [ТЗ 2.2 п.1]. Заглушка: не сохраняется.",
         "operationId": "create_vacancy_api_vacancies_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -7738,10 +8021,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -7756,10 +8039,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -7853,6 +8136,11 @@
         ],
         "summary": "Карточка вакансии",
         "operationId": "get_vacancy_api_vacancies__vacancy_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "vacancy_id",
@@ -7876,10 +8164,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -7894,10 +8182,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -7989,6 +8277,11 @@
         ],
         "summary": "Изменить вакансию своей компании",
         "operationId": "update_vacancy_api_vacancies__vacancy_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "vacancy_id",
@@ -8012,10 +8305,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -8030,10 +8323,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -8147,6 +8440,11 @@
         ],
         "summary": "Опубликовать вакансию",
         "operationId": "publish_vacancy_api_vacancies__vacancy_id__publish_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "vacancy_id",
@@ -8170,10 +8468,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -8188,10 +8486,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -8305,6 +8603,11 @@
         ],
         "summary": "Снять вакансию с публикации",
         "operationId": "unpublish_vacancy_api_vacancies__vacancy_id__unpublish_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "vacancy_id",
@@ -8328,10 +8631,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -8346,10 +8649,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -8464,6 +8767,11 @@
         "summary": "Отклики на вакансию (рекрутер)",
         "description": "Контакты кандидата открыты сразу: он откликнулся сам [ТЗ 2.1].",
         "operationId": "vacancy_applications_api_vacancies__vacancy_id__applications_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "vacancy_id",
@@ -8487,10 +8795,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -8505,10 +8813,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -8604,6 +8912,11 @@
         ],
         "summary": "Откликнуться на вакансию (кандидат)",
         "operationId": "apply_to_vacancy_api_vacancies__vacancy_id__applications_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "vacancy_id",
@@ -8627,10 +8940,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -8645,10 +8958,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -8783,6 +9096,11 @@
         "summary": "Отклики",
         "description": "Кандидат — свои отклики со статусами; рекрутер — все отклики своей компании.",
         "operationId": "list_applications_api_applications_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -8797,10 +9115,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -8815,10 +9133,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -8896,6 +9214,11 @@
         ],
         "summary": "Сменить статус отклика (рекрутер)",
         "operationId": "update_application_api_applications__application_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "application_id",
@@ -8919,10 +9242,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -8937,10 +9260,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -9054,6 +9377,11 @@
         ],
         "summary": "Мои задания: активное и история (кандидат)",
         "operationId": "task_inbox_api_tasks_inbox_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -9068,10 +9396,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -9086,10 +9414,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -9183,6 +9511,11 @@
         ],
         "summary": "Ответить на задание (кандидат)",
         "operationId": "answer_task_api_tasks_submissions__submission_id__answer_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "submission_id",
@@ -9206,10 +9539,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -9224,10 +9557,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -9361,6 +9694,11 @@
         ],
         "summary": "Задания моей компании (рекрутер)",
         "operationId": "list_tasks_api_tasks_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -9375,10 +9713,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -9393,10 +9731,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -9472,6 +9810,11 @@
         ],
         "summary": "Создать короткое задание (рекрутер)",
         "operationId": "create_task_api_tasks_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -9486,10 +9829,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -9504,10 +9847,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -9601,6 +9944,11 @@
         ],
         "summary": "Ответы кандидатов на задание (обезличенно)",
         "operationId": "task_submissions_api_tasks__task_id__submissions_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "task_id",
@@ -9624,10 +9972,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -9642,10 +9990,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -9743,6 +10091,11 @@
         ],
         "summary": "Оценить ответ 0–3 (рекрутер)",
         "operationId": "grade_submission_api_tasks_submissions__submission_id__grade_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "submission_id",
@@ -9766,10 +10119,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -9784,10 +10137,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -9921,6 +10274,11 @@
         ],
         "summary": "Дашборд платформы",
         "operationId": "dashboard_api_admin_dashboard_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -9935,10 +10293,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -9953,10 +10311,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -10030,6 +10388,11 @@
         ],
         "summary": "Пользователи: поиск и фильтры",
         "operationId": "list_users_api_admin_users_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "q",
@@ -10118,10 +10481,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -10136,10 +10499,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -10224,6 +10587,11 @@
         "summary": "Сменить роль или заблокировать пользователя",
         "description": "Повысить до админа может только админ. Заглушка: не сохраняется.",
         "operationId": "update_user_api_admin_users__user_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "user_id",
@@ -10247,10 +10615,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -10265,10 +10633,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -10402,6 +10770,11 @@
         ],
         "summary": "Журнал действий по пользователю",
         "operationId": "user_audit_api_admin_users__user_id__audit_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "user_id",
@@ -10425,10 +10798,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -10443,10 +10816,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -10544,6 +10917,11 @@
         ],
         "summary": "Компании со скорингом надёжности",
         "operationId": "list_companies_api_admin_companies_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -10558,10 +10936,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -10576,10 +10954,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -10657,6 +11035,11 @@
         ],
         "summary": "Заблокировать / разблокировать компанию",
         "operationId": "update_company_api_admin_companies__company_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "company_id",
@@ -10680,10 +11063,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -10698,10 +11081,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -10815,6 +11198,11 @@
         ],
         "summary": "Настройки: пороги θ, кулдауны, квота, веса ранжирования",
         "operationId": "get_settings_api_admin_settings_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -10829,10 +11217,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -10847,10 +11235,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -10923,6 +11311,11 @@
         "summary": "Изменить настройки платформы",
         "description": "Передаются только меняемые поля. Заглушка: не сохраняется.",
         "operationId": "update_settings_api_admin_settings_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -10937,10 +11330,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -10955,10 +11348,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -11052,6 +11445,11 @@
         ],
         "summary": "Добавить технологию в справочник стека",
         "operationId": "create_skill_api_admin_catalog_skills_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -11066,10 +11464,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -11084,10 +11482,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -11201,6 +11599,11 @@
         ],
         "summary": "Изменить технологию",
         "operationId": "update_skill_api_admin_catalog_skills__skill_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "skill_id",
@@ -11224,10 +11627,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -11242,10 +11645,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -11357,6 +11760,11 @@
         ],
         "summary": "Удалить технологию",
         "operationId": "delete_skill_api_admin_catalog_skills__skill_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "skill_id",
@@ -11380,10 +11788,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -11398,10 +11806,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -11508,6 +11916,11 @@
         ],
         "summary": "Изменить подпись или активность специализации (код фиксирован)",
         "operationId": "update_specialization_api_admin_catalog_specializations__spec_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "spec_id",
@@ -11530,10 +11943,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -11548,10 +11961,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -11665,6 +12078,11 @@
         ],
         "summary": "Изменить подпись грейда (код фиксирован)",
         "operationId": "update_grade_api_admin_catalog_grades__grade_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "grade_id",
@@ -11687,10 +12105,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -11705,10 +12123,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -11822,6 +12240,11 @@
         ],
         "summary": "Банк задач с метриками",
         "operationId": "list_items_api_admin_items_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "specialization",
@@ -11923,10 +12346,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -11941,10 +12364,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -12028,6 +12451,11 @@
         ],
         "summary": "Покрытие банка: темы × грейды",
         "operationId": "items_coverage_api_admin_items_coverage_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -12042,10 +12470,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -12060,10 +12488,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -12142,6 +12570,11 @@
         "summary": "Пересчитать калибровку a, b по накопленным ответам",
         "description": "Заглушка: настоящий пересчёт — волна 3a (T4.9).",
         "operationId": "recalibrate_api_admin_items_recalibrate_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -12156,10 +12589,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -12174,10 +12607,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -12271,6 +12704,11 @@
         ],
         "summary": "Шаблон: метрики и предпросмотр 3 вариантов",
         "operationId": "get_item_api_admin_items__item_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "item_id",
@@ -12294,10 +12732,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -12312,10 +12750,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -12409,6 +12847,11 @@
         ],
         "summary": "Вывести шаблон из оборота",
         "operationId": "retire_item_api_admin_items__item_id__retire_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "item_id",
@@ -12432,10 +12875,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -12450,10 +12893,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -12567,6 +13010,11 @@
         ],
         "summary": "Одобрить черновик → пилот (непроверочный)",
         "operationId": "approve_item_api_admin_items__item_id__approve_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "item_id",
@@ -12590,10 +13038,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -12608,10 +13056,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -12725,6 +13173,11 @@
         ],
         "summary": "Примеры: тесты, собранные из вакансий",
         "operationId": "list_vacancy_tests_api_admin_vacancy_tests_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -12739,10 +13192,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -12757,10 +13210,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -12837,6 +13290,11 @@
         "summary": "Текст вакансии → темы → тест с объяснением",
         "description": "Заглушка: возвращает ближайший пример. Настоящий разбор — волна 3c (T4.8).",
         "operationId": "build_vacancy_test_api_admin_vacancy_tests_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -12851,10 +13309,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -12869,10 +13327,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -12986,6 +13444,11 @@
         ],
         "summary": "Очередь жалоб на работодателей",
         "operationId": "list_reports_api_admin_reports_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "status",
@@ -13016,10 +13479,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -13034,10 +13497,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -13125,6 +13588,11 @@
         ],
         "summary": "Обработать жалобу",
         "operationId": "update_report_api_admin_reports__report_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "report_id",
@@ -13148,10 +13616,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -13166,10 +13634,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -13284,6 +13752,11 @@
         "summary": "Журнал действий",
         "description": "Раскрытие контактов, смены грейда, блокировки, вывод шаблонов и т.д.",
         "operationId": "audit_log_api_admin_audit_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "action",
@@ -13353,10 +13826,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -13371,10 +13844,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "responses": {
@@ -13458,6 +13931,11 @@
         ],
         "summary": "Пожаловаться на работодателя (соискатель)",
         "operationId": "create_report_api_reports_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "x-demo-role",
@@ -13472,10 +13950,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации до волны 2: роль текущего пользователя",
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
               "title": "X-Demo-Role"
             },
-            "description": "Заглушка авторизации до волны 2: роль текущего пользователя"
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
           },
           {
             "name": "x-demo-user-id",
@@ -13490,10 +13968,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)",
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
               "title": "X-Demo-User-Id"
             },
-            "description": "Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт)"
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
           }
         ],
         "requestBody": {
@@ -23418,6 +23896,13 @@
           "remote"
         ],
         "title": "WorkFormat"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "description": "JWT access-токен из `POST /api/auth/login` (живёт 15 минут)",
+        "scheme": "bearer"
       }
     }
   },
