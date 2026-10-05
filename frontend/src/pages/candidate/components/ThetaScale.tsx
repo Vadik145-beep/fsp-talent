@@ -43,12 +43,12 @@ export function ThetaScale({ theta, ciLow, ciHigh, thresholds = { junior: -1, mi
             {formatTheta(theta)}
           </span>
         </div>
-        <div className="relative flex h-10 overflow-hidden rounded-md">
+        <div className="relative flex h-14 overflow-hidden rounded-md">
           {GRADES.map((g) => (
             <div
               key={g}
               className={cn(
-                'flex items-center justify-center border-r border-white text-xs font-semibold last:border-r-0',
+                'flex items-start justify-center border-r border-white pt-1.5 text-xs font-semibold last:border-r-0',
                 ZONE_CLASS[g],
                 g === current ? 'text-fsp-night' : 'text-muted',
               )}
@@ -59,13 +59,13 @@ export function ThetaScale({ theta, ciLow, ciHigh, thresholds = { junior: -1, mi
           ))}
           {hasCi && (
             <div
-              className="absolute top-1/2 h-3 -translate-y-1/2 rounded-full bg-fsp-pink/35 ring-1 ring-fsp-pink/60"
+              className="absolute top-[70%] h-3 -translate-y-1/2 rounded-full bg-fsp-pink/35 ring-1 ring-fsp-pink/60"
               style={{ left: `${pct(ciLow)}%`, width: `${Math.max(1, pct(ciHigh) - pct(ciLow))}%` }}
               aria-hidden
             />
           )}
           <div
-            className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-primary shadow"
+            className="absolute top-[70%] size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-primary shadow"
             style={{ left: `${pct(theta)}%` }}
             aria-hidden
           />

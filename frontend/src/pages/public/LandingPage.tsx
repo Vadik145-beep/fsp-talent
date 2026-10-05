@@ -23,9 +23,9 @@ import { APP_NAME } from '@/shared/config/env'
 import { formatSalaryRange } from '@/shared/lib/format'
 
 const ctaPrimary =
-  'inline-flex h-12 items-center justify-center gap-2 rounded-md bg-primary px-6 text-base font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus)]'
+  'inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-md bg-primary px-6 text-base font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus)]'
 const ctaSecondary =
-  'inline-flex h-12 items-center justify-center gap-2 rounded-md border border-line-strong bg-surface px-6 text-base font-semibold text-fsp-plum transition-colors hover:border-fsp-lavender hover:bg-violet-soft focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus)]'
+  'inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-md border border-line-strong bg-surface px-6 text-base font-semibold text-fsp-plum transition-colors hover:border-fsp-lavender hover:bg-violet-soft focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus)]'
 
 /** Лендинг: два входа и три отличия сервиса. */
 export default function LandingPage() {
@@ -174,7 +174,7 @@ export default function LandingPage() {
             </Link>
             <Link
               to="/register?role=recruiter"
-              className="inline-flex h-12 items-center justify-center rounded-md border border-white/40 px-6 text-base font-semibold text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus)]"
+              className="inline-flex h-12 items-center justify-center whitespace-nowrap rounded-md border border-white/40 px-6 text-base font-semibold text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus)]"
             >
               Подключить компанию
             </Link>

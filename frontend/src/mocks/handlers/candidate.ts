@@ -556,9 +556,11 @@ function sessionState(session: SessionRow): S['TestSessionState'] {
   }
 }
 
-function topicScores(state: MockSessionState, theta: number): S['TopicScore'][] {
+function topicScores(state: MockSessionState, theta: number, spec: Spec): S['TopicScore'][] {
   const byTopic = new Map<string, MockAnswer[]>()
-  for (const a of state.answers) byTopic.set(a.topic, [...(byTopic.get(a.topic) ?? []), a])
+  // Задачи других специализаций (добавлены ради демонстрации форматов) в разбор по темам не идут.
+  const own = state.answers.filter((a) => T.items().find((i) => i.id === a.item_id)?.specialization === spec)
+  for (const a of own.length ? own : state.answers) byTopic.set(a.topic, [...(byTopic.get(a.topic) ?? []), a])
   return [...byTopic.entries()].map(([topic, list]) => {
     const acc = list.filter((a) => a.correct).length / list.length
     const meanB = list.reduce((s, a) => s + a.b, 0) / list.length
@@ -591,12 +593,16 @@ function finishSession(session: SessionRow, c: CandidateRow) {
   session.passed = passed
   session.result_grade = passed ? target : estimated
   session.result_category = `${spec}:${session.result_grade}`
-  session.topic_scores = topicScores(state, theta)
+  session.topic_scores = topicScores(state, theta, spec)
   state.current = null
 
-  c.theta = session.theta
-  c.theta_se = session.se
-  c.topic_scores = session.topic_scores
+  // Профиль обновляется результатом, только если грейд подтверждён или категории ещё не было:
+  // неудачная попытка не портит текущую категорию (принудительно не понижаем).
+  if (passed || !c.grade) {
+    c.theta = session.theta
+    c.theta_se = session.se
+    c.topic_scores = session.topic_scores
+  }
   c.last_test_at = session.started_at
 
   addHistory(c, {
@@ -707,6 +713,13 @@ function recommendation(session: SessionRow, c: CandidateRow): S['Recommendation
     }
   }
   const at = c.grade ? changeAvailableAt(c) : null
+  if (c.grade && c.category_label) {
+    return {
+      action: 'offer_lower',
+      message: `Грейд ${GRADE_LABELS[target]} не подтверждён. Текущая категория «${c.category_label}» сохраняется — принудительно не понижаем.`,
+      available_at: at,
+    }
+  }
   return {
     action: 'offer_lower',
     message: `Грейд ${GRADE_LABELS[target]} не подтверждён. Уровень соответствует ${GRADE_LABELS[gradeByTheta(spec, session.theta ?? 0)]} — пройдите тест на ${GRADE_LABELS[lower]}, чтобы получить категорию. Принудительно грейд не понижаем.`,
