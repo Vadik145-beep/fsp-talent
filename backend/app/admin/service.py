@@ -1,4 +1,9 @@
-"""Кабинет администратора — заглушки поверх фикстур (реальная логика — волны 2b, 3a, 4c, 5b)."""
+"""Кабинет администратора.
+
+- `AdminDbService` (БД, T10.2/T10.3): пользователи, компании, справочники, настройки, журнал.
+  Каждое действие админа пишется в audit_log.
+- `AdminService` (фикстуры): дашборд, банк задач, задания из вакансий, жалобы — волны 3, 4c, 5b.
+"""
 
 import re
 from collections import Counter
@@ -7,8 +12,6 @@ from typing import Any
 
 from app.admin.repository import AdminRepository
 from app.admin.schemas import (
-    AdminUserUpdate,
-    PlatformSettingsUpdate,
     ReportCreate,
     ReportUpdate,
     VacancyTestRequest,
@@ -18,7 +21,6 @@ from app.common.enums import (
     InvitationStatus,
     ItemStatus,
     ReportStatus,
-    Role,
 )
 from app.common.fixtures import Record
 from app.common.schemas import paginate
@@ -68,83 +70,6 @@ class AdminService:
                 if r["status"] in (ReportStatus.new, ReportStatus.in_review)
             ),
         }
-
-    # ---------- пользователи ----------
-
-    def users(
-        self, q: str | None, role: Role | None, blocked: bool | None, page: int, page_size: int
-    ) -> dict[str, Any]:
-        items = self.repo.users()
-        if q:
-            needle = q.lower()
-            items = [
-                u for u in items if needle in u["email"].lower() or needle in u["full_name"].lower()
-            ]
-        if role:
-            items = [u for u in items if u["role"] == role]
-        if blocked is not None:
-            items = [u for u in items if u["blocked"] == blocked]
-        return paginate(items, page, page_size)
-
-    def update_user(self, user_id: int, body: AdminUserUpdate, actor_id: int) -> dict[str, Any]:
-        user = self.repo.user(user_id)
-        if user is None:
-            raise not_found("user", user_id)
-        if user_id == actor_id and (body.blocked or (body.role and body.role != Role.admin)):
-            raise AppError(409, "cannot_change_self", "Нельзя заблокировать или понизить себя")
-        data = dict(user)
-        data.update(body.model_dump(exclude_none=True))
-        return data
-
-    def user_audit(self, user_id: int) -> list[Record]:
-        if self.repo.user(user_id) is None:
-            raise not_found("user", user_id)
-        return [
-            a
-            for a in self.repo.audit()
-            if a["actor_user_id"] == user_id
-            or (a["target_type"] in ("user", "candidate") and a["target_id"] == user_id)
-        ]
-
-    # ---------- компании ----------
-
-    def _company_view(self, company: Record) -> dict[str, Any]:
-        invs = [i for i in self.repo.invitations() if i["company_id"] == company["id"]]
-        answered = [
-            i for i in invs if i["status"] in (InvitationStatus.accepted, InvitationStatus.declined)
-        ]
-        return {
-            **company,
-            "recruiters_count": sum(
-                1 for r in self.repo.recruiters() if r["company_id"] == company["id"]
-            ),
-            "invitations_sent": len(invs),
-            "response_rate": round(len(answered) / len(invs), 2) if invs else 0.0,
-            "reports_count": sum(
-                1 for r in self.repo.reports() if r["company_id"] == company["id"]
-            ),
-        }
-
-    def companies(self) -> list[dict[str, Any]]:
-        return [self._company_view(c) for c in self.repo.companies()]
-
-    def update_company(self, company_id: int, blocked: bool) -> dict[str, Any]:
-        company = self.repo.company(company_id)
-        if company is None:
-            raise not_found("company", company_id)
-        view = self._company_view(company)
-        view["blocked"] = blocked
-        return view
-
-    # ---------- настройки ----------
-
-    def settings(self) -> Record:
-        return self.repo.settings()
-
-    def update_settings(self, body: PlatformSettingsUpdate) -> Record:
-        data = self.repo.settings()
-        data.update(body.model_dump(exclude_none=True))
-        return data
 
     # ---------- банк задач ----------
 
@@ -280,13 +205,3 @@ class AdminService:
             "created_at": _now(),
             "resolved_at": None,
         }
-
-    def audit(
-        self, action: str | None, target_type: str | None, page: int, page_size: int
-    ) -> dict[str, Any]:
-        items = sorted(self.repo.audit(), key=lambda a: a["at"], reverse=True)
-        if action:
-            items = [a for a in items if a["action"] == action]
-        if target_type:
-            items = [a for a in items if a["target_type"] == target_type]
-        return paginate(items, page, page_size)

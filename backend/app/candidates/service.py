@@ -3,17 +3,27 @@
 Главное правило [ТЗ 2.1, 2.2 п.2]: рекрутер видит обезличенную карточку. ФИО и контакты —
 только если кандидат принял приглашение компании рекрутера или сам откликнулся
 на её вакансию. Минимальная зарплата не уходит рекрутеру никогда.
+
+`CandidateProfileService` работает с БД. `CandidateService` (фикстуры) и функции
+`is_searchable` / `to_card` / `to_contacts` нужны модулям, которые ещё на фикстурах (волна 3).
 """
 
-from collections.abc import Callable
 from datetime import date
 from typing import Any
 
-from app.candidates.repository import CandidateRepository
-from app.common.enums import ACTIVE_INVITATION_STATUSES, InvitationStatus
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.admin.audit import write_audit
+from app.candidates.grading import grade_status
+from app.candidates.repository import CandidateDb, CandidateRepository
+from app.candidates.schemas import CandidateProfileUpdate, PrivacySettings
+from app.catalog.clock import as_msk, now_msk
+from app.catalog.repository import CatalogDb
+from app.common.enums import ACTIVE_INVITATION_STATUSES, ConsentType
 from app.common.fixtures import Record
-from app.common.schemas import paginate
-from app.core.errors import not_found
+from app.core.errors import AppError, not_found
+from app.core.security import CurrentUser
+from app.users.models import Consent, User
 
 # Поля карточки, которые рекрутер видит всегда (без ФИО, контактов, зарплаты, ФСП ID)
 CARD_FIELDS = (
@@ -38,6 +48,7 @@ def is_searchable(candidate: Record) -> bool:
         bool(candidate.get("grade"))
         and bool(candidate.get("publication_consent"))
         and not candidate.get("job_search_paused")
+        and not candidate.get("blocked")
     )
 
 
@@ -65,15 +76,9 @@ def to_contacts(candidate: Record) -> dict[str, Any]:
     }
 
 
-SORT_KEYS: dict[str, Callable[[Record], Any]] = {
-    "theta": lambda c: -(c.get("theta") or -99),
-    "fsp": lambda c: -(c.get("fsp_score") or 0),
-    "freshness": lambda c: -c["freshness"],
-    "recent": lambda c: c.get("last_test_at") or "",
-}
-
-
 class CandidateService:
+    """Профили из фикстур — для модулей, которые ещё на фикстурах (волна 3)."""
+
     def __init__(self, repo: CandidateRepository | None = None) -> None:
         self.repo = repo or CandidateRepository()
 
@@ -83,29 +88,58 @@ class CandidateService:
             raise not_found("candidate", candidate_id)
         return candidate
 
-    # ---------- видимость контактов ----------
 
-    def contacts_visible(self, candidate_id: int, company_id: int) -> bool:
-        accepted = any(
-            inv["company_id"] == company_id and inv["status"] == InvitationStatus.accepted
-            for inv in self.repo.invitations(candidate_id)
-        )
-        applied = any(
-            app["company_id"] == company_id for app in self.repo.applications(candidate_id)
-        )
-        return accepted or applied
+class CandidateProfileService:
+    """Кабинет кандидата и банк кандидатов на БД."""
 
-    # ---------- кабинет кандидата ----------
+    def __init__(self, session: AsyncSession) -> None:
+        self.session = session
+        self.db = CandidateDb(session)
+        self.catalog = CatalogDb(session)
 
-    def dashboard(self, candidate_id: int) -> dict[str, Any]:
-        cand = self.get_or_404(candidate_id)
-        invitations = sorted(
-            self.repo.invitations(candidate_id), key=lambda i: i["created_at"], reverse=True
-        )
+    async def get_or_404(self, candidate_id: int) -> Record:
+        record = await self.db.record(candidate_id)
+        if record is None:
+            raise not_found("candidate", candidate_id)
+        return record
+
+    # ---------- свой профиль ----------
+
+    async def update_profile(self, candidate_id: int, body: CandidateProfileUpdate) -> Record:
+        profile = await self.db.profile(candidate_id)
+        if profile is None:
+            raise not_found("candidate", candidate_id)
+        stack = list(dict.fromkeys(code.strip().lower() for code in body.stack))
+        known = await self.catalog.existing_skill_codes(stack)
+        unknown = [c for c in stack if c not in known]
+        if unknown:
+            raise AppError(
+                422,
+                "unknown_skills",
+                "Технологий нет в справочнике стека — выберите из списка",
+                {"skills": unknown},
+            )
+        user = await self.session.get(User, profile.user_id)
+        assert user is not None
+        user.full_name = body.full_name.strip()
+        profile.phone = body.phone
+        profile.telegram = body.telegram
+        profile.city = body.city
+        profile.work_formats = [str(f) for f in dict.fromkeys(body.work_formats)]
+        profile.roles_in_team = body.roles_in_team
+        profile.experience_years = body.experience_years
+        profile.soft_skills = body.soft_skills
+        profile.about = body.about
+        profile.links = [link.model_dump(mode="json") for link in body.links]
+        profile.min_salary = body.min_salary
+        await self.db.replace_stack(candidate_id, stack)
+        await self.session.commit()
+        return await self.get_or_404(candidate_id)
+
+    async def dashboard(self, candidate_id: int) -> dict[str, Any]:
+        cand = await self.get_or_404(candidate_id)
+        invitations = await self.db.invitations(candidate_id)
         new = [i for i in invitations if i["status"] in ACTIVE_INVITATION_STATUSES]
-        active = next(
-            (s for s in self.repo.submissions(candidate_id) if s["status"] == "assigned"), None
-        )
         hints: list[str] = []
         if not cand.get("fsp_id"):
             hints.append(
@@ -115,6 +149,10 @@ class CandidateService:
             hints.append("Добавьте ссылку на GitHub — профиль станет полнее")
         if not cand.get("grade"):
             hints.append("Пройдите тест, чтобы получить категорию и попасть в выдачу работодателям")
+        if not cand.get("publication_consent"):
+            hints.append(
+                "Дайте согласие на публикацию профиля — без него работодатели вас не видят"
+            )
         return {
             "full_name": cand["full_name"],
             "category": cand.get("category"),
@@ -124,22 +162,16 @@ class CandidateService:
             "onboarding_completed": bool(cand.get("grade")),
             "new_invitations_count": len(new),
             "recent_invitations": invitations[:3],
-            "active_task": (
-                {
-                    "submission_id": active["id"],
-                    "title": active["task_title"],
-                    "due_at": active["due_at"],
-                }
-                if active
-                else None
-            ),
+            "active_task": await self.db.active_task(candidate_id),
             "profile_completeness": cand["profile_completeness"],
             "fsp_linked": bool(cand.get("fsp_id")),
             "hints": hints,
         }
 
-    def settings(self, candidate_id: int) -> dict[str, Any]:
-        cand = self.get_or_404(candidate_id)
+    # ---------- настройки ----------
+
+    @staticmethod
+    def _settings(cand: Record) -> dict[str, Any]:
         return {
             "privacy": cand["privacy"],
             "job_search_paused": cand["job_search_paused"],
@@ -148,60 +180,78 @@ class CandidateService:
             "fsp_id": cand.get("fsp_id"),
         }
 
-    # ---------- кабинет рекрутера ----------
+    async def settings(self, candidate_id: int) -> dict[str, Any]:
+        return self._settings(await self.get_or_404(candidate_id))
 
-    def search(
-        self,
-        *,
-        specialization: str | None = None,
-        grade: str | None = None,
-        category: str | None = None,
-        skills: list[str] | None = None,
-        has_fsp: bool | None = None,
-        work_format: str | None = None,
-        city: str | None = None,
-        sort: str = "theta",
-        page: int = 1,
-        page_size: int = 20,
-    ) -> dict[str, Any]:
-        items = [c for c in self.repo.all() if is_searchable(c)]
-        if specialization:
-            items = [c for c in items if c["specialization"] == specialization]
-        if grade:
-            items = [c for c in items if c["grade"] == grade]
-        if category:
-            items = [c for c in items if c["category"] == category]
-        if skills:
-            items = [c for c in items if set(skills) <= set(c["stack"])]
-        if has_fsp is not None:
-            items = [c for c in items if bool(c.get("fsp_id")) == has_fsp]
-        if work_format:
-            items = [c for c in items if work_format in c["work_formats"]]
-        if city:
-            items = [c for c in items if c["privacy"].get("show_city") and c.get("city") == city]
-        items.sort(key=SORT_KEYS.get(sort, SORT_KEYS["theta"]), reverse=sort == "recent")
-        return paginate([to_card(c) for c in items], page, page_size)
-
-    def anonymous_profile(self, candidate_id: int, company_id: int) -> dict[str, Any]:
-        cand = self.get_or_404(candidate_id)
-        visible = self.contacts_visible(candidate_id, company_id)
-        if not is_searchable(cand) and not visible:
-            # профиль скрыт (нет согласия / пауза поиска) — для рекрутера его нет
+    async def update_privacy(self, candidate_id: int, body: PrivacySettings) -> dict[str, Any]:
+        profile = await self.db.profile(candidate_id)
+        if profile is None:
             raise not_found("candidate", candidate_id)
-        company_invs = sorted(
-            (i for i in self.repo.invitations(candidate_id) if i["company_id"] == company_id),
-            key=lambda i: i["created_at"],
-            reverse=True,
-        )
+        profile.privacy = body.model_dump()
+        await self.session.commit()
+        return await self.settings(candidate_id)
+
+    async def update_job_search(self, candidate_id: int, paused: bool) -> dict[str, Any]:
+        profile = await self.db.profile(candidate_id)
+        if profile is None:
+            raise not_found("candidate", candidate_id)
+        profile.job_search_paused = paused
+        await self.session.commit()
+        return await self.settings(candidate_id)
+
+    async def set_publication_consent(
+        self, candidate_id: int, granted: bool, actor: CurrentUser | None = None
+    ) -> dict[str, Any]:
+        """Согласие на публикацию [T2.4]: флаг в профиле + запись в consents.
+        Отзыв действует сразу — кандидат пропадает из банка кандидатов и подборок."""
+        profile = await self.db.profile(candidate_id)
+        if profile is None:
+            raise not_found("candidate", candidate_id)
+        await apply_publication_consent(self.session, profile.user_id, granted, actor)
+        await self.session.commit()
+        return await self.settings(candidate_id)
+
+    # ---------- категория и грейд ----------
+
+    async def grade(self, candidate_id: int, today: date | None = None) -> dict[str, Any]:
+        cand = await self.get_or_404(candidate_id)
+        sessions = await self.db.test_sessions(candidate_id)
+        history = await self.db.grade_history(candidate_id)
+        settings = await self.catalog.settings()
+        return grade_status(cand, sessions, history, settings, today or now_msk().date())
+
+    # ---------- банк кандидатов (рекрутер) ----------
+
+    async def search(self, *, page: int = 1, page_size: int = 20, **filters: Any) -> dict[str, Any]:
+        ids, total = await self.db.search_ids(page=page, page_size=page_size, **filters)
+        records = await self.db.records(ids)
+        return {
+            "items": [to_card(records[i]) for i in ids if i in records],
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+        }
+
+    async def anonymous_profile(self, candidate_id: int, company_id: int) -> dict[str, Any]:
+        cand = await self.db.record(candidate_id)
+        if cand is None:
+            raise not_found("candidate", candidate_id)
+        visible = await self.db.contacts_visible(candidate_id, company_id)
+        if not is_searchable(cand) and not visible:
+            # профиль скрыт (нет согласия / пауза поиска / блокировка) — для рекрутера его нет
+            raise not_found("candidate", candidate_id)
+        company_invs = [
+            i for i in await self.db.invitations(candidate_id) if i["company_id"] == company_id
+        ]
         last_inv = company_invs[0] if company_invs else None
         history = [
             {
-                "date": date.fromisoformat(s["finished_at"][:10]),
-                "category": s["result_category"],
-                "theta": s["theta"],
+                "date": as_msk(s.finished_at).date(),  # type: ignore[union-attr]
+                "category": f"{s.specialization}:{s.result_grade}",
+                "theta": s.theta,
             }
-            for s in self.repo.test_sessions(candidate_id)
-            if s["status"] == "finished" and s.get("passed")
+            for s in sorted(await self.db.test_sessions(candidate_id), key=lambda s: s.id)
+            if s.status == "finished" and s.passed and s.finished_at and s.result_grade
         ]
         profile = to_card(cand)
         profile.update(
@@ -215,3 +265,50 @@ class CandidateService:
             and not (last_inv and last_inv["status"] in ACTIVE_INVITATION_STATUSES),
         )
         return profile
+
+
+async def apply_publication_consent(
+    session: AsyncSession, user_id: int, granted: bool, actor: CurrentUser | None = None
+) -> None:
+    """Выдать/отозвать согласие на публикацию: флаг профиля + запись в consents + журнал.
+
+    Общая точка для кабинета кандидата и модуля согласий (users): кто бы ни менял согласие,
+    флаг `candidate_profiles.publication_consent` и таблица `consents` остаются согласованы.
+    Коммит — за вызывающим.
+    """
+    db = CandidateDb(session)
+    profile = await db.by_user(user_id)
+    now = now_msk()
+    active = await db.active_publication_consents(user_id)
+    if granted:
+        if not active:
+            version = str((await CatalogDb(session).settings()).get("consent_version", ""))
+            session.add(
+                Consent(
+                    user_id=user_id,
+                    type=ConsentType.publication.value,
+                    version=version or now.date().isoformat(),
+                    granted=True,
+                    granted_at=now,
+                    revoked_at=None,
+                )
+            )
+    else:
+        for consent in active:
+            consent.granted = False
+            consent.revoked_at = now
+    changed = profile is not None and profile.publication_consent != granted
+    if profile is not None:
+        profile.publication_consent = granted
+    if changed or (not granted and active):
+        await write_audit(
+            session,
+            actor,
+            "consent_granted" if granted else "consent_revoked",
+            "consent",
+            profile.id if profile else None,
+            "Дано согласие на публикацию профиля"
+            if granted
+            else "Отозвано согласие на публикацию профиля",
+            {"type": ConsentType.publication.value, "user_id": user_id},
+        )
