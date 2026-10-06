@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router'
 import { useAuth } from '../auth/AuthContext'
 import { ROLE_HOME } from '@/shared/config/roles'
+import { brandAsset } from '@/shared/ui'
 import { DemoBar } from './DemoBar'
 import { Logo } from './Logo'
 
@@ -25,9 +26,9 @@ export function PublicLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-canvas">
       <DemoBar />
-      <header className="sticky top-0 z-30 border-b border-line bg-surface/90 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-line bg-nav/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:px-6">
-          <Logo />
+          <Logo compact="mobile" />
           <nav className="ml-auto flex items-center gap-1 sm:gap-2" aria-label="Вход">
             {user ? (
               <Link to={ROLE_HOME[user.role]} className={`${linkBtn} bg-primary text-white hover:bg-primary-hover`}>
@@ -35,7 +36,7 @@ export function PublicLayout() {
               </Link>
             ) : (
               <>
-                <Link to="/login" className={`${linkBtn} text-fsp-plum hover:bg-violet-soft`}>
+                <Link to="/login" className={`${linkBtn} text-primary hover:bg-primary-soft`}>
                   Войти
                 </Link>
                 <Link to="/register" className={`${linkBtn} bg-primary text-white hover:bg-primary-hover`}>
@@ -50,11 +51,20 @@ export function PublicLayout() {
         <Outlet />
       </main>
       <footer className="border-t border-line bg-surface">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-4 text-[13px] text-muted sm:px-6">
-          <span>ФСП · Таланты — спецтрек ФСП, ЛЦТ 2026</span>
-          <Link to="/ui-kit" className="hover:text-fsp-plum">
-            UI-кит
-          </Link>
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-5 text-[13px] text-muted sm:px-6">
+          <img
+            src={brandAsset('fsp-logo-full.svg')}
+            alt="Федерация спортивного программирования России"
+            className="h-7 w-auto max-w-full"
+            width={224}
+            height={28}
+          />
+          <span className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <span>Таланты — платформа подбора IT-специалистов, спецтрек ФСП</span>
+            <Link to="/ui-kit" className="font-medium hover:text-primary">
+              UI-кит
+            </Link>
+          </span>
         </div>
       </footer>
     </div>

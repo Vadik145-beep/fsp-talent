@@ -23,7 +23,7 @@ export function SalaryRange({ from, to, currency, label, size = 'md', className 
       {label && <span className="text-xs font-medium text-muted">{label}</span>}
       <span
         className={cn(
-          'font-semibold tabular-nums',
+          'font-num font-semibold',
           empty ? 'text-subtle' : 'text-ink',
           size === 'sm' && 'text-sm',
           size === 'md' && 'text-base',
@@ -69,7 +69,7 @@ export function Tooltip({ content, children, side = 'top', className }: TooltipP
           id={id}
           role="tooltip"
           className={cn(
-            'pointer-events-none absolute left-1/2 z-40 w-max max-w-64 -translate-x-1/2 animate-fade-in rounded-sm bg-fsp-ink px-2.5 py-1.5 text-xs leading-snug font-medium text-white shadow-lg',
+            'pointer-events-none absolute left-1/2 z-40 w-max max-w-64 -translate-x-1/2 animate-fade-in rounded-sm bg-fsp-black px-2.5 py-1.5 text-xs leading-snug font-medium text-white shadow-lg',
             side === 'top' ? 'bottom-full mb-2' : 'top-full mt-2',
             className,
           )}
@@ -90,7 +90,8 @@ export interface AvatarProps {
 }
 
 const avatarSize = { sm: 'size-8 text-xs', md: 'size-10 text-sm', lg: 'size-14 text-lg' }
-const avatarColors = ['bg-fsp-plum', 'bg-fsp-night', 'bg-[#6b5fc4]', 'bg-primary', 'bg-[#0b6e6e]']
+// Белые инициалы на любом из фонов — контраст не ниже 6.3:1.
+const avatarColors = ['bg-fsp-blue', 'bg-fsp-blue-deep', 'bg-fsp-black', 'bg-info', 'bg-success']
 
 function initials(name: string) {
   return name
@@ -144,7 +145,7 @@ export function Pseudonym({ code, id, subtitle, size = 'md', className }: Pseudo
     <span className={cn('inline-flex min-w-0 items-center gap-3', className)}>
       <span
         className={cn(
-          'inline-flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-fsp-lavender to-fsp-plum font-mono font-semibold text-white',
+          'inline-flex shrink-0 items-center justify-center rounded-full bg-primary font-mono font-semibold text-on-primary',
           avatarSize[size],
           size === 'sm' && 'text-[10px]',
           size === 'md' && 'text-xs',

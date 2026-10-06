@@ -38,9 +38,9 @@ export function Stepper({ steps, current, onStepClick, className }: StepperProps
           const circle = (
             <span
               className={cn(
-                'flex size-8 shrink-0 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors',
-                state === 'done' && 'border-fsp-plum bg-fsp-plum text-white',
-                state === 'current' && 'border-primary bg-primary-soft text-[#9c0034]',
+                'flex size-8 shrink-0 items-center justify-center rounded-full border-2 font-num text-sm font-semibold transition-colors',
+                state === 'done' && 'border-primary bg-primary text-on-primary',
+                state === 'current' && 'border-primary bg-surface text-primary',
                 state === 'upcoming' && 'border-line-strong bg-surface text-subtle',
               )}
             >
@@ -72,7 +72,7 @@ export function Stepper({ steps, current, onStepClick, className }: StepperProps
               </div>
               {i < steps.length - 1 && (
                 <span
-                  className={cn('mx-2 mt-4 h-0.5 flex-1 rounded-full', i < current ? 'bg-fsp-plum' : 'bg-line')}
+                  className={cn('mx-2 mt-4 h-px flex-1', i < current ? 'bg-primary' : 'bg-line-strong')}
                   aria-hidden
                 />
               )}
