@@ -9,7 +9,7 @@ import { ROLE_HOME } from '@/shared/config/roles'
 import { Spinner, useToast } from '@/shared/ui'
 import { cn } from '@/shared/lib/cn'
 import { AuthCard } from './components/AuthCard'
-import { clearPendingFspAuth, readPendingFspAuth, type FspPurpose } from './fspAuth'
+import { clearPendingFspAuth, codeExchangeBody, readPendingFspAuth, type FspPurpose } from './fspAuth'
 
 type S = components['schemas']
 
@@ -43,46 +43,43 @@ export default function FspCallbackPage() {
 function CodeExchange({ code, state }: { code: string; state: string }) {
   const navigate = useNavigate()
   const client = useQueryClient()
-  const { switchRole } = useAuth()
+  const { acceptSession, reloadUser, status } = useAuth()
   const { toast } = useToast()
   const [pending] = useState(readPendingFspAuth)
   const stateMismatch = !!pending && pending.state !== state
   const purpose: FspPurpose = pending?.purpose ?? 'login'
   const [error, setError] = useState<string | null>(null)
   const started = useRef(false)
+  // Привязка требует входа: после возврата из Keycloak страница загружена заново, ждём,
+  // пока AuthProvider восстановит сессию по refresh-cookie.
+  const waitingForSession = purpose === 'link' && status === 'loading'
 
   useEffect(() => {
-    if (started.current) return
+    if (started.current || waitingForSession) return
     started.current = true
     if (stateMismatch) {
       clearPendingFspAuth()
       return
     }
-    const mode = purpose
-    const body: S['FspCodeExchange'] = {
-      code,
-      state,
-      code_verifier: pending?.codeVerifier ?? 'x'.repeat(43),
-      redirect_uri: pending?.redirectUri ?? `${window.location.origin}/auth/fsp-callback`,
-    }
+    const body = codeExchangeBody(code, state, pending)
     const run = async () => {
       try {
-        if (mode === 'link') {
-          const status = await api.post<S['FspStatus']>('/auth/fsp-link', body)
+        if (purpose === 'link') {
+          const fsp = await api.post<S['FspStatus']>('/auth/fsp-link', body)
           clearPendingFspAuth()
-          await client.invalidateQueries({ queryKey: ['candidate'] })
+          await Promise.all([client.invalidateQueries({ queryKey: ['candidate'] }), reloadUser().catch(() => undefined)])
           toast({
             tone: 'success',
             title: 'ФСП ID привязан',
-            description: status.has_history
-              ? `Нашли достижений: ${status.achievements_count ?? 0}. Они уже в профиле.`
-              : 'В реестре ФСП пока нет соревнований — это не влияет на подбор.',
+            description: fsp.has_history
+              ? `Нашли достижений: ${fsp.achievements_count ?? 0}. Они уже в профиле.`
+              : fsp.message || 'В реестре ФСП пока нет соревнований — это не влияет на подбор.',
           })
           navigate(pending?.returnTo ?? '/candidate/fsp', { replace: true })
         } else {
           const res = await api.post<S['TokenResponse']>('/auth/fsp/login', body)
           clearPendingFspAuth()
-          switchRole(res.user.role)
+          acceptSession(res)
           navigate(ROLE_HOME[res.user.role], { replace: true })
         }
       } catch (err) {
@@ -91,7 +88,7 @@ function CodeExchange({ code, state }: { code: string; state: string }) {
       }
     }
     void run()
-  }, [code, state, pending, purpose, stateMismatch, client, navigate, switchRole, toast])
+  }, [code, state, pending, purpose, stateMismatch, waitingForSession, client, navigate, acceptSession, reloadUser, toast])
 
   if (stateMismatch) {
     return <CallbackError message="Ответ ФСП ID не совпал с запросом (state). Попробуйте ещё раз." purpose={purpose} />

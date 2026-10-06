@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Eye, ShieldCheck, Unlink } from 'lucide-react'
+import { useAuth } from '@/app/auth/AuthContext'
 import { api, getErrorMessage } from '@/shared/api'
 import { formatDate } from '@/shared/lib/format'
 import { Badge, Button, Card, CardHeader, Modal, PageHeader, Skeleton, Switch, useToast } from '@/shared/ui'
@@ -12,7 +13,6 @@ import {
   useSettings,
   useSkillLabel,
   type CandidateSettings,
-  type Consent,
   type PrivacySettings,
 } from './api'
 import { EmployerPreview } from './components/EmployerPreview'
@@ -43,6 +43,7 @@ function SettingsView({ s }: { s: CandidateSettings }) {
   const consents = useConsents()
   const skillLabel = useSkillLabel()
   const [confirm, setConfirm] = useState<'publication' | 'unlink' | null>(null)
+  const { reloadUser } = useAuth()
 
   const setSettings = (next: CandidateSettings) => client.setQueryData(qk.settings, next)
   const onFail = (title: string) => (err: unknown) => {
@@ -72,12 +73,13 @@ function SettingsView({ s }: { s: CandidateSettings }) {
   })
 
   const publication = useMutation({
-    mutationFn: (granted: boolean) => api.put<Consent>('/users/me/consents/publication', { granted }),
+    mutationFn: (granted: boolean) => api.put<CandidateSettings>('/candidates/me/settings/publication', { granted }),
     onMutate: (granted) => setSettings({ ...s, publication_consent: granted }),
-    onSuccess: (c) => {
+    onSuccess: (next) => {
       setConfirm(null)
+      setSettings(next)
       void invalidateCandidate(client)
-      toast({ tone: c.granted ? 'success' : 'info', title: c.granted ? 'Согласие дано' : 'Согласие отозвано', description: c.granted ? 'Профиль появится в выдаче.' : 'Профиль скрыт из выдачи.' })
+      toast({ tone: next.publication_consent ? 'success' : 'info', title: next.publication_consent ? 'Согласие дано' : 'Согласие отозвано', description: next.publication_consent ? 'Профиль появится в выдаче.' : 'Профиль скрыт из выдачи.' })
     },
     onError: onFail('Не удалось изменить согласие'),
   })
@@ -87,6 +89,7 @@ function SettingsView({ s }: { s: CandidateSettings }) {
     onSuccess: () => {
       setConfirm(null)
       void invalidateCandidate(client)
+      void reloadUser().catch(() => undefined)
       toast({ tone: 'info', title: 'ФСП ID отвязан', description: 'Достижения скрыты из профиля и выдачи.' })
     },
     onError: onFail('Не удалось отвязать ФСП ID'),

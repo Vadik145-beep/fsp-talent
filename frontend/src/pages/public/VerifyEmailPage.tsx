@@ -84,7 +84,8 @@ function CheckInbox() {
   const initialEmail = params.get('email') ?? ''
   const uid = params.get('uid')
   const [email, setEmail] = useState(initialEmail)
-  const [cooldown, setCooldown] = useState(0)
+  // Сразу после регистрации письмо только что ушло — повтор не раньше чем через минуту.
+  const [cooldown, setCooldown] = useState(uid ? RESEND_COOLDOWN_SEC : 0)
 
   useEffect(() => {
     if (cooldown <= 0) return

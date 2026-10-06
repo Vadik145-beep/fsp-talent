@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router'
 import { useMutation } from '@tanstack/react-query'
 import { Eye, EyeOff, Mail, ShieldCheck } from 'lucide-react'
 import { useAuth } from '@/app/auth/AuthContext'
+import { safeNext } from '@/app/auth/guard'
 import { api, getErrorMessage, isApiError } from '@/shared/api'
 import type { components } from '@/shared/api/schema'
 import { USE_MOCKS } from '@/shared/config/env'
@@ -17,7 +18,6 @@ type S = components['schemas']
 export default function LoginPage() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const { switchRole } = useAuth()
   const { toast } = useToast()
   const [email, setEmail] = useState(params.get('email') ?? '')
   const [password, setPassword] = useState('')
@@ -26,15 +26,14 @@ export default function LoginPage() {
   const [fspLoading, setFspLoading] = useState(false)
   const [fspError, setFspError] = useState<string | null>(null)
 
+  const { login: signIn } = useAuth()
   const login = useMutation({
-    mutationFn: (body: S['LoginRequest']) => api.post<S['TokenResponse']>('/auth/login', body),
-    onSuccess: ({ user }) => {
-      // Прототип: кабинет открывается демо-пользователем роли (useAuth().switchRole).
-      switchRole(user.role)
-      const next = params.get('next')
-      if (next?.startsWith('/')) navigate(next)
-      else if (user.role === 'candidate' && takeOnboardingPending()) navigate('/candidate/onboarding')
-      else navigate(ROLE_HOME[user.role])
+    mutationFn: (body: S['LoginRequest']) => signIn(body.email, body.password),
+    onSuccess: (user) => {
+      const next = safeNext(params.get('next'))
+      if (next) navigate(next, { replace: true })
+      else if (user.role === 'candidate' && takeOnboardingPending()) navigate('/candidate/onboarding', { replace: true })
+      else navigate(ROLE_HOME[user.role], { replace: true })
     },
   })
 
