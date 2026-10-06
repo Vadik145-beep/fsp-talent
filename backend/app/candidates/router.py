@@ -7,6 +7,8 @@ from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.candidates.grade_schemas import CandidateGradeStatus
+from app.candidates.pdf import profile_pdf
+from app.candidates.resume import ResumeParseResponse, ResumeService
 from app.candidates.schemas import (
     AnonymousCandidateProfile,
     CandidateCard,
@@ -17,11 +19,9 @@ from app.candidates.schemas import (
     JobSearchUpdate,
     PrivacySettings,
     PublicationConsentUpdate,
-    ResumeParseResult,
 )
 from app.candidates.service import CandidateProfileService
 from app.common.enums import GradeCode, SpecializationCode, WorkFormat
-from app.common.pdf import placeholder_pdf
 from app.common.schemas import Page
 from app.core.db import get_session
 from app.core.errors import AppError, error_responses
@@ -82,11 +82,20 @@ async def update_my_profile(
 
 @router.post(
     "/me/resume",
-    response_model=ResumeParseResult,
+    response_model=ResumeParseResponse,
     summary="Загрузить PDF-резюме и получить предзаполнение",
-    description="Заглушка: разбор PDF появится в волне 3 (T3.2); сейчас поля берутся из профиля.",
+    description=(
+        "Разбор PDF (pdfplumber; страницы в две колонки режутся по колонкам) правилами, "
+        "при наличии ключа — уточнение LLM. Поля формы профиля с уверенностью 0..1: "
+        "`full_name`, `email`, `phone` (+7XXXXXXXXXX), `city`, `specialization`, `grade`, "
+        "`stack` (коды справочника), `experience_years`, `roles_in_team`, `soft_skills`, "
+        "`work_formats`, `links`, `about`; не найдено — `value: null, confidence: 0`. "
+        "`unmatched_skills` — технологии, которых нет в справочнике. `warnings` — что не удалось "
+        "прочитать (скан без текста, битый файл): тогда поля пустые, форму заполняют вручную."
+    ),
     responses=error_responses(
         *AUTH_ERRORS,
+        404,
         (413, "file_too_large", "Файл больше 5 МБ"),
         (415, "unsupported_file", "Нужен PDF"),
         422,
@@ -97,30 +106,18 @@ async def upload_resume(
     session: SessionDep,
     file: Annotated[UploadFile, File(description="PDF до 5 МБ")],
 ) -> Any:
-    if file.content_type not in ("application/pdf", "application/x-pdf"):
-        raise AppError(415, "unsupported_file", "Нужен PDF", {"content_type": file.content_type})
-    cand = await CandidateProfileService(session).get_or_404(_me_id(user))
-    return {
-        "resume_id": 1,
-        "filename": file.filename or "resume.pdf",
-        "parser": "rules",
-        "fields": {
-            "full_name": {"value": cand["full_name"], "confidence": 0.95},
-            "email": {"value": cand["email"], "confidence": 0.99},
-            "phone": {"value": cand.get("phone"), "confidence": 0.9},
-            "stack": {"value": cand["stack"], "confidence": 0.8},
-            "experience_years": {"value": cand["experience_years"], "confidence": 0.7},
-            "roles_in_team": {"value": cand["roles_in_team"], "confidence": 0.6},
-            "soft_skills": {"value": cand["soft_skills"], "confidence": 0.5},
-        },
-        "unmatched_skills": [],
-    }
+    candidate_id = _me_id(user)
+    await CandidateProfileService(session).get_or_404(candidate_id)
+    return await ResumeService(session).upload(candidate_id, file)
 
 
 @router.get(
     "/me/profile.pdf",
     summary="Скачать стандартизированный PDF-профиль",
-    description="Заглушка: настоящий PDF в стиле ФСП — волна 3 (T3.3).",
+    description=(
+        "PDF в стиле ФСП: категория и грейд, результаты теста по темам, стек, опыт и роли, "
+        "достижения ФСП с отметкой «подтверждено ФСП» (или «нет данных ФСП»)."
+    ),
     response_class=Response,
     responses={
         200: {"content": {"application/pdf": {}}, "description": "PDF-файл"},
@@ -128,8 +125,7 @@ async def upload_resume(
     },
 )
 async def my_profile_pdf(user: CandidateUser, session: SessionDep) -> Response:
-    cand = await CandidateProfileService(session).get_or_404(_me_id(user))
-    content = placeholder_pdf(f"fsp-talent profile: {cand['pseudonym'].split('#')[-1]}")
+    content = await profile_pdf(session, _me_id(user))
     return Response(
         content,
         media_type="application/pdf",
