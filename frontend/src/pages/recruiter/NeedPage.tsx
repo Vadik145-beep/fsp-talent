@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Info, SearchX, ShieldCheck, Users, X } from 'lucide-react'
-import { api } from '@/shared/api'
+import { api, getErrorMessage } from '@/shared/api'
 import { cn } from '@/shared/lib/cn'
 import { formatPercent, formatSalaryRange, plural } from '@/shared/lib/format'
 import { Badge, Button, Card, EmptyState, FilterBar, PageHeader, Select, Skeleton, SkeletonCard, Tag } from '@/shared/ui'
@@ -139,7 +139,12 @@ export default function RecruiterNeedPage() {
                 <Skeleton className="h-12" />
               </div>
             ) : cats.isError ? (
-              <p className="text-sm text-danger">Не удалось загрузить категории.</p>
+              <div className="flex flex-col items-start gap-1 text-sm">
+                <p className="text-danger">Не удалось загрузить категории: {getErrorMessage(cats.error)}</p>
+                <Button variant="ghost" size="sm" onClick={() => void cats.refetch()} loading={cats.isFetching}>
+                  Повторить
+                </Button>
+              </div>
             ) : (
               <ul className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 lg:flex-col lg:overflow-visible">
                 {cats.data.map((c) => {
@@ -279,6 +284,7 @@ export default function RecruiterNeedPage() {
 
           <QueryState
             query={list}
+            errorTitle="Не удалось построить подборку"
             isEmpty={(d) => d.items.length === 0}
             empty={
               <Card padding="none">

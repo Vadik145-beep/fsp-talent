@@ -2,11 +2,11 @@ import { useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ListChecks, Plus } from 'lucide-react'
-import { api, getErrorMessage, isApiError } from '@/shared/api'
+import { api, getErrorMessage } from '@/shared/api'
 import { cn } from '@/shared/lib/cn'
 import { formatDate, plural } from '@/shared/lib/format'
 import { Badge, Button, Card, CardHeader, EmptyState, Input, Modal, PageHeader, Pseudonym, Select, Textarea, useToast } from '@/shared/ui'
-import { pseudonymCodeOf, rk, useCategories, type RegularTask, type S, type TaskSubmission } from './api'
+import { apiFieldErrors, pseudonymCodeOf, refreshRecruiter, rk, upsertInList, useCategories, type RegularTask, type S, type TaskSubmission } from './api'
 import { ANSWER_KIND_LABELS, SCORE_LABELS, SUBMISSION_STATUS } from './labels'
 import { QueryState } from './components/QueryState'
 
@@ -122,7 +122,8 @@ function SubmissionCard({ sub }: { sub: TaskSubmission }) {
     onSuccess: (s) => {
       toast({ tone: 'success', title: `Оценка ${s.score} — ${SCORE_LABELS[s.score ?? 0]}`, description: 'Свежесть профиля кандидата обновлена.' })
       setEditing(false)
-      void qc.invalidateQueries({ queryKey: rk.all })
+      upsertInList(qc, rk.submissions(s.task_id), s)
+      void refreshRecruiter(qc, rk.submissions(s.task_id))
     },
     onError: (e) => toast({ tone: 'error', title: 'Не удалось оценить', description: getErrorMessage(e) }),
   })
@@ -217,12 +218,16 @@ function CreateTaskForm({ onClose, onCreated }: { onClose: () => void; onCreated
     mutationFn: (body: S['RegularTaskCreate']) => api.post<RegularTask>('/tasks', body),
     onSuccess: (t) => {
       toast({ tone: 'success', title: 'Задание создано', description: `Получат кандидаты категории ${t.category_label}.` })
-      void qc.invalidateQueries({ queryKey: rk.all })
+      upsertInList(qc, rk.tasks, t)
+      // Ответов у нового задания ещё нет — не ходим за пустым списком.
+      if (!t.submissions_count) qc.setQueryData(rk.submissions(t.id), [])
+      void refreshRecruiter(qc, rk.tasks)
       onCreated(t)
       onClose()
     },
     onError: (e) => {
-      if (isApiError(e) && e.details?.fields) setErrors(e.details.fields as Record<string, string>)
+      const fields = apiFieldErrors(e)
+      if (Object.keys(fields).length) setErrors(fields)
       else toast({ tone: 'error', title: 'Не удалось создать', description: getErrorMessage(e) })
     },
   })

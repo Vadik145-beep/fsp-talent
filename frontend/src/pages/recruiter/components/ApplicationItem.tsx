@@ -4,7 +4,7 @@ import { Mail, MessageCircle, Phone } from 'lucide-react'
 import { api, getErrorMessage } from '@/shared/api'
 import { formatDate } from '@/shared/lib/format'
 import { Badge, Card, Select, useToast } from '@/shared/ui'
-import { rk, type Application, type ApplicationStatus } from '../api'
+import { refreshRecruiter, rk, upsertInList, type Application, type ApplicationStatus } from '../api'
 import { APPLICATION_STATUS_LABELS, APPLICATION_STATUS_TONE } from '../labels'
 import { StackTags, ThetaInfo } from './CandidateBits'
 
@@ -16,7 +16,9 @@ export function ApplicationItem({ app, showVacancy }: { app: Application; showVa
     mutationFn: (status: ApplicationStatus) => api.patch<Application>(`/applications/${app.id}`, { status }),
     onSuccess: (a) => {
       toast({ tone: 'success', title: `Статус: ${APPLICATION_STATUS_LABELS[a.status]}` })
-      void qc.invalidateQueries({ queryKey: rk.all })
+      upsertInList(qc, rk.applications, a)
+      upsertInList(qc, rk.vacancyApplications(a.vacancy_id), a)
+      void refreshRecruiter(qc, rk.applications, rk.vacancyApplications(a.vacancy_id))
     },
     onError: (e) => toast({ tone: 'error', title: 'Не удалось сменить статус', description: getErrorMessage(e) }),
   })

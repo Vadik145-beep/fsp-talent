@@ -1,9 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { api, isApiError } from '@/shared/api'
+import { api, getErrorMessage } from '@/shared/api'
 import { GRADE_OPTIONS, SPECIALIZATION_OPTIONS, type Grade, type Specialization } from '@/shared/config/dictionaries'
 import { Button, Input, Modal, RadioGroup, Select, Textarea, useToast } from '@/shared/ui'
-import { rk, type Vacancy, type VacancyCreate, type WorkFormat } from '../api'
+import { apiFieldErrors, refreshRecruiter, rk, upsertInList, type Vacancy, type VacancyCreate, type WorkFormat } from '../api'
 import { WORK_FORMAT_OPTIONS } from '../labels'
 import { MoneyInput } from './MoneyInput'
 import { SkillInput } from './SkillInput'
@@ -36,13 +36,19 @@ function VacancyForm({ vacancy, onClose, onSaved }: { vacancy?: Vacancy | null; 
       vacancy ? api.put<Vacancy>(`/vacancies/${vacancy.id}`, body) : api.post<Vacancy>('/vacancies', body),
     onSuccess: (v) => {
       toast({ tone: 'success', title: vacancy ? 'Вакансия сохранена' : 'Черновик вакансии создан', description: vacancy ? undefined : 'Опубликуйте его, когда будете готовы.' })
-      void qc.invalidateQueries({ queryKey: rk.all })
+      // Вакансия из ответа — в список и в карточку.
+      upsertInList(qc, rk.vacancies, v)
+      qc.setQueryData(rk.vacancy(v.id), v)
+      // У нового черновика откликов нет — не ходим за пустым списком.
+      if (!vacancy && !v.applications_count) qc.setQueryData(rk.vacancyApplications(v.id), [])
+      void refreshRecruiter(qc, rk.vacancies)
       onSaved?.(v)
       onClose()
     },
     onError: (e) => {
-      if (isApiError(e) && e.details?.fields) setErrors(e.details.fields as Errors)
-      else toast({ tone: 'error', title: 'Не удалось сохранить', description: isApiError(e) ? e.message : undefined })
+      const fields = apiFieldErrors(e) as Errors
+      if (Object.keys(fields).length) setErrors(fields)
+      else toast({ tone: 'error', title: 'Не удалось сохранить', description: getErrorMessage(e) })
     },
   })
 

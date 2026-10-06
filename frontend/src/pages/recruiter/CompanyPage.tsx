@@ -1,10 +1,10 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Globe, Mail, MapPin, Pencil, Phone } from 'lucide-react'
+import { Copy, Globe, KeyRound, Mail, MapPin, Pencil, Phone } from 'lucide-react'
 import { useAuth } from '@/app/auth/AuthContext'
-import { api, isApiError } from '@/shared/api'
+import { api, getErrorMessage } from '@/shared/api'
 import { Avatar, Badge, Button, Card, CardHeader, Input, PageHeader, Table, Textarea, useToast } from '@/shared/ui'
-import { rk, useCompany, useCompanyRecruiters, type Company, type S } from './api'
+import { apiFieldErrors, refreshRecruiter, rk, useCompany, useCompanyRecruiters, type Company, type S } from './api'
 import { ContactRules } from './components/ContactRules'
 import { QueryState } from './components/QueryState'
 import { QuotaMeter } from './components/QuotaMeter'
@@ -75,6 +75,7 @@ export default function RecruiterCompanyPage() {
           </Card>
         </div>
         <div className="flex flex-col gap-4">
+          {canEdit && company.data && <InviteCodeCard code={company.data.invite_code} />}
           <Card>
             <QuotaMeter />
           </Card>
@@ -82,6 +83,38 @@ export default function RecruiterCompanyPage() {
         </div>
       </div>
     </>
+  )
+}
+
+/** Код, по которому коллеги вступают в компанию при регистрации (виден администратору компании). */
+function InviteCodeCard({ code }: { code?: string | null }) {
+  const { toast } = useToast()
+  async function copy() {
+    if (!code) return
+    try {
+      await navigator.clipboard.writeText(code)
+      toast({ tone: 'success', title: 'Код скопирован' })
+    } catch {
+      toast({ tone: 'error', title: 'Не удалось скопировать', description: 'Выделите код и скопируйте вручную.' })
+    }
+  }
+  return (
+    <Card data-testid="invite-code">
+      <CardHeader title="Код приглашения в компанию" description="Коллега указывает его при регистрации рекрутером и сразу попадает в вашу компанию." />
+      {code ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <code className="rounded-md border border-line bg-surface-muted px-3 py-1.5 font-mono text-base font-semibold tracking-wider select-all">{code}</code>
+          <Button size="sm" variant="secondary" onClick={() => void copy()} leftIcon={<Copy className="size-3.5" aria-hidden />}>
+            Скопировать
+          </Button>
+        </div>
+      ) : (
+        <p className="flex items-start gap-2 text-sm text-muted">
+          <KeyRound className="mt-0.5 size-4 shrink-0" aria-hidden />
+          Код не выдан. Чтобы пригласить коллегу, напишите администратору платформы.
+        </p>
+      )}
+    </Card>
   )
 }
 
@@ -131,14 +164,17 @@ function CompanyForm({ company, onDone }: { company: Company; onDone: () => void
   const [errors, setErrors] = useState<Record<string, string>>({})
   const save = useMutation({
     mutationFn: (body: S['CompanyUpdate']) => api.put<Company>('/companies/my', body),
-    onSuccess: () => {
+    onSuccess: (saved) => {
       toast({ tone: 'success', title: 'Профиль компании сохранён' })
-      void qc.invalidateQueries({ queryKey: rk.all })
+      // Код приглашения в ответе PUT может не прийти — сохраняем прежний.
+      qc.setQueryData<Company>(rk.company, (old) => ({ ...saved, invite_code: saved.invite_code ?? old?.invite_code }))
+      void refreshRecruiter(qc, rk.company)
       onDone()
     },
     onError: (e) => {
-      if (isApiError(e) && e.details?.fields) setErrors(e.details.fields as Record<string, string>)
-      else toast({ tone: 'error', title: 'Не удалось сохранить', description: isApiError(e) ? e.message : undefined })
+      const fields = apiFieldErrors(e)
+      if (Object.keys(fields).length) setErrors(fields)
+      else toast({ tone: 'error', title: 'Не удалось сохранить', description: getErrorMessage(e) })
     },
   })
   const set = (k: keyof S['CompanyUpdate'], v: string) => setForm((f) => ({ ...f, [k]: v }))
