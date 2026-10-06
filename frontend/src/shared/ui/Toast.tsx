@@ -26,8 +26,8 @@ const ToastContext = createContext<ToastApi | null>(null)
 
 const toneMeta: Record<ToastTone, { icon: ReactNode; cls: string }> = {
   success: { icon: <CircleCheck className="size-5 text-success" aria-hidden />, cls: 'border-l-success' },
-  error: { icon: <CircleX className="size-5 text-danger" aria-hidden />, cls: 'border-l-danger' },
-  info: { icon: <Info className="size-5 text-info" aria-hidden />, cls: 'border-l-info' },
+  error: { icon: <CircleX className="size-5 text-accent" aria-hidden />, cls: 'border-l-accent' },
+  info: { icon: <Info className="size-5 text-primary" aria-hidden />, cls: 'border-l-primary' },
   warning: { icon: <TriangleAlert className="size-5 text-warning" aria-hidden />, cls: 'border-l-warning' },
 }
 

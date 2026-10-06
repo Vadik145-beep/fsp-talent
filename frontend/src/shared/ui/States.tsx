@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { TriangleAlert, Inbox, RotateCw } from 'lucide-react'
 import { cn } from '@/shared/lib/cn'
 import { getErrorMessage } from '@/shared/api/client'
+import { BrandLines } from './Brand'
 import { Button } from './Button'
 
 // --- EmptyState -----------------------------------------------------------------------
@@ -24,8 +25,12 @@ export function EmptyState({ title, description, icon, action, className, compac
         className,
       )}
     >
-      <div className="flex size-12 items-center justify-center rounded-full bg-violet-soft text-fsp-plum [&>svg]:size-6">
-        {icon ?? <Inbox aria-hidden />}
+      <div className="flex items-center gap-2">
+        {!compact && <BrandLines variant="rule" className="w-10 text-primary/35 sm:w-16" />}
+        <div className="flex size-12 shrink-0 items-center justify-center rounded-full border border-primary-tint bg-primary-soft text-primary [&>svg]:size-6">
+          {icon ?? <Inbox aria-hidden />}
+        </div>
+        {!compact && <BrandLines variant="rule" className="w-10 text-primary/35 sm:w-16" />}
       </div>
       <div className="max-w-md">
         <p className="text-base font-semibold text-ink">{title}</p>

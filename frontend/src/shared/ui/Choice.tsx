@@ -142,7 +142,7 @@ export function RadioGroup({
               className={cn(
                 'flex cursor-pointer items-start gap-2.5',
                 variant === 'cards' &&
-                  'rounded-lg border border-line bg-surface p-4 transition-colors hover:border-fsp-lavender',
+                  'rounded-lg border border-line-strong bg-surface p-4 transition-colors hover:border-primary',
                 variant === 'cards' && checked && 'border-primary bg-primary-soft hover:border-primary',
                 o.disabled && 'cursor-not-allowed opacity-60',
               )}
