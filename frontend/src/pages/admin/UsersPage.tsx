@@ -32,7 +32,8 @@ export default function AdminUsersPage() {
   const [role, setRole] = useState('')
   const [blocked, setBlocked] = useState('')
   const [page, setPage] = useState(1)
-  const [openId, setOpenId] = useState<number | null>(null)
+  // Открытый пользователь: берём свежую запись из списка, а если после действия он выпал из фильтра — последнюю известную.
+  const [openUser, setOpenUser] = useState<UserRecord | null>(null)
 
   const list = useQuery({
     queryKey: ['admin', 'users', { q, role, blocked, page }],
@@ -111,7 +112,7 @@ export default function AdminUsersPage() {
             rows={list.data?.items ?? []}
             rowKey={(u) => u.id}
             loading={list.isPending}
-            onRowClick={(u) => setOpenId(u.id)}
+            onRowClick={(u) => setOpenUser(u)}
             empty={
               <EmptyState
                 icon={<Users aria-hidden />}
@@ -128,12 +129,16 @@ export default function AdminUsersPage() {
           )}
         </>
       )}
-      <UserDrawer user={list.data?.items.find((u) => u.id === openId) ?? null} onClose={() => setOpenId(null)} />
+      <UserDrawer
+        user={openUser ? (list.data?.items.find((u) => u.id === openUser.id) ?? openUser) : null}
+        onChange={setOpenUser}
+        onClose={() => setOpenUser(null)}
+      />
     </>
   )
 }
 
-function UserDrawer({ user, onClose }: { user: UserRecord | null; onClose: () => void }) {
+function UserDrawer({ user, onChange, onClose }: { user: UserRecord | null; onChange: (u: UserRecord) => void; onClose: () => void }) {
   const [confirmBlock, setConfirmBlock] = useState(false)
   const [roleDraft, setRoleDraft] = useState<{ id: number; role: Role } | null>(null)
   const audit = useQuery({
@@ -145,9 +150,10 @@ function UserDrawer({ user, onClose }: { user: UserRecord | null; onClose: () =>
     (body: { role?: Role; blocked?: boolean }) => api.patch<UserRecord>(`/admin/users/${user!.id}`, body),
     {
       success: (u, v) => (v.blocked !== undefined ? (u.blocked ? `${u.full_name} заблокирован` : `${u.full_name} разблокирован`) : `Роль изменена: ${ROLE_LABELS[u.role]}`),
-      onSuccess: () => {
+      onSuccess: (u) => {
         setConfirmBlock(false)
         setRoleDraft(null)
+        onChange(u)
       },
     },
   )

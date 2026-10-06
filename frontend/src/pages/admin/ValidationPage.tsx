@@ -8,20 +8,28 @@ import { ValidationChartView, type ChartViewOptions } from './components/charts'
 import { StatTile } from './components/common'
 import { num, pct } from './labels'
 
+type Summary = ValidationChart['summary']
+
 interface ChartMeta {
-  /** Вывод простыми словами — заголовок карточки. */
-  headline: string
-  /** Как читать график человеку без статистики. */
-  howTo: string
+  /** Вывод простыми словами из цифр графика; null — цифр нет, берём описание графика. */
+  headline: (s: Summary) => string | null
+  /** Как читать график человеку без статистики (зависит от вида графика). */
+  howTo: (chart: ValidationChart) => string
   options?: ChartViewOptions
-  /** Ключевые числа из summary: [ключ, подпись, формат]. */
+  /** Ключевые числа из summary: [ключ, подпись, формат]. Показываем только те, что прислал бэкенд. */
   facts: Array<[string, string, 'pct' | 'num']>
 }
 
+const P = (v: number) => pct(v, Math.round(v * 1000) % 10 === 0 ? 0 : 1)
+
+/** Тексты без зашитых цифр: числа берутся из summary, чтобы совпадать с данными бэкенда. */
 const META: Record<string, ChartMeta> = {
   grade_accuracy: {
-    headline: 'Тест ставит правильный грейд почти 4 раза из 5, грубых ошибок нет',
-    howTo:
+    headline: (s) =>
+      s.exact != null
+        ? `Тест ставит правильный грейд в ${P(s.exact)} случаев${s.within_one != null ? `, с ошибкой не больше одного грейда — в ${P(s.within_one)}` : ''}`
+        : null,
+    howTo: () =>
       'Синтетические кандидаты с заранее известным уровнем прошли настоящий тест. Первый столбец — грейд угадан точно, второй — ошибка не больше чем на один грейд. Промахи почти всегда у кандидатов на границе двух грейдов.',
     options: { percent: true },
     facts: [
@@ -31,8 +39,8 @@ const META: Record<string, ChartMeta> = {
     ],
   },
   theta_recovery: {
-    headline: 'Оценка теста почти совпадает с настоящим уровнем',
-    howTo:
+    headline: (s) => (s.correlation != null ? `Оценка теста совпадает с настоящим уровнем: корреляция ${num(s.correlation)}` : null),
+    howTo: () =>
       'Каждая точка — кандидат: по горизонтали его настоящий уровень, по вертикали — что намерил тест. Пунктир — идеальное совпадение. Чем плотнее точки к пунктиру, тем точнее тест. Корреляция 1,0 — полное совпадение.',
     options: { diagonal: true, height: 300 },
     facts: [
@@ -42,9 +50,12 @@ const META: Record<string, ChartMeta> = {
     ],
   },
   retest_stability: {
-    headline: 'Повторный тест с другими задачами даёт тот же результат',
-    howTo:
-      'Тех же кандидатов тестируют второй раз, с другими вариантами задач. Решение «подтвердил заявленный грейд или нет» совпадает в 86% случаев. Точный грейд совпадает реже: тест короткий. Более длинный тест (до 20 задач) стабильнее — это настройка, а не переделка.',
+    headline: (s) => {
+      const v = s.decision_agreement ?? s.agreement
+      return v != null ? `Повторный тест с другими задачами даёт тот же результат в ${P(v)} случаев` : null
+    },
+    howTo: () =>
+      'Тех же кандидатов тестируют второй раз, с другими вариантами задач. Столбец — у какой доли результат совпал. Каппа Коэна — согласие сверх случайного: больше 0,6 — хорошее. Более длинный тест стабильнее — это настройка, а не переделка.',
     options: { percent: true },
     facts: [
       ['decision_agreement', 'То же решение по грейду', 'pct'],
@@ -53,8 +64,13 @@ const META: Record<string, ChartMeta> = {
     ],
   },
   item_discrimination: {
-    headline: 'Задачи отличают сильных кандидатов от слабых',
-    howTo:
+    headline: (s) =>
+      s.share_above_02 != null
+        ? `${P(s.share_above_02)} задач хорошо отличают сильных кандидатов от слабых`
+        : s.mean_point_biserial != null
+          ? `Задачи отличают сильных кандидатов от слабых: средняя связь с баллом ${num(s.mean_point_biserial)}`
+          : null,
+    howTo: () =>
       'Каждая точка — шаблон. По горизонтали — различающая сила a из модели, по вертикали — насколько ответ на задачу совпадает с итоговым баллом. Выше пунктира (0,2) — задача работает. Ниже — кандидат на доработку.',
     options: { referenceY: { y: 0.2, label: 'порог 0,2' } },
     facts: [
@@ -64,29 +80,35 @@ const META: Record<string, ChartMeta> = {
     ],
   },
   test_length: {
-    headline: 'Хватает 12–13 задач вместо длинной анкеты',
-    howTo:
+    headline: (s) => (s.mean != null ? `Хватает в среднем ${num(s.mean, 1)} задач вместо длинной анкеты` : null),
+    howTo: () =>
       'Тест останавливается, как только уровень измерен достаточно точно. Столбец — сколько кандидатов закончили тест на этом числе задач. Последний столбец — те, кому понадобился максимум.',
     facts: [
       ['mean', 'Задач в среднем', 'num'],
       ['share_stopped_by_se', 'Остановились досрочно (точность набрана)', 'pct'],
+      ['share_max_length', 'Дошли до максимума задач', 'pct'],
     ],
   },
   leak_detector: {
-    headline: 'Слитые задачи почти не помогают читерам',
-    howTo:
-      'Симуляция: 20% задач слили в интернет, 10% кандидатов списывают. Столбец — у какой доли кандидатов грейд оказался выше настоящего. Без защиты читерам завышают грейд в 85% случаев. С параметризацией (у каждого свои числа) — 14%, почти как фон у честных. Детектор ловит слитые задачи, если вариант всё-таки один на всех. «Обе защиты» — параметризация и детектор вместе.',
+    headline: (s) => (s.recall != null ? `Детектор находит ${P(s.recall)} слитых задач, читерам слив почти не помогает` : null),
+    howTo: (c) =>
+      c.chart_type === 'line'
+        ? 'Симуляция: часть задач слили в интернет, часть кандидатов списывает. Линия — у какой доли кандидатов грейд оказался выше настоящего, по неделям. Красная — без защиты: доля завышенных растёт. Синяя — с защитой (у каждого свой вариант задачи и детектор утечек): остаётся на уровне фона.'
+        : 'Симуляция: часть задач слили в интернет, часть кандидатов списывает. Столбцы — режимы защиты, высота — у какой доли кандидатов грейд оказался выше настоящего. Без защиты читерам завышают грейд чаще всего; параметризация (у каждого свои числа) и детектор утечек возвращают долю к фону честных кандидатов.',
     options: { percent: true },
     facts: [
       ['recall', 'Детектор находит слитых задач', 'pct'],
-      ['precision', 'Ложных срабатываний нет (точность)', 'pct'],
+      ['precision', 'Точность детектора', 'pct'],
       ['cheater_recall', 'Находит читеров (без параметризации)', 'pct'],
     ],
   },
   precision_at_10: {
-    headline: 'Подбор находит подходящих лучше, чем поиск по ключевым словам',
-    howTo:
-      'precision@10 — сколько из первых 10 кандидатов в подборке действительно подходят. nDCG@10 — то же, но с учётом порядка: подходящие выше — лучше. Сравнение с поиском по словам из резюме.',
+    headline: (s) =>
+      s.precision_at_10 != null && s.baseline_precision_at_10 != null
+        ? `Подбор находит подходящих лучше поиска по словам: ${P(s.precision_at_10)} против ${P(s.baseline_precision_at_10)} в первой десятке`
+        : null,
+    howTo: () =>
+      'precision@10 — сколько из первых 10 кандидатов в подборке действительно подходят. nDCG@10 — то же, но с учётом порядка: подходящие выше — лучше. Серый столбец — поиск по ключевым словам резюме для сравнения.',
     options: { percent: true },
     facts: [
       ['precision_at_10', 'precision@10', 'pct'],
@@ -95,9 +117,9 @@ const META: Record<string, ChartMeta> = {
     ],
   },
   bank_size: {
-    headline: 'Почему в банке 30+ шаблонов на специализацию',
-    howTo:
-      'Точность теста при разном размере банка. На 15 шаблонах тест показывает весь банк и теряет адаптивность. Чем больше банк, тем точнее и короче тест.',
+    headline: () => 'Почему в банке 30+ шаблонов на специализацию',
+    howTo: () =>
+      'Точность теста при разном размере банка. На маленьком банке тест показывает все задачи подряд и теряет адаптивность. Чем больше банк, тем точнее и короче тест.',
     options: { yDomain: [0.6, 1] },
     facts: [],
   },
@@ -125,12 +147,12 @@ function ChartCard({ chart }: { chart: ValidationChart }) {
       <div className="mb-1 flex flex-wrap items-center gap-2">
         <span className="text-[13px] font-semibold tracking-wide text-muted uppercase">{chart.title}</span>
         {chart.is_stub && (
-          <Badge tone="neutral" title="Цифры симуляции движка; итоговый пересчёт — в волне 5 (make validate)">
+          <Badge tone="neutral" title="Предварительные цифры; итоговый пересчёт — make validate">
             предварительно
           </Badge>
         )}
       </div>
-      <h3 className="mb-2 text-base font-semibold">{meta?.headline ?? chart.description}</h3>
+      <h3 className="mb-2 text-base font-semibold">{meta?.headline(chart.summary) ?? chart.description}</h3>
       {facts.length > 0 && (
         <dl className="mb-3 flex flex-wrap gap-x-6 gap-y-2">
           {facts.map(([k, label, kind]) => (
@@ -144,7 +166,7 @@ function ChartCard({ chart }: { chart: ValidationChart }) {
       <ValidationChartView chart={chart} options={meta?.options} />
       <p className="mt-3 text-[13px] leading-relaxed text-muted">
         <b className="text-ink">Как читать. </b>
-        {meta?.howTo ?? chart.description}
+        {meta?.howTo(chart) ?? chart.description}
       </p>
     </Card>
   )
@@ -246,13 +268,14 @@ function MatchingUpload() {
           </div>
           <p className="mt-3 text-[13px] text-muted">
             Порядок строк внутри потребности — наша выдача. Поиск по словам ранжирует тех же кандидатов по числу совпавших технологий стека.
-            {r.is_stub ? ' В прототипе считается в браузере по загруженному файлу; на сервере — тем же способом в модуле eval.' : ''}
+            {r.is_stub ? ' Цифры предварительные: настоящий расчёт по файлу подключается в модуле eval.' : ''}
           </p>
           <Table
             className="mt-3"
             caption="Метрики по потребностям"
             rows={r.per_need}
             rowKey={(x) => x.need_id}
+            empty={<p className="px-4 py-6 text-center text-muted">Разбивки по потребностям в ответе нет.</p>}
             columns={[
               { key: 'need_id', header: 'Потребность' },
               { key: 'precision_at_10', header: 'precision@10', align: 'right', sortable: true, render: (x) => pct(x.precision_at_10) },

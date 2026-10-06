@@ -5,7 +5,7 @@ import { ArrowRight, CheckCircle2, FileText, Lightbulb, ListChecks, Sparkles, Ta
 import { api } from '@/shared/api'
 import { GRADE_LABELS, SPECIALIZATION_LABELS, SPECIALIZATION_OPTIONS } from '@/shared/config/dictionaries'
 import { Badge, Button, Card, CardHeader, EmptyState, ErrorState, PageHeader, ProgressBar, Select, SkeletonText, Tag, Textarea } from '@/shared/ui'
-import { useAdminMutation, type ItemDetail, type ItemDraft, type ItemPage, type SpecCode, type VacancyTestResult } from './api'
+import { fetchAllItems, useAdminMutation, type ItemDetail, type ItemDraft, type ItemSummary, type SpecCode, type VacancyTestResult } from './api'
 import { ItemStatusBadge } from './components/common'
 import { ITEM_FORMAT_LABELS } from './labels'
 
@@ -39,17 +39,18 @@ const BUILTIN_SAMPLES = [
 export default function AdminVacancyTestsPage() {
   const [text, setText] = useState('')
   const [spec, setSpec] = useState('')
-  const [shownId, setShownId] = useState<number | null>(null)
+  // Что открыто: собранный сейчас тест или запись истории (у заглушки бэкенда id результата совпадает с примером).
+  const [shown, setShown] = useState<{ result: VacancyTestResult; fromHistory: boolean } | null>(null)
 
   const history = useQuery({ queryKey: ['admin', 'vacancy-tests'], queryFn: () => api.get<VacancyTestResult[]>('/admin/vacancy-tests') })
   const build = useAdminMutation(
     (vars: { text: string; specialization: SpecCode | null }) => api.post<VacancyTestResult>('/admin/vacancy-tests', vars),
-    { success: (r) => `Тест собран: ${r.items.length} шаблонов, черновиков ${r.drafts.length}`, onSuccess: (r) => setShownId(r.id) },
+    { success: (r) => `Тест собран: ${r.items.length} шаблонов, черновиков ${r.drafts.length}`, onSuccess: (r) => setShown({ result: r, fromHistory: false }) },
   )
 
   // Примеры из фикстур — самые ранние записи истории (data/seed/vacancy_tests.json).
   const fixtureSamples = [...(history.data ?? [])].sort((a, b) => a.id - b.id).slice(0, 2)
-  const shown = history.data?.find((r) => r.id === shownId) ?? (build.data?.id === shownId ? build.data : undefined)
+  const shownResult = shown?.fromHistory ? (history.data?.find((r) => r.id === shown.result.id) ?? shown.result) : shown?.result
   const tooShort = text.trim().length < 20
 
   return (
@@ -101,7 +102,7 @@ export default function AdminVacancyTestsPage() {
         </div>
       </Card>
 
-      {shown ? <VacancyTestView result={shown} /> : null}
+      {shownResult ? <VacancyTestView result={shownResult} /> : null}
 
       <Card padding="none" className="mt-6">
         <div className="p-5 pb-2">
@@ -121,8 +122,8 @@ export default function AdminVacancyTestsPage() {
               <li key={r.id}>
                 <button
                   type="button"
-                  onClick={() => setShownId(r.id)}
-                  aria-current={r.id === shownId || undefined}
+                  onClick={() => setShown({ result: r, fromHistory: true })}
+                  aria-current={(shown?.fromHistory && shown.result.id === r.id) || undefined}
                   className="flex w-full flex-wrap items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-violet-soft/60 aria-[current]:bg-violet-soft"
                 >
                   <span className="min-w-0 flex-1">
@@ -218,8 +219,8 @@ function VacancyTestView({ result }: { result: VacancyTestResult }) {
               калибровка.
             </p>
             <div className="grid gap-3 md:grid-cols-2">
-              {result.drafts.map((d) => (
-                <DraftCard key={`${d.topic}-${d.title}`} draft={d} />
+              {(result.drafts as ItemDraft[]).map((d) => (
+                <DraftCard key={`${d.item_id ?? ''}-${d.topic}-${d.title}`} draft={d} />
               ))}
             </div>
           </Step>
@@ -240,17 +241,28 @@ function VacancyTestView({ result }: { result: VacancyTestResult }) {
   )
 }
 
-/** Черновик: ищем его шаблон в банке (по теме и названию), чтобы одобрить. */
+/**
+ * Черновик шаблона. Если бэкенд прислал item_id (трек 3c) — берём шаблон по id;
+ * иначе ищем его в банке по теме и названию.
+ */
 function DraftCard({ draft }: { draft: ItemDraft }) {
-  const q = useQuery({
-    queryKey: ['admin', 'items', 'by-topic', draft.topic],
-    queryFn: () => api.get<ItemPage>('/admin/items', { query: { topic: draft.topic, page_size: 200 } }),
+  const byId = useQuery({
+    queryKey: ['admin', 'item', String(draft.item_id)],
+    queryFn: () => api.get<ItemDetail>(`/admin/items/${draft.item_id}`),
+    enabled: draft.item_id != null,
   })
-  const item = q.data?.items.find((i) => i.title === draft.title)
+  const byTopic = useQuery({
+    queryKey: ['admin', 'items', 'by-topic', draft.topic],
+    queryFn: () => fetchAllItems({ topic: draft.topic }),
+    enabled: draft.item_id == null,
+  })
+  const item: ItemSummary | undefined = draft.item_id != null ? byId.data : byTopic.data?.items.find((i) => i.title === draft.title)
   const approve = useAdminMutation((id: number) => api.post<ItemDetail>(`/admin/items/${id}/approve`), {
     success: `Черновик «${draft.title}» одобрен — теперь это пилот`,
   })
-  const status = item?.status ?? draft.status ?? 'draft'
+  // Ответ на одобрение важнее списка: на заглушке бэкенда статус в банке пока не сохраняется.
+  const status = approve.data?.status ?? item?.status ?? draft.status ?? 'draft'
+  const itemId = item?.id ?? draft.item_id ?? null
 
   return (
     <div className="flex flex-col rounded-md border border-line p-3">
@@ -262,16 +274,17 @@ function DraftCard({ draft }: { draft: ItemDraft }) {
       <p className="mt-1 text-sm text-ink">{draft.prompt}</p>
       <p className="mt-1 text-[13px] text-muted">Формат: {ITEM_FORMAT_LABELS[draft.format]}</p>
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        {status === 'draft' && item && (
-          <Button size="sm" leftIcon={<CheckCircle2 className="size-4" aria-hidden />} loading={approve.isPending} onClick={() => approve.mutate(item.id)}>
+        {status === 'draft' && itemId != null && (
+          <Button size="sm" leftIcon={<CheckCircle2 className="size-4" aria-hidden />} loading={approve.isPending} onClick={() => approve.mutate(itemId)}>
             Одобрить
           </Button>
         )}
-        {item && (
-          <Link to={`/admin/items/${item.id}`} className="text-sm font-semibold text-fsp-plum hover:underline">
+        {itemId != null && (
+          <Link to={`/admin/items/${itemId}`} className="text-sm font-semibold text-fsp-plum hover:underline">
             Открыть шаблон и варианты
           </Link>
         )}
+        {itemId == null && !byTopic.isPending && <span className="text-[13px] text-muted">Шаблон в банке ещё не создан</span>}
         {status === 'pilot' && <span className="text-[13px] text-info">Идёт в тесты как непроверочный</span>}
       </div>
     </div>

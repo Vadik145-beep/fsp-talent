@@ -6,15 +6,28 @@ import { ROLE_LABELS } from '@/shared/config/roles'
 import { formatDateTime } from '@/shared/lib/format'
 import { Badge, Button, EmptyState, ErrorState, FilterBar, PageHeader, Pagination, Select, Table } from '@/shared/ui'
 import type { AuditEntry, AuditPage } from './api'
-import { AUDIT_ACTION_LABELS, AUDIT_ACTION_TONES, TARGET_TYPE_LABELS } from './labels'
+import { AUDIT_ACTION_LABELS, AUDIT_ACTION_TONES, SETTING_LABELS, TARGET_TYPE_LABELS } from './labels'
 
 const PAGE_SIZE = 20
 const ACTION_OPTIONS = Object.entries(AUDIT_ACTION_LABELS).map(([value, label]) => ({ value, label }))
 const TARGET_OPTIONS = Object.entries(TARGET_TYPE_LABELS).map(([value, label]) => ({ value, label }))
 
+const scalar = (v: unknown) => v == null || ['string', 'number', 'boolean'].includes(typeof v)
+const show = (v: unknown) => (v == null ? '—' : String(v))
+
+/**
+ * Подробности записи одной строкой. Пары [было, стало] показываем стрелкой; вложенные объекты
+ * (пороги, веса) — только названием поля, полные значения есть в summary и в API.
+ */
 function details(e: AuditEntry): string {
-  const d = e.details ?? {}
-  const parts = Object.entries(d).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : String(v)}`)
+  const parts: string[] = []
+  for (const [k, v] of Object.entries(e.details ?? {})) {
+    const label = SETTING_LABELS[k] ?? k
+    if (Array.isArray(v) && v.length === 2 && v.every(scalar)) parts.push(`${label}: ${show(v[0])} → ${show(v[1])}`)
+    else if (Array.isArray(v) && v.every(scalar)) parts.push(`${label}: ${v.map(show).join(', ')}`)
+    else if (scalar(v)) parts.push(`${label}: ${show(v)}`)
+    else parts.push(`${label}: изменено`)
+  }
   return parts.join(' · ')
 }
 

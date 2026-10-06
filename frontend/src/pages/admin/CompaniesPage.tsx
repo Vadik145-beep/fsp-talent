@@ -11,17 +11,37 @@ import { pct } from './labels'
 
 function trustLevel(score: number) {
   if (score >= 75) return { label: 'Надёжная', tone: 'success' as const, bar: 'bg-success' }
-  if (score >= 50) return { label: 'Проверить', tone: 'warning' as const, bar: 'bg-[#c27100]' }
+  if (score >= 50) return { label: 'Проверить', tone: 'warning' as const, bar: 'bg-warning' }
   return { label: 'Риск', tone: 'danger' as const, bar: 'bg-danger' }
 }
 
-/** Из чего складывается скоринг (концепция T12.1): какие сигналы тянут вверх и вниз. */
+/**
+ * Из чего складывается скоринг — та же формула, что на бэкенде (companies/service.trust_score):
+ * 30 + 50 × доля ответов на приглашения (нет данных — 50), +10 за подтверждённый домен,
+ * −15 за подтверждённую жалобу, −5 за жалобу в работе. Разбивку жалоб по статусам API не отдаёт,
+ * поэтому штраф за жалобы показываем остатком.
+ */
 function trustFactors(c: AdminCompany) {
+  const answered = c.invitations_sent > 0
+  const base = answered ? 30 + 50 * c.response_rate : 50
+  const domain = c.verified_domain ? 10 : 0
+  const penalty = Math.max(0, Math.round(base + domain - c.trust_score))
   return [
-    { label: 'Почта рекрутеров на домене компании', value: c.verified_domain ? 1 : 0, hint: c.verified_domain ? 'подтверждено' : 'не подтверждено — частый признак фиктивной компании' },
-    { label: 'ИНН указан и найден в реестре', value: c.inn ? 1 : 0, hint: c.inn ? `ИНН ${c.inn}` : 'ИНН не указан' },
-    { label: 'Отвечают ли кандидаты на приглашения', value: c.response_rate, hint: `${pct(c.response_rate)} приглашений с ответом из ${c.invitations_sent}` },
-    { label: 'Без жалоб кандидатов', value: Math.max(0, 1 - c.reports_count / 3), hint: c.reports_count ? `жалоб: ${c.reports_count}` : 'жалоб нет' },
+    {
+      label: 'Ответы кандидатов на приглашения',
+      value: answered ? c.response_rate : 0.5,
+      hint: answered ? `${pct(c.response_rate)} с ответом из ${c.invitations_sent} → ${Math.round(base)} баллов из 80` : 'приглашений ещё не было → 50 баллов',
+    },
+    {
+      label: 'Почта рекрутеров на домене компании',
+      value: c.verified_domain ? 1 : 0,
+      hint: c.verified_domain ? 'подтверждено → +10' : 'не подтверждено — частый признак фиктивной компании → 0',
+    },
+    {
+      label: 'Без подтверждённых жалоб',
+      value: penalty ? Math.max(0, 1 - penalty / 30) : 1,
+      hint: c.reports_count ? `жалоб: ${c.reports_count}${penalty ? ` → −${penalty}` : ' (отклонены, не влияют)'}` : 'жалоб нет',
+    },
   ]
 }
 
@@ -177,7 +197,8 @@ function CompanyDrawer({ company, onClose }: { company: AdminCompany | null; onC
               ))}
             </div>
             <p className="mt-3 text-[13px] text-muted">
-              Новые компании с низким скорингом ограничены: меньше квота приглашений, вакансии проходят ручную проверку.
+              Формула: 30 + 50 × доля ответов (нет приглашений — 50), +10 за домен, −15 за подтверждённую жалобу, −5 за жалобу в работе.
+              {company.inn ? ` ИНН ${company.inn}.` : ' ИНН не указан.'}
             </p>
           </section>
 

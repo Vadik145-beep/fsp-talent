@@ -19,18 +19,21 @@ export default function AdminReportsPage() {
   const [tab, setTab] = useState('open')
   const [decide, setDecide] = useState<{ report: Report; status: 'resolved' | 'rejected' } | null>(null)
   const [blockCompany, setBlockCompany] = useState(false)
+  // Ответы сервера на действия с жалобами. Пока жалобы на бэкенде — заглушка на фикстурах (волна 5b),
+  // изменения там не сохраняются, поэтому поверх списка показываем то, что сервер вернул на действие.
+  const [acted, setActed] = useState<Record<number, Report>>({})
   const reports = useQuery({ queryKey: ['admin', 'reports'], queryFn: () => api.get<Report[]>('/admin/reports') })
   const companies = useQuery({ queryKey: ['admin', 'companies'], queryFn: () => api.get<AdminCompany[]>('/admin/companies') })
 
   const update = useAdminMutation(
     (v: { id: number; status: ReportStatus; resolution?: string }) => api.patch<Report>(`/admin/reports/${v.id}`, { status: v.status, resolution: v.resolution ?? null }),
-    { success: (r) => `Жалоба: ${REPORT_STATUS_LABELS[r.status].toLowerCase()}` },
+    { success: (r) => `Жалоба: ${REPORT_STATUS_LABELS[r.status].toLowerCase()}`, onSuccess: (r) => setActed((m) => ({ ...m, [r.id]: r })) },
   )
   const block = useAdminMutation((companyId: number) => api.patch<AdminCompany>(`/admin/companies/${companyId}`, { blocked: true }), {
     success: (c) => `Компания «${c.name}» заблокирована`,
   })
 
-  const list = reports.data ?? []
+  const list = (reports.data ?? []).map((r) => acted[r.id] ?? r)
   const current = TABS.find((t) => t.id === tab)!
   const rows = list.filter((r) => current.statuses.includes(r.status))
   const company = (id: number) => companies.data?.find((c) => c.id === id)

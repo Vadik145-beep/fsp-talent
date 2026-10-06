@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
-import { Bar, BarChart, CartesianGrid, Cell, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts'
 import { ArrowRight, ClipboardCheck, Flag, Handshake, ShieldAlert, Users } from 'lucide-react'
 import { api } from '@/shared/api'
 import { INVITATION_STATUSES, INVITATION_STATUS_LABELS, SPECIALIZATION_LABELS, type Specialization } from '@/shared/config/dictionaries'
@@ -10,7 +10,7 @@ import { formatNumber, plural } from '@/shared/lib/format'
 import { Badge, Card, CardHeader, EmptyState, ErrorState, PageHeader, Tabs } from '@/shared/ui'
 import type { AdminDashboard } from './api'
 import { ChartBox } from './components/charts'
-import { AXIS, GRID, TOOLTIP_STYLE } from './components/chartTheme'
+import { AXIS, BRAND, CURSOR_FILL, GRID, TOOLTIP_STYLE } from './components/chartTheme'
 import { StatTile, StatTileSkeleton } from './components/common'
 import { num, pct } from './labels'
 
@@ -32,15 +32,6 @@ function daysSeries(rows: AdminDashboard['tests_by_day'], days: number) {
     out.push({ date: key, label: d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }), count: map.get(key) ?? 0 })
   }
   return out
-}
-
-const STATUS_COLORS: Record<string, string> = {
-  sent: '#2F7FD1',
-  viewed: '#6B3FC4',
-  accepted: '#00897B',
-  declined: '#E0004B',
-  expired: '#8c8798',
-  withdrawn: '#C27100',
 }
 
 export default function AdminDashboardPage() {
@@ -89,7 +80,7 @@ function DashboardBody({ data, period, setPeriod }: { data: AdminDashboard; peri
           tone="success"
           label="Конверсия «приглашение → принятие»"
           value={pct(data.invite_to_accept_conversion)}
-          hint={`принято ${data.invitations_by_status.accepted ?? 0} из ${invTotal - (data.invitations_by_status.withdrawn ?? 0)} (без отозванных)`}
+          hint={`принято ${data.invitations_by_status.accepted ?? 0} из ${invTotal} отправленных`}
         />
         <StatTile
           icon={<Flag aria-hidden />}
@@ -108,7 +99,7 @@ function DashboardBody({ data, period, setPeriod }: { data: AdminDashboard; peri
         <Card className="xl:col-span-3">
           <CardHeader
             title="Тесты по дням"
-            description="Сколько тестов на грейд начали кандидаты."
+            description="Сколько тестов на грейд завершили кандидаты."
             actions={<Tabs variant="pills" items={PERIODS} value={period} onChange={setPeriod} ariaLabel="Период" />}
           />
           {days.length ? (
@@ -117,8 +108,8 @@ function DashboardBody({ data, period, setPeriod }: { data: AdminDashboard; peri
                 <CartesianGrid {...GRID} vertical={false} />
                 <XAxis dataKey="label" {...AXIS} interval="preserveStartEnd" minTickGap={16} />
                 <YAxis allowDecimals={false} {...AXIS} width={44} />
-                <Tooltip {...TOOLTIP_STYLE} cursor={{ fill: 'rgb(107 63 196 / 0.06)' }} formatter={(v) => [v, 'Тестов']} />
-                <Bar dataKey="count" fill="#6B3FC4" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                <Tooltip {...TOOLTIP_STYLE} cursor={{ fill: CURSOR_FILL }} formatter={(v) => [v, 'Тестов']} />
+                <Bar dataKey="count" fill={BRAND} radius={[4, 4, 0, 0]} maxBarSize={28} />
               </BarChart>
             </ChartBox>
           ) : (
@@ -134,12 +125,8 @@ function DashboardBody({ data, period, setPeriod }: { data: AdminDashboard; peri
                 <CartesianGrid {...GRID} horizontal={false} />
                 <XAxis type="number" allowDecimals={false} {...AXIS} />
                 <YAxis type="category" dataKey="label" width={96} {...AXIS} />
-                <Tooltip {...TOOLTIP_STYLE} cursor={{ fill: 'rgb(107 63 196 / 0.06)' }} formatter={(v) => [v, 'Приглашений']} />
-                <Bar dataKey="count" radius={[0, 4, 4, 0]} maxBarSize={22} label={{ position: 'right', fill: '#1c1d22', fontSize: 12 }}>
-                  {invRows.map((r) => (
-                    <Cell key={r.status} fill={STATUS_COLORS[r.status]} />
-                  ))}
-                </Bar>
+                <Tooltip {...TOOLTIP_STYLE} cursor={{ fill: CURSOR_FILL }} formatter={(v) => [v, 'Приглашений']} />
+                <Bar dataKey="count" fill={BRAND} radius={[0, 4, 4, 0]} maxBarSize={22} label={{ position: 'right', fill: '#1B1C21', fontSize: 12 }} />
               </BarChart>
             </ChartBox>
           ) : (

@@ -6,7 +6,7 @@ import { api, isApiError } from '@/shared/api'
 import { GRADE_LABELS, SPECIALIZATION_LABELS } from '@/shared/config/dictionaries'
 import { formatDate } from '@/shared/lib/format'
 import { Badge, Button, Card, CardHeader, ErrorState, PageHeader, SkeletonCard, SkeletonText } from '@/shared/ui'
-import { useAdminMutation, type ItemDetail } from './api'
+import { useAdminMutation, type ItemDetail, type ItemStatus } from './api'
 import { ConfirmModal, ItemStatusBadge, LeakBadge, StatTile } from './components/common'
 import { RecalibrateButton } from './components/RecalibrateButton'
 import { VariantPreview } from './components/VariantPreview'
@@ -18,15 +18,16 @@ const p2pl = (theta: number, a: number, b: number) => 1 / (1 + Math.exp(-a * (th
 export default function AdminItemPage() {
   const { id } = useParams()
   const [confirm, setConfirm] = useState<'retire' | 'approve' | null>(null)
+  const [acted, setActed] = useState<{ id: number; status: ItemStatus } | null>(null)
   const q = useQuery({ queryKey: ['admin', 'item', id], queryFn: () => api.get<ItemDetail>(`/admin/items/${id}`) })
 
   const retire = useAdminMutation(() => api.post<ItemDetail>(`/admin/items/${id}/retire`), {
     success: 'Шаблон выведен из оборота',
-    onSuccess: () => setConfirm(null),
+    onSuccess: (r) => (setConfirm(null), setActed({ id: r.id, status: r.status })),
   })
   const approve = useAdminMutation(() => api.post<ItemDetail>(`/admin/items/${id}/approve`), {
     success: 'Черновик одобрен: шаблон в пилоте',
-    onSuccess: () => setConfirm(null),
+    onSuccess: (r) => (setConfirm(null), setActed({ id: r.id, status: r.status })),
   })
 
   if (q.isPending) {
@@ -54,7 +55,8 @@ export default function AdminItemPage() {
     )
   }
 
-  const item = q.data
+  // После действия показываем статус из ответа сервера (на заглушке бэкенда он не сохраняется до волны 3a).
+  const item = acted && acted.id === q.data.id ? { ...q.data, status: acted.status } : q.data
   const gap = item.correct_rate != null && item.expected_correct_rate != null ? item.correct_rate - item.expected_correct_rate : null
 
   return (
@@ -161,7 +163,7 @@ export default function AdminItemPage() {
                 <li key={label} className="grid grid-cols-[72px_1fr_48px] items-center gap-3 text-sm">
                   <span className="text-muted">{label}</span>
                   <span className="h-2.5 overflow-hidden rounded-full bg-line">
-                    <span className="block h-full rounded-full bg-[#6B3FC4]" style={{ width: `${p * 100}%` }} />
+                    <span className="block h-full rounded-full bg-[#402FFF]" style={{ width: `${p * 100}%` }} />
                   </span>
                   <b className="text-right tabular-nums">{pct(p)}</b>
                 </li>
