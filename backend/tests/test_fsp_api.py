@@ -208,26 +208,27 @@ def test_login_bad_code(client: TestClient, fakes: Fakes) -> None:
 
 @pytest.mark.usefixtures("restore")
 def test_link_sync_unlink(client: TestClient, fakes: Fakes) -> None:
-    body = start(client, fakes, "link", "FSP-000003")
+    # FSP-000025: есть в реестре (2 достижения), но в сиде ни к кому не привязан
+    body = start(client, fakes, "link", "FSP-000025")
     resp = client.post("/api/auth/fsp-link", json=body, headers=CAND26)
     assert resp.status_code == 200, resp.text
     status = resp.json()
-    assert status["linked"] and status["fsp_id"] == "FSP-000003"
-    assert status["achievements_count"] == 4 and status["fsp_score"] is not None
+    assert status["linked"] and status["fsp_id"] == "FSP-000025"
+    assert status["achievements_count"] == 2 and status["fsp_score"] is not None
     link = db_link(26)
-    assert link is not None and link.keycloak_sub == "sub-FSP-000003" and link.last_sync_at
-    rows = db_achievements("FSP-000003")
-    assert len(rows) == 4 and all(r.external_id.startswith("ACH-000003-") for r in rows)
+    assert link is not None and link.keycloak_sub == "sub-FSP-000025" and link.last_sync_at
+    rows = db_achievements("FSP-000025")
+    assert len(rows) == 2 and all(r.external_id.startswith("ACH-000025-") for r in rows)
 
     # повторная привязка того же ID — идемпотентна, дублей нет
     again = client.post(
-        "/api/auth/fsp-link", json=start(client, fakes, "link", "FSP-000003"), headers=CAND26
+        "/api/auth/fsp-link", json=start(client, fakes, "link", "FSP-000025"), headers=CAND26
     )
-    assert again.status_code == 200 and len(db_achievements("FSP-000003")) == 4
+    assert again.status_code == 200 and len(db_achievements("FSP-000025")) == 2
 
     unlinked = client.delete("/api/auth/fsp-link", headers=CAND26)
     assert unlinked.status_code == 200 and unlinked.json()["linked"] is False
-    assert db_link(26) is None and db_achievements("FSP-000003") == []
+    assert db_link(26) is None and db_achievements("FSP-000025") == []
     assert client.get("/api/fsp/achievements", headers=CAND26).json() == []
 
 

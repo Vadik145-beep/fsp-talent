@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fsp-talent API",
-    "description": "\nAPI платформы подбора IT-специалистов **fsp-talent** (спецтрек ФСП, ЛЦТ 2026).\n\n**Авторизация до волны 2 — заглушка.** Роль передаётся заголовком `X-Demo-Role`\n(`candidate` | `recruiter` | `admin`), необязательно — `X-Demo-User-Id`\n(id пользователя из `data/seed/users.json`).\nБез заголовка защищённые методы отвечают 401, с чужой ролью — 403.\n\nОшибки всегда в формате `{\"code\": \"...\", \"message\": \"...\", \"details\": {...}}`.\nДанные заглушек — фикстуры `data/seed/*.json` (те же, что у моков фронтенда).\n",
+    "description": "\nAPI платформы подбора IT-специалистов **fsp-talent** (спецтрек ФСП, ЛЦТ 2026).\n\n**Авторизация:** `Authorization: Bearer <JWT>` (вход — `POST /api/auth/login`), refresh — в\nhttpOnly cookie. В dev (`DEMO_AUTH_ENABLED=true`) вместо токена можно передать демо-заголовки:\n`X-Demo-Role` (`candidate` | `recruiter` | `admin`) и необязательно `X-Demo-User-Id`\n(id пользователя из `data/seed/users.json`).\nБез заголовка защищённые методы отвечают 401, с чужой ролью — 403.\n\nОшибки всегда в формате `{\"code\": \"...\", \"message\": \"...\", \"details\": {...}}`.\nДанные заглушек — фикстуры `data/seed/*.json` (те же, что у моков фронтенда).\n",
     "version": "0.1.0"
   },
   "paths": {
@@ -2154,7 +2154,7 @@
           "candidates"
         ],
         "summary": "Сохранить профиль",
-        "description": "Заглушка: возвращает профиль с применёнными изменениями, но не сохраняет их.",
+        "description": "Сохраняет профиль. Стек — коды из справочника `skills` (порядок сохраняется). Минимальная зарплата видна только системе: рекрутеру не отдаётся никогда.",
         "operationId": "update_my_profile_api_candidates_me_profile_put",
         "security": [
           {
@@ -2281,7 +2281,7 @@
             }
           },
           "422": {
-            "description": "`validation_error` — Ошибка валидации данных",
+            "description": "`validation_error` — Ошибка валидации данных; `unknown_skills` — Технологий нет в справочнике стека",
             "content": {
               "application/json": {
                 "examples": {
@@ -2290,6 +2290,14 @@
                     "value": {
                       "code": "validation_error",
                       "message": "Ошибка валидации данных",
+                      "details": {}
+                    }
+                  },
+                  "unknown_skills": {
+                    "summary": "Технологий нет в справочнике стека",
+                    "value": {
+                      "code": "unknown_skills",
+                      "message": "Технологий нет в справочнике стека",
                       "details": {}
                     }
                   }
@@ -3051,6 +3059,296 @@
         }
       }
     },
+    "/api/candidates/me/settings/publication": {
+      "put": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "Согласие на публикацию профиля работодателям",
+        "description": "Без согласия кандидата нет в банке кандидатов и подборках. Отзыв действует сразу; история выдачи и отзыва хранится в согласиях (версия текста и даты).",
+        "operationId": "update_publication_consent_api_candidates_me_settings_publication_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicationConsentUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateSettings"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Недостаточно прав",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Недостаточно прав",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Недостаточно прав",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`not_found` — Объект не найден",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Объект не найден",
+                    "value": {
+                      "code": "not_found",
+                      "message": "Объект не найден",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_error` — Ошибка валидации данных",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "validation_error": {
+                    "summary": "Ошибка валидации данных",
+                    "value": {
+                      "code": "validation_error",
+                      "message": "Ошибка валидации данных",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/candidates/me/grade": {
+      "get": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "Категория и грейд: статус, история, доступность теста ниже/выше",
+        "description": "Правила частоты — движок теста: смена грейда не чаще раза в 90 дней (первое присвоение не считается), повтор неудачной попытки — через 30 дней. Интервалы берутся из настроек платформы.",
+        "operationId": "my_grade_api_candidates_me_grade_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateGradeStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Недостаточно прав",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Недостаточно прав",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Недостаточно прав",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`not_found` — Объект не найден",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Объект не найден",
+                    "value": {
+                      "code": "not_found",
+                      "message": "Объект не найден",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/candidates": {
       "get": {
         "tags": [
@@ -3612,7 +3910,7 @@
           "companies"
         ],
         "summary": "Изменить профиль компании",
-        "description": "Только администратор компании. Заглушка: изменения не сохраняются.",
+        "description": "Только администратор компании (рекрутер с флагом `is_company_admin`).",
         "operationId": "update_my_company_api_companies_my_put",
         "security": [
           {
@@ -10761,7 +11059,7 @@
           "admin"
         ],
         "summary": "Сменить роль или заблокировать пользователя",
-        "description": "Повысить до админа может только админ. Заглушка: не сохраняется.",
+        "description": "Повысить до админа может только админ. Роль «соискатель» или «рекрутер» назначается, только если у пользователя есть профиль соискателя / он состоит в компании. Действие пишется в журнал.",
         "operationId": "update_user_api_admin_users__user_id__patch",
         "security": [
           {
@@ -10897,7 +11195,7 @@
             }
           },
           "409": {
-            "description": "`cannot_change_self` — Нельзя заблокировать или понизить себя",
+            "description": "`cannot_change_self` — Нельзя заблокировать или понизить себя; `role_profile_missing` — Нет профиля для этой роли",
             "content": {
               "application/json": {
                 "examples": {
@@ -10906,6 +11204,14 @@
                     "value": {
                       "code": "cannot_change_self",
                       "message": "Нельзя заблокировать или понизить себя",
+                      "details": {}
+                    }
+                  },
+                  "role_profile_missing": {
+                    "summary": "Нет профиля для этой роли",
+                    "value": {
+                      "code": "role_profile_missing",
+                      "message": "Нет профиля для этой роли",
                       "details": {}
                     }
                   }
@@ -11092,6 +11398,7 @@
           "admin"
         ],
         "summary": "Компании со скорингом надёжности",
+        "description": "Скоринг 0..100: 30 + 50 × доля отвеченных приглашений (нет данных — 50), +10 за подтверждённый домен, −15 за подтверждённую жалобу, −5 за жалобу в работе.",
         "operationId": "list_companies_api_admin_companies_get",
         "security": [
           {
@@ -11485,7 +11792,7 @@
           "admin"
         ],
         "summary": "Изменить настройки платформы",
-        "description": "Передаются только меняемые поля. Заглушка: не сохраняется.",
+        "description": "Передаются только меняемые поля. Изменение пишется в журнал.",
         "operationId": "update_settings_api_admin_settings_put",
         "security": [
           {
@@ -11592,7 +11899,7 @@
             }
           },
           "422": {
-            "description": "`validation_error` — Ошибка валидации данных",
+            "description": "`validation_error` — Ошибка валидации данных; `invalid_thresholds` — Пороги θ должны возрастать; `invalid_weights` — Хотя бы один вес больше нуля",
             "content": {
               "application/json": {
                 "examples": {
@@ -11601,6 +11908,22 @@
                     "value": {
                       "code": "validation_error",
                       "message": "Ошибка валидации данных",
+                      "details": {}
+                    }
+                  },
+                  "invalid_thresholds": {
+                    "summary": "Пороги θ должны возрастать",
+                    "value": {
+                      "code": "invalid_thresholds",
+                      "message": "Пороги θ должны возрастать",
+                      "details": {}
+                    }
+                  },
+                  "invalid_weights": {
+                    "summary": "Хотя бы один вес больше нуля",
+                    "value": {
+                      "code": "invalid_weights",
+                      "message": "Хотя бы один вес больше нуля",
                       "details": {}
                     }
                   }
@@ -11746,7 +12069,7 @@
             }
           },
           "422": {
-            "description": "`validation_error` — Ошибка валидации данных",
+            "description": "`validation_error` — Ошибка валидации данных; `unknown_specialization` — Нет такой специализации",
             "content": {
               "application/json": {
                 "examples": {
@@ -11755,6 +12078,14 @@
                     "value": {
                       "code": "validation_error",
                       "message": "Ошибка валидации данных",
+                      "details": {}
+                    }
+                  },
+                  "unknown_specialization": {
+                    "summary": "Нет такой специализации",
+                    "value": {
+                      "code": "unknown_specialization",
+                      "message": "Нет такой специализации",
                       "details": {}
                     }
                   }
@@ -12085,12 +12416,168 @@
         }
       }
     },
+    "/api/admin/catalog/specializations": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Вернуть специализацию в справочник (код из фиксированного списка)",
+        "description": "Вместе со специализацией создаются её категории (× все грейды).",
+        "operationId": "create_specialization_api_admin_catalog_specializations_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SpecializationCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Specialization"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Недостаточно прав",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Недостаточно прав",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Недостаточно прав",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`specialization_exists` — Такая специализация уже есть",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "specialization_exists": {
+                    "summary": "Такая специализация уже есть",
+                    "value": {
+                      "code": "specialization_exists",
+                      "message": "Такая специализация уже есть",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_error` — Ошибка валидации данных",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "validation_error": {
+                    "summary": "Ошибка валидации данных",
+                    "value": {
+                      "code": "validation_error",
+                      "message": "Ошибка валидации данных",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/catalog/specializations/{spec_id}": {
       "patch": {
         "tags": [
           "admin"
         ],
         "summary": "Изменить подпись или активность специализации (код фиксирован)",
+        "description": "Подписи категорий этой специализации пересобираются автоматически.",
         "operationId": "update_specialization_api_admin_catalog_specializations__spec_id__patch",
         "security": [
           {
@@ -12245,6 +12732,160 @@
             }
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Удалить специализацию",
+        "description": "Нельзя, если по ней есть кандидаты, вакансии, потребности, шаблоны задач, тесты или приглашения — тогда её можно скрыть (`active = false`).",
+        "operationId": "delete_specialization_api_admin_catalog_specializations__spec_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "spec_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/SpecializationCode"
+            }
+          },
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Недостаточно прав",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Недостаточно прав",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Недостаточно прав",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`not_found` — Объект не найден",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Объект не найден",
+                    "value": {
+                      "code": "not_found",
+                      "message": "Объект не найден",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`specialization_in_use` — Специализация используется",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "specialization_in_use": {
+                    "summary": "Специализация используется",
+                    "value": {
+                      "code": "specialization_in_use",
+                      "message": "Специализация используется",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/admin/catalog/grades/{grade_id}": {
@@ -12253,6 +12894,7 @@
           "admin"
         ],
         "summary": "Изменить подпись грейда (код фиксирован)",
+        "description": "Подписи категорий этого грейда пересобираются автоматически.",
         "operationId": "update_grade_api_admin_catalog_grades__grade_id__patch",
         "security": [
           {
@@ -12376,6 +13018,1155 @@
                     "value": {
                       "code": "not_found",
                       "message": "Объект не найден",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_error` — Ошибка валидации данных",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "validation_error": {
+                    "summary": "Ошибка валидации данных",
+                    "value": {
+                      "code": "validation_error",
+                      "message": "Ошибка валидации данных",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/catalog/categories/{category_id}": {
+      "patch": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Изменить подпись категории",
+        "operationId": "update_category_api_admin_catalog_categories__category_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "category_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Category Id"
+            }
+          },
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabelUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Category"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Недостаточно прав",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Недостаточно прав",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Недостаточно прав",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`not_found` — Объект не найден",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Объект не найден",
+                    "value": {
+                      "code": "not_found",
+                      "message": "Объект не найден",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_error` — Ошибка валидации данных",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "validation_error": {
+                    "summary": "Ошибка валидации данных",
+                    "value": {
+                      "code": "validation_error",
+                      "message": "Ошибка валидации данных",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/catalog/topics": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Добавить тему теста",
+        "operationId": "create_topic_api_admin_catalog_topics_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TopicCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Topic"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Недостаточно прав",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Недостаточно прав",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Недостаточно прав",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`not_found` — Объект не найден",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Объект не найден",
+                    "value": {
+                      "code": "not_found",
+                      "message": "Объект не найден",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`topic_exists` — Такая тема уже есть",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "topic_exists": {
+                    "summary": "Такая тема уже есть",
+                    "value": {
+                      "code": "topic_exists",
+                      "message": "Такая тема уже есть",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_error` — Ошибка валидации данных; `topic_code_invalid` — Код темы — <специализация>.<тема>",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "validation_error": {
+                    "summary": "Ошибка валидации данных",
+                    "value": {
+                      "code": "validation_error",
+                      "message": "Ошибка валидации данных",
+                      "details": {}
+                    }
+                  },
+                  "topic_code_invalid": {
+                    "summary": "Код темы — <специализация>.<тема>",
+                    "value": {
+                      "code": "topic_code_invalid",
+                      "message": "Код темы — <специализация>.<тема>",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/catalog/topics/{topic_id}": {
+      "patch": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Изменить подпись темы",
+        "operationId": "update_topic_api_admin_catalog_topics__topic_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "topic_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Topic Id"
+            }
+          },
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabelUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Topic"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Недостаточно прав",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Недостаточно прав",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Недостаточно прав",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`not_found` — Объект не найден",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Объект не найден",
+                    "value": {
+                      "code": "not_found",
+                      "message": "Объект не найден",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_error` — Ошибка валидации данных",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "validation_error": {
+                    "summary": "Ошибка валидации данных",
+                    "value": {
+                      "code": "validation_error",
+                      "message": "Ошибка валидации данных",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Удалить тему",
+        "operationId": "delete_topic_api_admin_catalog_topics__topic_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "topic_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Topic Id"
+            }
+          },
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Недостаточно прав",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Недостаточно прав",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Недостаточно прав",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`not_found` — Объект не найден",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Объект не найден",
+                    "value": {
+                      "code": "not_found",
+                      "message": "Объект не найден",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`topic_in_use` — По теме есть шаблоны задач",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "topic_in_use": {
+                    "summary": "По теме есть шаблоны задач",
+                    "value": {
+                      "code": "topic_in_use",
+                      "message": "По теме есть шаблоны задач",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/reports": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Очередь жалоб на работодателей",
+        "operationId": "list_reports_api_admin_reports_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ReportStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Report"
+                  },
+                  "title": "Response List Reports Api Admin Reports Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Недостаточно прав",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Недостаточно прав",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Недостаточно прав",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_error` — Ошибка валидации данных",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "validation_error": {
+                    "summary": "Ошибка валидации данных",
+                    "value": {
+                      "code": "validation_error",
+                      "message": "Ошибка валидации данных",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/reports/{report_id}": {
+      "patch": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Обработать жалобу",
+        "operationId": "update_report_api_admin_reports__report_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Report"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Недостаточно прав",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Недостаточно прав",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Недостаточно прав",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`not_found` — Объект не найден",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Объект не найден",
+                    "value": {
+                      "code": "not_found",
+                      "message": "Объект не найден",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_error` — Ошибка валидации данных",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "validation_error": {
+                    "summary": "Ошибка валидации данных",
+                    "value": {
+                      "code": "validation_error",
+                      "message": "Ошибка валидации данных",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/audit": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Журнал действий",
+        "description": "Раскрытие контактов, смены грейда, блокировки, вывод шаблонов и т.д.",
+        "operationId": "audit_log_api_admin_audit_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "action",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Action"
+            }
+          },
+          {
+            "name": "target_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Target Type"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Page Size"
+            }
+          },
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_AuditEntry_"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Недостаточно прав",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Недостаточно прав",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Недостаточно прав",
                       "details": {}
                     }
                   }
@@ -13600,493 +15391,6 @@
                     "value": {
                       "code": "llm_unavailable",
                       "message": "LLM недоступна, работаем по словарю",
-                      "details": {}
-                    }
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/admin/reports": {
-      "get": {
-        "tags": [
-          "admin"
-        ],
-        "summary": "Очередь жалоб на работодателей",
-        "operationId": "list_reports_api_admin_reports_get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "status",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "$ref": "#/components/schemas/ReportStatus"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Status"
-            }
-          },
-          {
-            "name": "x-demo-role",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "$ref": "#/components/schemas/Role"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
-              "title": "X-Demo-Role"
-            },
-            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
-          },
-          {
-            "name": "x-demo-user-id",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
-              "title": "X-Demo-User-Id"
-            },
-            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Report"
-                  },
-                  "title": "Response List Reports Api Admin Reports Get"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "`unauthorized` — Требуется вход",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "unauthorized": {
-                    "summary": "Требуется вход",
-                    "value": {
-                      "code": "unauthorized",
-                      "message": "Требуется вход",
-                      "details": {}
-                    }
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "`forbidden` — Недостаточно прав",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "forbidden": {
-                    "summary": "Недостаточно прав",
-                    "value": {
-                      "code": "forbidden",
-                      "message": "Недостаточно прав",
-                      "details": {}
-                    }
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "`validation_error` — Ошибка валидации данных",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "validation_error": {
-                    "summary": "Ошибка валидации данных",
-                    "value": {
-                      "code": "validation_error",
-                      "message": "Ошибка валидации данных",
-                      "details": {}
-                    }
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/admin/reports/{report_id}": {
-      "patch": {
-        "tags": [
-          "admin"
-        ],
-        "summary": "Обработать жалобу",
-        "operationId": "update_report_api_admin_reports__report_id__patch",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "report_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "title": "Report Id"
-            }
-          },
-          {
-            "name": "x-demo-role",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "$ref": "#/components/schemas/Role"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
-              "title": "X-Demo-Role"
-            },
-            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
-          },
-          {
-            "name": "x-demo-user-id",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
-              "title": "X-Demo-User-Id"
-            },
-            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ReportUpdate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Report"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "`unauthorized` — Требуется вход",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "unauthorized": {
-                    "summary": "Требуется вход",
-                    "value": {
-                      "code": "unauthorized",
-                      "message": "Требуется вход",
-                      "details": {}
-                    }
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "`forbidden` — Недостаточно прав",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "forbidden": {
-                    "summary": "Недостаточно прав",
-                    "value": {
-                      "code": "forbidden",
-                      "message": "Недостаточно прав",
-                      "details": {}
-                    }
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "`not_found` — Объект не найден",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "not_found": {
-                    "summary": "Объект не найден",
-                    "value": {
-                      "code": "not_found",
-                      "message": "Объект не найден",
-                      "details": {}
-                    }
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "`validation_error` — Ошибка валидации данных",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "validation_error": {
-                    "summary": "Ошибка валидации данных",
-                    "value": {
-                      "code": "validation_error",
-                      "message": "Ошибка валидации данных",
-                      "details": {}
-                    }
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/admin/audit": {
-      "get": {
-        "tags": [
-          "admin"
-        ],
-        "summary": "Журнал действий",
-        "description": "Раскрытие контактов, смены грейда, блокировки, вывод шаблонов и т.д.",
-        "operationId": "audit_log_api_admin_audit_get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "action",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Action"
-            }
-          },
-          {
-            "name": "target_type",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Target Type"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "default": 1,
-              "title": "Page"
-            }
-          },
-          {
-            "name": "page_size",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "maximum": 200,
-              "minimum": 1,
-              "default": 50,
-              "title": "Page Size"
-            }
-          },
-          {
-            "name": "x-demo-role",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "$ref": "#/components/schemas/Role"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
-              "title": "X-Demo-Role"
-            },
-            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
-          },
-          {
-            "name": "x-demo-user-id",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
-              "title": "X-Demo-User-Id"
-            },
-            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Page_AuditEntry_"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "`unauthorized` — Требуется вход",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "unauthorized": {
-                    "summary": "Требуется вход",
-                    "value": {
-                      "code": "unauthorized",
-                      "message": "Требуется вход",
-                      "details": {}
-                    }
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "`forbidden` — Недостаточно прав",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "forbidden": {
-                    "summary": "Недостаточно прав",
-                    "value": {
-                      "code": "forbidden",
-                      "message": "Недостаточно прав",
-                      "details": {}
-                    }
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "`validation_error` — Ошибка валидации данных",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "validation_error": {
-                    "summary": "Ошибка валидации данных",
-                    "value": {
-                      "code": "validation_error",
-                      "message": "Ошибка валидации данных",
                       "details": {}
                     }
                   }
@@ -15807,6 +17111,175 @@
             "theta": 0.42
           }
         ]
+      },
+      "CandidateGradeStatus": {
+        "properties": {
+          "candidate_id": {
+            "type": "integer",
+            "title": "Candidate Id"
+          },
+          "specialization": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SpecializationCode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "grade": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GradeCode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "category_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Label"
+          },
+          "theta": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Theta"
+          },
+          "grade_changed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grade Changed At"
+          },
+          "grade_change_cooldown_days": {
+            "type": "integer",
+            "title": "Grade Change Cooldown Days",
+            "default": 90
+          },
+          "retry_cooldown_days": {
+            "type": "integer",
+            "title": "Retry Cooldown Days",
+            "default": 30
+          },
+          "can_test_lower": {
+            "type": "boolean",
+            "title": "Can Test Lower"
+          },
+          "lower_available_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lower Available At"
+          },
+          "can_test_higher": {
+            "type": "boolean",
+            "title": "Can Test Higher"
+          },
+          "higher_available_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Higher Available At"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/GradeHistoryEntry"
+            },
+            "type": "array",
+            "title": "History"
+          },
+          "tests": {
+            "items": {
+              "$ref": "#/components/schemas/TestSession"
+            },
+            "type": "array",
+            "title": "Tests"
+          },
+          "lower": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GradeOption"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Тест на грейд ниже"
+          },
+          "higher": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GradeOption"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Тест на грейд выше"
+          }
+        },
+        "type": "object",
+        "required": [
+          "candidate_id",
+          "specialization",
+          "grade",
+          "category",
+          "category_label",
+          "theta",
+          "grade_changed_at",
+          "can_test_lower",
+          "lower_available_at",
+          "can_test_higher",
+          "higher_available_at",
+          "history",
+          "tests"
+        ],
+        "title": "CandidateGradeStatus",
+        "description": "Статус грейда из БД: правила частоты попыток считает движок (`can_attempt`)."
       },
       "CandidateProfile": {
         "properties": {
@@ -17879,6 +19352,54 @@
           }
         ]
       },
+      "GradeOption": {
+        "properties": {
+          "target_grade": {
+            "$ref": "#/components/schemas/GradeCode"
+          },
+          "allowed": {
+            "type": "boolean",
+            "title": "Allowed"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code",
+            "description": "allowed | grade_change_cooldown | failed_retry_cooldown",
+            "examples": [
+              "grade_change_cooldown"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason",
+            "examples": [
+              "Грейд можно менять не чаще раза в 90 дней: …"
+            ]
+          },
+          "available_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Available At",
+            "description": "Когда станет доступно (null — уже можно)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "target_grade",
+          "allowed",
+          "code",
+          "reason"
+        ],
+        "title": "GradeOption",
+        "description": "Можно ли пройти тест на соседний грейд и с какой даты."
+      },
       "GradeStatus": {
         "properties": {
           "candidate_id": {
@@ -19486,6 +21007,27 @@
           }
         ]
       },
+      "LabelUpdate": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Label"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "label"
+        ],
+        "title": "LabelUpdate",
+        "examples": [
+          {
+            "label": "Backend · Middle"
+          }
+        ]
+      },
       "LeakFlagBrief": {
         "properties": {
           "item_id": {
@@ -21018,6 +22560,27 @@
         ],
         "title": "ProfileLink"
       },
+      "PublicationConsentUpdate": {
+        "properties": {
+          "granted": {
+            "type": "boolean",
+            "title": "Granted",
+            "description": "false — отозвать: профиль сразу пропадает из выдачи"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "granted"
+        ],
+        "title": "PublicationConsentUpdate",
+        "description": "Согласие на публикацию профиля работодателям [T2.4].",
+        "examples": [
+          {
+            "granted": false
+          }
+        ]
+      },
       "Quota": {
         "properties": {
           "limit": {
@@ -22178,6 +23741,40 @@
           "devops"
         ],
         "title": "SpecializationCode"
+      },
+      "SpecializationCreate": {
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/SpecializationCode"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Description",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "label"
+        ],
+        "title": "SpecializationCreate",
+        "description": "Вернуть специализацию в справочник (коды фиксированы общими соглашениями).",
+        "examples": [
+          {
+            "description": "Тестирование",
+            "id": "qa",
+            "label": "QA"
+          }
+        ]
       },
       "SpecializationScore": {
         "properties": {
@@ -23354,6 +24951,40 @@
           {
             "id": "backend.http_api",
             "label": "HTTP и REST API",
+            "specialization": "backend"
+          }
+        ]
+      },
+      "TopicCreate": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 64,
+            "pattern": "^[a-z_]+\\.[a-z0-9_]+$",
+            "title": "Id"
+          },
+          "specialization": {
+            "$ref": "#/components/schemas/SpecializationCode"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Label"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "specialization",
+          "label"
+        ],
+        "title": "TopicCreate",
+        "examples": [
+          {
+            "id": "backend.caching",
+            "label": "Кэширование",
             "specialization": "backend"
           }
         ]

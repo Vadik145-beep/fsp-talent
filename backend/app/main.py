@@ -10,8 +10,10 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlalchemy import text
 
+from app.admin.items_router import router as admin_items_router
 from app.admin.router import reports_router
 from app.admin.router import router as admin_router
+from app.admin.vacancy_tests_router import router as admin_vacancy_tests_router
 from app.auth.router import router as auth_router
 from app.candidates.router import router as candidates_router
 from app.catalog.router import router as catalog_router
@@ -34,8 +36,9 @@ from app.vacancies.router import router as vacancies_router
 DESCRIPTION = """
 API платформы подбора IT-специалистов **fsp-talent** (спецтрек ФСП, ЛЦТ 2026).
 
-**Авторизация до волны 2 — заглушка.** Роль передаётся заголовком `X-Demo-Role`
-(`candidate` | `recruiter` | `admin`), необязательно — `X-Demo-User-Id`
+**Авторизация:** `Authorization: Bearer <JWT>` (вход — `POST /api/auth/login`), refresh — в
+httpOnly cookie. В dev (`DEMO_AUTH_ENABLED=true`) вместо токена можно передать демо-заголовки:
+`X-Demo-Role` (`candidate` | `recruiter` | `admin`) и необязательно `X-Demo-User-Id`
 (id пользователя из `data/seed/users.json`).
 Без заголовка защищённые методы отвечают 401, с чужой ролью — 403.
 
@@ -95,6 +98,10 @@ async def health() -> Any:
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    # dev/стенд: загрузить демо-данные при старте, если включён SEED_ON_STARTUP
+    from app.seed.loader import seed_on_startup
+
+    await seed_on_startup()
     yield
     await dispose_engine()
 
@@ -140,6 +147,8 @@ def create_app() -> FastAPI:
         applications_router,
         tasks_router,
         admin_router,
+        admin_items_router,
+        admin_vacancy_tests_router,
         reports_router,
         eval_router,
     ):

@@ -74,9 +74,9 @@ def test_demo_headers_disabled(
     assert response.status_code == 401 and response.json()["code"] == "unauthorized"
     # Bearer работает и без демо-режима
     assert api.get("/api/auth/me", headers=bearer(token)).status_code == 200
-    # демо-учётки из фикстур без демо-режима не входят
+    # демо-учётки залиты сидом в БД (пароль захеширован) — входят обычным путём и без демо-режима
     demo = login(api, "candidate@example.com", "demo1234")
-    assert demo.status_code == 401
+    assert demo.status_code == 200
 
 
 def test_demo_headers_still_work(api: TestClient) -> None:

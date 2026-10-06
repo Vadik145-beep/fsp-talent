@@ -17,6 +17,9 @@ dependencies = [
     "httpx>=0.27",
     # JWT сессий (трек 2a) и проверка ID-токенов Keycloak по JWKS (трек 2c)
     "pyjwt[crypto]>=2.9",
+    # разбор PDF-резюме и генерация PDF-профиля (трек 3c)
+    "pdfplumber>=0.11",
+    "reportlab>=4.2",
     # нужен движку теста (трек 0b, app/testing/engine)
     "numpy>=2.0",
 ]

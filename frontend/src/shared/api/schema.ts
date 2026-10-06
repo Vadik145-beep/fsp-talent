@@ -32,7 +32,7 @@ export interface paths {
         put?: never;
         /**
          * Регистрация по почте
-         * @description Соискатель или рекрутер (рекрутер создаёт компанию или вступает по коду). Согласие на обработку ПДн обязательно. Отправляется письмо со ссылкой (24 ч).
+         * @description Соискатель или рекрутер (рекрутер создаёт компанию или вступает по коду). Согласие на обработку ПДн обязательно — сохраняется с версией текста и датой. Отправляется письмо со ссылкой `/verify-email?token=...` (24 ч). Повторная регистрация неподтверждённой почты не меняет данные, а только отправляет письмо заново.
          */
         post: operations["register_api_auth_register_post"];
         delete?: never;
@@ -67,7 +67,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Отправить письмо повторно */
+        /**
+         * Отправить письмо повторно
+         * @description Ответ одинаковый, есть такая почта или нет. Не чаще раза в минуту на почту.
+         */
         post: operations["resend_verification_api_auth_resend_verification_post"];
         delete?: never;
         options?: never;
@@ -86,7 +89,7 @@ export interface paths {
         put?: never;
         /**
          * Вход по почте и паролю
-         * @description Access-токен в теле, refresh — в httpOnly cookie `refresh_token`.
+         * @description Access-токен (JWT, 15 мин) в теле — передавать в `Authorization: Bearer <token>`; refresh — в httpOnly cookie `refresh_token`. Не больше 5 неудачных попыток за 15 минут на пару почта+IP.
          */
         post: operations["login_api_auth_login_post"];
         delete?: never;
@@ -104,7 +107,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Обновить access-токен по refresh-cookie */
+        /**
+         * Обновить access-токен по refresh-cookie
+         * @description Refresh-токен ротируется: старый перестаёт действовать, в cookie — новый.
+         */
         post: operations["refresh_api_auth_refresh_post"];
         delete?: never;
         options?: never;
@@ -121,7 +127,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Выход */
+        /**
+         * Выход
+         * @description Отзывает refresh-сессию из cookie и удаляет cookie.
+         */
         post: operations["logout_api_auth_logout_post"];
         delete?: never;
         options?: never;
@@ -155,7 +164,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Запросить сброс пароля */
+        /**
+         * Запросить сброс пароля
+         * @description Письмо со ссылкой `/reset-password?token=...` (60 мин). Ответ одинаковый, есть такая почта или нет. Не чаще раза в минуту на почту.
+         */
         post: operations["password_reset_request_api_auth_password_reset_request_post"];
         delete?: never;
         options?: never;
@@ -172,7 +184,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Задать новый пароль по токену */
+        /**
+         * Задать новый пароль по токену
+         * @description Все refresh-сессии пользователя отзываются.
+         */
         post: operations["password_reset_confirm_api_auth_password_reset_confirm_post"];
         delete?: never;
         options?: never;
@@ -187,7 +202,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Ссылка на вход/привязку через ФСП ID */
+        /**
+         * Ссылка на вход/привязку через ФСП ID
+         * @description Генерирует state, nonce и PKCE code_verifier, хранит их в подписанной httpOnly cookie `fsp_oidc_state` (10 минут, путь /api/auth) и отдаёт адрес страницы входа Keycloak с `code_challenge` (S256). Если Keycloak не отвечает — 503, основной вход не затронут.
+         */
         get: operations["fsp_authorize_url_api_auth_fsp_authorize_url_get"];
         put?: never;
         post?: never;
@@ -208,7 +226,7 @@ export interface paths {
         put?: never;
         /**
          * Вход через ФСП ID (обмен кода Keycloak на сессию)
-         * @description Заглушка: возвращает сессию демо-соискателя. Настоящий OIDC — волна 2c.
+         * @description Код и state из redirect_uri → проверка ID-токена → профиль с этим `fsp_id` → сессия. Вход работает только для уже привязанного ФСП ID.
          */
         post: operations["fsp_login_api_auth_fsp_login_post"];
         delete?: never;
@@ -228,12 +246,12 @@ export interface paths {
         put?: never;
         /**
          * Привязать ФСП ID к профилю
-         * @description Обмен кода Keycloak, claim `fsp_id` → профиль, синхронизация достижений.
+         * @description Обмен кода Keycloak, claim `fsp_id` → привязка к текущему кандидату и сразу синхронизация достижений из реестра. Если реестр недоступен, привязка сохраняется, достижения подтянутся по кнопке «Обновить» (сообщение в `message`).
          */
         post: operations["fsp_link_api_auth_fsp_link_post"];
         /**
          * Отвязать ФСП ID
-         * @description Достижения скрываются из профиля и выдачи; основной вход не меняется.
+         * @description Связь и кэш достижений удаляются: бейджи и ФСП-скор пропадают из профиля и выдачи. Основной вход не меняется.
          */
         delete: operations["fsp_unlink_api_auth_fsp_link_delete"];
         options?: never;
@@ -408,7 +426,7 @@ export interface paths {
         get: operations["my_profile_api_candidates_me_profile_get"];
         /**
          * Сохранить профиль
-         * @description Заглушка: возвращает профиль с применёнными изменениями, но не сохраняет их.
+         * @description Сохраняет профиль. Стек — коды из справочника `skills` (порядок сохраняется). Минимальная зарплата видна только системе: рекрутеру не отдаётся никогда.
          */
         put: operations["update_my_profile_api_candidates_me_profile_put"];
         post?: never;
@@ -509,6 +527,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/candidates/me/settings/publication": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Согласие на публикацию профиля работодателям
+         * @description Без согласия кандидата нет в банке кандидатов и подборках. Отзыв действует сразу; история выдачи и отзыва хранится в согласиях (версия текста и даты).
+         */
+        put: operations["update_publication_consent_api_candidates_me_settings_publication_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/candidates/me/grade": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Категория и грейд: статус, история, доступность теста ниже/выше
+         * @description Правила частоты — движок теста: смена грейда не чаще раза в 90 дней (первое присвоение не считается), повтор неудачной попытки — через 30 дней. Интервалы берутся из настроек платформы.
+         */
+        get: operations["my_grade_api_candidates_me_grade_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/candidates": {
         parameters: {
             query?: never;
@@ -560,7 +618,7 @@ export interface paths {
         get: operations["my_company_api_companies_my_get"];
         /**
          * Изменить профиль компании
-         * @description Только администратор компании. Заглушка: изменения не сохраняются.
+         * @description Только администратор компании (рекрутер с флагом `is_company_admin`).
          */
         put: operations["update_my_company_api_companies_my_put"];
         post?: never;
@@ -723,7 +781,7 @@ export interface paths {
         };
         /**
          * Статус привязки ФСП ID, ФСП-скор и бейджи
-         * @description Без истории ФСП — нейтральное состояние без штрафа (T5.4).
+         * @description Данные из БД (кэш реестра). Без ФСП ID или без истории — нейтральное состояние без штрафа (T5.4): `fsp_score: null`, пустые бейджи и подсказка в `message`.
          */
         get: operations["fsp_status_api_fsp_status_get"];
         put?: never;
@@ -743,7 +801,7 @@ export interface paths {
         };
         /**
          * Достижения ФСП (подтверждено ФСП)
-         * @description Пустой список, если ФСП ID не привязан или истории нет.
+         * @description Новые сверху. Пустой список, если ФСП ID не привязан или истории нет.
          */
         get: operations["fsp_achievements_api_fsp_achievements_get"];
         put?: never;
@@ -765,9 +823,29 @@ export interface paths {
         put?: never;
         /**
          * Обновить достижения из реестра ФСП
-         * @description Заглушка: синхронизация с `fsp-registry-mock` — волна 2c.
+         * @description Кнопка «Обновить»: перечитывает достижения участника из реестра в кэш.
          */
         post: operations["fsp_sync_api_fsp_sync_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/fsp/webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Вебхук реестра ФСП: достижения участника изменились
+         * @description Реестр сообщает об изменении — платформа сразу перечитывает достижения участника. Тело подписывается HMAC-SHA256 общим секретом (`FSP_WEBHOOK_SECRET`), заголовок `X-FSP-Signature: sha256=<hex>`. Событие `participant.achievements_updated` → пересинхронизация; другие события и непривязанные ФСП ID принимаются и игнорируются. Повтор события безопасен: синхронизация заменяет кэш целиком, дублей нет.
+         */
+        post: operations["fsp_webhook_api_fsp_webhook_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1273,7 +1351,7 @@ export interface paths {
         head?: never;
         /**
          * Сменить роль или заблокировать пользователя
-         * @description Повысить до админа может только админ. Заглушка: не сохраняется.
+         * @description Повысить до админа может только админ. Роль «соискатель» или «рекрутер» назначается, только если у пользователя есть профиль соискателя / он состоит в компании. Действие пишется в журнал.
          */
         patch: operations["update_user_api_admin_users__user_id__patch"];
         trace?: never;
@@ -1302,7 +1380,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Компании со скорингом надёжности */
+        /**
+         * Компании со скорингом надёжности
+         * @description Скоринг 0..100: 30 + 50 × доля отвеченных приглашений (нет данных — 50), +10 за подтверждённый домен, −15 за подтверждённую жалобу, −5 за жалобу в работе.
+         */
         get: operations["list_companies_api_admin_companies_get"];
         put?: never;
         post?: never;
@@ -1340,7 +1421,7 @@ export interface paths {
         get: operations["get_settings_api_admin_settings_get"];
         /**
          * Изменить настройки платформы
-         * @description Передаются только меняемые поля. Заглушка: не сохраняется.
+         * @description Передаются только меняемые поля. Изменение пишется в журнал.
          */
         put: operations["update_settings_api_admin_settings_put"];
         post?: never;
@@ -1385,6 +1466,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/catalog/specializations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Вернуть специализацию в справочник (код из фиксированного списка)
+         * @description Вместе со специализацией создаются её категории (× все грейды).
+         */
+        post: operations["create_specialization_api_admin_catalog_specializations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/catalog/specializations/{spec_id}": {
         parameters: {
             query?: never;
@@ -1395,10 +1496,17 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Удалить специализацию
+         * @description Нельзя, если по ней есть кандидаты, вакансии, потребности, шаблоны задач, тесты или приглашения — тогда её можно скрыть (`active = false`).
+         */
+        delete: operations["delete_specialization_api_admin_catalog_specializations__spec_id__delete"];
         options?: never;
         head?: never;
-        /** Изменить подпись или активность специализации (код фиксирован) */
+        /**
+         * Изменить подпись или активность специализации (код фиксирован)
+         * @description Подписи категорий этой специализации пересобираются автоматически.
+         */
         patch: operations["update_specialization_api_admin_catalog_specializations__spec_id__patch"];
         trace?: never;
     };
@@ -1415,8 +1523,117 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Изменить подпись грейда (код фиксирован) */
+        /**
+         * Изменить подпись грейда (код фиксирован)
+         * @description Подписи категорий этого грейда пересобираются автоматически.
+         */
         patch: operations["update_grade_api_admin_catalog_grades__grade_id__patch"];
+        trace?: never;
+    };
+    "/api/admin/catalog/categories/{category_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Изменить подпись категории */
+        patch: operations["update_category_api_admin_catalog_categories__category_id__patch"];
+        trace?: never;
+    };
+    "/api/admin/catalog/topics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Добавить тему теста */
+        post: operations["create_topic_api_admin_catalog_topics_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/catalog/topics/{topic_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Удалить тему */
+        delete: operations["delete_topic_api_admin_catalog_topics__topic_id__delete"];
+        options?: never;
+        head?: never;
+        /** Изменить подпись темы */
+        patch: operations["update_topic_api_admin_catalog_topics__topic_id__patch"];
+        trace?: never;
+    };
+    "/api/admin/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Очередь жалоб на работодателей */
+        get: operations["list_reports_api_admin_reports_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/reports/{report_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Обработать жалобу */
+        patch: operations["update_report_api_admin_reports__report_id__patch"];
+        trace?: never;
+    };
+    "/api/admin/audit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Журнал действий
+         * @description Раскрытие контактов, смены грейда, блокировки, вывод шаблонов и т.д.
+         */
+        get: operations["audit_log_api_admin_audit_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/admin/items": {
@@ -1539,60 +1756,6 @@ export interface paths {
          * @description Заглушка: возвращает ближайший пример. Настоящий разбор — волна 3c (T4.8).
          */
         post: operations["build_vacancy_test_api_admin_vacancy_tests_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/admin/reports": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Очередь жалоб на работодателей */
-        get: operations["list_reports_api_admin_reports_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/admin/reports/{report_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Обработать жалобу */
-        patch: operations["update_report_api_admin_reports__report_id__patch"];
-        trace?: never;
-    };
-    "/api/admin/audit": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Журнал действий
-         * @description Раскрытие контактов, смены грейда, блокировки, вывод шаблонов и т.д.
-         */
-        get: operations["audit_log_api_admin_audit_get"];
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2295,6 +2458,50 @@ export interface components {
             hints: string[];
         };
         /**
+         * CandidateGradeStatus
+         * @description Статус грейда из БД: правила частоты попыток считает движок (`can_attempt`).
+         */
+        CandidateGradeStatus: {
+            /** Candidate Id */
+            candidate_id: number;
+            specialization: components["schemas"]["SpecializationCode"] | null;
+            grade: components["schemas"]["GradeCode"] | null;
+            /** Category */
+            category: string | null;
+            /** Category Label */
+            category_label: string | null;
+            /** Theta */
+            theta: number | null;
+            /** Grade Changed At */
+            grade_changed_at: string | null;
+            /**
+             * Grade Change Cooldown Days
+             * @default 90
+             */
+            grade_change_cooldown_days: number;
+            /**
+             * Retry Cooldown Days
+             * @default 30
+             */
+            retry_cooldown_days: number;
+            /** Can Test Lower */
+            can_test_lower: boolean;
+            /** Lower Available At */
+            lower_available_at: string | null;
+            /** Can Test Higher */
+            can_test_higher: boolean;
+            /** Higher Available At */
+            higher_available_at: string | null;
+            /** History */
+            history: components["schemas"]["GradeHistoryEntry"][];
+            /** Tests */
+            tests: components["schemas"]["TestSession"][];
+            /** @description Тест на грейд ниже */
+            lower?: components["schemas"]["GradeOption"] | null;
+            /** @description Тест на грейд выше */
+            higher?: components["schemas"]["GradeOption"] | null;
+        };
+        /**
          * CandidateProfile
          * @description Полный профиль кандидата (запись `candidates.json`). Видит только сам кандидат.
          * @example {
@@ -2308,14 +2515,31 @@ export interface components {
          *       "freshness": 0.72,
          *       "fsp_badges": [
          *         {
+         *           "id": "international_winner",
+         *           "level": "international",
+         *           "title": "Победитель международного соревнования",
+         *           "verified": true
+         *         },
+         *         {
+         *           "id": "national_prize",
+         *           "level": "national",
+         *           "title": "Призёр всероссийского соревнования",
+         *           "verified": true
+         *         },
+         *         {
+         *           "id": "captain",
+         *           "title": "Капитан команды",
+         *           "verified": true
+         *         },
+         *         {
          *           "id": "participant_many",
-         *           "title": "Участник 3 соревнований ФСП",
+         *           "title": "Участник 7 соревнований ФСП",
          *           "verified": true
          *         }
          *       ],
          *       "fsp_id": "FSP-000001",
-         *       "fsp_score": 41.1,
-         *       "full_name": "Алексей Смирнов",
+         *       "fsp_score": 86,
+         *       "full_name": "Никита Латыпов",
          *       "grade": "middle",
          *       "grade_changed_at": "2026-09-10T15:30:00+03:00",
          *       "id": 1,
@@ -2324,7 +2548,7 @@ export interface components {
          *       "links": [
          *         {
          *           "type": "github",
-         *           "url": "https://github.com/example-aleksey1"
+         *           "url": "https://github.com/example-nikita1"
          *         }
          *       ],
          *       "min_salary": 180000,
@@ -2355,7 +2579,7 @@ export interface components {
          *         "docker",
          *         "kafka"
          *       ],
-         *       "telegram": "@example_aleksey1",
+         *       "telegram": "@example_nikita1",
          *       "theta": 0.42,
          *       "theta_se": 0.3,
          *       "topic_scores": [
@@ -2993,16 +3217,17 @@ export interface components {
          * FspAchievement
          * @description Достижение участника (наша версия API реестра ФСП, T5.1).
          * @example {
-         *       "competition": "Турнир по защите инфраструктуры 2024",
-         *       "date": "2024-07-30",
+         *       "competition": "Всероссийские соревнования по программированию систем ИБ (Attack-Defense)",
+         *       "date": "2023-10-07",
+         *       "diploma": "Диплом I степени",
          *       "discipline": "cybersecurity",
          *       "fsp_id": "FSP-000001",
          *       "id": 1,
-         *       "level": "regional",
-         *       "place": 10,
-         *       "protocol_url": "https://fsp-registry.example.com/protocols/9733",
-         *       "role": "Разработчик",
-         *       "team": "Синтаксис",
+         *       "level": "national",
+         *       "protocol_url": "https://registry.fsp.example/protocols/COMP-2023-03.pdf",
+         *       "rating": 200,
+         *       "role": "Капитан, специалист по защите сервисов",
+         *       "team": "Северные биты",
          *       "verified": true
          *     }
          */
@@ -3092,10 +3317,13 @@ export interface components {
         };
         /**
          * FspCodeExchange
-         * @description Код авторизации из Keycloak (OIDC Authorization Code + PKCE).
+         * @description Код авторизации из Keycloak после входа через ФСП ID (OIDC Authorization Code + PKCE).
+         *
+         *     `code_verifier` хранит сервер (подписанная httpOnly cookie, выданная вместе с authorize-url),
+         *     поэтому поле необязательно и игнорируется — оставлено для совместимости с контрактом v0.
+         *     `redirect_uri`, если передан, должен совпадать с тем, что был в authorize-url.
          * @example {
          *       "code": "kc-auth-code",
-         *       "code_verifier": "pkce-verifier-43-128-chars-xxxxxxxxxxxxxxxxxxxxxxx",
          *       "redirect_uri": "http://localhost:15173/auth/fsp-callback",
          *       "state": "b1f0c2"
          *     }
@@ -3105,10 +3333,14 @@ export interface components {
             code: string;
             /** State */
             state: string;
-            /** Code Verifier */
-            code_verifier: string;
+            /**
+             * Code Verifier
+             * @deprecated
+             * @description Не нужен: verifier хранит сервер. Игнорируется
+             */
+            code_verifier?: string | null;
             /** Redirect Uri */
-            redirect_uri: string;
+            redirect_uri?: string | null;
         };
         /**
          * FspDiscipline
@@ -3163,6 +3395,33 @@ export interface components {
             has_history: boolean;
             /** Message */
             message?: string | null;
+        };
+        /**
+         * FspWebhookAck
+         * @description Ответ на вебхук: принято, пересинхронизирован ли участник.
+         */
+        FspWebhookAck: {
+            /**
+             * Accepted
+             * @default true
+             */
+            accepted: boolean;
+            /** Event */
+            event: string;
+            /** Fsp Id */
+            fsp_id: string;
+            /**
+             * Resynced
+             * @description false — событие не про изменения или ФСП ID не привязан
+             */
+            resynced: boolean;
+            /** Achievements Count */
+            achievements_count?: number | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "resynced" | "ignored";
         };
         /**
          * Grade
@@ -3228,6 +3487,31 @@ export interface components {
              * @default
              */
             comment: string;
+        };
+        /**
+         * GradeOption
+         * @description Можно ли пройти тест на соседний грейд и с какой даты.
+         */
+        GradeOption: {
+            target_grade: components["schemas"]["GradeCode"];
+            /** Allowed */
+            allowed: boolean;
+            /**
+             * Code
+             * @description allowed | grade_change_cooldown | failed_retry_cooldown
+             * @example grade_change_cooldown
+             */
+            code: string;
+            /**
+             * Reason
+             * @example Грейд можно менять не чаще раза в 90 дней: …
+             */
+            reason: string;
+            /**
+             * Available At
+             * @description Когда станет доступно (null — уже можно)
+             */
+            available_at?: string | null;
         };
         /**
          * GradeStatus
@@ -3952,6 +4236,16 @@ export interface components {
              */
             paused: boolean;
         };
+        /**
+         * LabelUpdate
+         * @example {
+         *       "label": "Backend · Middle"
+         *     }
+         */
+        LabelUpdate: {
+            /** Label */
+            label: string;
+        };
         /** LeakFlagBrief */
         LeakFlagBrief: {
             /** Item Id */
@@ -4617,6 +4911,20 @@ export interface components {
             url: string;
         };
         /**
+         * PublicationConsentUpdate
+         * @description Согласие на публикацию профиля работодателям [T2.4].
+         * @example {
+         *       "granted": false
+         *     }
+         */
+        PublicationConsentUpdate: {
+            /**
+             * Granted
+             * @description false — отозвать: профиль сразу пропадает из выдачи
+             */
+            granted: boolean;
+        };
+        /**
          * Quota
          * @description Квота активных приглашений рекрутера (T7.6).
          * @example {
@@ -5208,6 +5516,25 @@ export interface components {
          * @enum {string}
          */
         SpecializationCode: "backend" | "frontend" | "mobile" | "data_ml" | "qa" | "devops";
+        /**
+         * SpecializationCreate
+         * @description Вернуть специализацию в справочник (коды фиксированы общими соглашениями).
+         * @example {
+         *       "description": "Тестирование",
+         *       "id": "qa",
+         *       "label": "QA"
+         *     }
+         */
+        SpecializationCreate: {
+            id: components["schemas"]["SpecializationCode"];
+            /** Label */
+            label: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+        };
         /** SpecializationScore */
         SpecializationScore: {
             specialization: components["schemas"]["SpecializationCode"];
@@ -5773,6 +6100,21 @@ export interface components {
             label: string;
         };
         /**
+         * TopicCreate
+         * @example {
+         *       "id": "backend.caching",
+         *       "label": "Кэширование",
+         *       "specialization": "backend"
+         *     }
+         */
+        TopicCreate: {
+            /** Id */
+            id: string;
+            specialization: components["schemas"]["SpecializationCode"];
+            /** Label */
+            label: string;
+        };
+        /**
          * TopicLevel
          * @enum {string}
          */
@@ -5807,7 +6149,7 @@ export interface components {
          *       "created_at": "2026-09-05T18:00:00+03:00",
          *       "email": "candidate@example.com",
          *       "email_verified": true,
-         *       "full_name": "Алексей Смирнов",
+         *       "full_name": "Никита Латыпов",
          *       "id": 1,
          *       "last_login_at": "2026-10-03T12:00:00.407539+03:00",
          *       "role": "candidate"
@@ -6494,6 +6836,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description `user_blocked` — Учётная запись заблокирована */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -6510,7 +6861,9 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                refresh_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -6521,15 +6874,24 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     me_api_auth_me_get: {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -6663,7 +7025,8 @@ export interface operations {
         parameters: {
             query?: {
                 purpose?: "login" | "link";
-                redirect_uri?: string;
+                /** @description Куда Keycloak вернёт браузер (по умолчанию <фронт>/auth/fsp-callback) */
+                redirect_uri?: string | null;
             };
             header?: never;
             path?: never;
@@ -6722,7 +7085,7 @@ export interface operations {
                     "application/json": components["schemas"]["TokenResponse"];
                 };
             };
-            /** @description `oidc_error` — Ошибка обмена кода авторизации */
+            /** @description `oidc_error` — Ошибка входа через ФСП ID: state истёк/подменён, код не принят или ID-токен не прошёл проверку (причина в details.reason) */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -6764,9 +7127,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -6787,7 +7150,7 @@ export interface operations {
                     "application/json": components["schemas"]["FspStatus"];
                 };
             };
-            /** @description `oidc_error` — Ошибка обмена кода авторизации */
+            /** @description `oidc_error` — Ошибка входа через ФСП ID: state истёк/подменён, код не принят или ID-токен не прошёл проверку (причина в details.reason) */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -6814,7 +7177,16 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description `fsp_id_taken` — Этот ФСП ID уже привязан к другому профилю */
+            /** @description `not_found` — Объект не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `fsp_id_taken` — Этот ФСП ID уже привязан к другому профилю; `fsp_already_linked` — К профилю уже привязан другой ФСП ID */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -6847,9 +7219,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -6884,6 +7256,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description `not_found` — Объект не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description `fsp_not_linked` — ФСП ID не привязан */
             409: {
                 headers: {
@@ -6908,9 +7289,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -6951,9 +7332,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -7164,9 +7545,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -7225,9 +7606,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -7286,9 +7667,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -7336,7 +7717,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description `validation_error` — Ошибка валидации данных */
+            /** @description `validation_error` — Ошибка валидации данных; `unknown_skills` — Технологий нет в справочнике стека */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -7351,9 +7732,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -7425,9 +7806,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -7486,9 +7867,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -7547,9 +7928,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -7612,9 +7993,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -7673,6 +8054,132 @@ export interface operations {
             };
         };
     };
+    update_publication_consent_api_candidates_me_settings_publication_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicationConsentUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CandidateSettings"];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` — Объект не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `validation_error` — Ошибка валидации данных */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    my_grade_api_candidates_me_grade_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CandidateGradeStatus"];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` — Объект не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     search_candidates_api_candidates_get: {
         parameters: {
             query?: {
@@ -7689,9 +8196,9 @@ export interface operations {
                 page_size?: number;
             };
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -7741,9 +8248,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -7804,9 +8311,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -7865,9 +8372,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -7930,9 +8437,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -7991,9 +8498,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -8052,9 +8559,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -8104,9 +8611,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -8160,9 +8667,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -8221,9 +8728,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -8273,9 +8780,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -8338,9 +8845,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -8401,9 +8908,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -8477,9 +8984,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -8549,9 +9056,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -8610,9 +9117,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -8671,9 +9178,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -8737,13 +9244,63 @@ export interface operations {
             };
         };
     };
+    fsp_webhook_api_fsp_webhook_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description sha256=<hex HMAC тела> */
+                "X-FSP-Signature"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FspWebhookAck"];
+                };
+            };
+            /** @description `invalid_signature` — Неверная подпись вебхука; `webhook_expired` — Событие устарело (sent_at старше 5 минут) */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `validation_error` — Неверное тело события */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `fsp_registry_unavailable` — Реестр ФСП недоступен — повторите позже; `webhook_disabled` — Секрет вебхука не настроен */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     parse_need_api_matching_needs_parse_post: {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -8797,9 +9354,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -8849,9 +9406,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -8905,9 +9462,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -8968,9 +9525,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -9037,9 +9594,9 @@ export interface operations {
                 city?: string | null;
             };
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -9102,9 +9659,9 @@ export interface operations {
                 status?: components["schemas"]["InvitationStatus"] | null;
             };
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -9154,9 +9711,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -9228,9 +9785,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -9284,9 +9841,9 @@ export interface operations {
                 salary_to?: number | null;
             };
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -9345,9 +9902,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -9408,9 +9965,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -9480,9 +10037,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -9556,9 +10113,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -9636,9 +10193,9 @@ export interface operations {
                 q?: string | null;
             };
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -9688,9 +10245,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -9744,9 +10301,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -9807,9 +10364,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -9874,9 +10431,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -9946,9 +10503,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -10018,9 +10575,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -10081,9 +10638,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -10157,9 +10714,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -10209,9 +10766,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -10276,9 +10833,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -10337,9 +10894,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -10413,9 +10970,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -10465,9 +11022,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -10521,9 +11078,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -10584,9 +11141,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -10660,9 +11217,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -10719,9 +11276,9 @@ export interface operations {
                 page_size?: number;
             };
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -10771,9 +11328,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -10823,7 +11380,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description `cannot_change_self` — Нельзя заблокировать или понизить себя */
+            /** @description `cannot_change_self` — Нельзя заблокировать или понизить себя; `role_profile_missing` — Нет профиля для этой роли */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -10847,9 +11404,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -10910,9 +11467,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -10962,9 +11519,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -11029,9 +11586,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -11081,9 +11638,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -11122,7 +11679,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description `validation_error` — Ошибка валидации данных */
+            /** @description `validation_error` — Ошибка валидации данных; `invalid_thresholds` — Пороги θ должны возрастать; `invalid_weights` — Хотя бы один вес больше нуля */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -11137,9 +11694,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -11187,7 +11744,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description `validation_error` — Ошибка валидации данных */
+            /** @description `validation_error` — Ошибка валидации данных; `unknown_specialization` — Нет такой специализации */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -11202,9 +11759,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -11269,9 +11826,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -11335,13 +11892,148 @@ export interface operations {
             };
         };
     };
+    create_specialization_api_admin_catalog_specializations_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SpecializationCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Specialization"];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `specialization_exists` — Такая специализация уже есть */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `validation_error` — Ошибка валидации данных */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_specialization_api_admin_catalog_specializations__spec_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path: {
+                spec_id: components["schemas"]["SpecializationCode"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` — Объект не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `specialization_in_use` — Специализация используется */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     update_specialization_api_admin_catalog_specializations__spec_id__patch: {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -11406,9 +12098,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -11469,26 +12161,25 @@ export interface operations {
             };
         };
     };
-    list_items_api_admin_items_get: {
+    update_category_api_admin_catalog_categories__category_id__patch: {
         parameters: {
-            query?: {
-                specialization?: components["schemas"]["SpecializationCode"] | null;
-                topic?: string | null;
-                status?: components["schemas"]["ItemStatus"] | null;
-                leak_flag?: boolean | null;
-                page?: number;
-                page_size?: number;
-            };
+            query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
-            path?: never;
+            path: {
+                category_id: string;
+            };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LabelUpdate"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -11496,7 +12187,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Page_ItemSummary_"];
+                    "application/json": components["schemas"]["Category"];
                 };
             };
             /** @description `unauthorized` — Требуется вход */
@@ -11510,6 +12201,15 @@ export interface operations {
             };
             /** @description `forbidden` — Недостаточно прав */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` — Объект не найден */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -11528,385 +12228,13 @@ export interface operations {
             };
         };
     };
-    items_coverage_api_admin_items_coverage_get: {
+    create_topic_api_admin_catalog_topics_post: {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
-                "x-demo-user-id"?: number | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CoverageCell"][];
-                };
-            };
-            /** @description `unauthorized` — Требуется вход */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description `forbidden` — Недостаточно прав */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    recalibrate_api_admin_items_recalibrate_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
-                "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
-                "x-demo-user-id"?: number | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RecalibrationResult"];
-                };
-            };
-            /** @description `unauthorized` — Требуется вход */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description `forbidden` — Недостаточно прав */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description `recalibration_running` — Пересчёт уже идёт */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_item_api_admin_items__item_id__get: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
-                "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
-                "x-demo-user-id"?: number | null;
-            };
-            path: {
-                item_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ItemDetail"];
-                };
-            };
-            /** @description `unauthorized` — Требуется вход */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description `forbidden` — Недостаточно прав */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description `not_found` — Объект не найден */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    retire_item_api_admin_items__item_id__retire_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
-                "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
-                "x-demo-user-id"?: number | null;
-            };
-            path: {
-                item_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ItemDetail"];
-                };
-            };
-            /** @description `unauthorized` — Требуется вход */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description `forbidden` — Недостаточно прав */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description `not_found` — Объект не найден */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description `invalid_transition` — Действие недоступно в текущем статусе */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    approve_item_api_admin_items__item_id__approve_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
-                "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
-                "x-demo-user-id"?: number | null;
-            };
-            path: {
-                item_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ItemDetail"];
-                };
-            };
-            /** @description `unauthorized` — Требуется вход */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description `forbidden` — Недостаточно прав */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description `not_found` — Объект не найден */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description `invalid_transition` — Действие недоступно в текущем статусе */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_vacancy_tests_api_admin_vacancy_tests_get: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
-                "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
-                "x-demo-user-id"?: number | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["VacancyTestResult"][];
-                };
-            };
-            /** @description `unauthorized` — Требуется вход */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description `forbidden` — Недостаточно прав */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    build_vacancy_test_api_admin_vacancy_tests_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
-                "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -11914,17 +12242,17 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["VacancyTestRequest"];
+                "application/json": components["schemas"]["TopicCreate"];
             };
         };
         responses: {
             /** @description Successful Response */
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["VacancyTestResult"];
+                    "application/json": components["schemas"]["Topic"];
                 };
             };
             /** @description `unauthorized` — Требуется вход */
@@ -11945,7 +12273,25 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description `validation_error` — Ошибка валидации данных */
+            /** @description `not_found` — Объект не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `topic_exists` — Такая тема уже есть */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `validation_error` — Ошибка валидации данных; `topic_code_invalid` — Код темы — <специализация>.<тема> */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -11954,8 +12300,136 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description `llm_unavailable` — LLM недоступна, работаем по словарю */
-            503: {
+        };
+    };
+    delete_topic_api_admin_catalog_topics__topic_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path: {
+                topic_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` — Объект не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `topic_in_use` — По теме есть шаблоны задач */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_topic_api_admin_catalog_topics__topic_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path: {
+                topic_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LabelUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Topic"];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` — Объект не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `validation_error` — Ошибка валидации данных */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -11971,9 +12445,9 @@ export interface operations {
                 status?: components["schemas"]["ReportStatus"] | null;
             };
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -12023,9 +12497,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path: {
@@ -12095,9 +12569,9 @@ export interface operations {
                 page_size?: number;
             };
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;
@@ -12143,13 +12617,509 @@ export interface operations {
             };
         };
     };
+    list_items_api_admin_items_get: {
+        parameters: {
+            query?: {
+                specialization?: components["schemas"]["SpecializationCode"] | null;
+                topic?: string | null;
+                status?: components["schemas"]["ItemStatus"] | null;
+                leak_flag?: boolean | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_ItemSummary_"];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `validation_error` — Ошибка валидации данных */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    items_coverage_api_admin_items_coverage_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoverageCell"][];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recalibrate_api_admin_items_recalibrate_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecalibrationResult"];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `recalibration_running` — Пересчёт уже идёт */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_item_api_admin_items__item_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path: {
+                item_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDetail"];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` — Объект не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retire_item_api_admin_items__item_id__retire_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path: {
+                item_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDetail"];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` — Объект не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `invalid_transition` — Действие недоступно в текущем статусе */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    approve_item_api_admin_items__item_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path: {
+                item_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDetail"];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` — Объект не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `invalid_transition` — Действие недоступно в текущем статусе */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_vacancy_tests_api_admin_vacancy_tests_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VacancyTestResult"][];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    build_vacancy_test_api_admin_vacancy_tests_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VacancyTestRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VacancyTestResult"];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `validation_error` — Ошибка валидации данных */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `llm_unavailable` — LLM недоступна, работаем по словарю */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     create_report_api_reports_post: {
         parameters: {
             query?: never;
             header?: {
-                /** @description Заглушка авторизации до волны 2: роль текущего пользователя */
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
-                /** @description Заглушка авторизации: id пользователя (по умолчанию — демо-аккаунт) */
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
                 "x-demo-user-id"?: number | null;
             };
             path?: never;

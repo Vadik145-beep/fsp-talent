@@ -18,25 +18,19 @@ from app.admin.schemas import (
     AuditEntry,
     CatalogLabelUpdate,
     CompanyAdminUpdate,
-    CoverageCell,
-    ItemDetail,
-    ItemSummary,
     LabelUpdate,
     PlatformSettings,
     PlatformSettingsUpdate,
-    RecalibrationResult,
     Report,
     ReportCreate,
     ReportUpdate,
     SkillUpsert,
     SpecializationCreate,
     TopicCreate,
-    VacancyTestRequest,
-    VacancyTestResult,
 )
 from app.admin.service import AdminService
 from app.catalog.schemas import Category, Grade, Skill, Specialization, Topic
-from app.common.enums import GradeCode, ItemStatus, ReportStatus, Role, SpecializationCode
+from app.common.enums import GradeCode, ReportStatus, Role, SpecializationCode
 from app.common.schemas import Page
 from app.core.db import get_session
 from app.core.errors import AppError, error_responses
@@ -330,104 +324,6 @@ async def update_topic(
 async def delete_topic(topic_id: str, user: AdminUser, session: SessionDep) -> Response:
     await AdminDbService(session, user).delete_topic(topic_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-
-# ---------- банк задач ----------
-
-
-@router.get(
-    "/items",
-    response_model=Page[ItemSummary],
-    summary="Банк задач с метриками",
-    responses=error_responses(*AUTH, 422),
-)
-async def list_items(
-    user: AdminUser,
-    specialization: SpecializationCode | None = None,
-    topic: str | None = None,
-    item_status: Annotated[ItemStatus | None, Query(alias="status")] = None,
-    leak_flag: bool | None = None,
-    page: PageNum = 1,
-    page_size: PageSize = 50,
-) -> Any:
-    return service.items(specialization, topic, item_status, leak_flag, page, page_size)
-
-
-@router.get(
-    "/items/coverage",
-    response_model=list[CoverageCell],
-    summary="Покрытие банка: темы × грейды",
-    responses=error_responses(*AUTH),
-)
-async def items_coverage(user: AdminUser) -> Any:
-    return service.coverage()
-
-
-@router.post(
-    "/items/recalibrate",
-    response_model=RecalibrationResult,
-    summary="Пересчитать калибровку a, b по накопленным ответам",
-    description="Заглушка: настоящий пересчёт — волна 3a (T4.9).",
-    responses=error_responses(*AUTH, (409, "recalibration_running", "Пересчёт уже идёт")),
-)
-async def recalibrate(user: AdminUser) -> Any:
-    return service.recalibrate()
-
-
-@router.get(
-    "/items/{item_id}",
-    response_model=ItemDetail,
-    summary="Шаблон: метрики и предпросмотр 3 вариантов",
-    responses=error_responses(*AUTH, 404),
-)
-async def get_item(item_id: int, user: AdminUser) -> Any:
-    return service.item(item_id)
-
-
-@router.post(
-    "/items/{item_id}/retire",
-    response_model=ItemDetail,
-    summary="Вывести шаблон из оборота",
-    responses=error_responses(*AUTH, 404, TRANSITION),
-)
-async def retire_item(item_id: int, user: AdminUser) -> Any:
-    return service.retire_item(item_id)
-
-
-@router.post(
-    "/items/{item_id}/approve",
-    response_model=ItemDetail,
-    summary="Одобрить черновик → пилот (непроверочный)",
-    responses=error_responses(*AUTH, 404, TRANSITION),
-)
-async def approve_item(item_id: int, user: AdminUser) -> Any:
-    return service.approve_item(item_id)
-
-
-# ---------- задания из вакансий ----------
-
-
-@router.get(
-    "/vacancy-tests",
-    response_model=list[VacancyTestResult],
-    summary="Примеры: тесты, собранные из вакансий",
-    responses=error_responses(*AUTH),
-)
-async def list_vacancy_tests(user: AdminUser) -> Any:
-    return service.vacancy_tests()
-
-
-@router.post(
-    "/vacancy-tests",
-    response_model=VacancyTestResult,
-    summary="Текст вакансии → темы → тест с объяснением",
-    description="Заглушка: возвращает ближайший пример. Настоящий разбор — волна 3c (T4.8).",
-    responses=error_responses(
-        *AUTH, 422, (503, "llm_unavailable", "LLM недоступна, работаем по словарю")
-    ),
-)
-async def build_vacancy_test(body: VacancyTestRequest, user: AdminUser) -> Any:
-    return service.build_vacancy_test(body)
 
 
 # ---------- жалобы и журнал ----------

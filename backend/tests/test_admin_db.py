@@ -29,7 +29,7 @@ def test_users_search_and_filters(client: TestClient) -> None:
     assert recruiters["total"] == 7 and all(u["role"] == "recruiter" for u in recruiters["items"])
     found = client.get("/api/admin/users", params={"q": "CANDIDATE@"}, headers=ADMIN).json()
     assert [u["id"] for u in found["items"]] == [1]
-    by_name = client.get("/api/admin/users", params={"q": "Смирнов"}, headers=ADMIN).json()
+    by_name = client.get("/api/admin/users", params={"q": "Латыпов"}, headers=ADMIN).json()
     assert 1 in {u["id"] for u in by_name["items"]}
     blocked = client.get("/api/admin/users", params={"blocked": "true"}, headers=ADMIN).json()
     assert {u["id"] for u in blocked["items"]} == {

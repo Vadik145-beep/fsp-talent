@@ -1,4 +1,4 @@
-"""Общие фикстуры тестов API. Тест health требует PostgreSQL (DATABASE_URL), остальные — нет."""
+"""Общие фикстуры тестов API. Нужен PostgreSQL (DATABASE_URL); перед сессией заливается сид."""
 
 from collections.abc import Iterator
 
@@ -6,6 +6,14 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _seeded_db() -> None:
+    """Одна и та же исходная база для всех тестов, независимо от порядка файлов."""
+    from app.seed.testkit import reseed_sync
+
+    reseed_sync()
 
 
 @pytest.fixture(scope="session")
