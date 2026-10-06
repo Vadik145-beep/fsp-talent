@@ -114,6 +114,9 @@ class ItemView(OutModel):
     topic_label: str
     prompt: str
     code: str | None = Field(default=None, description="Код для code_output / find_error_line")
+    code_language: str | None = Field(
+        default=None, description="Язык кода для подсветки: python, javascript, sql…"
+    )
     options: list[ChoiceOption] | None = Field(default=None, description="Для выбора вариантов")
     steps: list[ChoiceOption] | None = Field(default=None, description="Для упорядочивания")
     unit: str | None = Field(default=None, description="Единица для численного ответа")
@@ -203,6 +206,9 @@ class Recommendation(OutModel):
     action: Literal["stay", "offer_lower", "offer_higher", "retry_later"]
     message: str
     available_at: datetime | None = None
+    target_grade: GradeCode | None = Field(
+        default=None, description="На какой грейд предлагается следующий тест"
+    )
 
 
 class TestResult(OutModel):
@@ -225,6 +231,9 @@ class TestResult(OutModel):
     strong_topics: list[str]
     weak_topics: list[str]
     recommendation: Recommendation
+    outcome: Literal["passed_claimed", "suggest_lower", "suggest_higher", "abandoned"] | None = (
+        Field(default=None, description="Решение движка по заявленному грейду")
+    )
 
 
 # ---------- грейд ----------
