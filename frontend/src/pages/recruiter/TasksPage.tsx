@@ -174,7 +174,7 @@ function SubmissionCard({ sub }: { sub: TaskSubmission }) {
                 onClick={() => setScore(value)}
                 className={cn(
                   'h-9 rounded-md border px-3 text-sm font-semibold transition-colors',
-                  score === value ? 'border-fsp-plum bg-fsp-plum text-white' : 'border-line-strong bg-surface text-ink hover:border-fsp-lavender',
+                  score === value ? 'border-fsp-plum bg-fsp-plum text-on-primary' : 'border-line-strong bg-surface text-ink hover:border-fsp-lavender',
                 )}
               >
                 {value} · {label}

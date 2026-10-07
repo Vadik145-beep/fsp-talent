@@ -166,7 +166,7 @@ function Kpi({ icon, label, value, to, accent }: { icon: ReactNode; label: strin
   return (
     <Link to={to} className="block rounded-lg focus-visible:shadow-[var(--shadow-focus)] focus-visible:outline-none">
       <Card interactive className="flex h-full items-center gap-4" padding="sm">
-        <span className={accent ? 'flex size-11 items-center justify-center rounded-full bg-primary-tint text-[#9c0034] [&>svg]:size-5' : 'flex size-11 items-center justify-center rounded-full bg-violet-soft text-fsp-plum [&>svg]:size-5'}>
+        <span className={accent ? 'flex size-11 items-center justify-center rounded-full bg-accent-soft text-accent [&>svg]:size-5' : 'flex size-11 items-center justify-center rounded-full bg-violet-soft text-fsp-plum [&>svg]:size-5'}>
           {icon}
         </span>
         <span>

@@ -327,7 +327,7 @@ function MarketHintBox({
 }) {
   if (loading) return <Skeleton className="h-20 w-full" />
   if (!hint) return null
-  const tone = probability === null ? 'bg-fsp-plum' : probability < 0.4 ? 'bg-danger' : probability < 0.65 ? 'bg-[#c27100]' : 'bg-success'
+  const tone = probability === null ? 'bg-fsp-plum' : probability < 0.4 ? 'bg-danger' : probability < 0.65 ? 'bg-warning' : 'bg-success'
   return (
     <div className="rounded-md bg-violet-soft p-3 text-sm" aria-live="polite" data-testid="market-hint">
       <p className="flex gap-2 font-medium text-ink">
@@ -344,7 +344,7 @@ function MarketHintBox({
             <span className="text-muted">Вероятность принятия с такой вилкой</span>
             <b className="tabular-nums text-ink">{formatPercent(probability)}</b>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-white" role="meter" aria-label="Вероятность принятия" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(probability * 100)}>
+          <div className="h-2 overflow-hidden rounded-full bg-surface" role="meter" aria-label="Вероятность принятия" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(probability * 100)}>
             <div className={cn('h-full rounded-full transition-[width]', tone)} style={{ width: `${probability * 100}%` }} />
           </div>
         </div>

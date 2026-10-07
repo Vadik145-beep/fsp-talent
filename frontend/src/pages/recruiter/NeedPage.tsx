@@ -158,20 +158,20 @@ export default function RecruiterNeedPage() {
                         className={cn(
                           'flex w-full items-center justify-between gap-3 rounded-md border px-3 py-2 text-left transition-colors',
                           active
-                            ? 'border-fsp-plum bg-fsp-plum text-white'
+                            ? 'border-fsp-plum bg-fsp-plum text-on-primary'
                             : 'border-line bg-surface hover:border-fsp-lavender hover:bg-violet-soft',
                         )}
                       >
                         <span className="min-w-0">
                           <span className="block text-sm font-semibold whitespace-nowrap">{c.label}</span>
-                          <span className={cn('block text-xs', active ? 'text-on-nav-muted' : 'text-muted')}>
+                          <span className={cn('block text-xs', active ? 'text-on-primary/80' : 'text-muted')}>
                             {RELATION_LABELS[c.relation]}
                           </span>
                         </span>
                         <span
                           className={cn(
                             'inline-flex min-w-7 justify-center rounded-full px-2 py-0.5 text-xs font-bold tabular-nums',
-                            active ? 'bg-white/20 text-white' : c.candidates_count ? 'bg-violet-soft text-fsp-plum' : 'bg-neutral-soft text-subtle',
+                            active ? 'bg-on-primary/20 text-on-primary' : c.candidates_count ? 'bg-violet-soft text-fsp-plum' : 'bg-neutral-soft text-subtle',
                           )}
                           aria-label={`${c.candidates_count} ${plural(c.candidates_count, ['кандидат', 'кандидата', 'кандидатов'])}`}
                         >

@@ -10,7 +10,7 @@ export function QuotaMeter({ className, compact }: { className?: string; compact
   if (q.isError) return null
   const { limit, used, left, hint } = q.data
   const pct = limit ? Math.min(100, (used / limit) * 100) : 0
-  const tone = left === 0 ? 'bg-danger' : left <= 3 ? 'bg-[#c27100]' : 'bg-fsp-plum'
+  const tone = left === 0 ? 'bg-danger' : left <= 3 ? 'bg-warning' : 'bg-fsp-plum'
   return (
     <div className={cn('min-w-0', className)} data-testid="quota-meter">
       <div className="flex items-baseline justify-between gap-3 text-sm">
