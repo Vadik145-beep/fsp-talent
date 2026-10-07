@@ -1,0 +1,96 @@
+# Полный стенд на одном сервере (2 vCPU / 4 ГБ): docker compose -f infra/stand/compose.yml --env-file infra/stand/.env up -d
+# Фронт собирается отдельно (deploy.sh) в infra/stand/site и раздаётся Caddy.
+name: fsp-stand
+
+x-hc: &hc
+  interval: 10s
+  timeout: 5s
+  retries: 10
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      STAND_HOST: ${STAND_HOST}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./site:/srv/site:ro
+      - caddy_data:/data
+    depends_on: [backend]
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: fsp
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: fsp_talent
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      <<: *hc
+      test: ["CMD-SHELL", "pg_isready -U fsp -d fsp_talent"]
+    mem_limit: 384m
+
+  backend:
+    build:
+      context: ../..
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    environment:
+      APP_ENV: prod
+      DATABASE_URL: postgresql+asyncpg://fsp:${POSTGRES_PASSWORD}@postgres:5432/fsp_talent
+      JWT_SECRET: ${JWT_SECRET}
+      DEMO_AUTH_ENABLED: "false"
+      SEED_ON_STARTUP: "true"
+      PUBLIC_FRONTEND_URL: https://${STAND_HOST}
+      CORS_ORIGINS: '["https://${STAND_HOST}"]'
+      KEYCLOAK_PUBLIC_URL: https://${STAND_HOST}/kc
+      KEYCLOAK_INTERNAL_URL: http://keycloak:8080/kc
+      FSP_REGISTRY_URL: http://fsp-registry-mock:8000
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      ADMIN_EMAIL: admin@example.com
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      FSP_WEBHOOK_SECRET: ${FSP_WEBHOOK_SECRET}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-}
+    depends_on:
+      postgres: {condition: service_healthy}
+    mem_limit: 768m
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    restart: unless-stopped
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_HTTP_RELATIVE_PATH: /kc
+      KC_HOSTNAME: https://${STAND_HOST}/kc
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_PROXY_HEADERS: xforwarded
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+      JAVA_OPTS_KC_HEAP: "-XX:MaxRAMPercentage=60"
+    volumes:
+      - ../keycloak:/opt/keycloak/data/import:ro
+    mem_limit: 900m
+
+  fsp-registry-mock:
+    build: ../../services/fsp-registry-mock
+    restart: unless-stopped
+    mem_limit: 192m
+
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    environment:
+      MP_WEBROOT: /mail
+    mem_limit: 128m
+
+volumes:
+  pgdata:
+  caddy_data:
