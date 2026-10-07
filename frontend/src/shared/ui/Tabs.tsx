@@ -73,7 +73,7 @@ export function Tabs({ items, value, onChange, variant = 'underline', className,
                 variant === 'underline'
                   ? cn(
                       '-mb-px border-b-2 px-3 py-2.5',
-                      selected ? 'border-primary text-ink' : 'border-transparent text-muted hover:text-ink',
+                      selected ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-ink',
                     )
                   : cn(
                       'rounded-sm px-3 py-1.5',
@@ -85,8 +85,8 @@ export function Tabs({ items, value, onChange, variant = 'underline', className,
               {item.count !== undefined && (
                 <span
                   className={cn(
-                    'rounded-full px-1.5 text-xs',
-                    selected ? 'bg-primary-tint text-[#9c0034]' : 'bg-neutral-soft text-neutral',
+                    'rounded-full px-1.5 font-num text-xs',
+                    selected ? 'bg-primary-tint text-fsp-blue-deep' : 'bg-neutral-soft text-neutral',
                   )}
                 >
                   {item.count}

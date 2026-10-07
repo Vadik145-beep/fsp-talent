@@ -3,6 +3,8 @@ import { Info, Plus, RotateCw, Send, Trash2 } from 'lucide-react'
 import {
   Avatar,
   Badge,
+  BrandLines,
+  brandAsset,
   Button,
   Card,
   CardHeader,
@@ -11,6 +13,7 @@ import {
   EmptyState,
   ErrorState,
   FilterBar,
+  FspMark,
   FspVerifiedBadge,
   Input,
   Modal,
@@ -49,16 +52,16 @@ import {
 const STACK = ['Python', 'FastAPI', 'Django', 'PostgreSQL', 'Go', 'Java', 'Kotlin', 'React', 'TypeScript', 'Vue', 'Docker', 'Kubernetes', 'Redis', 'Kafka']
 
 const colorTokens: Array<{ name: string; value: string; text?: string }> = [
-  { name: 'fsp-pink', value: '#FF0053' },
-  { name: 'fsp-rose', value: '#FC3777' },
-  { name: 'fsp-lavender', value: '#8A83D1' },
-  { name: 'fsp-blush', value: '#FFD6E4', text: '#1C1D22' },
-  { name: 'fsp-night', value: '#310F53' },
-  { name: 'fsp-plum', value: '#520978' },
-  { name: 'fsp-ink', value: '#1C1D22' },
-  { name: 'primary (кнопки)', value: '#E0004B' },
-  { name: 'canvas', value: '#F6F5FA', text: '#1C1D22' },
-  { name: 'muted (текст)', value: '#5C5869' },
+  { name: 'fsp-blue · primary', value: '#402FFF' },
+  { name: 'fsp-red · accent', value: '#EC1D35' },
+  { name: 'fsp-gray', value: '#EDEDED', text: '#1B1C21' },
+  { name: 'fsp-silver · line-strong', value: '#C8C9CA', text: '#1B1C21' },
+  { name: 'fsp-black · ink', value: '#1B1C21' },
+  { name: 'fsp-blue-deep', value: '#2A1EB0' },
+  { name: 'fsp-blue-pale · primary-tint', value: '#DCD9FF', text: '#1B1C21' },
+  { name: 'danger (текст, кнопки)', value: '#C4122B' },
+  { name: 'canvas (фон)', value: '#F5F5F6', text: '#1B1C21' },
+  { name: 'muted (текст)', value: '#55565E' },
 ]
 
 interface InvitationRow {
@@ -94,6 +97,7 @@ const columns: TableColumn<InvitationRow>[] = [
 ]
 
 const sections = [
+  ['brand', 'Бренд ФСП'],
   ['colors', 'Цвета'],
   ['type', 'Типографика'],
   ['buttons', 'Кнопки'],
@@ -112,7 +116,7 @@ const sections = [
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
     <section id={id} className="scroll-mt-24">
-      <h2 className="mb-3 text-lg font-bold">{title}</h2>
+      <h2 className="mb-3 text-lg font-semibold">{title}</h2>
       <Card>{children}</Card>
     </section>
   )
@@ -159,7 +163,7 @@ export default function UiKitPage() {
           <ul className="sticky top-24 space-y-0.5 text-sm">
             {sections.map(([id, label]) => (
               <li key={id}>
-                <a href={`#${id}`} className="block rounded-sm px-2 py-1 text-muted hover:bg-violet-soft hover:text-fsp-plum">
+                <a href={`#${id}`} className="block rounded-sm px-2 py-1 text-muted hover:bg-primary-soft hover:text-primary">
                   {label}
                 </a>
               </li>
@@ -168,6 +172,25 @@ export default function UiKitPage() {
         </nav>
 
         <div className="min-w-0 space-y-10">
+          <Section id="brand" title="Бренд ФСП">
+            <Row label="Логотип и знак (public/brand)">
+              <img src={brandAsset('fsp-logo.svg')} alt="Логотип ФСП" className="h-10 w-auto" width={119} height={40} />
+              <img
+                src={brandAsset('fsp-logo-full.svg')}
+                alt="Федерация спортивного программирования России"
+                className="h-8 w-auto max-w-full"
+                width={256}
+                height={32}
+              />
+              <FspMark className="size-8" label="Знак ФСП" />
+            </Row>
+            <Row label="Линейная графика — BrandLines">
+              <BrandLines variant="corner" className="h-24 w-auto" />
+              <BrandLines variant="wave" className="h-24 w-auto" />
+              <BrandLines variant="rule" className="w-48" />
+            </Row>
+          </Section>
+
           <Section id="colors" title="Цвета">
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
               {colorTokens.map((c) => (
@@ -183,15 +206,18 @@ export default function UiKitPage() {
               ))}
             </div>
             <p className="mt-4 text-sm text-muted">
-              #FF0053 с белым текстом даёт контраст 3,9:1 (ниже WCAG AA), поэтому фон главной кнопки — #E0004B (4,9:1).
+              Главная кнопка — #402FFF с белым текстом (6,8:1). Красный #EC1D35 с белым текстом даёт 4,4:1 (ниже WCAG AA),
+              поэтому он только для иконок и полосок, а текст и кнопки «опасно» — #C4122B (6,1:1).
             </p>
           </Section>
 
           <Section id="type" title="Типографика">
-            <p className="text-[28px] font-bold">Заголовок страницы · 28 / Bold</p>
-            <p className="text-lg font-bold">Заголовок раздела · 18 / Bold</p>
-            <p className="text-base font-semibold">Заголовок карточки · 16 / SemiBold</p>
-            <p className="text-[15px]">Основной текст · 15 / Regular. Montserrat поддерживает кириллицу.</p>
+            <p className="font-display text-[28px] font-semibold tracking-[-0.02em]">Заголовок страницы · 28 / JetBrains Mono</p>
+            <p className="font-display text-lg font-semibold tracking-[-0.02em]">Заголовок раздела · 18 / JetBrains Mono</p>
+            <p className="font-display text-base font-semibold tracking-[-0.02em]">Заголовок карточки · 16 / JetBrains Mono</p>
+            <p className="text-[15px]">Основной текст · 15 / Inter Regular. Заголовки h1–h3 получают шрифт бренда автоматически.</p>
+            <p className="font-num text-xl font-semibold">250 000 – 350 000 ₽ · θ = 1,24 · 87 баллов</p>
+            <p className="text-sm text-muted">Числа — класс font-num (или tabular-nums): JetBrains Mono.</p>
             <p className="text-sm text-muted">Вторичный текст · 14 / muted</p>
             <p className="font-mono text-sm">print(sum(range(10)))  # моноширинный — для задач с кодом</p>
           </Section>

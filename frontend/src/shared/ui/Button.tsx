@@ -16,12 +16,12 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClass: Record<ButtonVariant, string> = {
   primary:
-    'bg-primary text-on-primary shadow-sm hover:bg-primary-hover active:bg-primary-active disabled:bg-primary/50',
+    'bg-primary text-on-primary hover:bg-primary-hover active:bg-primary-active disabled:bg-primary/50',
   secondary:
-    'bg-surface text-fsp-plum border border-line-strong hover:bg-violet-soft hover:border-fsp-lavender active:bg-violet-soft disabled:text-subtle',
-  ghost: 'bg-transparent text-fsp-plum hover:bg-violet-soft active:bg-violet-soft disabled:text-subtle',
+    'bg-surface text-primary border border-primary/45 hover:bg-primary-soft hover:border-primary active:bg-primary-tint disabled:border-line-strong disabled:text-subtle',
+  ghost: 'bg-transparent text-primary hover:bg-primary-soft active:bg-primary-tint disabled:text-subtle',
   danger:
-    'bg-danger text-white shadow-sm hover:bg-[#960d24] active:bg-[#7d0a1e] disabled:bg-danger/50',
+    'bg-danger text-white hover:bg-danger-hover active:bg-danger-active disabled:bg-danger/50',
 }
 
 const sizeClass: Record<ButtonSize, string> = {

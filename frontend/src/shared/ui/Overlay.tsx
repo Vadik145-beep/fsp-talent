@@ -61,7 +61,7 @@ function CloseButton({ onClose }: { onClose: () => void }) {
       type="button"
       onClick={onClose}
       data-dialog-close
-      className="rounded-sm p-1.5 text-subtle transition-colors hover:bg-violet-soft hover:text-ink"
+      className="rounded-sm p-1.5 text-subtle transition-colors hover:bg-nav-hover hover:text-ink"
       aria-label="Закрыть"
     >
       <X className="size-5" aria-hidden />
@@ -102,7 +102,7 @@ export function Modal({
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4">
       <div
-        className="absolute inset-0 animate-fade-in bg-fsp-night/45 backdrop-blur-[2px]"
+        className="absolute inset-0 animate-fade-in bg-fsp-black/45 backdrop-blur-[2px]"
         onClick={dismissible ? onClose : undefined}
         aria-hidden
       />
@@ -120,7 +120,7 @@ export function Modal({
       >
         <div className="flex items-start justify-between gap-4 border-b border-line px-5 py-4 sm:px-6">
           <div className="min-w-0">
-            <h2 id={titleId} className="text-lg font-semibold">
+            <h2 id={titleId} className="text-lg leading-snug font-semibold">
               {title}
             </h2>
             {description && (
@@ -177,7 +177,7 @@ export function Drawer({
   if (!open) return null
   return createPortal(
     <div className="fixed inset-0 z-50">
-      <div className="absolute inset-0 animate-fade-in bg-fsp-night/45" onClick={onClose} aria-hidden />
+      <div className="absolute inset-0 animate-fade-in bg-fsp-black/45" onClick={onClose} aria-hidden />
       <div
         ref={ref}
         role="dialog"

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { Button, Modal, StatusPill, Table, TagInput, type TableColumn } from '.'
+import { BrandLines, Button, FspVerifiedBadge, Modal, StatusPill, Table, TagInput, type TableColumn } from '.'
 import { INVITATION_STATUSES, INVITATION_STATUS_LABELS } from '@/shared/config/dictionaries'
 
 describe('UI-кит', () => {
@@ -32,6 +32,32 @@ describe('UI-кит', () => {
       expect(screen.getByText(INVITATION_STATUS_LABELS[s])).toBeInTheDocument()
     }
     expect(screen.getByText('Отозвано')).toBeInTheDocument()
+  })
+
+  it('StatusPill различает статусы не только цветом: у каждого своя иконка', () => {
+    const { container } = render(
+      <div>
+        {INVITATION_STATUSES.map((s) => (
+          <StatusPill key={s} status={s} />
+        ))}
+      </div>,
+    )
+    const icons = Array.from(container.querySelectorAll('[data-status] svg')).map((svg) => svg.getAttribute('class'))
+    expect(icons).toHaveLength(INVITATION_STATUSES.length)
+    expect(new Set(icons).size).toBe(INVITATION_STATUSES.length)
+  })
+
+  it('FspVerifiedBadge — со знаком ФСП из public/brand; BrandLines декоративные', () => {
+    const { container } = render(
+      <div>
+        <FspVerifiedBadge />
+        <BrandLines variant="wave" />
+        <BrandLines variant="rule" />
+      </div>,
+    )
+    expect(screen.getByText('Подтверждено ФСП')).toBeInTheDocument()
+    expect(container.querySelector('img[src$="brand/fsp-mark.svg"]')).not.toBeNull()
+    expect(container.querySelectorAll('[aria-hidden="true"] circle, svg[aria-hidden="true"]').length).toBeGreaterThan(0)
   })
 
   it('Table сортирует по клику: по возрастанию → по убыванию → исходный порядок', async () => {

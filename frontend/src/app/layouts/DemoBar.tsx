@@ -46,15 +46,15 @@ export function DemoBar() {
   }
 
   return (
-    <div className="relative z-40 border-b border-fsp-blush bg-primary-soft text-[13px] text-ink">
+    <div className="relative z-40 border-b border-line bg-neutral-soft text-[13px] text-ink">
       <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-x-4 gap-y-1.5 px-4 py-1.5">
-        <span className="hidden items-center gap-1.5 font-semibold text-[#9c0034] md:inline-flex">
+        <span className="hidden items-center gap-1.5 font-semibold text-neutral md:inline-flex">
           <FlaskConical className="size-4" aria-hidden />
           Прототип на моках
         </span>
         <div className="flex items-center gap-2" role="group" aria-label="Смотреть как">
           <span className="font-medium text-muted">Смотреть как:</span>
-          <div className="inline-flex rounded-full bg-white p-0.5 shadow-sm ring-1 ring-fsp-blush">
+          <div className="inline-flex rounded-full bg-white p-0.5 ring-1 ring-line-strong">
             {ROLES.map((r) => (
               <button
                 key={r}
@@ -63,7 +63,7 @@ export function DemoBar() {
                 aria-pressed={role === r}
                 className={cn(
                   'rounded-full px-2.5 py-0.5 font-semibold transition-colors',
-                  role === r ? 'bg-fsp-night text-white' : 'text-fsp-plum hover:bg-violet-soft',
+                  role === r ? 'bg-ink text-white' : 'text-ink hover:bg-neutral-soft',
                 )}
               >
                 {ROLE_SHORT_LABELS[r]}
@@ -76,7 +76,7 @@ export function DemoBar() {
           <select
             value={scenario}
             onChange={(e) => changeScenario(e.target.value as MockScenario)}
-            className="h-7 cursor-pointer rounded-full border border-fsp-blush bg-white px-2 font-semibold text-fsp-plum focus:outline-none focus-visible:shadow-[var(--shadow-focus)]"
+            className="h-7 cursor-pointer rounded-full border border-line-strong bg-white px-2 font-semibold text-ink focus:outline-none focus-visible:shadow-[var(--shadow-focus)]"
           >
             {(Object.keys(MOCK_SCENARIO_LABELS) as MockScenario[]).map((s) => (
               <option key={s} value={s}>
@@ -89,7 +89,7 @@ export function DemoBar() {
           type="button"
           onClick={resetData}
           title="Вернуть исходные демо-данные (приглашения, отклики, ответы)"
-          className="rounded-full px-2.5 py-0.5 font-semibold text-fsp-plum ring-1 ring-fsp-blush hover:bg-violet-soft"
+          className="rounded-full px-2.5 py-0.5 bg-white font-semibold text-ink ring-1 ring-line-strong hover:bg-nav-hover"
         >
           Сбросить данные
         </button>
