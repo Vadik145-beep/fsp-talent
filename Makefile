@@ -4,7 +4,7 @@ PY ?= python
 COMPOSE = docker compose -p fsp-talent
 LOCAL_DB = postgresql+asyncpg://fsp:fsp@localhost:15432/fsp_talent
 
-.PHONY: help up up-backend down logs ps migrate test lint fmt typecheck fixtures openapi check
+.PHONY: help up up-backend down logs ps migrate test lint fmt typecheck fixtures validate openapi check
 
 help:
 	@echo "up          — поднять весь стек (docker compose up --build -d)"
@@ -51,6 +51,9 @@ typecheck:
 
 fixtures:
 	$(PY) scripts/seed/generate_fixtures.py
+
+validate:
+	$(PY) scripts/validation/run_all.py
 
 openapi:
 	$(PY) scripts/export_openapi.py

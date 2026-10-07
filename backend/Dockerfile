@@ -16,6 +16,8 @@ RUN python -c "import tomllib; d = tomllib.load(open('pyproject.toml', 'rb')); p
 
 COPY backend/ /app/backend/
 COPY data/seed/ /app/data/seed/
+# результаты валидации для /api/eval/* (scripts/validation/run_all.py)
+COPY data/validation/ /app/data/validation/
 
 RUN useradd --create-home --uid 1000 app && chown -R app:app /app
 USER app

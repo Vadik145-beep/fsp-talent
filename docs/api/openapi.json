@@ -17987,7 +17987,7 @@
           "eval"
         ],
         "summary": "Все графики валидации",
-        "description": "До волны 5c данные заглушечные (`is_stub: true`).",
+        "description": "Результаты `python scripts/validation/run_all.py` (`data/validation/results.json`, фиксированный seed). Файла нет — пустой список графиков.",
         "operationId": "validation_overview_api_eval_validation_get",
         "responses": {
           "200": {
@@ -18071,7 +18071,7 @@
           "eval"
         ],
         "summary": "Загрузить CSV пар «потребность — кандидат» → метрики подбора",
-        "description": "Колонки: `need_id`, `candidate_id`, необязательно `relevant` (0/1).",
+        "description": "Колонки: `need_id`, `candidate_id`, необязательно `relevant` (0/1 или 0/1/2). Кандидатов каждой потребности ранжирует сама платформа (формула подбора), порядок строк не важен. id — из синтетического набора (`N001`, `C0001`, пример — `data/validation/example_pairs.csv`) или потребностей и кандидатов стенда; иначе оценивается порядок строк файла.",
         "operationId": "evaluate_matching_api_eval_matching_post",
         "requestBody": {
           "content": {
@@ -23939,23 +23939,44 @@
           },
           "precision_at_10": {
             "type": "number",
-            "title": "Precision At 10"
+            "title": "Precision At 10",
+            "description": "Доля подходящих среди первых 10 выдачи"
           },
           "ndcg_at_10": {
             "type": "number",
-            "title": "Ndcg At 10"
+            "title": "Ndcg At 10",
+            "description": "nDCG@10: подходящие выше — лучше"
+          },
+          "recall_at_50": {
+            "type": "number",
+            "title": "Recall At 50",
+            "description": "Доля всех подходящих в первых 50",
+            "default": 0.0
           },
           "relevant_in_top_share": {
             "type": "number",
-            "title": "Relevant In Top Share"
+            "title": "Relevant In Top Share",
+            "description": "Сколько из всех подходящих в файле попало в топ-10 (по всем потребностям)"
           },
           "baseline_precision_at_10": {
             "type": "number",
-            "title": "Baseline Precision At 10"
+            "title": "Baseline Precision At 10",
+            "description": "precision@10 поиска по ключевым словам"
           },
           "baseline_ndcg_at_10": {
             "type": "number",
             "title": "Baseline Ndcg At 10"
+          },
+          "random_precision_at_10": {
+            "type": "number",
+            "title": "Random Precision At 10",
+            "description": "Ожидание при случайном порядке",
+            "default": 0.0
+          },
+          "random_ndcg_at_10": {
+            "type": "number",
+            "title": "Random Ndcg At 10",
+            "default": 0.0
           },
           "per_need": {
             "items": {
@@ -23963,6 +23984,24 @@
             },
             "type": "array",
             "title": "Per Need"
+          },
+          "ranking": {
+            "type": "string",
+            "title": "Ranking",
+            "description": "Кто ранжировал: synthetic / platform — формула платформы на синтетическом наборе или данных стенда; file_order — порядок строк файла",
+            "default": "synthetic"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "default": ""
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
           },
           "is_stub": {
             "type": "boolean",
@@ -23983,19 +24022,25 @@
           "is_stub"
         ],
         "title": "MatchingEvalResult",
-        "description": "Метрики подбора по загруженному CSV пар «вакансия — кандидат» (T11.6).",
+        "description": "Метрики подбора по загруженному CSV пар «потребность — кандидат» (T11.6).",
         "examples": [
           {
-            "baseline_ndcg_at_10": 0.47,
-            "baseline_precision_at_10": 0.42,
-            "filename": "pairs.csv",
-            "is_stub": true,
-            "ndcg_at_10": 0.78,
-            "needs_count": 100,
-            "pairs_count": 1000,
+            "baseline_ndcg_at_10": 0.42,
+            "baseline_precision_at_10": 0.4,
+            "filename": "example_pairs.csv",
+            "is_stub": false,
+            "ndcg_at_10": 0.74,
+            "needs_count": 5,
+            "note": "Синтетический набор: кандидатов каждой потребности ранжирует формула",
+            "pairs_count": 150,
             "per_need": [],
-            "precision_at_10": 0.71,
-            "relevant_in_top_share": 0.74
+            "precision_at_10": 0.68,
+            "random_ndcg_at_10": 0.37,
+            "random_precision_at_10": 0.38,
+            "ranking": "synthetic",
+            "recall_at_50": 1.0,
+            "relevant_in_top_share": 0.5,
+            "warnings": []
           }
         ]
       },
@@ -24667,6 +24712,22 @@
           "relevant_total": {
             "type": "integer",
             "title": "Relevant Total"
+          },
+          "candidates_total": {
+            "type": "integer",
+            "title": "Candidates Total",
+            "description": "Сколько кандидатов этой потребности в файле",
+            "default": 0
+          },
+          "baseline_precision_at_10": {
+            "type": "number",
+            "title": "Baseline Precision At 10",
+            "default": 0.0
+          },
+          "baseline_ndcg_at_10": {
+            "type": "number",
+            "title": "Baseline Ndcg At 10",
+            "default": 0.0
           }
         },
         "type": "object",
@@ -28612,7 +28673,7 @@
           "is_stub": {
             "type": "boolean",
             "title": "Is Stub",
-            "description": "true — заглушечные данные до волны 5 (E11)"
+            "description": "true — заглушечные данные; результаты make validate — false"
           }
         },
         "type": "object",
@@ -28740,7 +28801,8 @@
           },
           "generated_at": {
             "type": "string",
-            "title": "Generated At"
+            "title": "Generated At",
+            "description": "Дата прогона scripts/validation/run_all.py"
           },
           "seed": {
             "type": "integer",

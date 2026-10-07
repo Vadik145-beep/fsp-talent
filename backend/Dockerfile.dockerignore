@@ -1,7 +1,8 @@
-# Контекст — корень репо; в образ нужны только backend/ и data/seed/
+# Контекст — корень репо; в образ нужны только backend/, data/seed/ и data/validation/
 *
 !backend/
 !data/seed/
+!data/validation/
 backend/.venv
 backend/**/__pycache__
 backend/.pytest_cache

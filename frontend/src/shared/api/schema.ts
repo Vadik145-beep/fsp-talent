@@ -2080,7 +2080,7 @@ export interface paths {
         };
         /**
          * Все графики валидации
-         * @description До волны 5c данные заглушечные (`is_stub: true`).
+         * @description Результаты `python scripts/validation/run_all.py` (`data/validation/results.json`, фиксированный seed). Файла нет — пустой список графиков.
          */
         get: operations["validation_overview_api_eval_validation_get"];
         put?: never;
@@ -2119,7 +2119,7 @@ export interface paths {
         put?: never;
         /**
          * Загрузить CSV пар «потребность — кандидат» → метрики подбора
-         * @description Колонки: `need_id`, `candidate_id`, необязательно `relevant` (0/1).
+         * @description Колонки: `need_id`, `candidate_id`, необязательно `relevant` (0/1 или 0/1/2). Кандидатов каждой потребности ранжирует сама платформа (формула подбора), порядок строк не важен. id — из синтетического набора (`N001`, `C0001`, пример — `data/validation/example_pairs.csv`) или потребностей и кандидатов стенда; иначе оценивается порядок строк файла.
          */
         post: operations["evaluate_matching_api_eval_matching_post"];
         delete?: never;
@@ -4782,18 +4782,24 @@ export interface components {
         };
         /**
          * MatchingEvalResult
-         * @description Метрики подбора по загруженному CSV пар «вакансия — кандидат» (T11.6).
+         * @description Метрики подбора по загруженному CSV пар «потребность — кандидат» (T11.6).
          * @example {
-         *       "baseline_ndcg_at_10": 0.47,
-         *       "baseline_precision_at_10": 0.42,
-         *       "filename": "pairs.csv",
-         *       "is_stub": true,
-         *       "ndcg_at_10": 0.78,
-         *       "needs_count": 100,
-         *       "pairs_count": 1000,
+         *       "baseline_ndcg_at_10": 0.42,
+         *       "baseline_precision_at_10": 0.4,
+         *       "filename": "example_pairs.csv",
+         *       "is_stub": false,
+         *       "ndcg_at_10": 0.74,
+         *       "needs_count": 5,
+         *       "note": "Синтетический набор: кандидатов каждой потребности ранжирует формула",
+         *       "pairs_count": 150,
          *       "per_need": [],
-         *       "precision_at_10": 0.71,
-         *       "relevant_in_top_share": 0.74
+         *       "precision_at_10": 0.68,
+         *       "random_ndcg_at_10": 0.37,
+         *       "random_precision_at_10": 0.38,
+         *       "ranking": "synthetic",
+         *       "recall_at_50": 1,
+         *       "relevant_in_top_share": 0.5,
+         *       "warnings": []
          *     }
          */
         MatchingEvalResult: {
@@ -4803,18 +4809,60 @@ export interface components {
             pairs_count: number;
             /** Needs Count */
             needs_count: number;
-            /** Precision At 10 */
+            /**
+             * Precision At 10
+             * @description Доля подходящих среди первых 10 выдачи
+             */
             precision_at_10: number;
-            /** Ndcg At 10 */
+            /**
+             * Ndcg At 10
+             * @description nDCG@10: подходящие выше — лучше
+             */
             ndcg_at_10: number;
-            /** Relevant In Top Share */
+            /**
+             * Recall At 50
+             * @description Доля всех подходящих в первых 50
+             * @default 0
+             */
+            recall_at_50: number;
+            /**
+             * Relevant In Top Share
+             * @description Сколько из всех подходящих в файле попало в топ-10 (по всем потребностям)
+             */
             relevant_in_top_share: number;
-            /** Baseline Precision At 10 */
+            /**
+             * Baseline Precision At 10
+             * @description precision@10 поиска по ключевым словам
+             */
             baseline_precision_at_10: number;
             /** Baseline Ndcg At 10 */
             baseline_ndcg_at_10: number;
+            /**
+             * Random Precision At 10
+             * @description Ожидание при случайном порядке
+             * @default 0
+             */
+            random_precision_at_10: number;
+            /**
+             * Random Ndcg At 10
+             * @default 0
+             */
+            random_ndcg_at_10: number;
             /** Per Need */
             per_need: components["schemas"]["NeedMetrics"][];
+            /**
+             * Ranking
+             * @description Кто ранжировал: synthetic / platform — формула платформы на синтетическом наборе или данных стенда; file_order — порядок строк файла
+             * @default synthetic
+             */
+            ranking: string;
+            /**
+             * Note
+             * @default
+             */
+            note: string;
+            /** Warnings */
+            warnings?: string[];
             /** Is Stub */
             is_stub: boolean;
         };
@@ -5112,6 +5160,22 @@ export interface components {
             ndcg_at_10: number;
             /** Relevant Total */
             relevant_total: number;
+            /**
+             * Candidates Total
+             * @description Сколько кандидатов этой потребности в файле
+             * @default 0
+             */
+            candidates_total: number;
+            /**
+             * Baseline Precision At 10
+             * @default 0
+             */
+            baseline_precision_at_10: number;
+            /**
+             * Baseline Ndcg At 10
+             * @default 0
+             */
+            baseline_ndcg_at_10: number;
         };
         /**
          * NeedParseRequest
@@ -7138,7 +7202,7 @@ export interface components {
             };
             /**
              * Is Stub
-             * @description true — заглушечные данные до волны 5 (E11)
+             * @description true — заглушечные данные; результаты make validate — false
              */
             is_stub: boolean;
         };
@@ -7159,7 +7223,10 @@ export interface components {
         ValidationOverview: {
             /** Charts */
             charts: components["schemas"]["ValidationChart"][];
-            /** Generated At */
+            /**
+             * Generated At
+             * @description Дата прогона scripts/validation/run_all.py
+             */
             generated_at: string;
             /** Seed */
             seed: number;
