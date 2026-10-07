@@ -37,10 +37,10 @@ function highlightLine(line: string): ReactNode[] {
     if (m.index > last) out.push(line.slice(last, m.index))
     const [text, comment, str, num, word] = m
     const key = `${m.index}-${text}`
-    if (comment) out.push(<span key={key} className="text-[#8f8aa3] italic">{text}</span>)
-    else if (str) out.push(<span key={key} className="text-[#7ee0a6]">{text}</span>)
-    else if (num) out.push(<span key={key} className="text-[#ffb86b]">{text}</span>)
-    else if (word && KEYWORDS.has(word)) out.push(<span key={key} className="text-[#ff7aa8] font-semibold">{text}</span>)
+    if (comment) out.push(<span key={key} className="text-fsp-silver italic">{text}</span>)
+    else if (str) out.push(<span key={key} className="text-success-soft">{text}</span>)
+    else if (num) out.push(<span key={key} className="text-warning-soft">{text}</span>)
+    else if (word && KEYWORDS.has(word)) out.push(<span key={key} className="text-fsp-blue-light font-semibold">{text}</span>)
     else out.push(text)
     last = m.index + text.length
   }
@@ -65,7 +65,7 @@ export function CodeBlock({ code, selectable, selectedLine, onSelectLine, classN
 
   return (
     <div
-      className={cn('overflow-x-auto rounded-lg bg-[#1c1d22] py-3 font-mono text-[14px] leading-6 text-[#f1eef8]', className)}
+      className={cn('overflow-x-auto rounded-lg bg-fsp-black py-3 font-mono text-[14px] leading-6 text-fsp-gray', className)}
       role={selectable ? 'group' : undefined}
       aria-label={ariaLabel ?? (selectable ? 'Код: выберите строку' : 'Код')}
     >
@@ -75,7 +75,7 @@ export function CodeBlock({ code, selectable, selectedLine, onSelectLine, classN
           const content = (
             <>
               <span
-                className={cn('inline-block shrink-0 pr-4 pl-4 text-right text-[#8f8aa3] select-none', selectable && 'group-hover:text-white')}
+                className={cn('inline-block shrink-0 pr-4 pl-4 text-right text-fsp-silver select-none', selectable && 'group-hover:text-white')}
                 style={{ width: `${gutter + 3}ch` }}
                 aria-hidden
               >

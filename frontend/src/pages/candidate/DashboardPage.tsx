@@ -19,7 +19,7 @@ export default function CandidateDashboardPage() {
       <QueryView
         query={q}
         loading={
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {Array.from({ length: 4 }).map((_, i) => (
               <Card key={i}>
                 <Skeleton className="h-4 w-1/3" />
@@ -31,7 +31,7 @@ export default function CandidateDashboardPage() {
         }
       >
         {(d) => (
-          <div className="grid gap-4">
+          <div className="grid grid-cols-1 gap-4">
             {!d.onboarding_completed && (
               <Card className="border-0 bg-fsp-night text-white" padding="lg">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -54,7 +54,7 @@ export default function CandidateDashboardPage() {
               </Card>
             )}
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {/* Категория */}
               <Card>
                 <CardHeader
@@ -97,7 +97,7 @@ export default function CandidateDashboardPage() {
                   }
                 />
                 {d.recent_invitations.length ? (
-                  <ul className="-mx-2 grid gap-1">
+                  <ul className="-mx-2 grid grid-cols-1 gap-1">
                     {d.recent_invitations.map((inv) => (
                       <li key={inv.id}>
                         <Link
@@ -106,9 +106,11 @@ export default function CandidateDashboardPage() {
                         >
                           <span className="min-w-0">
                             <span className="block truncate font-semibold text-ink">{inv.company_name}</span>
-                            <span className="block text-sm text-muted tabular-nums">{formatSalaryRange(inv.salary_from, inv.salary_to)}</span>
+                            <span className="block truncate text-sm text-muted tabular-nums">{formatSalaryRange(inv.salary_from, inv.salary_to)}</span>
                           </span>
-                          <StatusPill status={inv.status} />
+                          <span className="shrink-0">
+                            <StatusPill status={inv.status} />
+                          </span>
                         </Link>
                       </li>
                     ))}

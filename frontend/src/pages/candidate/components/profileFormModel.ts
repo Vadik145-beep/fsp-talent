@@ -49,7 +49,7 @@ const asList = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => 
 /** Подставить распознанные из PDF поля в форму. Возвращает форму и уверенность по полям. */
 export function applyParsedResume(
   base: ProfileFormState,
-  parsed: S['ResumeParseResult'],
+  parsed: S['ResumeParseResponse'],
 ): { form: ProfileFormState; confidence: ParsedConfidence } {
   const form = { ...base }
   const confidence: ParsedConfidence = {}

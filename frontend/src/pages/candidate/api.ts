@@ -15,7 +15,8 @@ export type Vacancy = S['Vacancy']
 export type Application = S['Application']
 export type TaskInbox = S['TaskInbox']
 export type TaskSubmission = S['TaskSubmission']
-export type GradeStatus = S['GradeStatus']
+export type GradeStatus = S['CandidateGradeStatus']
+export type GradeOption = S['GradeOption']
 export type TestSession = S['TestSession']
 export type TestSessionState = S['TestSessionState']
 export type TestResult = S['TestResult']
@@ -69,7 +70,7 @@ export const useConsents = () =>
   useQuery({ queryKey: qk.consents, queryFn: () => api.get<Consent[]>('/users/me/consents') })
 
 export const useGradeStatus = () =>
-  useQuery({ queryKey: qk.grade, queryFn: () => api.get<GradeStatus>('/testing/grade') })
+  useQuery({ queryKey: qk.grade, queryFn: () => api.get<GradeStatus>('/candidates/me/grade') })
 
 export const useInvitations = () =>
   useQuery({ queryKey: qk.invitations, queryFn: () => api.get<Invitation[]>('/invitations') })

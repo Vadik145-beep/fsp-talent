@@ -54,7 +54,7 @@ describe('моки соискателя: приглашения', () => {
 
 describe('моки соискателя: тест и грейд', () => {
   it('кулдаун: тест на грейд выше недоступен 90 дней после смены грейда', async () => {
-    const grade = await call<S['GradeStatus']>('GET', '/testing/grade')
+    const grade = await call<S['CandidateGradeStatus']>('GET', '/testing/grade')
     expect(grade.data.can_test_higher).toBe(false)
     expect(grade.data.higher_available_at).toMatch(/^2026-12-09/)
     const start = await call<{ code: string }>('POST', '/testing/sessions', {
@@ -62,6 +62,16 @@ describe('моки соискателя: тест и грейд', () => {
     })
     expect(start.status).toBe(409)
     expect(start.data.code).toBe('cooldown_active')
+  })
+
+  it('GET /candidates/me/grade: статус + варианты пересдачи с причиной (как бэкенд)', async () => {
+    const grade = await call<S['CandidateGradeStatus']>('GET', '/candidates/me/grade')
+    expect(grade.status).toBe(200)
+    expect(grade.data.category).toBe('backend:middle')
+    expect(grade.data.higher).toMatchObject({ target_grade: 'senior', allowed: false, code: 'grade_change_cooldown' })
+    expect(grade.data.higher?.available_at).toMatch(/^2026-12-09/)
+    expect(grade.data.lower).toMatchObject({ target_grade: 'junior', allowed: false })
+    expect(grade.data.can_test_higher).toBe(false)
   })
 
   it('адаптивный тест: 12–15 задач, затем категория, θ и интервал', async () => {
@@ -165,5 +175,18 @@ describe('моки авторизации', () => {
     })
     expect(res.status).toBe(422)
     expect(res.data.details.fields.consent_processing).toBeTruthy()
+  })
+})
+
+describe('моки соискателя: согласие на публикацию', () => {
+  it('PUT /candidates/me/settings/publication меняет согласие и возвращает настройки', async () => {
+    const off = await call<S['CandidateSettings']>('PUT', '/candidates/me/settings/publication', { body: { granted: false } })
+    expect(off.status).toBe(200)
+    expect(off.data.publication_consent).toBe(false)
+    const consents = await call<S['Consent'][]>('GET', '/users/me/consents')
+    expect(consents.data.find((c) => c.type === 'publication')?.granted).toBe(false)
+    const on = await call<S['CandidateSettings']>('PUT', '/candidates/me/settings/publication', { body: { granted: true } })
+    expect(on.data.publication_consent).toBe(true)
+    expect((await call('PUT', '/candidates/me/settings/publication', { body: {} })).status).toBe(422)
   })
 })

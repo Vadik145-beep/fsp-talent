@@ -235,7 +235,7 @@ function InvitationPreview() {
   return (
     <div className="relative mx-auto w-full max-w-md" aria-hidden>
       <div className="absolute -top-4 -right-3 h-40 w-40 rounded-full bg-fsp-blush blur-3xl" />
-      <div className="absolute -bottom-6 -left-4 h-40 w-40 rounded-full bg-[#ddd9f5] blur-3xl" />
+      <div className="absolute -bottom-6 -left-4 h-40 w-40 rounded-full bg-primary-tint blur-3xl" />
       <div className="relative rounded-xl border border-line bg-surface p-6 shadow-[var(--shadow-pop)]">
         <div className="flex items-center justify-between gap-3">
           <span className="text-sm font-semibold text-muted">Новое приглашение</span>

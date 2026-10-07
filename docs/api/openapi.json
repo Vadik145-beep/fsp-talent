@@ -2317,7 +2317,7 @@
           "candidates"
         ],
         "summary": "Загрузить PDF-резюме и получить предзаполнение",
-        "description": "Заглушка: разбор PDF появится в волне 3 (T3.2); сейчас поля берутся из профиля.",
+        "description": "Разбор PDF (pdfplumber; страницы в две колонки режутся по колонкам) правилами, при наличии ключа — уточнение LLM. Поля формы профиля с уверенностью 0..1: `full_name`, `email`, `phone` (+7XXXXXXXXXX), `city`, `specialization`, `grade`, `stack` (коды справочника), `experience_years`, `roles_in_team`, `soft_skills`, `work_formats`, `links`, `about`; не найдено — `value: null, confidence: 0`. `unmatched_skills` — технологии, которых нет в справочнике. `warnings` — что не удалось прочитать (скан без текста, битый файл): тогда поля пустые, форму заполняют вручную.",
         "operationId": "upload_resume_api_candidates_me_resume_post",
         "security": [
           {
@@ -2378,7 +2378,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ResumeParseResult"
+                  "$ref": "#/components/schemas/ResumeParseResponse"
                 }
               }
             }
@@ -2413,6 +2413,26 @@
                     "value": {
                       "code": "forbidden",
                       "message": "Недостаточно прав",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`not_found` — Объект не найден",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Объект не найден",
+                    "value": {
+                      "code": "not_found",
+                      "message": "Объект не найден",
                       "details": {}
                     }
                   }
@@ -2492,7 +2512,7 @@
           "candidates"
         ],
         "summary": "Скачать стандартизированный PDF-профиль",
-        "description": "Заглушка: настоящий PDF в стиле ФСП — волна 3 (T3.3).",
+        "description": "PDF в стиле ФСП: категория и грейд, результаты теста по темам, стек, опыт и роли, достижения ФСП с отметкой «подтверждено ФСП» (или «нет данных ФСП»).",
         "operationId": "my_profile_pdf_api_candidates_me_profile_pdf_get",
         "security": [
           {
@@ -4587,6 +4607,7 @@
           "testing"
         ],
         "summary": "Категория и грейд: статус, кулдауны, история",
+        "description": "То же, что `GET /api/candidates/me/grade`: правила частоты считает движок.",
         "operationId": "grade_status_api_testing_grade_get",
         "security": [
           {
@@ -4637,7 +4658,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GradeStatus"
+                  "$ref": "#/components/schemas/CandidateGradeStatus"
                 }
               }
             }
@@ -4837,7 +4858,7 @@
           "testing"
         ],
         "summary": "Начать тест",
-        "description": "Пересдача на грейд ниже/выше — не чаще раза в 90 дней (409 `cooldown_active`).",
+        "description": "Проверка частоты попыток — движок (`can_attempt`): смена грейда не чаще раза в 90 дней, повтор неудачной попытки на тот же грейд — через 30 дней (409 `cooldown_active`, в details — `reason_code` и `available_at`). Брошенная сессия считается неудачной попыткой. Одновременно — одна незавершённая сессия.",
         "operationId": "start_session_api_testing_sessions_post",
         "security": [
           {
@@ -4944,7 +4965,7 @@
             }
           },
           "409": {
-            "description": "`cooldown_active` — Сменить грейд можно не чаще раза в 90 дней; `session_in_progress` — Сначала завершите начатый тест",
+            "description": "`cooldown_active` — Сменить грейд можно не чаще раза в 90 дней; `session_in_progress` — Сначала завершите начатый тест; `bank_empty` — Для специализации пока нет задач",
             "content": {
               "application/json": {
                 "examples": {
@@ -4963,6 +4984,14 @@
                       "message": "Сначала завершите начатый тест",
                       "details": {}
                     }
+                  },
+                  "bank_empty": {
+                    "summary": "Для специализации пока нет задач",
+                    "value": {
+                      "code": "bank_empty",
+                      "message": "Для специализации пока нет задач",
+                      "details": {}
+                    }
                   }
                 },
                 "schema": {
@@ -4972,10 +5001,18 @@
             }
           },
           "422": {
-            "description": "`validation_error` — Ошибка валидации данных",
+            "description": "`invalid_kind` — Вид теста не соответствует текущему грейду; `validation_error` — Ошибка валидации данных",
             "content": {
               "application/json": {
                 "examples": {
+                  "invalid_kind": {
+                    "summary": "Вид теста не соответствует текущему грейду",
+                    "value": {
+                      "code": "invalid_kind",
+                      "message": "Вид теста не соответствует текущему грейду",
+                      "details": {}
+                    }
+                  },
                   "validation_error": {
                     "summary": "Ошибка валидации данных",
                     "value": {
@@ -5000,7 +5037,7 @@
           "testing"
         ],
         "summary": "Экран теста: текущая задача, прогресс, таймер",
-        "operationId": "get_session_api_testing_sessions__session_id__get",
+        "operationId": "get_test_session_api_testing_sessions__session_id__get",
         "security": [
           {
             "HTTPBearer": []
@@ -5143,7 +5180,7 @@
           "testing"
         ],
         "summary": "Ответить на текущую задачу",
-        "description": "Верно/неверно не сообщается. Время считает сервер.",
+        "description": "Верно/неверно не сообщается. Время считает сервер от выдачи задачи; ответ после лимита принимается, но засчитывается неверным (`time_expired: true`).",
         "operationId": "submit_answer_api_testing_sessions__session_id__answers_post",
         "security": [
           {
@@ -14636,6 +14673,7 @@
           "admin"
         ],
         "summary": "Банк задач с метриками",
+        "description": "Показы, доля верных (факт и ожидание по IRT при θ без этой задачи), a, b, статус, флаг утечки. Шаблоны движка синхронизируются в БД автоматически.",
         "operationId": "list_items_api_admin_items_get",
         "security": [
           {
@@ -14965,7 +15003,7 @@
           "admin"
         ],
         "summary": "Пересчитать калибровку a, b по накопленным ответам",
-        "description": "Заглушка: настоящий пересчёт — волна 3a (T4.9).",
+        "description": "T4.9: логистическая регрессия ответа на θ отвечавших (без этой задачи) для шаблонов с числом ответов не меньше `min_responses` (по умолчанию TESTING_CALIBRATION_MIN_RESPONSES=30). Пилотные шаблоны становятся рабочими по правилу активации движка (≥ 150 ответов, a ≥ 0,4, |b| ≤ 3,5, SE(b) ≤ 0,35). Изменения пишутся в журнал.",
         "operationId": "recalibrate_api_admin_items_recalibrate_post",
         "security": [
           {
@@ -14973,6 +15011,24 @@
           }
         ],
         "parameters": [
+          {
+            "name": "min_responses",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 100000,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Min Responses"
+            }
+          },
           {
             "name": "x-demo-role",
             "in": "header",
@@ -15094,12 +15150,128 @@
         }
       }
     },
+    "/api/admin/items/leak-scan": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Запустить детектор утечек",
+        "description": "T4.7: по каждому шаблону — доля верных против ожидаемой по IRT и быстрые верные ответы. Помеченные шаблоны выводятся из оборота, событие пишется в журнал. Плюс аномалии кандидатов (повод для ручной проверки). Детектор также запускается автоматически после каждой N-й завершённой сессии (TESTING_LEAK_SCAN_EVERY).",
+        "operationId": "leak_scan_api_admin_items_leak_scan_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeakScanResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Недостаточно прав",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Недостаточно прав",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Недостаточно прав",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/items/{item_id}": {
       "get": {
         "tags": [
           "admin"
         ],
         "summary": "Шаблон: метрики и предпросмотр 3 вариантов",
+        "description": "Варианты генерирует движок из разных seed; у демо-записей — из фикстуры.",
         "operationId": "get_item_api_admin_items__item_id__get",
         "security": [
           {
@@ -15568,7 +15740,8 @@
         "tags": [
           "admin"
         ],
-        "summary": "Примеры: тесты, собранные из вакансий",
+        "summary": "Тесты, собранные из вакансий",
+        "description": "Новые сверху. Пока ни одного не собрано — показываются демо-примеры.",
         "operationId": "list_vacancy_tests_api_admin_vacancy_tests_get",
         "security": [
           {
@@ -15621,7 +15794,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/VacancyTestResult"
+                    "$ref": "#/components/schemas/VacancyTestOut"
                   },
                   "title": "Response List Vacancy Tests Api Admin Vacancy Tests Get"
                 }
@@ -15685,7 +15858,7 @@
           "admin"
         ],
         "summary": "Текст вакансии → темы → тест с объяснением",
-        "description": "Заглушка: возвращает ближайший пример. Настоящий разбор — волна 3c (T4.8).",
+        "description": "Специализация и грейд — правилами; темы — по словарю с уверенностью; по каждой теме шаблон банка, ближайший по грейду, с объяснением выбора. Для тем без шаблонов создаётся черновик в банке задач (status=draft, `drafts[].item_id`): LLM при наличии ключа, иначе заготовка словаря тем. Без ключа LLM всё работает (`parser: rules`).",
         "operationId": "build_vacancy_test_api_admin_vacancy_tests_post",
         "security": [
           {
@@ -15746,7 +15919,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/VacancyTestResult"
+                  "$ref": "#/components/schemas/VacancyTestOut"
                 }
               }
             }
@@ -15801,26 +15974,6 @@
                     "value": {
                       "code": "validation_error",
                       "message": "Ошибка валидации данных",
-                      "details": {}
-                    }
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "`llm_unavailable` — LLM недоступна, работаем по словарю",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "llm_unavailable": {
-                    "summary": "LLM недоступна, работаем по словарю",
-                    "value": {
-                      "code": "llm_unavailable",
-                      "message": "LLM недоступна, работаем по словарю",
                       "details": {}
                     }
                   }
@@ -17541,6 +17694,48 @@
             "theta": 0.42
           }
         ]
+      },
+      "CandidateFlag": {
+        "properties": {
+          "candidate_id": {
+            "type": "integer",
+            "title": "Candidate Id"
+          },
+          "session_id": {
+            "type": "integer",
+            "title": "Session Id"
+          },
+          "suspicious_item_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Suspicious Item Ids"
+          },
+          "lz": {
+            "type": "number",
+            "title": "Lz",
+            "description": "Индекс согласия ответов l_z"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons",
+            "description": "fast_hard_correct | aberrant_pattern"
+          }
+        },
+        "type": "object",
+        "required": [
+          "candidate_id",
+          "session_id",
+          "suspicious_item_ids",
+          "lz",
+          "reasons"
+        ],
+        "title": "CandidateFlag",
+        "description": "Аномалия кандидата: повод для ручной проверки, не автоматическое наказание."
       },
       "CandidateGradeStatus": {
         "properties": {
@@ -19830,153 +20025,6 @@
         "title": "GradeOption",
         "description": "Можно ли пройти тест на соседний грейд и с какой даты."
       },
-      "GradeStatus": {
-        "properties": {
-          "candidate_id": {
-            "type": "integer",
-            "title": "Candidate Id"
-          },
-          "specialization": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/SpecializationCode"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "grade": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/GradeCode"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "category": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Category"
-          },
-          "category_label": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Category Label"
-          },
-          "theta": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Theta"
-          },
-          "grade_changed_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Grade Changed At"
-          },
-          "grade_change_cooldown_days": {
-            "type": "integer",
-            "title": "Grade Change Cooldown Days",
-            "default": 90
-          },
-          "retry_cooldown_days": {
-            "type": "integer",
-            "title": "Retry Cooldown Days",
-            "default": 30
-          },
-          "can_test_lower": {
-            "type": "boolean",
-            "title": "Can Test Lower"
-          },
-          "lower_available_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Lower Available At"
-          },
-          "can_test_higher": {
-            "type": "boolean",
-            "title": "Can Test Higher"
-          },
-          "higher_available_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Higher Available At"
-          },
-          "history": {
-            "items": {
-              "$ref": "#/components/schemas/GradeHistoryEntry"
-            },
-            "type": "array",
-            "title": "History"
-          },
-          "tests": {
-            "items": {
-              "$ref": "#/components/schemas/TestSession"
-            },
-            "type": "array",
-            "title": "Tests"
-          }
-        },
-        "type": "object",
-        "required": [
-          "candidate_id",
-          "specialization",
-          "grade",
-          "category",
-          "category_label",
-          "theta",
-          "grade_changed_at",
-          "can_test_lower",
-          "lower_available_at",
-          "can_test_higher",
-          "higher_available_at",
-          "history",
-          "tests"
-        ],
-        "title": "GradeStatus",
-        "description": "Экран «Категория и грейд»: статус, кулдауны, история."
-      },
       "GradeThreshold": {
         "properties": {
           "specialization": {
@@ -21051,7 +21099,7 @@
           }
         ]
       },
-      "ItemDraft": {
+      "ItemDraftOut": {
         "properties": {
           "topic": {
             "type": "string",
@@ -21075,6 +21123,36 @@
           "status": {
             "$ref": "#/components/schemas/ItemStatus",
             "default": "draft"
+          },
+          "item_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Id",
+            "description": "id черновика в банке задач (status=draft) для одобрения"
+          },
+          "origin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Origin",
+            "description": "llm | vocabulary"
+          },
+          "reused": {
+            "type": "boolean",
+            "title": "Reused",
+            "description": "Черновик по теме и грейду уже был",
+            "default": false
           }
         },
         "type": "object",
@@ -21085,8 +21163,7 @@
           "format",
           "prompt"
         ],
-        "title": "ItemDraft",
-        "description": "Черновик нового шаблона для темы, которой нет в банке (LLM или словарь тем)."
+        "title": "ItemDraftOut"
       },
       "ItemFormat": {
         "type": "string",
@@ -21281,6 +21358,18 @@
             "title": "Code",
             "description": "Код для code_output / find_error_line"
           },
+          "code_language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code Language",
+            "description": "Язык кода для подсветки: python, javascript, sql…"
+          },
           "options": {
             "anyOf": [
               {
@@ -21383,6 +21472,18 @@
             ],
             "title": "Code",
             "description": "Код для code_output / find_error_line"
+          },
+          "code_language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code Language",
+            "description": "Язык кода для подсветки: python, javascript, sql…"
           },
           "options": {
             "anyOf": [
@@ -21511,6 +21612,108 @@
           "leak_score"
         ],
         "title": "LeakFlagBrief"
+      },
+      "LeakScanResult": {
+        "properties": {
+          "scanned_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Scanned At"
+          },
+          "answers_checked": {
+            "type": "integer",
+            "title": "Answers Checked"
+          },
+          "items_checked": {
+            "type": "integer",
+            "title": "Items Checked"
+          },
+          "retired": {
+            "items": {
+              "$ref": "#/components/schemas/LeakedItem"
+            },
+            "type": "array",
+            "title": "Retired"
+          },
+          "flagged_candidates": {
+            "items": {
+              "$ref": "#/components/schemas/CandidateFlag"
+            },
+            "type": "array",
+            "title": "Flagged Candidates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scanned_at",
+          "answers_checked",
+          "items_checked",
+          "retired",
+          "flagged_candidates"
+        ],
+        "title": "LeakScanResult"
+      },
+      "LeakedItem": {
+        "properties": {
+          "item_id": {
+            "type": "integer",
+            "title": "Item Id"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "n": {
+            "type": "integer",
+            "title": "N",
+            "description": "Ответов в окне детектора"
+          },
+          "observed_rate": {
+            "type": "number",
+            "title": "Observed Rate",
+            "description": "Доля верных: факт"
+          },
+          "expected_rate": {
+            "type": "number",
+            "title": "Expected Rate",
+            "description": "Доля верных: ожидание по IRT"
+          },
+          "z": {
+            "type": "number",
+            "title": "Z"
+          },
+          "fast_correct": {
+            "type": "integer",
+            "title": "Fast Correct",
+            "description": "Верных ответов подозрительно быстро"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons",
+            "description": "irt_drift | fast_correct"
+          }
+        },
+        "type": "object",
+        "required": [
+          "item_id",
+          "code",
+          "title",
+          "n",
+          "observed_rate",
+          "expected_rate",
+          "z",
+          "fast_correct",
+          "reasons"
+        ],
+        "title": "LeakedItem",
+        "description": "Шаблон, помеченный детектором и выведенный из оборота."
       },
       "LinkType": {
         "type": "string",
@@ -23305,6 +23508,17 @@
               }
             ],
             "title": "Available At"
+          },
+          "target_grade": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GradeCode"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "На какой грейд предлагается следующий тест"
           }
         },
         "type": "object",
@@ -24029,7 +24243,7 @@
           }
         ]
       },
-      "ResumeParseResult": {
+      "ResumeParseResponse": {
         "properties": {
           "resume_id": {
             "type": "integer",
@@ -24057,6 +24271,13 @@
             },
             "type": "array",
             "title": "Unmatched Skills"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
           }
         },
         "type": "object",
@@ -24066,8 +24287,8 @@
           "parser",
           "fields"
         ],
-        "title": "ResumeParseResult",
-        "description": "Предзаполнение формы из PDF-резюме; кандидат подтверждает поля [ТЗ 2.1].",
+        "title": "ResumeParseResponse",
+        "description": "Ответ загрузки резюме. Расширение контракта: `warnings` — что не удалось прочитать.",
         "examples": [
           {
             "fields": {
@@ -24149,7 +24370,7 @@
         "title": "ScoreComponent",
         "description": "Полоска разбивки счёта: вклад фактора = value × weight."
       },
-      "SelectedItem": {
+      "SelectedItemOut": {
         "properties": {
           "item_id": {
             "type": "integer",
@@ -24170,6 +24391,28 @@
           "reason": {
             "type": "string",
             "title": "Reason"
+          },
+          "template_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Id",
+            "description": "id шаблона в банке задач"
+          },
+          "target_grade": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GradeCode"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -24180,7 +24423,7 @@
           "topic",
           "reason"
         ],
-        "title": "SelectedItem"
+        "title": "SelectedItemOut"
       },
       "Skill": {
         "properties": {
@@ -25128,6 +25371,24 @@
           },
           "recommendation": {
             "$ref": "#/components/schemas/Recommendation"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "passed_claimed",
+                  "suggest_lower",
+                  "suggest_higher",
+                  "abandoned"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome",
+            "description": "Решение движка по заявленному грейду"
           }
         },
         "type": "object",
@@ -25956,38 +26217,7 @@
         ],
         "title": "VacancyStatus"
       },
-      "VacancyTestRequest": {
-        "properties": {
-          "text": {
-            "type": "string",
-            "maxLength": 20000,
-            "minLength": 20,
-            "title": "Text"
-          },
-          "specialization": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/SpecializationCode"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "text"
-        ],
-        "title": "VacancyTestRequest",
-        "examples": [
-          {
-            "text": "Ищем Middle Python-разработчика: FastAPI, PostgreSQL, Redis, Docker."
-          }
-        ]
-      },
-      "VacancyTestResult": {
+      "VacancyTestOut": {
         "properties": {
           "id": {
             "type": "integer",
@@ -26021,14 +26251,14 @@
           },
           "items": {
             "items": {
-              "$ref": "#/components/schemas/SelectedItem"
+              "$ref": "#/components/schemas/SelectedItemOut"
             },
             "type": "array",
             "title": "Items"
           },
           "drafts": {
             "items": {
-              "$ref": "#/components/schemas/ItemDraft"
+              "$ref": "#/components/schemas/ItemDraftOut"
             },
             "type": "array",
             "title": "Drafts"
@@ -26039,6 +26269,18 @@
             },
             "type": "array",
             "title": "Explanation"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
           }
         },
         "type": "object",
@@ -26054,8 +26296,7 @@
           "drafts",
           "explanation"
         ],
-        "title": "VacancyTestResult",
-        "description": "Задание из вакансии (запись `vacancy_tests.json`): темы → тест → объяснение.",
+        "title": "VacancyTestOut",
         "examples": [
           {
             "drafts": [
@@ -26142,6 +26383,37 @@
             ],
             "vacancy_text": "Ищем Middle Python-разработчика в команду платежей. FastAPI, PostgreSQL, Redis, Kafka. Нужно понимать транзакции, конкурентный доступ и уметь проектировать REST API. Плюсом будет опыт с OAuth 2.0.",
             "vacancy_title": "Middle Python-разработчик (платежи)"
+          }
+        ]
+      },
+      "VacancyTestRequest": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 20,
+            "title": "Text"
+          },
+          "specialization": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SpecializationCode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "VacancyTestRequest",
+        "examples": [
+          {
+            "text": "Ищем Middle Python-разработчика: FastAPI, PostgreSQL, Redis, Docker."
           }
         ]
       },

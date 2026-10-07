@@ -36,8 +36,9 @@ function GradeView({ g }: { g: GradeStatus }) {
   const start = useStartTest()
   const [confirm, setConfirm] = useState<{ kind: 'lower' | 'higher'; grade: Grade } | null>(null)
   const idx = g.grade ? GRADES.indexOf(g.grade) : -1
-  const lower = idx > 0 ? GRADES[idx - 1] : null
-  const higher = idx >= 0 && idx < GRADES.length - 1 ? GRADES[idx + 1] : null
+  // Соседние грейды: бэкенд присылает их в lower/higher вместе с причиной, почему тест недоступен.
+  const lower = g.lower?.target_grade ?? (idx > 0 ? GRADES[idx - 1] : null)
+  const higher = g.higher?.target_grade ?? (idx >= 0 && idx < GRADES.length - 1 ? GRADES[idx + 1] : null)
 
   if (!g.grade || !g.specialization) {
     return (
@@ -93,7 +94,7 @@ function GradeView({ g }: { g: GradeStatus }) {
   ]
 
   return (
-    <div className="grid gap-5">
+    <div className="grid grid-cols-1 gap-5">
       <Card padding="lg">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -113,13 +114,14 @@ function GradeView({ g }: { g: GradeStatus }) {
 
       <Card>
         <CardHeader title="Пересдача" description="Хотите подтвердить другой грейд — пройдите тест на уровень ниже или выше." />
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <RetakeOption
             icon={<ArrowDown className="size-5" aria-hidden />}
             title={lower ? `Тест на ${GRADE_LABELS[lower]}` : 'Грейд ниже'}
             unavailableText={lower ? undefined : 'Стажёр — начальный грейд'}
             can={g.can_test_lower}
             availableAt={g.lower_available_at}
+            reason={g.lower?.allowed === false ? g.lower.reason : undefined}
             onStart={() => lower && setConfirm({ kind: 'lower', grade: lower })}
           />
           <RetakeOption
@@ -128,6 +130,7 @@ function GradeView({ g }: { g: GradeStatus }) {
             unavailableText={higher ? undefined : 'Senior — максимальный грейд'}
             can={g.can_test_higher}
             availableAt={g.higher_available_at}
+            reason={g.higher?.allowed === false ? g.higher.reason : undefined}
             onStart={() => higher && setConfirm({ kind: 'higher', grade: higher })}
           />
         </div>
@@ -216,6 +219,7 @@ function RetakeOption({
   can,
   availableAt,
   unavailableText,
+  reason,
   onStart,
 }: {
   icon: ReactNode
@@ -223,6 +227,8 @@ function RetakeOption({
   can: boolean
   availableAt: string | null
   unavailableText?: string
+  /** Почему тест недоступен — текст правила от бэкенда. */
+  reason?: string
   onStart: () => void
 }) {
   return (
@@ -243,6 +249,7 @@ function RetakeOption({
               <CalendarClock className="size-4" aria-hidden /> Станет доступно {formatDate(availableAt)}
             </p>
           )}
+          {!can && reason && <p className="text-[13px] text-muted">{reason}</p>}
         </>
       )}
     </div>

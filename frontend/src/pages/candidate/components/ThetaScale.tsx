@@ -17,10 +17,10 @@ export interface ThetaScaleProps {
 const MIN = -3
 const MAX = 3
 const ZONE_CLASS: Record<Grade, string> = {
-  intern: 'bg-[#efedf3]',
-  junior: 'bg-[#ecebfa]',
-  middle: 'bg-[#f3e8fa]',
-  senior: 'bg-[#ffe4ee]',
+  intern: 'bg-neutral-soft',
+  junior: 'bg-primary-soft',
+  middle: 'bg-primary-tint',
+  senior: 'bg-accent-soft',
 }
 
 const pct = (x: number) => ((Math.min(MAX, Math.max(MIN, x)) - MIN) / (MAX - MIN)) * 100
