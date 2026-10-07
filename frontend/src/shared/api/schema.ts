@@ -5373,8 +5373,8 @@ export interface components {
          * PlatformSettings
          * @description Настройки платформы (запись `platform_settings.json`, id = "default").
          * @example {
-         *       "cat_max_items": 15,
-         *       "cat_se_stop": 0.35,
+         *       "cat_max_items": 20,
+         *       "cat_se_stop": 0.3,
          *       "consent_version": "2026-10-01",
          *       "exposure_max_share": 0.25,
          *       "grade_change_cooldown_days": 90,

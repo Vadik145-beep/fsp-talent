@@ -530,7 +530,8 @@ def render(mx: dict[str, Any], generated: str) -> str:
         f"Пример — `data/validation/example_pairs.csv`: {ex['needs_count']} потребностей (по одной на "
         "направление) × 40 кандидатов, выбранных независимо от выдачи платформы: до 10 подходящих, "
         "до 5 частично подходящих, остальные неподходящие (своего и других направлений); строки "
-        "перемешаны. Ответ эндпоинта: precision@10 {num(ex['precision_at_10'])}, nDCG@10 {num(ex['ndcg_at_10'])}, "
+        f"перемешаны. Ответ эндпоинта: precision@10 {num(ex['precision_at_10'])}, "
+        f"nDCG@10 {num(ex['ndcg_at_10'])}, "
         f"у поиска по словам {num(ex['baseline_precision_at_10'])} / {num(ex['baseline_ndcg_at_10'])}, "
         f"при случайном порядке {num(ex['random_precision_at_10'])}.\n"
     )
