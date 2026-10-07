@@ -1,14 +1,17 @@
-"""Админка на БД (T10.2, T10.3): пользователи, компании, справочники, настройки, журнал.
+"""Админка на БД (T10.1–T10.3): дашборд, пользователи, компании, справочники, настройки, журнал.
 
 Каждое действие администратора пишется в audit_log.
 """
 
 from collections import Counter
+from datetime import timedelta
 from typing import Any
 
+from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.admin.audit import write_audit
+from app.admin.models import Report
 from app.admin.repository import AdminDb, audit_record, user_record
 from app.admin.schemas import (
     AdminUserUpdate,
@@ -18,14 +21,19 @@ from app.admin.schemas import (
     SpecializationCreate,
     TopicCreate,
 )
+from app.catalog.clock import now_msk
 from app.catalog.service import CatalogDbService
-from app.common.enums import Role
+from app.common.enums import InvitationStatus, ReportStatus, Role, TestSessionStatus
 from app.common.fixtures import Record
+from app.companies.antifraud import set_company_blocked
 from app.companies.models import Company
 from app.companies.repository import CompanyDb, company_record
 from app.companies.service import response_rate, trust_score
 from app.core.errors import AppError, not_found
 from app.core.security import CurrentUser
+from app.invitations.models import Invitation
+from app.testing.models import Item, TestSession
+from app.users.models import User
 
 SETTING_LABELS = {
     "grade_thresholds": "Пороги θ",
@@ -65,6 +73,77 @@ class AdminDbService:
         await write_audit(
             self.session, self.actor, action, target_type, target_id, summary, details
         )
+
+    # ---------- дашборд (T10.1) ----------
+
+    async def dashboard(self, period_days: int | None = None) -> Record:
+        """Сводка платформы из БД.
+
+        - пользователи по ролям — учётки с подтверждённой почтой (только они могут войти);
+        - тесты — завершённые сессии; `period_days` ограничивает число и график по дням;
+        - приглашения по статусам — с учётом просроченных, которые ещё не пересчитаны;
+        - конверсия «приглашение → принятие» = принятые / (все − отозванные рекрутером);
+        - открытые жалобы (новые и в работе), флаги утечек шаблонов (`items.leak_flag`).
+        """
+        now = now_msk()
+        roles = await self.session.execute(
+            select(User.role, func.count()).where(User.email_verified.is_(True)).group_by(User.role)
+        )
+        users_by_role = {r.value: 0 for r in Role} | {role: n for role, n in roles.all()}
+
+        day = func.date(func.timezone("Europe/Moscow", TestSession.finished_at))
+        tests_stmt = (
+            select(day, func.count())
+            .where(
+                TestSession.status == TestSessionStatus.finished.value,
+                TestSession.finished_at.is_not(None),
+            )
+            .group_by(day)
+            .order_by(day)
+        )
+        if period_days:
+            tests_stmt = tests_stmt.where(
+                TestSession.finished_at >= now - timedelta(days=period_days)
+            )
+        tests_by_day = [
+            {"date": d, "count": n} for d, n in (await self.session.execute(tests_stmt))
+        ]
+
+        overdue = and_(
+            Invitation.status.in_([InvitationStatus.sent.value, InvitationStatus.viewed.value]),
+            Invitation.expires_at < now,
+        )
+        status = case((overdue, InvitationStatus.expired.value), else_=Invitation.status)
+        inv_rows = await self.session.execute(select(status, func.count()).group_by(status))
+        by_status = {s.value: 0 for s in InvitationStatus} | {st: n for st, n in inv_rows.all()}
+        base = sum(by_status.values()) - by_status[InvitationStatus.withdrawn]
+        accepted = by_status[InvitationStatus.accepted]
+
+        leaks = await self.session.scalars(
+            select(Item).where(Item.leak_flag.is_(True)).order_by(Item.leak_score.desc(), Item.id)
+        )
+        open_reports = await self.session.scalar(
+            select(func.count())
+            .select_from(Report)
+            .where(Report.status.in_([ReportStatus.new.value, ReportStatus.in_review.value]))
+        )
+        return {
+            "users_by_role": users_by_role,
+            "tests_total": sum(d["count"] for d in tests_by_day),
+            "tests_by_day": tests_by_day,
+            "invitations_by_status": by_status,
+            "invite_to_accept_conversion": round(accepted / base, 3) if base else 0.0,
+            "leak_flags": [
+                {
+                    "item_id": it.id,
+                    "title": it.title,
+                    "specialization": it.specialization,
+                    "leak_score": it.leak_score,
+                }
+                for it in leaks.all()
+            ],
+            "open_reports": int(open_reports or 0),
+        }
 
     # ---------- пользователи ----------
 
@@ -169,15 +248,7 @@ class AdminDbService:
         company = await self.companies_db.get(company_id)
         if company is None:
             raise not_found("company", company_id)
-        if company.blocked != blocked:
-            company.blocked = blocked
-            verb = "заблокирована" if blocked else "разблокирована"
-            await self._audit(
-                "company_blocked" if blocked else "company_unblocked",
-                "company",
-                company_id,
-                f"Компания {verb}: {company.name}",
-            )
+        await set_company_blocked(self.session, company, blocked, self.actor)
         await self.session.commit()
         return (await self._views([company]))[0]
 

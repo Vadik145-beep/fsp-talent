@@ -1,207 +1,242 @@
-"""Кабинет администратора.
+"""Жалобы соискателей на работодателей (T10.6, T12.1) — на БД.
 
-- `AdminDbService` (БД, T10.2/T10.3): пользователи, компании, справочники, настройки, журнал.
-  Каждое действие админа пишется в audit_log.
-- `AdminService` (фикстуры): дашборд, банк задач, задания из вакансий, жалобы — волны 3, 4c, 5b.
+Кандидат жалуется на компанию, с которой у него был контакт (приглашение, отклик на вакансию
+или задание). Админ берёт жалобу в работу, подтверждает (по желанию — сразу блокирует
+компанию) или отклоняет. Подтверждённая жалоба снижает скоринг надёжности компании
+(−15, см. `app.companies.service.trust_score`), жалоба в работе — −5. Всё пишется в журнал.
 """
 
-import re
-from collections import Counter
-from datetime import datetime
 from typing import Any
 
+from pydantic import Field
+from sqlalchemy import exists, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.admin.audit import write_audit
+from app.admin.models import Report
 from app.admin.repository import AdminRepository
-from app.admin.schemas import (
-    ReportCreate,
-    ReportUpdate,
-    VacancyTestRequest,
-)
-from app.common.enums import (
-    GradeCode,
-    InvitationStatus,
-    ItemStatus,
-    ReportStatus,
-)
+from app.admin.schemas import ReportCreate, ReportUpdate
+from app.catalog.clock import as_msk, now_msk
+from app.common.enums import ReportStatus
 from app.common.fixtures import Record
-from app.common.schemas import paginate
+from app.companies.antifraud import set_company_blocked
+from app.companies.models import Company
 from app.core.errors import AppError, not_found
+from app.core.security import CurrentUser
+from app.invitations.models import Invitation
+from app.tasks.models import RegularTask, TaskSubmission
+from app.vacancies.models import Application, Vacancy
 
-SUMMARY_DROP = ("preview_variants", "description")
-
-
-def _now() -> str:
-    return datetime.now().astimezone().isoformat()
+R = ReportStatus
+OPEN = (R.new.value, R.in_review.value)
+FINAL = (R.resolved.value, R.rejected.value)
+# допустимые переходы статуса жалобы
+TRANSITIONS: dict[str, tuple[str, ...]] = {
+    R.new: (R.in_review, R.resolved, R.rejected),
+    R.in_review: (R.resolved, R.rejected),
+    R.resolved: (),
+    R.rejected: (),
+}
+STATUS_LABELS = {
+    R.new: "новая",
+    R.in_review: "в работе",
+    R.resolved: "подтверждена",
+    R.rejected: "отклонена",
+}
+REASON_LABELS = {
+    "fake_vacancy": "фиктивная вакансия",
+    "spam": "спам",
+    "salary_mismatch": "зарплата не та",
+    "rude": "грубость",
+    "other": "другое",
+}
 
 
 class AdminService:
+    """Остаток фикстур: демо-примеры тестов из вакансий (`vacancy_tests_router`, волна 3c)."""
+
     def __init__(self, repo: AdminRepository | None = None) -> None:
         self.repo = repo or AdminRepository()
-
-    # ---------- дашборд ----------
-
-    def dashboard(self) -> dict[str, Any]:
-        users = Counter(u["role"] for u in self.repo.users())
-        invitations = Counter(i["status"] for i in self.repo.invitations())
-        sessions = [s for s in self.repo.test_sessions() if s["status"] == "finished"]
-        by_day = Counter(s["finished_at"][:10] for s in sessions)
-        total = sum(invitations.values())
-        leaks = [
-            {
-                "item_id": it["id"],
-                "title": it["title"],
-                "specialization": it["specialization"],
-                "leak_score": it["leak_score"],
-            }
-            for it in self.repo.items()
-            if it["leak_flag"]
-        ]
-        return {
-            "users_by_role": dict(users),
-            "tests_total": len(sessions),
-            "tests_by_day": [{"date": d, "count": n} for d, n in sorted(by_day.items())],
-            "invitations_by_status": dict(invitations),
-            "invite_to_accept_conversion": (
-                round(invitations[InvitationStatus.accepted] / total, 2) if total else 0.0
-            ),
-            "leak_flags": leaks,
-            "open_reports": sum(
-                1
-                for r in self.repo.reports()
-                if r["status"] in (ReportStatus.new, ReportStatus.in_review)
-            ),
-        }
-
-    # ---------- банк задач ----------
-
-    def items(
-        self,
-        specialization: str | None,
-        topic: str | None,
-        status: ItemStatus | None,
-        leak_flag: bool | None,
-        page: int,
-        page_size: int,
-    ) -> dict[str, Any]:
-        items = self.repo.items()
-        if specialization:
-            items = [i for i in items if i["specialization"] == specialization]
-        if topic:
-            items = [i for i in items if i["topic"] == topic]
-        if status:
-            items = [i for i in items if i["status"] == status]
-        if leak_flag is not None:
-            items = [i for i in items if i["leak_flag"] == leak_flag]
-        summaries = [{k: v for k, v in i.items() if k not in SUMMARY_DROP} for i in items]
-        return paginate(summaries, page, page_size)
-
-    def item(self, item_id: int) -> dict[str, Any]:
-        item = self.repo.item(item_id)
-        if item is None:
-            raise not_found("item", item_id)
-        return dict(item)
-
-    def retire_item(self, item_id: int) -> dict[str, Any]:
-        item = self.item(item_id)
-        if item["status"] == ItemStatus.retired:
-            raise AppError(409, "invalid_transition", "Шаблон уже выведен из оборота")
-        item["status"] = ItemStatus.retired
-        return item
-
-    def approve_item(self, item_id: int) -> dict[str, Any]:
-        item = self.item(item_id)
-        if item["status"] != ItemStatus.draft:
-            raise AppError(409, "invalid_transition", "Одобрить можно только черновик")
-        item["status"] = ItemStatus.pilot
-        return item
-
-    def coverage(self) -> list[dict[str, Any]]:
-        cells: dict[tuple[str, str], dict[str, Any]] = {}
-        for topic in self.repo.topics():
-            for grade in GradeCode:
-                cells[(topic["id"], grade.value)] = {
-                    "specialization": topic["specialization"],
-                    "topic": topic["id"],
-                    "topic_label": topic["label"],
-                    "grade": grade.value,
-                    "active": 0,
-                    "pilot": 0,
-                }
-        for item in self.repo.items():
-            cell = cells.get((item["topic"], item["target_grade"]))
-            if cell and item["status"] in (ItemStatus.active, ItemStatus.pilot):
-                cell[item["status"]] += 1
-        return list(cells.values())
-
-    def recalibrate(self) -> dict[str, Any]:
-        active = [i for i in self.repo.items() if i["status"] == ItemStatus.active]
-        changes = [
-            {
-                "item_id": i["id"],
-                "a_before": i["a"],
-                "a_after": round(i["a"] * 1.03, 2),
-                "b_before": i["b"],
-                "b_after": round(i["b"] + 0.05, 2),
-            }
-            for i in active[:5]
-        ]
-        return {
-            "started_at": _now(),
-            "items_recalibrated": len(active),
-            "pilot_promoted": sum(1 for i in self.repo.items() if i["status"] == ItemStatus.pilot),
-            "changes": changes,
-        }
-
-    # ---------- задания из вакансий ----------
 
     def vacancy_tests(self) -> list[Record]:
         return self.repo.vacancy_tests()
 
-    def build_vacancy_test(self, body: VacancyTestRequest) -> dict[str, Any]:
-        """Заглушка: выбираем пример, ближайший по словам. Настоящий разбор — волна 3c (T4.8)."""
-        words = set(re.findall(r"[a-zа-яё0-9]+", body.text.lower()))
-        examples = self.repo.vacancy_tests()
-        if not examples:
-            raise AppError(501, "not_implemented", "Будет реализовано в волне 3c")
 
-        def overlap(example: Record) -> int:
-            return len(words & set(re.findall(r"[a-zа-яё0-9]+", example["vacancy_text"].lower())))
+class ReportDecision(ReportUpdate):
+    """Решение по жалобе. Схема живёт здесь, чтобы не трогать общий `admin/schemas.py`."""
 
-        best_example: Record = max(examples, key=overlap)
-        best = dict(best_example)
-        best.update(vacancy_text=body.text, vacancy_title=body.text[:60])
-        if body.specialization:
-            best["specialization"] = body.specialization
-        return best
+    block_company: bool = Field(
+        default=False,
+        description="Вместе с подтверждением (resolved) заблокировать компанию",
+    )
 
-    # ---------- жалобы и журнал ----------
 
-    def reports(self, status: ReportStatus | None) -> list[Record]:
-        items = self.repo.reports()
-        if status:
-            items = [r for r in items if r["status"] == status]
-        return sorted(items, key=lambda r: r["created_at"], reverse=True)
+def report_record(r: Report, company_name: str) -> Record:
+    return {
+        "id": r.id,
+        "company_id": r.company_id,
+        "company_name": company_name,
+        "reporter_candidate_id": r.reporter_candidate_id,
+        "invitation_id": r.invitation_id,
+        "vacancy_id": r.vacancy_id,
+        "reason": r.reason,
+        "text": r.text,
+        "status": r.status,
+        "resolution": r.resolution,
+        "created_at": as_msk(r.created_at),
+        "resolved_at": as_msk(r.resolved_at),
+    }
 
-    def update_report(self, report_id: int, body: ReportUpdate) -> dict[str, Any]:
-        report = self.repo.report(report_id)
-        if report is None:
-            raise not_found("report", report_id)
-        data = dict(report)
-        data.update(status=body.status, resolution=body.resolution)
-        if body.status in (ReportStatus.resolved, ReportStatus.rejected):
-            data["resolved_at"] = _now()
-        return data
 
-    def create_report(self, body: ReportCreate, candidate_id: int) -> dict[str, Any]:
-        company = self.repo.company(body.company_id)
+class ReportService:
+    def __init__(self, session: AsyncSession, actor: CurrentUser) -> None:
+        self.session = session
+        self.actor = actor
+
+    async def _rows(self, *where: Any) -> list[Record]:
+        rows = await self.session.execute(
+            select(Report, Company.name)
+            .join(Company, Company.id == Report.company_id)
+            .where(*where)
+            .order_by(Report.created_at.desc(), Report.id.desc())
+        )
+        return [report_record(r, name) for r, name in rows.all()]
+
+    async def _one(self, report_id: int) -> Record:
+        return (await self._rows(Report.id == report_id))[0]
+
+    # ---------- соискатель ----------
+
+    async def _had_contact(self, candidate_id: int, company_id: int) -> bool:
+        invited = exists().where(
+            Invitation.candidate_id == candidate_id, Invitation.company_id == company_id
+        )
+        applied = exists().where(
+            Application.candidate_id == candidate_id,
+            Application.vacancy_id == Vacancy.id,
+            Vacancy.company_id == company_id,
+        )
+        tasked = exists().where(
+            TaskSubmission.candidate_id == candidate_id,
+            TaskSubmission.task_id == RegularTask.id,
+            RegularTask.company_id == company_id,
+        )
+        return bool(await self.session.scalar(select(or_(invited, applied, tasked))))
+
+    async def create(self, body: ReportCreate, candidate_id: int) -> Record:
+        company = await self.session.get(Company, body.company_id)
         if company is None:
             raise not_found("company", body.company_id)
-        return {
-            **body.model_dump(),
-            "id": max((r["id"] for r in self.repo.reports()), default=0) + 1,
-            "company_name": company["name"],
-            "reporter_candidate_id": candidate_id,
-            "status": ReportStatus.new,
-            "resolution": None,
-            "created_at": _now(),
-            "resolved_at": None,
-        }
+        if body.invitation_id is not None:
+            inv = await self.session.get(Invitation, body.invitation_id)
+            if inv is None or inv.candidate_id != candidate_id or inv.company_id != company.id:
+                raise not_found("invitation", body.invitation_id)
+        if body.vacancy_id is not None:
+            vacancy = await self.session.get(Vacancy, body.vacancy_id)
+            if vacancy is None or vacancy.company_id != company.id:
+                raise not_found("vacancy", body.vacancy_id)
+        if not await self._had_contact(candidate_id, company.id):
+            raise AppError(
+                403,
+                "no_contact_with_company",
+                "Пожаловаться можно на компанию, с которой был контакт: приглашение, отклик "
+                "или задание",
+                {"company_id": company.id},
+            )
+        duplicate = await self.session.scalar(
+            select(Report.id).where(
+                Report.reporter_candidate_id == candidate_id,
+                Report.company_id == company.id,
+                Report.status.in_(OPEN),
+            )
+        )
+        if duplicate is not None:
+            raise AppError(
+                409,
+                "report_exists",
+                "Ваша жалоба на эту компанию уже на рассмотрении",
+                {"report_id": duplicate},
+            )
+        report = Report(
+            company_id=company.id,
+            reporter_candidate_id=candidate_id,
+            invitation_id=body.invitation_id,
+            vacancy_id=body.vacancy_id,
+            reason=str(body.reason),
+            text=body.text.strip(),
+            status=R.new.value,
+            created_at=now_msk(),
+        )
+        self.session.add(report)
+        await self.session.flush()
+        await write_audit(
+            self.session,
+            self.actor,
+            "report_created",
+            "report",
+            report.id,
+            f"Жалоба на «{company.name}»: {REASON_LABELS.get(report.reason, report.reason)}",
+            {"company_id": company.id, "reason": report.reason},
+        )
+        await self.session.commit()
+        return await self._one(report.id)
+
+    # ---------- администратор ----------
+
+    async def queue(self, status: ReportStatus | None) -> list[Record]:
+        rows = await self._rows(*([Report.status == status.value] if status else []))
+        order = {R.new: 0, R.in_review: 1, R.resolved: 2, R.rejected: 3}
+        return sorted(rows, key=lambda r: order[R(r["status"])])  # устойчиво: внутри — свежие
+
+    async def decide(self, report_id: int, body: ReportDecision) -> Record:
+        report = await self.session.get(Report, report_id, with_for_update=True)
+        if report is None:
+            raise not_found("report", report_id)
+        target = body.status.value
+        if target not in TRANSITIONS[R(report.status)]:
+            raise AppError(
+                409,
+                "invalid_transition",
+                f"Жалоба уже {STATUS_LABELS[R(report.status)]} — "
+                f"перевести в «{STATUS_LABELS[body.status]}» нельзя",
+                {"from": report.status, "to": target},
+            )
+        if body.block_company and target != R.resolved:
+            raise AppError(
+                422,
+                "block_requires_resolve",
+                "Заблокировать компанию можно только при подтверждении жалобы",
+                {"fields": {"block_company": "Выберите «Подтвердить»"}},
+            )
+        company = await self.session.get(Company, report.company_id)
+        assert company is not None
+        report.status = target
+        if body.resolution is not None:
+            report.resolution = body.resolution.strip() or None
+        if target in FINAL:
+            report.resolved_at = now_msk()
+            report.resolved_by = self.actor.user_id
+        action = "report_resolved" if target in FINAL else "report_in_review"
+        summary = f"Жалоба на «{company.name}» {STATUS_LABELS[body.status]}" + (
+            f": {report.resolution}" if report.resolution and target in FINAL else ""
+        )
+        await write_audit(
+            self.session,
+            self.actor,
+            action,
+            "report",
+            report.id,
+            summary,
+            {"company_id": company.id, "status": target, "block_company": body.block_company},
+        )
+        if body.block_company:
+            await set_company_blocked(
+                self.session,
+                company,
+                True,
+                self.actor,
+                reason=f"подтверждена жалоба #{report.id}",
+                details={"report_id": report.id},
+            )
+        await self.session.commit()
+        return await self._one(report.id)

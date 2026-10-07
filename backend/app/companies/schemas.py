@@ -27,6 +27,15 @@ class Company(OutModel):
     created_at: datetime
 
 
+class MyCompany(Company):
+    """Профиль своей компании в кабинете рекрутера."""
+
+    invite_code: str | None = Field(
+        default=None,
+        description="Код приглашения рекрутеров в компанию — только администратору компании",
+    )
+
+
 class CompanyUpdate(ApiModel):
     model_config = ConfigDict(
         json_schema_extra={
