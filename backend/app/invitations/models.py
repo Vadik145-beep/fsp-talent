@@ -2,7 +2,16 @@
 
 from datetime import datetime
 
-from sqlalchemy import BigInteger, CheckConstraint, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    BigInteger,
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.db import Base, TimestampMixin
@@ -12,6 +21,7 @@ class Invitation(TimestampMixin, Base):
     __tablename__ = "invitations"
     __table_args__ = (
         CheckConstraint("salary_from > 0 AND salary_from <= salary_to", name="salary_range"),
+        Index("ix_invitations_company_candidate", "company_id", "candidate_id"),
     )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -37,6 +47,8 @@ class Invitation(TimestampMixin, Base):
     responded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     withdrawn_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # когда рекрутер последний раз открыл карточку (счётчик «новые ответы», миграция 0004_3b)
+    recruiter_seen_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class InvitationEvent(Base):
