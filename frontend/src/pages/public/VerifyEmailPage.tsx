@@ -144,7 +144,7 @@ function CheckInbox() {
 
       {USE_MOCKS && (
         <div className="mt-6 rounded-md border border-dashed border-fsp-blush bg-primary-soft p-3 text-[13px]">
-          <p className="font-semibold text-[#9c0034]">Прототип: письма не отправляются</p>
+          <p className="font-semibold text-accent">Прототип: письма не отправляются</p>
           {uid ? (
             <Link to={`/verify-email?token=${MOCK_VERIFY_PREFIX}${uid}`} className="mt-1 inline-block font-semibold text-fsp-plum underline">
               Открыть ссылку из письма

@@ -140,7 +140,7 @@ export default function LoginPage() {
 
       {USE_MOCKS && (
         <div className="mt-6 rounded-md border border-dashed border-fsp-blush bg-primary-soft p-3">
-          <p className="text-[13px] font-semibold text-[#9c0034]">Прототип: демо-учётки (пароль {DEMO_PASSWORD})</p>
+          <p className="text-[13px] font-semibold text-accent">Прототип: демо-учётки (пароль {DEMO_PASSWORD})</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {DEMO_LOGINS.map((d) => (
               <button

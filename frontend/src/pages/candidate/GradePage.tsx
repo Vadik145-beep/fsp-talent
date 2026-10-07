@@ -94,7 +94,7 @@ function GradeView({ g }: { g: GradeStatus }) {
   ]
 
   return (
-    <div className="grid gap-5">
+    <div className="grid grid-cols-1 gap-5">
       <Card padding="lg">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -114,7 +114,7 @@ function GradeView({ g }: { g: GradeStatus }) {
 
       <Card>
         <CardHeader title="Пересдача" description="Хотите подтвердить другой грейд — пройдите тест на уровень ниже или выше." />
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <RetakeOption
             icon={<ArrowDown className="size-5" aria-hidden />}
             title={lower ? `Тест на ${GRADE_LABELS[lower]}` : 'Грейд ниже'}
