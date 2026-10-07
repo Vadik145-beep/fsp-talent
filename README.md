@@ -3,44 +3,46 @@
 Платформа подбора IT-специалистов с верифицированным профилем достижений участника ФСП.
 Спецтрек ФСП, ЛЦТ 2026.
 
+**Стенд:** https://159-194-200-243.sslip.io · **Swagger:** https://159-194-200-243.sslip.io/api/docs
+
 Работодатель описывает потребность, получает подборку по **категориям** (специализация × грейд),
-подтверждённым адаптивным тестом и достижениями ФСП, и приглашает кандидата с зарплатной вилкой.
-До принятия приглашения профиль кандидата обезличен.
+подтверждённым адаптивным тестом и достижениями ФСП, видит объяснение «почему в подборке» и сам
+приглашает кандидата с зарплатной вилкой. До принятия приглашения профиль кандидата обезличен,
+после — обе стороны видят контакты. Отклик кандидата на вакансию — дополнительный сценарий.
 
 Три роли: соискатель (`candidate`), рекрутер (`recruiter`), администратор (`admin`).
 
+## Документация
+
+Сопроводительная документация (все 8 пунктов ТЗ 3.4) — [`docs/solution/`](docs/solution/index.md):
+
+1. [Архитектура](docs/solution/01_architecture.md) — роли, контейнеры, модули, экраны, потоки, безопасность
+2. [Механика тестирования](docs/solution/02_testing.md) — параметрические шаблоны, IRT, адаптивный тест, детектор утечек
+3. [Механика подбора и категоризации](docs/solution/03_matching.md) — категории, ранжирование, объяснимость, приглашения
+4. [Валидация и результаты](docs/solution/04_validation.md)
+5. [Интеграция с реестром ФСП](docs/solution/05_fsp_integration.md) — ФСП ID (Keycloak), API реестра, вебхук
+6. [API](docs/solution/06_api.md) и [таблица методов по ролям](docs/solution/api_endpoints.md)
+7. [Библиотеки и компоненты с версиями](docs/solution/07_libraries.md)
+8. [Сборка, развёртывание и запуск](docs/solution/08_deployment.md)
+
 ## Быстрый старт
 
-Нужен Docker (Docker Desktop, 8 ГБ памяти достаточно).
+Нужен Docker с Compose v2 (Docker Desktop, 4–8 ГБ памяти).
 
 ```bash
-cp .env.example .env          # необязательно: без .env работают значения по умолчанию
-docker compose up --build     # весь стек
+git clone https://github.com/Vadik145-beep/fsp-talent.git && cd fsp-talent
+cp .env.example .env              # и поставить VITE_USE_MOCKS=false — фронт на реальном API
+docker compose up -d --build      # весь стек; первый запуск — несколько минут
+docker compose exec backend python -m app.seed   # демо-данные (идемпотентно)
 ```
 
-Только бэкенд (без фронтенда, Keycloak и мока реестра):
+Открыть http://localhost:15173. Проверка API: http://localhost:18000/api/health →
+`{"status": "ok", "db": "ok", ...}`. Остановить: `docker compose down` (с удалением БД — `down -v`).
 
-```bash
-docker compose up --build postgres backend mailpit
-```
+Только прототип интерфейса на моках, без бэкенда: `cd frontend && npm ci && npm run dev`.
 
-Проверка: http://localhost:18000/api/health → `{"status": "ok", "db": "ok", ...}`,
-Swagger — http://localhost:18000/api/docs.
-
-Остановить: `docker compose -p fsp-talent down` (с удалением БД — `down -v`).
-
-## Сервисы и порты
-
-| Сервис | Адрес на хосте | Что это |
-|---|---|---|
-| backend | http://localhost:18000/api | FastAPI; Swagger `/api/docs`, схема `/api/openapi.json` |
-| frontend | http://localhost:15173 | React + Vite (dev-сервер) |
-| postgres | localhost:15432 | PostgreSQL 16, БД `fsp_talent`, пользователь `fsp` / `fsp` |
-| mailpit | http://localhost:18025 (SMTP 11025) | письма в разработке |
-| keycloak | http://localhost:18180 | вход и привязка через ФСП ID, realm `fsp`, админ `admin` / `admin` |
-| fsp-registry-mock | http://localhost:18100 | мок реестра достижений ФСП |
-
-У каждого сервиса есть healthcheck. Бэкенд при старте применяет миграции (`alembic upgrade head`).
+Подробно (переменные окружения, стенд на сервере, частые проблемы) —
+[`docs/solution/08_deployment.md`](docs/solution/08_deployment.md).
 
 ## Демо-учётки
 
@@ -51,112 +53,58 @@ Swagger — http://localhost:18000/api/docs.
 | Рекрутер | recruiter@example.com | demo1234 | компания «Северный код» |
 | Администратор | admin@example.com | demo1234 | оператор платформы |
 
-Все люди, компании и почты в демо-данных вымышлены (`@example.com`).
+Тестовые участники ФСП ID (Keycloak): `fsp.user01` … `fsp.user05`, `fsp.nohistory`, пароль
+`Fsp-demo-2026`. Все люди, компании и почты в демо-данных вымышлены.
 
-## Авторизация до волны 2: заголовок `X-Demo-Role`
+## Сервисы и порты (dev-стек)
 
-Настоящая авторизация (JWT, argon2, подтверждение почты) появится в волне 2. До неё
-API определяет пользователя по заголовкам-заглушкам:
-
-- `X-Demo-Role: candidate | recruiter | admin` — роль. Без заголовка защищённые методы отвечают 401,
-  с чужой ролью — 403.
-- `X-Demo-User-Id: <id>` — необязательно, id из `data/seed/users.json`. По умолчанию — демо-аккаунт
-  роли: соискатель — пользователь 1, рекрутер — 41, админ — 48. Соискатель без ФСП — `26`.
-
-```bash
-curl -H "X-Demo-Role: recruiter" http://localhost:18000/api/matching/needs
-```
-
-Заглушка выключается переменной `DEMO_AUTH_ENABLED=false`. `POST /api/auth/login` с демо-учёткой
-уже отвечает токеном и ставит refresh-cookie, но остальные методы пока смотрят только на заголовки.
-
-## Контракт API v0
-
-- Префикс `/api`, ошибки всегда `{"code": "...", "message": "...", "details": {...}}`.
-- У каждого метода описаны модель ответа, примеры и коды ошибок (`responses`).
-- Схема выгружается в [`docs/api/openapi.json`](docs/api/openapi.json):
-  `python scripts/export_openapi.py` (или `make openapi`). CI проверяет, что файл актуален.
-  По этой схеме фронтенд генерирует TS-типы (`openapi-typescript`).
-- Заглушки отдают данные из `data/seed/*.json` и **не сохраняют** изменения: POST/PUT возвращают
-  результат, но фикстуры не меняются.
-
-Правила видимости, отражённые в схемах:
-
-- рекрутер видит обезличенный профиль (`CandidateCard`, `AnonymousCandidateProfile`): псевдоним
-  «Кандидат #XXXX», категория, темы теста, стек, бейджи ФСП — без ФИО, почты, телефона, мессенджеров
-  и минимальной зарплаты;
-- контакты — отдельный объект (`contacts`, `candidate_contacts`), он заполняется только после
-  принятия приглашения или отклика кандидата на вакансию компании;
-- зарплата «от–до» обязательна в приглашении, вакансии и потребности, «от» ≤ «до»
-  (ошибка `salary_range_invalid` в `details.errors`); вилка ниже минимума кандидата —
-  `422 salary_below_expectations` без раскрытия суммы;
-- статусы приглашения: `sent`, `viewed`, `accepted`, `declined`, `expired`, `withdrawn`;
-  недопустимый переход — `409 invalid_transition`; причины отказа — enum `DeclineReason`.
-
-## Фикстуры `data/seed`
-
-Один источник данных для моков фронтенда (MSW) и заглушек бэкенда. Генерируются детерминированно:
-
-```bash
-python scripts/seed/generate_fixtures.py    # make fixtures
-```
-
-Каждый файл — массив объектов с `id`; поля совпадают со схемами API (это проверяет `tests/test_fixtures.py`).
-
-| Файл | Схема API | Примечание |
+| Сервис | Адрес на хосте | Что это |
 |---|---|---|
-| `specializations`, `grades`, `categories`, `topics`, `skills`, `decline_reasons` | `Specialization`, `Grade`, `Category`, `Topic`, `Skill`, `DeclineReasonItem` | справочники |
-| `users` | `UserRecord` | 40 соискателей, 7 рекрутеров, 2 админа |
-| `demo_accounts` | — | учётки для входа (не API) |
-| `candidates` | `CandidateProfile` | полный профиль (видит сам кандидат). Рекрутеру — проекция `CandidateCard`, см. `backend/app/candidates/service.py::to_card` |
-| `companies`, `recruiters` | `Company`, `Recruiter` | 3 компании |
-| `invitations` | `InvitationRecord` | API-ответ `Invitation` = запись + `candidate`, `candidate_contacts`, `recruiter_contacts` по роли |
-| `invitation_events` | `InvitationEvent` | |
-| `vacancies` | `Vacancy` | |
-| `applications` | `ApplicationRecord` | API-ответ `Application` = запись + `candidate`, `candidate_contacts` (для рекрутера) |
-| `needs` | `Need` | потребности рекрутеров |
-| `items` | `ItemDetail` | 30 шаблонов; в списке (`ItemSummary`) нет `description` и `preview_variants` |
-| `test_sessions`, `grade_history`, `survey_questions` | `TestSession`, `GradeHistoryEntry`, `SurveyQuestion` | |
-| `fsp_achievements` | `FspAchievement` | у FSP-000001…020; FSP-000031…035 привязаны без истории |
-| `regular_tasks`, `task_submissions` | `RegularTask`, `TaskSubmission` | |
-| `reports`, `audit_log` | `Report`, `AuditEntry` | |
-| `platform_settings` | `PlatformSettings` | один объект `id = "default"` |
-| `validation_charts`, `vacancy_tests` | `ValidationChart`, `VacancyTestResult` | графики валидации — заглушка (`is_stub: true`) |
+| frontend | http://localhost:15173 | React + Vite |
+| backend | http://localhost:18000/api | FastAPI; Swagger `/api/docs`, схема `/api/openapi.json` |
+| postgres | localhost:15432 | PostgreSQL 16, БД `fsp_talent`, пользователь `fsp` / `fsp` |
+| mailpit | http://localhost:18025 (SMTP 11025) | письма подтверждения и приглашений |
+| keycloak | http://localhost:18180 | ФСП ID, realm `fsp`, админ `admin` / `admin` |
+| fsp-registry-mock | http://localhost:18100 | мок реестра достижений ФСП |
+
+Стенд на сервере — `infra/stand/` (Caddy + HTTPS на одном адресе, выкладка `deploy.sh`).
 
 ## Структура репозитория
 
 ```
-backend/                 FastAPI-приложение
+backend/                 FastAPI-приложение (модульный монолит)
   app/
-    core/                настройки, БД, ошибки, логирование, заглушка авторизации
-    common/              общие enum'ы, схемы, чтение фикстур
+    core/ common/        настройки, БД, ошибки, безопасность, enum'ы
     auth users catalog candidates companies testing fsp
     matching invitations vacancies tasks admin eval
                          модули: router / service / repository / models / schemas
-    testing/engine/      адаптивный движок теста (отдельный трек)
+    testing/engine/      движок адаптивного теста (IRT, CAT, шаблоны, утечки, калибровка)
+    nlp/                 разбор резюме, потребностей, вакансий
+    seed/                загрузка демо-данных
   alembic/               миграции
   tests/
 frontend/                React + TypeScript + Vite
 services/fsp-registry-mock/   мок реестра ФСП
-infra/keycloak/          импорт realm `fsp`
+infra/keycloak/          realm `fsp` для ФСП ID
+infra/stand/             стенд: compose, Caddyfile, deploy.sh
 data/seed/               фикстуры (моки фронта = сид бэкенда)
-docs/architecture/       ER-диаграмма и архитектура
-docs/api/                выгрузка OpenAPI
+data/samples/            образцы резюме, вакансий, формулировок потребностей
+docs/                    документация (solution/ — для жюри), OpenAPI, ER-схема, валидация
 scripts/                 генератор фикстур, выгрузка OpenAPI
 ```
 
-## Разработка бэкенда
+## Разработка
 
 ```bash
-cd backend
-pip install -e ".[dev]"               # Python 3.12+
-docker compose up -d postgres          # БД на localhost:15432
-DATABASE_URL=postgresql+asyncpg://fsp:fsp@localhost:15432/fsp_talent alembic upgrade head
-DATABASE_URL=postgresql+asyncpg://fsp:fsp@localhost:15432/fsp_talent pytest
-ruff check . && ruff format --check . && mypy
+cd backend && pip install -e ".[dev]"        # Python 3.12+
+make check       # ruff + mypy + pytest + актуальность docs/api/openapi.json (нужна БД на :15432)
+make openapi     # выгрузить docs/api/openapi.json
+cd frontend && npm run gen:api               # TS-типы из OpenAPI
 ```
 
-Или из корня: `make check` (lint + mypy + pytest + проверка OpenAPI).
+Контракт API: префикс `/api`, ошибки всегда `{"code": "...", "message": "...", "details": {...}}`,
+авторизация `Authorization: Bearer <JWT>` (вход `POST /api/auth/login`), refresh — httpOnly cookie.
+В dev (`DEMO_AUTH_ENABLED=true`) можно вместо токена передать `X-Demo-Role` и `X-Demo-User-Id`.
 
 ## Лицензия
 
