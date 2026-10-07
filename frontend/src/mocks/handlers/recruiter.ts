@@ -651,10 +651,12 @@ function testHistory(candidateId: number): S['TestHistoryPoint'][] {
     status: string
     finished_at: string | null
     result_category: string | null
+    passed: boolean | null
     theta: number | null
   }>
+  // Как у бэкенда: только подтверждённые тесты, категория — присвоенная
   return sessions
-    .filter((s) => s.candidate_id === candidateId && s.status === 'finished' && s.finished_at && s.result_category && s.theta !== null)
+    .filter((s) => s.candidate_id === candidateId && s.status === 'finished' && s.passed && s.finished_at && s.result_category && s.theta !== null)
     .map((s) => ({ date: s.finished_at as string, category: s.result_category as string, theta: s.theta as number }))
     .sort((a, b) => a.date.localeCompare(b.date))
 }

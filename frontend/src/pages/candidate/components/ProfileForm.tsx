@@ -3,7 +3,7 @@ import { Plus, Sparkles, Trash2 } from 'lucide-react'
 import { Button, Card, CardHeader, Input, Select, Tag, TagInput, Textarea } from '@/shared/ui'
 import { useSkills, type S } from '../api'
 import { LINK_TYPE_LABELS, WORK_FORMAT_OPTIONS } from '../labels'
-import { validateProfile, type ParsedConfidence, type ProfileFormState } from './profileFormModel'
+import { normalizeUrl, validateProfile, type ParsedConfidence, type ProfileFormState } from './profileFormModel'
 
 const ROLE_SUGGESTIONS = ['Разработчик', 'Тимлид', 'Ментор', 'Архитектор', 'Аналитик', 'Ревьюер', 'Наставник']
 const SOFT_SUGGESTIONS = [
@@ -154,10 +154,12 @@ export function ProfileForm({
                 </Tag>
               ))}
             </div>
-            {allErrors.work_formats && (
+            {allErrors.work_formats ? (
               <p className="mt-1.5 text-[13px] text-danger" role="alert">
                 {allErrors.work_formats}
               </p>
+            ) : (
+              parsedHint('work_formats') && <p className="mt-1.5 text-[13px]">{parsedHint('work_formats')}</p>
             )}
           </fieldset>
           <TagInput
@@ -235,6 +237,10 @@ export function ProfileForm({
                 placeholder="https://github.com/…"
                 value={link.url}
                 onChange={(e) => set('links', value.links.map((l, j) => (j === i ? { ...l, url: e.target.value } : l)))}
+                onBlur={() => {
+                  const url = normalizeUrl(link.url)
+                  if (url !== link.url) set('links', value.links.map((l, j) => (j === i ? { ...l, url } : l)))
+                }}
                 className={parsedClass('links')}
               />
               <Button

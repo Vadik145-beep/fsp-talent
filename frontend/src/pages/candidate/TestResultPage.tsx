@@ -70,9 +70,9 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
   const rec = r.recommendation
   const recGrade: Grade | null =
     rec.action === 'offer_lower'
-      ? (GRADES[GRADES.indexOf(r.target_grade) - 1] ?? null)
+      ? (rec.target_grade ?? GRADES[GRADES.indexOf(r.target_grade) - 1] ?? null)
       : rec.action === 'offer_higher'
-        ? (GRADES[GRADES.indexOf(r.target_grade) + 1] ?? null)
+        ? (rec.target_grade ?? GRADES[GRADES.indexOf(r.target_grade) + 1] ?? null)
         : null
   const canStartNow = recGrade && !rec.available_at
 
@@ -115,9 +115,21 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
       <Card>
         <CardHeader title="Ваш уровень" description="Оценка по модели IRT: чем выше число, тем сложнее задачи вы решаете." />
         <p className="text-2xl font-bold text-ink tabular-nums">
-          {formatTheta(r.theta)} ± {formatTheta(plusMinus)}{' '}
-          <ArrowRight className="inline size-6 align-[-3px] text-subtle" aria-hidden /> {GRADE_LABELS[r.result_grade]}
+          {formatTheta(r.theta)} ± {formatTheta(plusMinus)}
+          {/* Не подтверждён — result_grade это уровень по θ; подтверждён — присвоенный грейд, он в карточке выше. */}
+          {!r.passed && (
+            <>
+              {' '}
+              <ArrowRight className="inline size-6 align-[-3px] text-subtle" aria-hidden /> {GRADE_LABELS[r.result_grade]}
+            </>
+          )}
         </p>
+        {r.passed && rec.action === 'offer_higher' && recGrade && (
+          <p className="mt-2 flex items-center gap-2 text-[15px] font-semibold text-success">
+            <TrendingUp className="size-4 shrink-0" aria-hidden />
+            Ваш уровень выше {GRADE_LABELS[r.result_grade]} — можно пройти тест на {GRADE_LABELS[recGrade]}
+          </p>
+        )}
         <p className="mt-1 text-[15px] text-muted">
           С вероятностью 95 % ваш уровень между {formatTheta(r.ci_low)} и {formatTheta(r.ci_high)}. Пороги: Junior от −1, Middle от 0,
           Senior от 1.

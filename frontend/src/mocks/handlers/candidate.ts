@@ -271,7 +271,9 @@ function resumeFields(c: CandidateRow): S['ResumeParseResponse']['fields'] {
     roles_in_team: { value: c.roles_in_team?.length ? c.roles_in_team : ['Разработчик'], confidence: 0.55 },
     soft_skills: { value: c.soft_skills?.length ? c.soft_skills : ['Коммуникация'], confidence: 0.48 },
     about: { value: c.about || 'Разрабатываю серверную часть веб-сервисов.', confidence: 0.6 },
-    links: { value: (c.links ?? []).map((l) => l.url), confidence: 0.9 },
+    work_formats: { value: c.work_formats.length ? c.work_formats : ['hybrid'], confidence: 0.8 },
+    // Как у бэкенда: ссылки из резюме приходят со схемой https://
+    links: { value: (c.links ?? []).map((l) => (/^https?:\/\//i.test(l.url) ? l.url : `https://${l.url}`)), confidence: 0.9 },
   }
 }
 
@@ -699,6 +701,7 @@ function recommendation(session: SessionRow, c: CandidateRow): S['Recommendation
           ? `Уверенный результат. Тест на ${GRADE_LABELS[higher]} станет доступен после кулдауна смены грейда.`
           : `Уверенный результат — можно пройти тест на ${GRADE_LABELS[higher]}.`,
         available_at: at,
+        target_grade: higher,
       }
     }
     return { action: 'stay', message: `Грейд ${GRADE_LABELS[target]} подтверждён.`, available_at: null }

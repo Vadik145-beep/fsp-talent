@@ -11,10 +11,11 @@ from app.seed.testkit import reseed_sync, sql_sync
 from app.testing.bank import registry
 from app.testing.formats import answer_payload
 from app.testing.settings import get_testing_settings
-from tests.conftest import ADMIN, CANDIDATE, as_role
+from tests.conftest import ADMIN, CANDIDATE, RECRUITER, as_role
 
 CAND_26 = as_role("candidate", 26)  # Frontend · Junior, без ФСП
 CAND_27 = as_role("candidate", 27)
+CAND_40 = as_role("candidate", 40)  # без категории и без сессий
 ITEM_VIEW_KEYS = {
     "instance_id",
     "format",
@@ -282,6 +283,60 @@ def test_fixture_sessions_visible_in_history(client: TestClient) -> None:
     assert 1 in {s["id"] for s in sessions}
     res = client.get("/api/testing/sessions/1/result", headers=CANDIDATE).json()
     assert res["category"] == "backend:middle" and res["passed"]
+
+
+def test_first_pass_above_claimed_shows_assigned_category(client: TestClient) -> None:
+    """Первый тест на Middle с θ выше Senior: везде присвоенная Middle, Senior — только совет."""
+    state = start(client, CAND_40, "backend", "middle")
+    run_to_end(client, CAND_40, state, right=True)
+    sid = state["session"]["id"]
+    res = client.get(f"/api/testing/sessions/{sid}/result", headers=CAND_40).json()
+    assert res["passed"] and res["outcome"] == "suggest_higher"
+    assert res["result_grade"] == "middle"
+    assert res["category"] == "backend:middle" and res["category_label"] == "Backend · Middle"
+    rec = res["recommendation"]
+    assert rec["action"] == "offer_higher" and rec["target_grade"] == "senior"
+    decision = sql_sync(
+        "SELECT engine_state->'decision', result_grade FROM test_sessions WHERE id = :id",
+        {"id": sid},
+    )[0]
+    assert decision[0]["estimated_grade"] == "senior" and decision[0]["granted_grade"] == "middle"
+    assert decision[1] == "middle"
+
+    profile = client.get("/api/candidates/me/profile", headers=CAND_40).json()
+    assert profile["category"] == "backend:middle"
+    assert profile["grade_changed_at"] is None  # первое присвоение — не смена грейда
+    grade = client.get("/api/testing/grade", headers=CAND_40).json()
+    session = next(s for s in grade["tests"] if s["id"] == sid)
+    assert session["result_grade"] == "middle" and session["result_category"] == "backend:middle"
+    events = [(h["event"], h["grade_from"], h["grade_to"]) for h in grade["history"]]
+    assert ("grade_changed", None, "middle") in events
+    assert ("offer_higher", "middle", "senior") in events
+    seen = client.get("/api/candidates/40", headers=RECRUITER).json()
+    assert seen["category"] == "backend:middle"
+    assert [h["category"] for h in seen["test_history"]] == ["backend:middle"]
+
+
+def test_old_session_with_theta_grade_shows_granted(client: TestClient) -> None:
+    """Сессии до исправления хранили в result_grade уровень по θ — показываем присвоенный."""
+    state = start(client, CAND_40, "backend", "middle")
+    run_to_end(client, CAND_40, state, right=True)
+    sid = state["session"]["id"]
+    sql_sync("UPDATE test_sessions SET result_grade = 'senior' WHERE id = :id", {"id": sid})
+    res = client.get(f"/api/testing/sessions/{sid}/result", headers=CAND_40).json()
+    assert res["category"] == "backend:middle"
+    seen = client.get("/api/candidates/40", headers=RECRUITER).json()
+    assert [h["category"] for h in seen["test_history"]] == ["backend:middle"]
+
+
+def test_failed_session_keeps_theta_grade(client: TestClient) -> None:
+    state = start(client, CAND_40, "backend", "middle")
+    run_to_end(client, CAND_40, state, right=False)
+    sid = state["session"]["id"]
+    res = client.get(f"/api/testing/sessions/{sid}/result", headers=CAND_40).json()
+    assert not res["passed"] and res["result_grade"] != "middle"
+    seen = client.get("/api/candidates/me/profile", headers=CAND_40).json()
+    assert seen["category"] is None
 
 
 # ---------------------------------------------------------------- админка: банк, утечки, калибровка

@@ -43,6 +43,17 @@ function guessLinkType(url: string): S['LinkType'] {
   return 'portfolio'
 }
 
+/** Ссылка без схемы («github.com/имя») → «https://github.com/имя». Пустую строку не трогаем. */
+export function normalizeUrl(raw: string): string {
+  const url = raw.trim()
+  if (!url) return ''
+  if (/^[a-z][a-z\d+.-]*:\/\//i.test(url)) return url
+  return `https://${url.replace(/^\/+/, '')}`
+}
+
+const WORK_FORMAT_CODES: readonly WorkFormat[] = ['office', 'hybrid', 'remote']
+const isWorkFormat = (v: string): v is WorkFormat => (WORK_FORMAT_CODES as readonly string[]).includes(v)
+
 const asString = (v: unknown) => (typeof v === 'string' ? v : typeof v === 'number' ? String(v) : '')
 const asList = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [])
 
@@ -76,8 +87,19 @@ export function applyParsedResume(
         form[key] = asList(v)
         confidence[key] = field.confidence
         break
+      case 'work_formats': {
+        // Бэкенд отдаёт список кодов; на всякий случай принимаем и одну строку.
+        const formats = [...new Set((typeof v === 'string' ? [v] : asList(v)).map((x) => x.trim().toLowerCase()))].filter(isWorkFormat)
+        if (!formats.length) break
+        form.work_formats = formats
+        confidence.work_formats = field.confidence
+        break
+      }
       case 'links':
-        form.links = asList(v).map((url) => ({ type: guessLinkType(url), url }))
+        form.links = asList(v)
+          .map(normalizeUrl)
+          .filter(Boolean)
+          .map((url) => ({ type: guessLinkType(url), url }))
         confidence.links = field.confidence
         break
       default:
@@ -101,7 +123,7 @@ export function validateProfile(f: ProfileFormState): Record<string, string> {
   const years = parseYears(f.experience_years)
   if (years === null || years < 0 || years > 50) e.experience_years = 'Стаж — число от 0 до 50'
   if (f.min_salary.trim() && !/^\d+$/.test(f.min_salary.replace(/\s/g, ''))) e.min_salary = 'Только цифры, в рублях'
-  if (f.links.some((l) => !URL_RE.test(l.url.trim()))) e.links = 'Ссылка должна начинаться с https://'
+  if (f.links.some((l) => !URL_RE.test(normalizeUrl(l.url)))) e.links = 'Проверьте адрес ссылки, например github.com/имя'
   if (f.telegram.trim() && !/^@?[A-Za-z0-9_]{4,}$/.test(f.telegram.trim())) e.telegram = 'Ник в Telegram: латиница, цифры, «_»'
   return e
 }
@@ -120,7 +142,7 @@ export function toUpdate(f: ProfileFormState): CandidateProfileUpdate {
     experience_years: parseYears(f.experience_years) ?? 0,
     soft_skills: f.soft_skills,
     about: f.about.trim(),
-    links: f.links.map((l) => ({ ...l, url: l.url.trim() })).filter((l) => l.url),
+    links: f.links.map((l) => ({ ...l, url: normalizeUrl(l.url) })).filter((l) => l.url),
     min_salary: salary ? Number(salary) : null,
   }
 }

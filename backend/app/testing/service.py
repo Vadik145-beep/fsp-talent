@@ -23,7 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.candidates.grading import attempts_of, last_grade_change
 from app.candidates.models import CandidateProfile
-from app.candidates.repository import CandidateDb, session_record
+from app.candidates.repository import CandidateDb, session_grade, session_record
 from app.candidates.service import CandidateProfileService
 from app.catalog.clock import MSK, as_msk, now_msk
 from app.catalog.models import Category, Specialization, Topic
@@ -74,6 +74,15 @@ def _elapsed(since: datetime, now: datetime) -> float:
 
 def _grade_idx(grade: str | None) -> int:
     return GRADES.index(grade) if grade else -1
+
+
+def _assigned_grade(decision: GradeDecision, target: str, previous: str | None) -> str:
+    """Грейд, который получает кандидат при подтверждённом тесте: заявленный,
+    но не ниже действующего (принудительно не понижаем)."""
+    granted = decision.granted_grade or target
+    if previous and _grade_idx(granted) < _grade_idx(previous):
+        return previous
+    return granted
 
 
 class TestingDbService:
@@ -574,6 +583,9 @@ class TestingDbService:
             res.theta, res.se, ts.target_grade, current_grade=current, thresholds=thresholds
         )
         passed = decision.outcome != "suggest_lower" and not abandoned
+        # Подтверждён — грейд сессии = присвоенный (его видит работодатель); уровень по θ
+        # хранится отдельно (estimated_grade) и идёт только в рекомендацию.
+        assigned = _assigned_grade(decision, ts.target_grade, current) if passed else None
         labels = await self.topic_labels()
         topic_scores = [
             {
@@ -589,7 +601,7 @@ class TestingDbService:
         ts.finished_at = now
         ts.theta = round(res.theta, 4)
         ts.se = round(res.se, 4)
-        ts.result_grade = decision.estimated_grade
+        ts.result_grade = assigned or decision.estimated_grade
         ts.passed = passed
         ts.topic_scores = topic_scores
         self._save_state(
@@ -599,7 +611,8 @@ class TestingDbService:
             ci_high=round(res.ci_high, 4),
             decision={
                 "outcome": "abandoned" if abandoned else decision.outcome,
-                "granted_grade": decision.granted_grade if passed else current,
+                "granted_grade": assigned if passed else current,
+                "estimated_grade": decision.estimated_grade,
                 "suggested_grade": None if abandoned else decision.suggested_grade,
                 "reason": "Тест не завершён: истекло время ответа."
                 if abandoned
@@ -610,7 +623,7 @@ class TestingDbService:
                 "stop_reason": res.stop_reason,
             },
         )
-        await self._apply_grade(ts, profile, decision, passed, abandoned, now, topic_scores)
+        await self._apply_grade(ts, profile, decision, assigned, abandoned, now, topic_scores)
         await self.session.flush()
         await journal.check_session_anomaly(self.session, ts.id)
         every = self.settings.leak_scan_every
@@ -637,7 +650,7 @@ class TestingDbService:
         ts: TestSession,
         profile: CandidateProfile,
         decision: GradeDecision,
-        passed: bool,
+        assigned: str | None,
         abandoned: bool,
         now: datetime,
         topic_scores: list[dict[str, Any]],
@@ -670,7 +683,7 @@ class TestingDbService:
                 previous,
                 None,
             )
-        elif not passed:
+        elif assigned is None:
             keep = f" Грейд {GRADE_LABELS[previous]} сохраняется." if previous else ""
             event(
                 "test_failed",
@@ -686,9 +699,7 @@ class TestingDbService:
                     decision.suggested_grade,
                 )
         else:
-            granted = decision.granted_grade or ts.target_grade
-            if previous and _grade_idx(granted) < _grade_idx(previous):
-                granted = previous  # принудительно не понижаем
+            granted = assigned
             event(
                 "test_passed",
                 f"Подтверждён грейд {GRADE_LABELS[ts.target_grade]}, {theta_txt}",
@@ -744,7 +755,8 @@ class TestingDbService:
         se = ts.se
         ci_low = state.get("ci_low", ts.theta - 1.645 * se)
         ci_high = state.get("ci_high", ts.theta + 1.645 * se)
-        result_grade = ts.result_grade or thresholds.grade_for(ts.theta)
+        # Подтверждён — присвоенный грейд (как в профиле у работодателя), иначе — уровень по θ.
+        result_grade = session_grade(ts) or thresholds.grade_for(ts.theta)
         category = f"{ts.specialization}:{result_grade}"
         label = await self.session.scalar(select(Category.label).where(Category.code == category))
         action = ACTIONS.get(outcome, "retry_later")
