@@ -104,6 +104,10 @@ sequenceDiagram
 | `GET /participants?ids=FSP-000001,FSP-000002` | пакетно до 100 ID: `{items[], not_found[]}` — для ночной синхронизации |
 | `GET /dictionaries` | дисциплины (`product`, `algorithmic`, `security`, `uav`, `robotics`) и уровни (`regional`, `national`, `international`) |
 
+Коды дисциплин реестра `security` и `uav` платформа при синхронизации переводит в свои
+`cybersecurity` и `uas` (`DISCIPLINE_FROM_REGISTRY` в `backend/app/fsp/service.py`);
+остальные коды совпадают.
+
 Ошибки — в формате платформы `{"code", "message", "details"}`: `404 participant_not_found`,
 `422 invalid_fsp_id`. **Участник без истории — не ошибка:** `200`, `has_history: false`,
 `items: []`.

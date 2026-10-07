@@ -38,8 +38,9 @@ ROLE_LABELS = {
     "any": "любой вошедший",
     "public": "без входа",
     "registry": "реестр ФСП (HMAC-подпись)",
+    "ats": "ATS компании (X-Api-Token)",
 }
-ROLE_ORDER = ["public", "registry", "any", "candidate", "recruiter", "admin"]
+ROLE_ORDER = ["public", "registry", "ats", "any", "candidate", "recruiter", "admin"]
 
 TAG_TITLES = {
     "system": "Служебное",
@@ -96,24 +97,71 @@ def _annotation_names(fn: ast.AsyncFunctionDef | ast.FunctionDef) -> set[str]:
     return names
 
 
+def _module_name(app_dir: Path, path: Path) -> str:
+    rel = path.relative_to(app_dir.parent).with_suffix("")
+    return ".".join(rel.parts)
+
+
+def _router_prefixes(tree: ast.Module) -> dict[str, str]:
+    """Имя переменной `APIRouter(...)` на уровне модуля → её prefix."""
+    prefixes: dict[str, str] = {}
+    for node in tree.body:
+        if (
+            isinstance(node, ast.Assign)
+            and isinstance(node.value, ast.Call)
+            and isinstance(node.value.func, ast.Name)
+            and node.value.func.id == "APIRouter"
+        ):
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    prefixes[target.id] = _str_kw(node.value, "prefix") or ""
+    return prefixes
+
+
+def nested_prefixes(app_dir: Path) -> dict[tuple[str, str], str]:
+    """Роутер, подключённый внутрь другого (`parent.include_router(child)`), получает префикс
+    родителя: (модуль, имя роутера) → префикс родителя. Например, роутер интеграций ATS
+    подключён в роутер компаний и живёт под `/api/companies`."""
+    result: dict[tuple[str, str], str] = {}
+    for path in sorted(app_dir.rglob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        prefixes = _router_prefixes(tree)
+        imported: dict[str, tuple[str, str]] = {}
+        for node in tree.body:
+            if isinstance(node, ast.ImportFrom) and node.module:
+                for alias in node.names:
+                    imported[alias.asname or alias.name] = (node.module, alias.name)
+        for node in tree.body:
+            call = node.value if isinstance(node, ast.Expr) else None
+            if not (
+                isinstance(call, ast.Call)
+                and isinstance(call.func, ast.Attribute)
+                and call.func.attr == "include_router"
+                and isinstance(call.func.value, ast.Name)
+                and call.func.value.id in prefixes
+                and call.args
+                and isinstance(call.args[0], ast.Name)
+                and call.args[0].id in imported
+            ):
+                continue
+            parent = prefixes[call.func.value.id] + (_str_kw(call, "prefix") or "")
+            result[imported[call.args[0].id]] = parent
+    return result
+
+
 def roles_from_code(app_dir: Path) -> dict[tuple[str, str], tuple[str, ...]]:
     """(МЕТОД, /api/путь) → роли по коду роутеров."""
     result: dict[tuple[str, str], tuple[str, ...]] = {}
+    nested = nested_prefixes(app_dir)
     for path in sorted(app_dir.rglob("*.py")):
         if "engine" in path.parts:
             continue
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-        prefixes: dict[str, str] = {}
-        for node in tree.body:
-            if (
-                isinstance(node, ast.Assign)
-                and isinstance(node.value, ast.Call)
-                and isinstance(node.value.func, ast.Name)
-                and node.value.func.id == "APIRouter"
-            ):
-                for target in node.targets:
-                    if isinstance(target, ast.Name):
-                        prefixes[target.id] = _str_kw(node.value, "prefix") or ""
+        module = _module_name(app_dir, path)
+        prefixes = {
+            name: nested.get((module, name), "") + prefix
+            for name, prefix in _router_prefixes(tree).items()
+        }
         if not prefixes:
             continue
         for node in ast.walk(tree):
@@ -147,6 +195,8 @@ def who(op: dict, roles: tuple[str, ...] | None) -> tuple[str, ...]:
     }
     if "x-fsp-signature" in params:
         return ("registry",)
+    if any("APIKeyHeader" in req for req in op.get("security", [])):
+        return ("ats",)
     if roles:
         return roles
     if op.get("security"):
@@ -247,7 +297,8 @@ def build(openapi_path: Path, app_dir: Path) -> tuple[str, list[str]]:
         "",
         "Метод, доступный двум ролям, учтён в обеих строках. "
         "«Без входа» — публичные методы (регистрация, вход, справочники, health). "
-        "«Любой вошедший» — нужен JWT, роль не важна. Метод с двумя ролями отдаёт каждой свою "
+        "«Любой вошедший» — нужен JWT, роль не важна. «ATS компании» — без входа пользователя, "
+        "по API-токену компании в заголовке `X-Api-Token`. Метод с двумя ролями отдаёт каждой свою "
         "проекцию данных (например, приглашения: кандидат — полученные, "
         "рекрутер — своей компании).",
         "",

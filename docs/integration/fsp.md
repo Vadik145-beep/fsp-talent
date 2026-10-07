@@ -74,7 +74,7 @@ sequenceDiagram
 Правила привязки:
 
 - один `fsp_id` — один профиль на платформе (повторная привязка к другому аккаунту — ошибка
-  `409 fsp_id_already_linked`);
+  `409 fsp_id_taken`; если к профилю уже привязан другой ФСП ID — `409 fsp_already_linked`);
 - **отвязка** удаляет связь и кэш достижений, ФСП-скор становится «нет данных»;
 - «Войти через ФСП ID» работает только для уже привязанного профиля; если связи нет —
   предлагаем войти обычным способом и привязать;
@@ -92,6 +92,10 @@ sequenceDiagram
 | `GET /participants/{fsp_id}/achievements` | `{fsp_id, has_history, total, items[], updated_at}`; фильтры `discipline`, `level` |
 | `GET /participants?ids=FSP-000001,FSP-000002` | пакетно до 100 ID: `{items[], not_found[]}` — для ночной синхронизации |
 | `GET /dictionaries` | справочники дисциплин и уровней с подписями |
+
+Коды дисциплин реестра `security` и `uav` платформа при синхронизации переводит в свои
+`cybersecurity` и `uas` (`DISCIPLINE_FROM_REGISTRY` в `backend/app/fsp/service.py`);
+остальные коды совпадают.
 
 Ошибки — в общем формате платформы: `{"code", "message", "details"}`.
 `404 participant_not_found` — такого ID нет; `422 invalid_fsp_id` — неверный формат.
@@ -150,12 +154,12 @@ sequenceDiagram
     participant DB as БД fsp-talent
 
     Note over R,B: Вебхук (предложение): новый протокол соревнования опубликован
-    R->>B: POST /api/fsp/webhook {event: "participant.achievements_updated", fsp_id, updated_at}<br/>заголовок X-FSP-Signature: HMAC-SHA256(тело, общий секрет)
-    B->>B: проверить подпись и время (не старше 5 минут), идемпотентность по event_id
-    B-->>R: 202 Accepted
+    R->>B: POST /api/fsp/webhook {event_id, event: "participant.achievements_updated", fsp_id, updated_at, sent_at}<br/>заголовок X-FSP-Signature: sha256=<hex HMAC-SHA256 тела>
+    B->>B: проверить подпись (FSP_WEBHOOK_SECRET) и sent_at (не старше 5 минут)
     B->>R: GET /participants/{fsp_id}/achievements
     R-->>B: актуальный список
-    B->>DB: обновить кэш, пересчитать ФСП-скор и бейджи
+    B->>DB: заменить кэш целиком, пересчитать ФСП-скор и бейджи
+    B-->>R: 202 {status: "resynced", achievements_count}
 
     Note over B,DB: Резервный путь — ночная синхронизация пакетами по 100 ID
     B->>R: GET /participants?ids=…(до 100)
@@ -238,7 +242,9 @@ S = Σ по достижениям  L(уровень) × R(результат) �
 - Привязка ФСП ID — с отдельного согласия кандидата «получать мои результаты из реестра ФСП».
   Отзыв согласия = отвязка и удаление кэша.
 - Из реестра храним только поля из раздела 1. Каждое обращение к реестру пишется в журнал.
-- Вебхук принимается только с верной HMAC-подписью; повтор события не создаёт дублей.
+- Вебхук принимается только с верной HMAC-подписью (`X-FSP-Signature: sha256=<hex>`).
+  Отдельной идемпотентности по `event_id` нет и она не нужна: повтор события безопасен —
+  синхронизация заменяет кэш участника целиком, дублей не бывает.
 
 ## 9. Учебный стенд
 

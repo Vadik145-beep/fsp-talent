@@ -69,7 +69,7 @@ python -m app.testing.sync_bank`.
 
 ```bash
 curl http://localhost:18000/api/health
-# {"status":"ok","version":"0.1.0","db":"ok","db_revision":"0005_merge_wave3"}
+# {"status":"ok","version":"0.1.0","db":"ok","db_revision":"0007_merge_wave5"}
 
 curl -s -H 'Content-Type: application/json' \
   -d '{"email":"recruiter@example.com","password":"demo1234"}' \
@@ -120,13 +120,15 @@ docker compose down -v     # остановить и удалить данные
 `KEYCLOAK_INTERNAL_URL`, `KEYCLOAK_REALM=fsp`, `KEYCLOAK_CLIENT_ID=fsp-talent`,
 `FSP_REGISTRY_URL`, `SEED_DIR`.
 
-Дополнительные настройки бэкенда (переменные окружения контейнера `backend`, значения по
-умолчанию — в коде):
+Дополнительные настройки бэкенда — переменные окружения контейнера `backend`, значения по
+умолчанию — в коде. Dev-compose их в контейнер **не передаёт** (действуют значения
+по умолчанию); чтобы поменять, добавьте строку в `environment` сервиса `backend`. На стенде
+часть из них задаётся в `infra/stand/.env`:
 
 | Переменная | По умолчанию | Смысл |
 |---|---|---|
 | `SEED_ON_STARTUP` | `false` | загружать демо-данные при старте (на стенде `true`) |
-| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | `admin@example.com` / `demo1234` | администратор, создаётся при старте, если его нет |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | `admin@example.com` / `demo1234` | администратор, создаётся при старте, если такой почты ещё нет; локально всегда `demo1234` (строка `ADMIN_PASSWORD` в корневом `.env` в контейнер не попадает), на стенде — из `infra/stand/.env` |
 | `CORS_ORIGINS` | `["http://localhost:15173","http://127.0.0.1:15173"]` | разрешённые origin фронта (JSON-список) |
 | `ACCESS_TOKEN_TTL_MIN` / `REFRESH_TOKEN_TTL_DAYS` | `15` / `30` | срок жизни токенов |
 | `LOGIN_MAX_ATTEMPTS` / `LOGIN_WINDOW_MIN` | `5` / `15` | лимит неудачных входов |
@@ -136,6 +138,10 @@ docker compose down -v     # остановить и удалить данные
 | `TESTING_CAT_SE_STOP` / `TESTING_CAT_MAX_ITEMS` / `TESTING_CAT_MIN_ITEMS` | `0.30` / `20` / `6` | правило остановки теста |
 | `TESTING_LEAK_SCAN_EVERY` | `50` | детектор утечек после каждой N-й сессии |
 | `RESUME_MAX_BYTES` / `RESUME_MAX_PAGES` | 5 МБ / `10` | ограничения PDF-резюме |
+| `TASKS_FRESHNESS_ANSWER_BONUS` / `TASKS_FRESHNESS_GRADE_BASE` / `TASKS_FRESHNESS_GRADE_PER_POINT` | `0.08` / `0.04` / `0.03` | прибавки свежести профиля за ответ и за оценку 0–3 |
+| `TASKS_FRESHNESS_HALF_LIFE_DAYS` / `TASKS_MAX_ASSIGN_PER_RUN` | `30` / `50` | полураспад свежести; сколько кандидатов получают задание за проход |
+| `INTEGRATIONS_WEBHOOK_MAX_ATTEMPTS` / `INTEGRATIONS_WEBHOOK_TIMEOUT_SEC` | `5` / `5` | попытки доставки вебхука ATS и таймаут запроса |
+| `INTEGRATIONS_ALLOW_PRIVATE_URLS` | `true` | разрешить адреса localhost и частных сетей в вебхуках; на проде — `false` (защита от SSRF) |
 
 Пороги θ, кулдауны, квота и срок приглашений, веса ранжирования — не переменные, а настройки
 платформы в БД: их меняет администратор на экране «Справочники».
@@ -190,6 +196,33 @@ docker compose -f infra/stand/compose.yml --env-file infra/stand/.env logs -f ba
 Резервная копия БД:
 `docker compose --env-file .env exec -T postgres pg_dump -U fsp fsp_talent > backup.sql`.
 
+## 8.6. Периодические задачи (cron)
+
+Бэкенд не держит фоновых потоков: периодические работы — отдельные команды, которые
+запускаются в контейнере `backend` (их же можно вызвать без cron — см. последнюю строку).
+
+| Команда | Что делает | Как часто |
+|---|---|---|
+| `python -m app.tasks daily` | просрочить регулярные задания без ответа, снизить свежесть профилей (полураспад 30 дней) | раз в сутки |
+| `python -m app.tasks distribute` | раздать активные задания кандидатам без активного задания | раз в неделю (или раз в N дней) |
+| `python -m app.integrations` | повторно отправить вебхуки ATS, у которых подошло время повтора | раз в минуту |
+| `POST /api/tasks/jobs/run?job=daily` (или `distribute`, `tick`) | то же для заданий по запросу администратора | вручную |
+
+Пример crontab на сервере стенда (`crontab -e` пользователя с доступом к Docker):
+
+```cron
+C="docker compose -f /opt/fsp-talent/app/infra/stand/compose.yml --env-file /opt/fsp-talent/app/infra/stand/.env exec -T backend"
+15 3 * * *  $C python -m app.tasks daily
+0 9 * * 1   $C python -m app.tasks distribute
+* * * * *   $C python -m app.integrations
+```
+
+Локально (dev-стек) — `docker compose exec backend python -m app.tasks daily` и т.д.
+Повторный или пропущенный запуск безопасен: снижение свежести считается по времени
+с прошлого запуска, раздача не выдаёт задание дважды, доставка вебхука не повторяется
+после успеха. На стенде компоуз-файл cron не поднимает — расписание ставится на хосте,
+как показано выше.
+
 ## 8.5. Разработка
 
 Бэкенд без Docker (Python 3.12+), БД — из compose:
@@ -212,10 +245,11 @@ cd frontend && npm ci && npm run lint && npm run typecheck && npm test -- --run 
 ```
 
 Полезное: `make openapi` — выгрузить схему API; `cd frontend && npm run gen:api` — TS-типы
-из схемы; `make fixtures` — перегенерировать `data/seed`; симуляция движка теста —
-`PYTHONPATH=backend python -m app.testing.engine.simulate --seed 20261011`.
+из схемы; `make fixtures` — перегенерировать `data/seed`; `make validate` — полная валидация
+(данные, симуляции, графики, `docs/validation/report.md`; нужен `matplotlib`); симуляция
+движка теста — `PYTHONPATH=backend python -m app.testing.engine.simulate --seed 20261011`.
 
-## 8.6. Частые проблемы
+## 8.7. Частые проблемы
 
 | Симптом | Причина и решение |
 |---|---|

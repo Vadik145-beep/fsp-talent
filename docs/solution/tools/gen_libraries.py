@@ -226,7 +226,7 @@ def frontend_section() -> tuple[list[str], list[str]]:
         "| Лицензия | В сборку | Для разработки |",
         "|---|---|---|",
     ]
-    for lic in sorted(set(runtime) | set(devtime), key=lambda x: -(runtime[x] + devtime[x])):
+    for lic in sorted(set(runtime) | set(devtime), key=lambda x: (-(runtime[x] + devtime[x]), x)):
         lines.append(f"| {lic} | {runtime.get(lic, 0)} | {devtime.get(lic, 0)} |")
     lines.append("")
     return lines, odd

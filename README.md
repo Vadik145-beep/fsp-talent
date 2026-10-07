@@ -14,12 +14,14 @@
 
 ## Документация
 
-Сопроводительная документация (все 8 пунктов ТЗ 3.4) — [`docs/solution/`](docs/solution/index.md):
+Сопроводительная документация (все 8 пунктов ТЗ 3.4) — [`docs/solution/`](docs/solution/index.md),
+одним файлом — [PDF](docs/solution/fsp-talent-documentation.pdf) и
+[DOCX](docs/solution/fsp-talent-documentation.docx):
 
 1. [Архитектура](docs/solution/01_architecture.md) — роли, контейнеры, модули, экраны, потоки, безопасность
 2. [Механика тестирования](docs/solution/02_testing.md) — параметрические шаблоны, IRT, адаптивный тест, детектор утечек
 3. [Механика подбора и категоризации](docs/solution/03_matching.md) — категории, ранжирование, объяснимость, приглашения
-4. [Валидация и результаты](docs/solution/04_validation.md)
+4. [Валидация и результаты](docs/solution/04_validation.md) — синтетика с известной правдой: категория точно 78,8%, precision@10 0,486 против 0,253 у поиска по ключевым словам
 5. [Интеграция с реестром ФСП](docs/solution/05_fsp_integration.md) — ФСП ID (Keycloak), API реестра, вебхук
 6. [API](docs/solution/06_api.md) и [таблица методов по ролям](docs/solution/api_endpoints.md)
 7. [Библиотеки и компоненты с версиями](docs/solution/07_libraries.md)
@@ -76,7 +78,7 @@ backend/                 FastAPI-приложение (модульный мон
   app/
     core/ common/        настройки, БД, ошибки, безопасность, enum'ы
     auth users catalog candidates companies testing fsp
-    matching invitations vacancies tasks admin eval
+    matching invitations vacancies tasks admin eval integrations
                          модули: router / service / repository / models / schemas
     testing/engine/      движок адаптивного теста (IRT, CAT, шаблоны, утечки, калибровка)
     nlp/                 разбор резюме, потребностей, вакансий
@@ -89,8 +91,9 @@ infra/keycloak/          realm `fsp` для ФСП ID
 infra/stand/             стенд: compose, Caddyfile, deploy.sh
 data/seed/               фикстуры (моки фронта = сид бэкенда)
 data/samples/            образцы резюме, вакансий, формулировок потребностей
+data/validation/         синтетика для валидации, эталон, результаты
 docs/                    документация (solution/ — для жюри), OpenAPI, ER-схема, валидация
-scripts/                 генератор фикстур, выгрузка OpenAPI
+scripts/                 генератор фикстур, выгрузка OpenAPI, валидация (validation/run_all.py)
 ```
 
 ## Разработка
@@ -99,6 +102,7 @@ scripts/                 генератор фикстур, выгрузка Ope
 cd backend && pip install -e ".[dev]"        # Python 3.12+
 make check       # ruff + mypy + pytest + актуальность docs/api/openapi.json (нужна БД на :15432)
 make openapi     # выгрузить docs/api/openapi.json
+make validate    # валидация: синтетика, симуляции, графики, docs/validation/report.md
 cd frontend && npm run gen:api               # TS-типы из OpenAPI
 ```
 
