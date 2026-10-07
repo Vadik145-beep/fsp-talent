@@ -26,6 +26,9 @@ class VacancyFields(SalaryRangeMixin):
     skills_desired: list[str] = Field(default_factory=list, max_length=20)
     work_format: WorkFormat
     city: str | None = Field(default=None, max_length=100)
+    team_description: str = Field(
+        default="", max_length=2000, description="Описание команды (необязательно)"
+    )
 
 
 class VacancyCreate(VacancyFields):
@@ -42,6 +45,7 @@ class VacancyCreate(VacancyFields):
                     "skills_desired": ["kafka"],
                     "work_format": "hybrid",
                     "city": "Москва",
+                    "team_description": "Платёжный шлюз, 6 человек",
                     "salary_from": 200000,
                     "salary_to": 280000,
                 }
@@ -51,7 +55,7 @@ class VacancyCreate(VacancyFields):
 
 
 class Vacancy(VacancyFields):
-    """Вакансия (запись `vacancies.json`)."""
+    """Вакансия (таблица `vacancies`; фикстура `vacancies.json`)."""
 
     model_config = ConfigDict(extra="ignore", json_schema_extra=fixtures.first_example("vacancies"))
 
@@ -80,7 +84,7 @@ class ApplicationCreate(ApiModel):
 
 
 class ApplicationRecord(OutModel):
-    """Отклик (запись `applications.json`)."""
+    """Отклик (таблица `applications`; фикстура `applications.json`)."""
 
     model_config = ConfigDict(json_schema_extra=fixtures.first_example("applications"))
 

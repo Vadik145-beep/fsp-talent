@@ -7,6 +7,7 @@ from sqlalchemy import (
     CheckConstraint,
     DateTime,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -23,12 +24,16 @@ class Vacancy(TimestampMixin, Base):
     __tablename__ = "vacancies"
     __table_args__ = (
         CheckConstraint("salary_from > 0 AND salary_from <= salary_to", name="salary_range"),
+        # лента опубликованных вакансий (миграция 0006_5a)
+        Index("ix_vacancies_status_published", "status", "published_at"),
     )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     company_id: Mapped[int] = mapped_column(ForeignKey("companies.id"), index=True)
     title: Mapped[str] = mapped_column(String(200))
     description: Mapped[str] = mapped_column(Text)
+    # описание команды (миграция 0006_5a)
+    team_description: Mapped[str] = mapped_column(Text, default="", server_default="")
     specialization: Mapped[str] = mapped_column(ForeignKey("specializations.code"))
     grade: Mapped[str] = mapped_column(ForeignKey("grades.code"))
     category: Mapped[str] = mapped_column(ForeignKey("categories.code"), index=True)
