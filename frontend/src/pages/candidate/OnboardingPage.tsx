@@ -149,7 +149,7 @@ function ProfileStepForm({ profile, pdf, onBack, onDone }: { profile: CandidateP
   const client = useQueryClient()
   const [form, setForm] = useState<ProfileFormState>(() => formFromProfile(profile))
   const [confidence, setConfidence] = useState<ParsedConfidence>({})
-  const [parsed, setParsed] = useState<S['ResumeParseResult'] | null>(null)
+  const [parsed, setParsed] = useState<S['ResumeParseResponse'] | null>(null)
   const save = useMutation({
     mutationFn: () => api.put<CandidateProfile>('/candidates/me/profile', toUpdate(form)),
     onSuccess: (updated) => {

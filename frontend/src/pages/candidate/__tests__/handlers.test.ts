@@ -54,7 +54,7 @@ describe('моки соискателя: приглашения', () => {
 
 describe('моки соискателя: тест и грейд', () => {
   it('кулдаун: тест на грейд выше недоступен 90 дней после смены грейда', async () => {
-    const grade = await call<S['GradeStatus']>('GET', '/testing/grade')
+    const grade = await call<S['CandidateGradeStatus']>('GET', '/testing/grade')
     expect(grade.data.can_test_higher).toBe(false)
     expect(grade.data.higher_available_at).toMatch(/^2026-12-09/)
     const start = await call<{ code: string }>('POST', '/testing/sessions', {

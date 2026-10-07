@@ -62,7 +62,7 @@ function ProfileEditor({ profile }: { profile: CandidateProfile }) {
     onError: (err) => toast({ tone: 'error', title: 'Не сохранилось', description: getErrorMessage(err) }),
   })
 
-  function onParsed(result: S['ResumeParseResult']) {
+  function onParsed(result: S['ResumeParseResponse']) {
     const applied = applyParsedResume(form, result)
     setForm(applied.form)
     setConfidence(applied.confidence)
