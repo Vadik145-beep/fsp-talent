@@ -84,7 +84,8 @@ function CheckInbox() {
   const initialEmail = params.get('email') ?? ''
   const uid = params.get('uid')
   const [email, setEmail] = useState(initialEmail)
-  const [cooldown, setCooldown] = useState(0)
+  // Сразу после регистрации письмо только что ушло — повтор не раньше чем через минуту.
+  const [cooldown, setCooldown] = useState(uid ? RESEND_COOLDOWN_SEC : 0)
 
   useEffect(() => {
     if (cooldown <= 0) return
@@ -143,7 +144,7 @@ function CheckInbox() {
 
       {USE_MOCKS && (
         <div className="mt-6 rounded-md border border-dashed border-fsp-blush bg-primary-soft p-3 text-[13px]">
-          <p className="font-semibold text-[#9c0034]">Прототип: письма не отправляются</p>
+          <p className="font-semibold text-accent">Прототип: письма не отправляются</p>
           {uid ? (
             <Link to={`/verify-email?token=${MOCK_VERIFY_PREFIX}${uid}`} className="mt-1 inline-block font-semibold text-fsp-plum underline">
               Открыть ссылку из письма

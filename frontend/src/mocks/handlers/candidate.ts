@@ -778,6 +778,63 @@ function gradeStatus(c: CandidateRow): S['GradeStatus'] {
   }
 }
 
+/** Дать/отозвать согласие (версия и даты — по 152-ФЗ). Согласие на публикацию дублируется в профиль. */
+function setConsent(c: CandidateRow, type: 'processing' | 'publication', granted: boolean, version?: string | null): ConsentRow {
+  const now = db.now()
+  let consent = T.consents().find((x) => x.user_id === c.user_id && x.type === type)
+  if (!consent) {
+    consent = { id: db.nextId('consents'), user_id: c.user_id, type, version: settings().consentVersion, granted: false, granted_at: null, revoked_at: null }
+    T.consents().push(consent)
+  }
+  consent.granted = granted
+  consent.version = version || settings().consentVersion
+  if (granted) {
+    consent.granted_at = now
+    consent.revoked_at = null
+  } else {
+    consent.revoked_at = now
+  }
+  if (type === 'publication') {
+    c.publication_consent = granted
+    if (!granted) {
+      audit({ actor_user_id: c.user_id, actor_role: 'candidate', action: 'consent_revoked', target_type: 'consent', target_id: consent.id, summary: 'Отозвано согласие на публикацию профиля', details: { type } })
+    }
+  }
+  return consent
+}
+
+function setPublicationConsent(c: CandidateRow, granted: boolean): void {
+  setConsent(c, 'publication', granted)
+}
+
+/** Можно ли пройти тест на соседний грейд и почему нет (как GradeOption бэкенда). */
+function gradeOption(c: CandidateRow, step: number): S['GradeOption'] | null {
+  const spec = c.specialization ?? null
+  const target = c.grade ? neighbour(c.grade, step) : null
+  if (!spec || !target) return null
+  const change = changeAvailableAt(c)
+  const retry = retryAvailableAt(c, spec, target)
+  const at = maxDate(change, retry)
+  if (!at) {
+    return { target_grade: target, allowed: true, code: 'allowed', reason: `Тест на ${GRADE_LABELS[target]} доступен.`, available_at: null }
+  }
+  const byRetry = !!retry && retry === at
+  return {
+    target_grade: target,
+    allowed: false,
+    code: byRetry ? 'failed_retry_cooldown' : 'grade_change_cooldown',
+    reason: byRetry
+      ? `Повторить неудачную попытку на ${GRADE_LABELS[target]} можно через ${settings().retryCooldownDays} дней после неё.`
+      : `Грейд можно менять не чаще раза в ${settings().changeCooldownDays} дней.`,
+    available_at: at,
+  }
+}
+
+/** Экран «Категория и грейд»: GET /candidates/me/grade = статус + варианты пересдачи. */
+function candidateGradeStatus(c: CandidateRow): S['CandidateGradeStatus'] {
+  return { ...gradeStatus(c), lower: gradeOption(c, -1), higher: gradeOption(c, 1) }
+}
+
 // --- Опрос ------------------------------------------------------------------------------
 function surveyResult(answers: S['SurveyAnswer'][]): S['SurveyResult'] {
   const options = new Map(
@@ -995,6 +1052,17 @@ export const candidateHandlers: HttpHandler[] = [
     }),
   ),
 
+  http.put(
+    '/api/candidates/me/settings/publication',
+    candidateMutation(async (c, { request }) => {
+      const body = await readJson<S['PublicationConsentUpdate']>(request)
+      if (typeof body.granted !== 'boolean') return apiError(422, 'validation_error', 'Поле granted обязательно')
+      setPublicationConsent(c, body.granted)
+      db.save()
+      return HttpResponse.json({ privacy: c.privacy, job_search_paused: !!c.job_search_paused, publication_consent: c.publication_consent, fsp_linked: !!c.fsp_id, fsp_id: c.fsp_id ?? null } satisfies S['CandidateSettings'])
+    }),
+  ),
+
   http.get(
     '/api/users/me/consents',
     candidateGet((c) => T.consents().filter((x) => x.user_id === c.user_id)),
@@ -1014,26 +1082,7 @@ export const candidateHandlers: HttpHandler[] = [
           'Без согласия на обработку данных пользоваться сервисом нельзя. Чтобы отозвать его, удалите аккаунт через поддержку.',
         )
       }
-      const now = db.now()
-      let consent = T.consents().find((x) => x.user_id === c.user_id && x.type === type)
-      if (!consent) {
-        consent = { id: db.nextId('consents'), user_id: c.user_id, type, version: settings().consentVersion, granted: false, granted_at: null, revoked_at: null }
-        T.consents().push(consent)
-      }
-      consent.granted = body.granted
-      consent.version = body.version || settings().consentVersion
-      if (body.granted) {
-        consent.granted_at = now
-        consent.revoked_at = null
-      } else {
-        consent.revoked_at = now
-      }
-      if (type === 'publication') {
-        c.publication_consent = body.granted
-        if (!body.granted) {
-          audit({ actor_user_id: c.user_id, actor_role: 'candidate', action: 'consent_revoked', target_type: 'consent', target_id: consent.id, summary: 'Отозвано согласие на публикацию профиля', details: { type } })
-        }
-      }
+      const consent = setConsent(c, type, body.granted, body.version)
       db.save()
       return HttpResponse.json(consent)
     }),
@@ -1136,6 +1185,8 @@ export const candidateHandlers: HttpHandler[] = [
   ),
 
   http.get('/api/testing/grade', candidateGet((c) => gradeStatus(c))),
+
+  http.get('/api/candidates/me/grade', candidateGet((c) => candidateGradeStatus(c))),
 
   http.get(
     '/api/testing/sessions',

@@ -143,7 +143,7 @@ function Stat({ label, value, mono }: { label: string; value: string; mono?: boo
 function placeView(place: number | null | undefined) {
   if (place == null) return { text: 'Участник', cls: 'bg-neutral-soft text-neutral', icon: Users }
   if (place <= 3) {
-    const cls = place === 1 ? 'bg-[#fff1c2] text-[#7a5300]' : place === 2 ? 'bg-[#eceef2] text-[#454a57]' : 'bg-[#f8e1cf] text-[#7a3f12]'
+    const cls = place === 1 ? 'bg-warning-soft text-warning' : place === 2 ? 'bg-neutral-soft text-neutral' : 'bg-accent-soft text-danger'
     return { text: `${place} место`, cls, icon: Trophy }
   }
   return { text: `${place} место`, cls: 'bg-violet-soft text-fsp-plum', icon: Medal }
