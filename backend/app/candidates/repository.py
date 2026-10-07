@@ -347,9 +347,25 @@ class CandidateDb:
         return list(rows.all())
 
 
+def session_grade(s: TestSession) -> str | None:
+    """Грейд сессии для результата и истории тестов.
+
+    Тест подтверждён — присвоенный грейд (тот, что в профиле видит работодатель), даже если
+    уровень по θ выше: это лишь повод предложить тест на грейд выше. Не подтверждён — уровень
+    по θ. Старые сессии хранили в `result_grade` уровень по θ, поэтому сначала смотрим решение.
+    """
+    if s.passed:
+        decision = (s.engine_state or {}).get("decision") or {}
+        granted = decision.get("granted_grade")
+        if isinstance(granted, str) and granted:
+            return granted
+    return s.result_grade
+
+
 def session_record(s: TestSession) -> dict[str, Any]:
     """Сессия теста в форме контракта (`TestSession`)."""
     state = s.engine_state or {}
+    grade = session_grade(s)
     return {
         "id": s.id,
         "candidate_id": s.candidate_id,
@@ -365,8 +381,8 @@ def session_record(s: TestSession) -> dict[str, Any]:
         "se": s.se,
         "ci_low": state.get("ci_low"),
         "ci_high": state.get("ci_high"),
-        "result_grade": s.result_grade,
-        "result_category": f"{s.specialization}:{s.result_grade}" if s.result_grade else None,
+        "result_grade": grade,
+        "result_category": f"{s.specialization}:{grade}" if grade else None,
         "passed": s.passed,
         "topic_scores": list(s.topic_scores or []),
     }

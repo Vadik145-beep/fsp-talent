@@ -74,6 +74,26 @@ def test_periods_and_text_rules() -> None:
     assert r.value("experience_years") == 1.5
 
 
+def test_work_format_and_links_with_scheme() -> None:
+    """Образец 01: «готов к гибридному формату» → hybrid; ссылка без схемы → с https://."""
+    one = next(p for p in RESUMES if p.name.startswith("01_"))
+    r = parse_resume_pdf(one.read_bytes(), date(2026, 10, 1))
+    assert r.value("work_formats") == ["hybrid"]
+    assert r.value("links") == ["https://github.com/denis-morozov-dev"]
+    for path in RESUMES:
+        exp = json.loads(path.with_name(path.stem + ".expected.json").read_text(encoding="utf-8"))
+        got = parse_resume_pdf(path.read_bytes(), date(2026, 10, 1))
+        links = got.value("links") or []
+        assert all(url.startswith("https://") for url in links), path.name
+        assert sorted(links) == sorted(f"https://{u}" for u in exp["links"].values()), path.name
+        if exp["work_format"]:
+            assert exp["work_format"] in got.value("work_formats"), path.name
+    text = parse_resume_text(
+        "Иванов Иван\nhttps://www.github.com/ivanov · github.com/ivanov · t.me/ivanov_dev"
+    )
+    assert text.value("links") == ["https://github.com/ivanov", "https://t.me/ivanov_dev"]
+
+
 @pytest.mark.parametrize("path", RESUMES, ids=lambda p: p.name)
 def test_upload_each_sample(client: TestClient, path: Path) -> None:
     expected = json.loads(path.with_name(path.stem + ".expected.json").read_text(encoding="utf-8"))

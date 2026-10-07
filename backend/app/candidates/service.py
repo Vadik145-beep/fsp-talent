@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.admin.audit import write_audit
 from app.candidates.grading import grade_status
-from app.candidates.repository import CandidateDb, CandidateRepository
+from app.candidates.repository import CandidateDb, CandidateRepository, session_grade
 from app.candidates.schemas import CandidateProfileUpdate, PrivacySettings
 from app.catalog.clock import as_msk, now_msk
 from app.catalog.repository import CatalogDb
@@ -244,14 +244,15 @@ class CandidateProfileService:
             i for i in await self.db.invitations(candidate_id) if i["company_id"] == company_id
         ]
         last_inv = company_invs[0] if company_invs else None
+        # История тестов — присвоенная категория, как в профиле (не уровень по θ)
         history = [
             {
                 "date": as_msk(s.finished_at).date(),  # type: ignore[union-attr]
-                "category": f"{s.specialization}:{s.result_grade}",
+                "category": f"{s.specialization}:{grade}",
                 "theta": s.theta,
             }
             for s in sorted(await self.db.test_sessions(candidate_id), key=lambda s: s.id)
-            if s.status == "finished" and s.passed and s.finished_at and s.result_grade
+            if s.status == "finished" and s.passed and s.finished_at and (grade := session_grade(s))
         ]
         profile = to_card(cand)
         profile.update(

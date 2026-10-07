@@ -462,7 +462,11 @@ def parse_resume_text(text: str, today: date | None = None) -> ResumeParse:
     links = [m.group(0) for m in GITHUB_RE.finditer(text)] + [
         m.group(0) for m in LINK_RE.finditer(text)
     ]
-    links = list(dict.fromkeys(re.sub(r"^https?://(www\.)?", "", ln).rstrip(".") for ln in links))
+    # Без схемы и www — для склейки дублей; в ответ — всегда с https:// (так ссылку примет форма).
+    bare = dict.fromkeys(
+        re.sub(r"^https?://(www\.)?", "", ln, flags=re.IGNORECASE).rstrip(".") for ln in links
+    )
+    links = [f"https://{ln}" for ln in bare]
     about = " ".join(sections.get("about", []))[:3000] or None
 
     fields = {
