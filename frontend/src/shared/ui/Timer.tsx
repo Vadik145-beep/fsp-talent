@@ -63,7 +63,7 @@ export function Timer({ durationSec, onExpire, paused, warnAtSec, className }: T
       aria-label={`Осталось ${formatDuration(left)}`}
       className={cn(
         'inline-flex items-center gap-2 rounded-full px-3 py-1.5 font-mono text-base font-semibold tabular-nums transition-colors',
-        state === 'ok' && 'bg-violet-soft text-fsp-plum',
+        state === 'ok' && 'bg-primary-soft text-primary',
         state === 'warn' && 'bg-warning-soft text-warning',
         state === 'over' && 'bg-danger-soft text-danger',
         className,

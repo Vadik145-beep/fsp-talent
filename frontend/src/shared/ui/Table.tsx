@@ -173,7 +173,7 @@ export function Table<T>({
                 tabIndex={onRowClick ? 0 : undefined}
                 className={cn(
                   'border-b border-line last:border-0',
-                  onRowClick && 'cursor-pointer transition-colors hover:bg-violet-soft/60 focus-visible:bg-violet-soft/60',
+                  onRowClick && 'cursor-pointer transition-colors hover:bg-primary-soft focus-visible:bg-primary-soft',
                 )}
               >
                 {columns.map((col) => (

@@ -50,7 +50,7 @@ export function Field({ label, hint, error, required, htmlFor, className, childr
 
 export const controlClass =
   'w-full rounded-md border border-line-strong bg-surface px-3 text-[15px] text-ink placeholder:text-subtle ' +
-  'transition-colors hover:border-fsp-lavender focus:border-fsp-pink focus:outline-none focus:shadow-[var(--shadow-focus)] ' +
+  'transition-colors hover:border-subtle focus:border-primary focus:outline-none focus:shadow-[var(--shadow-focus)] ' +
   'disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-subtle aria-[invalid=true]:border-danger'
 
 function describedBy(id: string, error?: ReactNode, hint?: ReactNode) {
