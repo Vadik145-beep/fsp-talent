@@ -31,6 +31,7 @@ export type ItemStatus = S['ItemStatus']
 export type ItemFormat = S['ItemFormat']
 export type CoverageCell = S['CoverageCell']
 export type RecalibrationResult = S['RecalibrationResult']
+export type LeakScanResult = S['LeakScanResult']
 export type VacancyTestResult = S['VacancyTestOut']
 /** Черновик шаблона из вакансии: item_id — id черновика в банке (если нет — ищем шаблон по теме и названию). */
 export type ItemDraft = S['ItemDraftOut']

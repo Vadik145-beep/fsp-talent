@@ -66,6 +66,8 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   company_unblocked: 'Разблокировка компании',
   item_leak_flagged: 'Флаг утечки',
   item_retired: 'Шаблон выведен',
+  item_leak_retired: 'Вывод по утечке',
+  candidate_anomaly: 'Аномалия ответов',
   item_approved: 'Черновик одобрен',
   items_recalibrated: 'Пересчёт калибровки',
   settings_updated: 'Изменены настройки',
@@ -85,6 +87,8 @@ export const AUDIT_ACTION_TONES: Record<string, Tone> = {
   catalog_deleted: 'warning',
   item_leak_flagged: 'warning',
   item_retired: 'neutral',
+  item_leak_retired: 'danger',
+  candidate_anomaly: 'warning',
   consent_revoked: 'warning',
 }
 

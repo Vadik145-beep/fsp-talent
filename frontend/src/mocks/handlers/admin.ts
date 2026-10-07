@@ -264,12 +264,12 @@ function buildCoverage(): S['CoverageCell'][] {
  * ожидаемая доля подтягивается к наблюдаемой; пилот с ≥ 150 ответами становится активным.
  * Слитые (leak_flag) шаблоны не трогаем: их ответы искажены.
  */
-function recalibrate(): S['RecalibrationResult'] {
+function recalibrate(minResponses = 15): S['RecalibrationResult'] {
   const changes: S['CalibrationChange'][] = []
   let promoted = 0
   for (const item of col<ItemDetail>('items')) {
     if (item.status !== 'active' && item.status !== 'pilot') continue
-    if (item.leak_flag || item.exposures < 15 || item.correct_rate == null || item.expected_correct_rate == null) continue
+    if (item.leak_flag || item.exposures < minResponses || item.correct_rate == null || item.expected_correct_rate == null) continue
     const gap = item.correct_rate - item.expected_correct_rate
     const bAfter = round(Math.max(-4, Math.min(4, item.b - 1.2 * gap)))
     const aAfter = round(Math.max(0.2, Math.min(4, item.a * (1 - Math.abs(gap) * 0.5))))
@@ -524,6 +524,8 @@ export function buildVacancyTest(text: string, specialization?: SpecCode | null)
       item_id: best.id,
       code: best.code,
       title: best.title,
+      template_id: best.code,
+      target_grade: best.target_grade,
       topic: d.topic,
       reason:
         `Тема «${d.label}» найдена по словам: ${d.matched_by.join(', ')}. ` +
@@ -598,6 +600,7 @@ export function buildVacancyTest(text: string, specialization?: SpecCode | null)
     items: selected,
     drafts,
     explanation,
+    created_at: db.now(),
   }
   col<VacancyTestResult>('vacancy_tests').push(result)
   return result
@@ -821,6 +824,34 @@ export function evaluateMatchingCsv(filename: string, text: string): S['Matching
     baseline_ndcg_at_10: round(sumBN / n, 3),
     per_need: perNeed,
     is_stub: true,
+  }
+}
+
+// --- Детектор утечек (как POST /api/admin/items/leak-scan): шаблоны с флагом выводятся из оборота ---
+function leakScan(): S['LeakScanResult'] {
+  const items = col<ItemDetail>('items').filter((i) => i.status === 'active' || i.status === 'pilot')
+  const retired: S['LeakedItem'][] = []
+  for (const item of items) {
+    if (!item.leak_flag) continue
+    item.status = 'retired'
+    retired.push({
+      item_id: item.id,
+      code: item.code,
+      title: item.title,
+      n: item.exposures,
+      observed_rate: item.correct_rate ?? 0,
+      expected_rate: item.expected_correct_rate ?? 0,
+      z: item.leak_score,
+      fast_correct: Math.round(item.exposures * 0.12),
+      reasons: ['доля верных выше ожидаемой по IRT', 'много быстрых верных ответов'],
+    })
+  }
+  return {
+    scanned_at: db.now(),
+    answers_checked: items.reduce((s, i) => s + i.exposures, 0),
+    items_checked: items.length,
+    retired,
+    flagged_candidates: retired.length ? [{ candidate_id: 7, session_id: 12, suspicious_item_ids: retired.map((r) => r.item_id).slice(0, 2), lz: -3.1, reasons: ['верные ответы на трудные задачи за 5–8 секунд'] }] : [],
   }
 }
 
@@ -1171,9 +1202,23 @@ export const adminHandlers: HttpHandler[] = [
   http.post(
     '/api/admin/items/recalibrate',
     adminWrite(({ request }) => {
-      const result = recalibrate()
+      const raw = new URL(request.url).searchParams.get('min_responses')
+      const min = raw ? Number(raw) : undefined
+      if (min !== undefined && (!Number.isInteger(min) || min < 1))
+        return validationError([{ field: 'min_responses', type: 'greater_than_equal', msg: 'Input should be greater than or equal to 1', ctx: { ge: 1 } }])
+      const result = recalibrate(min)
       addAudit(request, 'items_recalibrated', 'item', null,
         `Пересчитана калибровка: изменено ${result.items_recalibrated}, переведено из пилота ${result.pilot_promoted}`)
+      db.save()
+      return HttpResponse.json(result)
+    }),
+  ),
+  http.post(
+    '/api/admin/items/leak-scan',
+    adminWrite(({ request }) => {
+      const result = leakScan()
+      for (const r of result.retired)
+        addAudit(request, 'item_leak_retired', 'item', r.item_id, `Шаблон «${r.title}» выведен из оборота: признаки утечки`, { reason: 'leak', z: r.z })
       db.save()
       return HttpResponse.json(result)
     }),

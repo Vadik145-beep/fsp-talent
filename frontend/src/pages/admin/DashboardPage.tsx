@@ -12,6 +12,7 @@ import type { AdminDashboard } from './api'
 import { ChartBox } from './components/charts'
 import { AXIS, BRAND, CURSOR_FILL, GRID, INVITATION_STATUS_COLORS, TOOLTIP_STYLE, VALUE_LABEL } from './components/chartTheme'
 import { StatTile, StatTileSkeleton } from './components/common'
+import { LeakScanButton } from './components/LeakScanButton'
 import { num, pct } from './labels'
 
 const PERIODS = [
@@ -144,11 +145,14 @@ function DashboardBody({ data, period, setPeriod }: { data: AdminDashboard; peri
           title="Флаги утечек"
           description="Детектор заметил: задачу стали решать заметно лучше, чем ожидает модель, — возможно, ответ слит. Проверьте шаблон и выведите его из оборота."
           actions={
-            data.leak_flags.length ? (
-              <Link to="/admin/items?leak=true" className="inline-flex items-center gap-1 text-sm font-semibold text-fsp-plum hover:underline">
-                Все в банке задач <ArrowRight className="size-4" aria-hidden />
-              </Link>
-            ) : undefined
+            <div className="flex flex-wrap items-center gap-3">
+              {data.leak_flags.length ? (
+                <Link to="/admin/items?leak=true" className="inline-flex items-center gap-1 text-sm font-semibold text-fsp-plum hover:underline">
+                  Все в банке задач <ArrowRight className="size-4" aria-hidden />
+                </Link>
+              ) : null}
+              <LeakScanButton variant="ghost" />
+            </div>
           }
         />
         {data.leak_flags.length ? (

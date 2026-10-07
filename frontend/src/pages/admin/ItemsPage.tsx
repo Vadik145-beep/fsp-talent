@@ -15,6 +15,7 @@ import { Button, Card, EmptyState, ErrorState, FilterBar, PageHeader, Select, Sk
 import { fetchAllItems, type CoverageCell, type ItemSummary, type Topic } from './api'
 import { CoverageHeatmap } from './components/CoverageHeatmap'
 import { ItemStatusBadge, LeakBadge, StatTile } from './components/common'
+import { LeakScanButton } from './components/LeakScanButton'
 import { RecalibrateButton } from './components/RecalibrateButton'
 import { ITEM_FORMAT_LABELS, ITEM_STATUS_LABELS, num, pct } from './labels'
 
@@ -144,7 +145,12 @@ export default function AdminItemsPage() {
       <PageHeader
         title="Банк задач"
         description="Параметрические шаблоны: у каждого кандидата свой вариант. Сложность b и различающая сила a измеряются по ответам, детектор следит за утечками."
-        actions={<RecalibrateButton />}
+        actions={
+          <>
+            <LeakScanButton />
+            <RecalibrateButton />
+          </>
+        }
       />
 
       <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">

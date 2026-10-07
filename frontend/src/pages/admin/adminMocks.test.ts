@@ -3,7 +3,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { db } from '@/mocks/db'
 import { adminHandlers, buildVacancyTest, evaluateMatchingCsv } from '@/mocks/handlers/admin'
 import { ApiError } from '@/shared/api'
-import { fieldErrors, type ItemDetail, type PlatformSettings, type VacancyTestResult } from './api'
+import { fieldErrors, type ItemDetail, type LeakScanResult, type PlatformSettings, type VacancyTestResult } from './api'
 
 // Моки админки проверяем настоящими HTTP-запросами через MSW (как в браузере).
 const server = setupServer(...adminHandlers)
@@ -47,6 +47,16 @@ describe('моки админки: банк задач', () => {
     expect((await call<ItemDetail>('POST', '/api/admin/items/10/approve')).data.status).toBe('pilot')
     expect(item(10).status).toBe('pilot')
     expect((await call('POST', '/api/admin/items/1/approve')).status).toBe(409)
+  })
+
+  it('детектор утечек выводит помеченные шаблоны и пишет журнал; пересчёт принимает min_responses', async () => {
+    const res = await call<LeakScanResult>('POST', '/api/admin/items/leak-scan')
+    expect(res.status).toBe(200)
+    expect(res.data.retired.map((r) => r.item_id).sort()).toEqual([13, 28]) // 21 в сиде уже выведен
+    expect(item(13).status).toBe('retired')
+    expect(db.data.audit_log.at(-1)?.action).toBe('item_leak_retired')
+    expect((await call('POST', '/api/admin/items/recalibrate?min_responses=0')).status).toBe(422)
+    expect((await call<{ items_recalibrated: number }>('POST', '/api/admin/items/recalibrate?min_responses=1000000')).data.items_recalibrated).toBe(0)
   })
 
   it('карточка шаблона отдаёт 3 разных варианта', async () => {

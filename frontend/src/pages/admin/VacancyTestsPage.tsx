@@ -4,13 +4,22 @@ import { useQuery } from '@tanstack/react-query'
 import { ArrowRight, CheckCircle2, FileText, Lightbulb, ListChecks, Sparkles, Tags, Wand2 } from 'lucide-react'
 import { api } from '@/shared/api'
 import { GRADE_LABELS, SPECIALIZATION_LABELS, SPECIALIZATION_OPTIONS } from '@/shared/config/dictionaries'
+import { formatDateTime } from '@/shared/lib/format'
 import { Badge, Button, Card, CardHeader, EmptyState, ErrorState, PageHeader, ProgressBar, Select, SkeletonText, Tag, Textarea } from '@/shared/ui'
 import { fetchAllItems, useAdminMutation, type ItemDetail, type ItemDraft, type ItemSummary, type SpecCode, type VacancyTestResult } from './api'
 import { ItemStatusBadge } from './components/common'
 import { ITEM_FORMAT_LABELS } from './labels'
 
-/** Свои примеры (по мотивам data/samples/vacancies) — показывают темы без шаблонов в банке. */
+/** Примеры (по мотивам data/samples/vacancies). В Middle React есть тема без шаблонов в банке — получится черновик. */
 const BUILTIN_SAMPLES = [
+  {
+    id: 'python',
+    label: 'Middle Python',
+    text:
+      'Middle Python-разработчик (платежи)\n' +
+      'Ищем Middle Python-разработчика в команду платежей. FastAPI, PostgreSQL, Redis, Kafka. Нужно понимать транзакции, ' +
+      'конкурентный доступ и уметь проектировать REST API. Плюсом будет опыт с OAuth 2.0.',
+  },
   {
     id: 'react',
     label: 'Middle React',
@@ -48,8 +57,6 @@ export default function AdminVacancyTestsPage() {
     { success: (r) => `Тест собран: ${r.items.length} шаблонов, черновиков ${r.drafts.length}`, onSuccess: (r) => setShown({ result: r, fromHistory: false }) },
   )
 
-  // Примеры из фикстур — самые ранние записи истории (data/seed/vacancy_tests.json).
-  const fixtureSamples = [...(history.data ?? [])].sort((a, b) => a.id - b.id).slice(0, 2)
   const shownResult = shown?.fromHistory ? (history.data?.find((r) => r.id === shown.result.id) ?? shown.result) : shown?.result
   const tooShort = text.trim().length < 20
 
@@ -63,11 +70,6 @@ export default function AdminVacancyTestsPage() {
       <Card className="mb-6">
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <span className="text-sm font-medium text-muted">Пример:</span>
-          {fixtureSamples.map((s) => (
-            <Tag key={s.id} icon={<FileText aria-hidden />} onClick={() => setText(s.vacancy_text)}>
-              {s.vacancy_title}
-            </Tag>
-          ))}
           {BUILTIN_SAMPLES.map((s) => (
             <Tag key={s.id} icon={<FileText aria-hidden />} onClick={() => setText(s.text)}>
               {s.label}
@@ -129,6 +131,7 @@ export default function AdminVacancyTestsPage() {
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold text-ink">{r.vacancy_title}</span>
                     <span className="block text-[13px] text-muted">
+                      {r.created_at ? `${formatDateTime(r.created_at)} · ` : ''}
                       {SPECIALIZATION_LABELS[r.specialization]} · {GRADE_LABELS[r.grade]} · тем {r.topics.length}, шаблонов {r.items.length}, черновиков {r.drafts.length}
                     </span>
                   </span>
@@ -202,6 +205,7 @@ function VacancyTestView({ result }: { result: VacancyTestResult }) {
                       {i.title}
                     </Link>{' '}
                     <span className="font-mono text-xs text-muted">{i.code}</span>
+                    {i.target_grade && <Badge tone="neutral" className="ml-2">{GRADE_LABELS[i.target_grade]}</Badge>}
                     <p className="mt-0.5 text-sm text-ink">{i.reason}</p>
                   </div>
                 </li>
