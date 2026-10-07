@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { api } from '@/shared/api'
+import { useQuery, type QueryClient, type QueryKey } from '@tanstack/react-query'
+import { api, isApiError } from '@/shared/api'
 import type { components } from '@/shared/api/schema'
 
 /** Типы контракта API (docs/api/openapi.json → schema.ts). */
@@ -24,7 +24,8 @@ export type Application = S['Application']
 export type ApplicationStatus = S['ApplicationStatus']
 export type RegularTask = S['RegularTask']
 export type TaskSubmission = S['TaskSubmissionForRecruiter']
-export type Company = S['Company']
+/** Компания; `invite_code` приходит только администратору компании (поле может отсутствовать). */
+export type Company = S['Company'] & { invite_code?: string | null }
 export type Recruiter = S['Recruiter']
 export type RecruiterDashboard = S['RecruiterDashboard']
 export type WorkFormat = S['WorkFormat']
@@ -109,4 +110,113 @@ export function useDebounced<T>(value: T, delay = 400): T {
 /** «Кандидат #CFAD» → «CFAD». */
 export function pseudonymCodeOf(pseudonym: string): string {
   return pseudonym.replace(/^Кандидат\s*#/i, '').trim()
+}
+
+// --- Обновление кэша после мутаций -------------------------------------------------------
+
+/**
+ * Положить запись из ответа мутации в кэш списка: заменить по id или добавить.
+ * Ответ сервера — правда о записи, поэтому список не перезапрашиваем: так экран сразу
+ * показывает изменение и не теряет его, даже если ручка пока не сохраняет (заглушка).
+ */
+export function upsertInList<T extends { id: number }>(qc: QueryClient, key: QueryKey, item: T, where: 'start' | 'end' = 'start') {
+  qc.setQueryData<T[]>(key, (old) => {
+    if (!old) return old
+    const i = old.findIndex((x) => x.id === item.id)
+    if (i >= 0) return old.map((x) => (x.id === item.id ? item : x))
+    return where === 'start' ? [item, ...old] : [...old, item]
+  })
+}
+
+const startsWith = (key: QueryKey, prefix: QueryKey) =>
+  prefix.length <= key.length && prefix.every((v, i) => JSON.stringify(v) === JSON.stringify(key[i]))
+
+/** Ключ запроса (вместе со всеми, что начинаются с него) или условие на ключ. */
+export type KeyFilter = QueryKey | ((key: QueryKey) => boolean)
+
+/** Запросы подборок по всем потребностям: ['recruiter', 'needs', id, 'matches', …]. */
+export const isMatchesKey = (key: QueryKey) => key[0] === 'recruiter' && key[1] === 'needs' && key[3] === 'matches'
+
+/**
+ * Перезапросить данные кабинета рекрутера (счётчики, дашборд, квоту и т. п.), кроме запросов,
+ * уже обновлённых из ответа мутации, и справочников.
+ */
+export function refreshRecruiter(qc: QueryClient, ...except: KeyFilter[]) {
+  return qc.invalidateQueries({
+    predicate: (q) => {
+      const key = q.queryKey
+      if (key[0] !== 'recruiter' || key[1] === 'catalog') return false
+      return !except.some((f) => (typeof f === 'function' ? f(key) : startsWith(key, f)))
+    },
+  })
+}
+
+// --- Ошибки полей формы -----------------------------------------------------------------
+
+interface PydanticError {
+  type?: string
+  loc?: Array<string | number>
+  msg?: string
+  ctx?: Record<string, unknown>
+}
+
+const SALARY_RANGE_TEXT = '«От» не может быть больше «до»'
+
+function pydanticMessage(e: PydanticError): string {
+  const ctx = e.ctx ?? {}
+  switch (e.type) {
+    case 'missing':
+      return 'Обязательное поле'
+    case 'string_too_short':
+      return `Не короче ${String(ctx.min_length)} символов`
+    case 'string_too_long':
+      return `Не длиннее ${String(ctx.max_length)} символов`
+    case 'too_short':
+      return 'Заполните поле'
+    case 'too_long':
+      return 'Слишком много значений'
+    case 'greater_than':
+      return `Должно быть больше ${String(ctx.gt)}`
+    case 'greater_than_equal':
+      return `Не меньше ${String(ctx.ge)}`
+    case 'less_than':
+      return `Должно быть меньше ${String(ctx.lt)}`
+    case 'less_than_equal':
+      return `Не больше ${String(ctx.le)}`
+    case 'int_parsing':
+    case 'int_type':
+    case 'int_from_float':
+      return 'Нужно целое число'
+    case 'enum':
+    case 'literal_error':
+      return 'Выберите значение из списка'
+    case 'salary_range_invalid':
+      return SALARY_RANGE_TEXT
+  }
+  const msg = (e.msg ?? '').replace(/^Value error,\s*/, '')
+  return /[а-яё]/i.test(msg) ? msg : 'Проверьте значение'
+}
+
+/**
+ * Ошибки полей из ответа API: `details.fields` ({поле: текст}) или `details.errors`
+ * (список ошибок валидации FastAPI: loc = ["body", "поле", ...]). Ошибка вилки целиком
+ * (`salary_range_invalid`) — на поле «от».
+ */
+export function apiFieldErrors(error: unknown): Record<string, string> {
+  if (!isApiError(error)) return {}
+  const result: Record<string, string> = {}
+  const fields = error.details?.fields
+  if (fields && typeof fields === 'object') {
+    for (const [k, v] of Object.entries(fields as Record<string, unknown>)) result[k] = String(v)
+  }
+  const errors = error.details?.errors
+  if (Array.isArray(errors)) {
+    for (const e of errors as PydanticError[]) {
+      const loc = (e.loc ?? []).filter((x) => x !== 'body')
+      const field = e.type === 'salary_range_invalid' ? 'salary_from' : typeof loc[0] === 'string' ? loc[0] : null
+      if (field && !result[field]) result[field] = pydanticMessage(e)
+    }
+  }
+  if (error.code === 'salary_range_invalid' && !result.salary_from) result.salary_from = SALARY_RANGE_TEXT
+  return result
 }

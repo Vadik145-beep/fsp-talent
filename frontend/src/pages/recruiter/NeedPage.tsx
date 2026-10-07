@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Info, SearchX, ShieldCheck, Users, X } from 'lucide-react'
-import { api } from '@/shared/api'
+import { api, getErrorMessage } from '@/shared/api'
 import { cn } from '@/shared/lib/cn'
 import { formatPercent, formatSalaryRange, plural } from '@/shared/lib/format'
 import { Badge, Button, Card, EmptyState, FilterBar, PageHeader, Select, Skeleton, SkeletonCard, Tag } from '@/shared/ui'
@@ -139,7 +139,12 @@ export default function RecruiterNeedPage() {
                 <Skeleton className="h-12" />
               </div>
             ) : cats.isError ? (
-              <p className="text-sm text-danger">Не удалось загрузить категории.</p>
+              <div className="flex flex-col items-start gap-1 text-sm">
+                <p className="text-danger">Не удалось загрузить категории: {getErrorMessage(cats.error)}</p>
+                <Button variant="ghost" size="sm" onClick={() => void cats.refetch()} loading={cats.isFetching}>
+                  Повторить
+                </Button>
+              </div>
             ) : (
               <ul className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 lg:flex-col lg:overflow-visible">
                 {cats.data.map((c) => {
@@ -153,20 +158,20 @@ export default function RecruiterNeedPage() {
                         className={cn(
                           'flex w-full items-center justify-between gap-3 rounded-md border px-3 py-2 text-left transition-colors',
                           active
-                            ? 'border-fsp-plum bg-fsp-plum text-white'
+                            ? 'border-fsp-plum bg-fsp-plum text-on-primary'
                             : 'border-line bg-surface hover:border-fsp-lavender hover:bg-violet-soft',
                         )}
                       >
                         <span className="min-w-0">
                           <span className="block text-sm font-semibold whitespace-nowrap">{c.label}</span>
-                          <span className={cn('block text-xs', active ? 'text-on-nav-muted' : 'text-muted')}>
+                          <span className={cn('block text-xs', active ? 'text-on-primary/80' : 'text-muted')}>
                             {RELATION_LABELS[c.relation]}
                           </span>
                         </span>
                         <span
                           className={cn(
                             'inline-flex min-w-7 justify-center rounded-full px-2 py-0.5 text-xs font-bold tabular-nums',
-                            active ? 'bg-white/20 text-white' : c.candidates_count ? 'bg-violet-soft text-fsp-plum' : 'bg-neutral-soft text-subtle',
+                            active ? 'bg-on-primary/20 text-on-primary' : c.candidates_count ? 'bg-violet-soft text-fsp-plum' : 'bg-neutral-soft text-subtle',
                           )}
                           aria-label={`${c.candidates_count} ${plural(c.candidates_count, ['кандидат', 'кандидата', 'кандидатов'])}`}
                         >
@@ -279,6 +284,7 @@ export default function RecruiterNeedPage() {
 
           <QueryState
             query={list}
+            errorTitle="Не удалось построить подборку"
             isEmpty={(d) => d.items.length === 0}
             empty={
               <Card padding="none">

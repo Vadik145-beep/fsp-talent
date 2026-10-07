@@ -21,30 +21,28 @@ const ACTIVE: string[] = ['sent', 'viewed']
 /** Карточка подборки: псевдоним, стек с совпадениями, «почему в подборке» и вклад факторов в счёт. */
 export function MatchCard({ match, rank, highlight, profileHref, onInvite }: MatchCardProps) {
   const c = match.candidate
-  const subtitle = [
-    c.category_label,
-    c.city,
-    c.experience_years != null ? `опыт ${yearsText(c.experience_years)}` : null,
-  ]
-    .filter(Boolean)
-    .join(' · ')
+  // Город и опыт — отдельной строкой, которая переносится: на узком экране не налезает на счёт.
+  const meta = [c.city, c.experience_years != null ? `опыт ${yearsText(c.experience_years)}` : null].filter(Boolean).join(' · ')
   const status = match.invitation_status as InvitationStatus | null | undefined
   const invited = Boolean(status && ACTIVE.includes(status))
   return (
     <Card padding="none" className="overflow-hidden" data-testid="match-card">
       <div className="flex flex-col gap-4 p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-fsp-night text-xs font-bold text-white" aria-label={`Место ${rank}`}>
+          <div className="flex min-w-0 items-start gap-3">
+            <span className="mt-1.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-fsp-night text-xs font-bold text-on-primary" aria-label={`Место ${rank}`}>
               {rank}
             </span>
-            <Link to={profileHref} className="min-w-0 rounded-sm hover:opacity-80">
-              <Pseudonym code={pseudonymCodeOf(c.pseudonym)} subtitle={subtitle} />
-            </Link>
+            <div className="min-w-0">
+              <Link to={profileHref} className="flex min-w-0 rounded-sm hover:opacity-80">
+                <Pseudonym code={pseudonymCodeOf(c.pseudonym)} subtitle={c.category_label ?? undefined} />
+              </Link>
+              {meta && <p className="mt-0.5 pl-[52px] text-[13px] text-muted" data-testid="match-meta">{meta}</p>}
+            </div>
           </div>
-          <div className="shrink-0 text-right">
+          <div className="w-[5.5rem] shrink-0 text-right">
             <div className="text-2xl leading-none font-bold text-fsp-plum tabular-nums">{Math.round(match.score * 100)}</div>
-            <div className="mt-0.5 text-[11px] font-medium text-muted">соответствие из 100</div>
+            <div className="mt-0.5 text-[11px] leading-tight font-medium text-muted">соответствие из&nbsp;100</div>
           </div>
         </div>
 

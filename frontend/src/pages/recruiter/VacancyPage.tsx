@@ -5,7 +5,7 @@ import { EyeOff, Inbox, Pencil, Upload } from 'lucide-react'
 import { api, getErrorMessage } from '@/shared/api'
 import { formatDate } from '@/shared/lib/format'
 import { Badge, Button, Card, CardHeader, EmptyState, PageHeader, SalaryRange, Skeleton, SkeletonCard, useToast } from '@/shared/ui'
-import { rk, type Application, type Vacancy } from './api'
+import { refreshRecruiter, rk, upsertInList, type Application, type Vacancy } from './api'
 import { VACANCY_STATUS, WORK_FORMAT_LABELS } from './labels'
 import { ApplicationItem } from './components/ApplicationItem'
 import { StackTags } from './components/CandidateBits'
@@ -28,7 +28,9 @@ export default function RecruiterVacancyPage() {
     mutationFn: (action: 'publish' | 'unpublish') => api.post<Vacancy>(`/vacancies/${id}/${action}`),
     onSuccess: (v) => {
       toast({ tone: 'success', title: v.status === 'published' ? 'Вакансия опубликована' : 'Вакансия снята с публикации' })
-      void qc.invalidateQueries({ queryKey: rk.all })
+      upsertInList(qc, rk.vacancies, v)
+      qc.setQueryData(rk.vacancy(v.id), v)
+      void refreshRecruiter(qc, rk.vacancies)
     },
     onError: (e) => toast({ tone: 'error', title: 'Не получилось', description: getErrorMessage(e) }),
   })

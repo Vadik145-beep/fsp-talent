@@ -8,7 +8,8 @@ import { renderApp } from '@/test/renderApp'
 
 /** Экраны рекрутера на моках: видимость, подборка с фильтрами, модалка приглашения. */
 const server = setupServer(...recruiterHandlers)
-const WAIT = { timeout: 8000 }
+// Под нагрузкой (полный прогон в 2 потока) ответ мока с отрисовкой приходит дольше 8 с.
+const WAIT = { timeout: 15000 }
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'bypass' }))
 afterAll(() => server.close())

@@ -5,7 +5,7 @@ import { ArrowRight, Sparkles, WandSparkles } from 'lucide-react'
 import { api, isApiError } from '@/shared/api'
 import { GRADE_OPTIONS, SPECIALIZATION_OPTIONS, type Grade, type Specialization } from '@/shared/config/dictionaries'
 import { Badge, Button, Card, CardHeader, Input, PageHeader, RadioGroup, Select, Textarea, useToast } from '@/shared/ui'
-import { rk, useSkills, type Need, type NeedCreate, type NeedParseResult, type WorkFormat } from './api'
+import { apiFieldErrors, refreshRecruiter, rk, upsertInList, useSkills, type Need, type NeedCreate, type NeedParseResult, type WorkFormat } from './api'
 import { WORK_FORMAT_OPTIONS } from './labels'
 import { MoneyInput } from './components/MoneyInput'
 import { SkillInput } from './components/SkillInput'
@@ -23,6 +23,8 @@ const FIELD_NAMES: Record<string, string> = {
   skills_desired: 'желательный стек',
   work_format: 'формат',
   salary: 'вилка',
+  salary_from: 'вилка',
+  salary_to: 'вилка',
   city: 'город',
   team_description: 'сфера',
 }
@@ -55,6 +57,13 @@ const EMPTY: FormState = {
 
 type Errors = Partial<Record<keyof FormState, string>>
 
+const REQUIRED_FIELDS: Array<['specialization' | 'grade' | 'work_format' | 'salary', string]> = [
+  ['specialization', 'специализация'],
+  ['grade', 'грейд'],
+  ['work_format', 'формат'],
+  ['salary', 'вилка'],
+]
+
 /** Создание потребности: свободный текст → «Разобрать» → правка полей → «Подобрать кандидатов». */
 export default function RecruiterNeedNewPage() {
   const navigate = useNavigate()
@@ -66,7 +75,14 @@ export default function RecruiterNeedNewPage() {
   const [form, setForm] = useState<FormState>(EMPTY)
   const [errors, setErrors] = useState<Errors>({})
   const [parsed, setParsed] = useState<NeedParseResult | null>(null)
-  const fromText = new Set(parsed?.recognized_fields ?? [])
+  // В контракте вилка — salary_from / salary_to, в старых ответах — salary: приводим к одному.
+  const fromText = new Set((parsed?.recognized_fields ?? []).map((f) => (f === 'salary_from' || f === 'salary_to' ? 'salary' : f)))
+  const recognizedNames = [...new Set([...fromText].map((f) => FIELD_NAMES[f] ?? f))]
+  // unrecognized: по контракту — фрагменты текста, которые не разобрали; имена полей тоже допускаем.
+  const unrecognized = (parsed?.unrecognized ?? []).filter((x) => !(x in FIELD_NAMES))
+  const missing = parsed
+    ? REQUIRED_FIELDS.filter(([f]) => (f === 'salary' ? !form.salary_from || !form.salary_to : !form[f])).map(([, label]) => label)
+    : []
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => setForm((f) => ({ ...f, [key]: value }))
 
@@ -89,19 +105,29 @@ export default function RecruiterNeedNewPage() {
         salary_to: d.salary_to ?? f.salary_to,
       }))
     },
-    onError: (e) => setTextError(isApiError(e) ? e.message : 'Не удалось разобрать текст'),
+    onError: (e) => setTextError(apiFieldErrors(e).text ?? (isApiError(e) ? e.message : 'Не удалось разобрать текст')),
   })
 
   const create = useMutation({
     mutationFn: (body: NeedCreate) => api.post<Need>('/matching/needs', body),
     onSuccess: (need) => {
-      void qc.invalidateQueries({ queryKey: rk.all })
+      // Потребность из ответа — в кэш: экран подборки откроется без лишнего запроса.
+      qc.setQueryData(rk.need(need.id), need)
+      upsertInList(qc, rk.needs, need)
+      void refreshRecruiter(qc, rk.needs)
       toast({ tone: 'success', title: 'Потребность создана', description: `В основной категории ${need.candidates_count} канд.` })
       navigate(`/recruiter/needs/${need.id}`)
     },
     onError: (e) => {
-      if (isApiError(e) && e.details?.fields) setErrors(e.details.fields as Errors)
-      else toast({ tone: 'error', title: 'Не удалось сохранить', description: isApiError(e) ? e.message : undefined })
+      const fields = apiFieldErrors(e) as Errors
+      const unknownSkills = isApiError(e) && e.code === 'unknown_skills' && Array.isArray(e.details?.skills) ? (e.details.skills as string[]) : []
+      if (Object.keys(fields).length) setErrors(fields)
+      else
+        toast({
+          tone: 'error',
+          title: 'Не удалось сохранить',
+          description: isApiError(e) ? `${e.message}${unknownSkills.length ? `: ${unknownSkills.join(', ')}` : ''}` : undefined,
+        })
     },
   })
 
@@ -186,13 +212,9 @@ export default function RecruiterNeedNewPage() {
           </Button>
           {parsed && (
             <p className="text-sm text-muted" role="status">
-              Распознано:{' '}
-              <b className="text-ink">
-                {parsed.recognized_fields.length ? parsed.recognized_fields.map((f) => FIELD_NAMES[f] ?? f).join(', ') : 'ничего'}
-              </b>
-              {Boolean(parsed.unrecognized?.length) && (
-                <> · заполните вручную: {parsed.unrecognized!.map((f) => FIELD_NAMES[f] ?? f).join(', ')}</>
-              )}
+              Распознано: <b className="text-ink">{recognizedNames.length ? recognizedNames.join(', ') : 'ничего'}</b>
+              {missing.length > 0 && <> · заполните вручную: {missing.join(', ')}</>}
+              {unrecognized.length > 0 && <> · не разобрали: {unrecognized.map((x) => `«${x}»`).join(', ')}</>}
             </p>
           )}
         </div>

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api, getErrorMessage } from '@/shared/api'
 import { Button, Modal, useToast } from '@/shared/ui'
-import { rk, type Invitation } from '../api'
+import { refreshRecruiter, rk, upsertInList, type Invitation, type InvitationDetail } from '../api'
 
 /** Подтверждение отзыва приглашения. */
 export function WithdrawDialog({ id, onClose }: { id: number | null; onClose: () => void }) {
@@ -9,9 +9,23 @@ export function WithdrawDialog({ id, onClose }: { id: number | null; onClose: ()
   const { toast } = useToast()
   const withdraw = useMutation({
     mutationFn: (invId: number) => api.post<Invitation>(`/invitations/${invId}/withdraw`),
-    onSuccess: () => {
+    onSuccess: (inv) => {
       toast({ tone: 'success', title: 'Приглашение отозвано', description: 'Место в квоте освободилось.' })
-      void qc.invalidateQueries({ queryKey: rk.all })
+      // Статус из ответа — в список и в открытую карточку (с записью в журнале).
+      upsertInList(qc, rk.invitations, inv)
+      qc.setQueryData<InvitationDetail>(rk.invitation(inv.id), (old) =>
+        old
+          ? {
+              ...old,
+              ...inv,
+              events: [
+                ...(old.events ?? []),
+                { id: -Date.now(), invitation_id: inv.id, type: 'withdrawn', at: inv.withdrawn_at ?? new Date().toISOString(), actor_role: 'recruiter' },
+              ],
+            }
+          : old,
+      )
+      void refreshRecruiter(qc, rk.invitations)
       onClose()
     },
     onError: (e) => {

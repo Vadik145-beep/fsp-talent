@@ -1,10 +1,10 @@
 import { Link } from 'react-router'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Lock } from 'lucide-react'
 import { api } from '@/shared/api'
 import { formatDateTime } from '@/shared/lib/format'
 import { Button, Drawer, Pseudonym, SalaryRange, SkeletonText, StatusPill, ErrorState } from '@/shared/ui'
-import { pseudonymCodeOf, rk, type InvitationDetail } from '../api'
+import { pseudonymCodeOf, rk, type Invitation, type InvitationDetail } from '../api'
 import { CONTACT_TYPE_LABELS, EVENT_LABELS } from '../labels'
 
 const CAN_WITHDRAW = ['sent', 'viewed']
@@ -24,7 +24,11 @@ export function InvitationDrawer({
     queryFn: () => api.get<InvitationDetail>(`/invitations/${id}`),
     enabled: id !== null,
   })
-  const inv = q.data
+  const qc = useQueryClient()
+  // Строка из списка — пока карточка грузится и если карточки на сервере нет (без журнала).
+  const fromList = qc.getQueryData<Invitation[]>(rk.invitations)?.find((i) => i.id === id)
+  const inv: InvitationDetail | undefined = q.data ?? (fromList && (q.isPending || q.isError) ? { ...fromList, events: [] } : undefined)
+  const noEvents = !q.data && Boolean(inv)
   return (
     <Drawer
       open={id !== null}
@@ -39,8 +43,8 @@ export function InvitationDrawer({
       }
     >
       <div className="flex flex-col gap-5 p-5">
-        {q.isPending && <SkeletonText lines={6} />}
-        {q.isError && <ErrorState error={q.error} onRetry={() => void q.refetch()} />}
+        {q.isPending && !inv && <SkeletonText lines={6} />}
+        {q.isError && !inv && <ErrorState error={q.error} onRetry={() => void q.refetch()} />}
         {inv && (
           <>
             <div className="flex items-start justify-between gap-3">
@@ -99,6 +103,9 @@ export function InvitationDrawer({
 
             <section>
               <h3 className="mb-2 text-sm font-semibold">Журнал</h3>
+              {noEvents && (
+                <p className="text-[13px] text-muted">{q.isPending ? 'Загружаем журнал…' : 'Журнал событий пока недоступен.'}</p>
+              )}
               <ol className="relative flex flex-col gap-3 border-l-2 border-line pl-4">
                 {(inv.events ?? []).map((e) => (
                   <li key={e.id} className="text-sm">

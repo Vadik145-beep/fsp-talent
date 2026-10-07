@@ -578,7 +578,8 @@ export function parseNeedText(text: string): S['NeedParseResult'] {
     ['skills_required', required.length > 0],
     ['skills_desired', desired.length > 0],
     ['work_format', Boolean(work_format)],
-    ['salary', salary.from !== null || salary.to !== null],
+    ['salary_from', salary.from !== null],
+    ['salary_to', salary.to !== null],
     ['city', Boolean(city)],
     ['team_description', Boolean(domain)],
   ]
@@ -586,7 +587,8 @@ export function parseNeedText(text: string): S['NeedParseResult'] {
     draft,
     parser: 'rules',
     recognized_fields: checks.filter(([, ok]) => ok).map(([f]) => f),
-    unrecognized: checks.filter(([f, ok]) => !ok && f !== 'skills_desired').map(([f]) => f),
+    // По контракту — фрагменты текста, которые не разобрали; правила мока таких не выделяют.
+    unrecognized: [],
   }
 }
 
@@ -765,6 +767,19 @@ function recruiterMutation(
   }
 }
 
+/** Детерминированный демо-код приглашения в компанию: «FSP-C001-7K3Q». */
+function inviteCodeOf(company: CompanyRow): string {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  let h = 2166136261
+  for (const ch of `${company.id}:${company.inn ?? company.name}`) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0
+  let tail = ''
+  for (let i = 0; i < 4; i++) {
+    tail += alphabet[h % alphabet.length]
+    h = Math.floor(h / alphabet.length)
+  }
+  return `FSP-C${String(company.id).padStart(3, '0')}-${tail}`
+}
+
 const idParam = (v: string | readonly string[] | undefined) => Number(Array.isArray(v) ? v[0] : v)
 
 export const recruiterHandlers: HttpHandler[] = [
@@ -795,7 +810,8 @@ export const recruiterHandlers: HttpHandler[] = [
   // --- Компания ---
   http.get(
     '/api/companies/my',
-    recruiterGet((ctx) => ctx.company),
+    // Код приглашения в компанию — только администратору компании.
+    recruiterGet((ctx) => (ctx.recruiter.is_company_admin ? { ...ctx.company, invite_code: inviteCodeOf(ctx.company) } : ctx.company)),
   ),
   http.put(
     '/api/companies/my',

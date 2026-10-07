@@ -8,8 +8,14 @@ import { cn } from '@/shared/lib/cn'
 import { formatMoney, formatPercent, formatSalaryRange } from '@/shared/lib/format'
 import { Button, Checkbox, Input, Modal, Pseudonym, Select, Skeleton, Textarea, useToast } from '@/shared/ui'
 import {
+  apiFieldErrors,
+  isMatchesKey,
   pseudonymCodeOf,
+  refreshRecruiter,
   rk,
+  upsertInList,
+  type AnonymousProfile,
+  type MatchList,
   useCompany,
   useCompanyRecruiters,
   useDebounced,
@@ -100,7 +106,17 @@ function InviteModalInner({ onClose, candidate, need, onSent }: InviteModalProps
         title: 'Приглашение отправлено',
         description: 'Кандидат сразу увидит вилку и описание. Контакты откроются, когда он примет приглашение.',
       })
-      void qc.invalidateQueries({ queryKey: rk.all })
+      // Приглашение из ответа — сразу в список, в профиль и в карточки подборок.
+      upsertInList(qc, rk.invitations, inv)
+      qc.setQueryData<AnonymousProfile>(rk.candidate(candidate.id), (old) =>
+        old ? { ...old, invitation_status: inv.status, can_invite: false } : old,
+      )
+      qc.setQueriesData<MatchList>({ predicate: (q) => isMatchesKey(q.queryKey) }, (old) =>
+        old
+          ? { ...old, items: old.items.map((m) => (m.candidate.id === candidate.id ? { ...m, invitation_status: inv.status } : m)) }
+          : old,
+      )
+      void refreshRecruiter(qc, rk.invitations, rk.candidate(candidate.id), isMatchesKey)
       onSent?.(inv)
       onClose()
     },
@@ -109,16 +125,18 @@ function InviteModalInner({ onClose, candidate, need, onSent }: InviteModalProps
         setBanner({ code: 'unknown', message: 'Не удалось отправить. Попробуйте ещё раз.' })
         return
       }
-      const fields = (error.details?.fields ?? {}) as FieldErrors
+      const fields = apiFieldErrors(error) as FieldErrors
       if (error.code === 'salary_below_expectations') {
         setErrors({ salary_to: 'Ниже ожиданий кандидата' })
         setBanner({
           code: error.code,
           message: 'Вилка ниже ожиданий кандидата. Поднимите верхнюю границу — сумму ожиданий мы не раскрываем.',
         })
-      } else if (error.code === 'validation_error' || error.code === 'salary_range_invalid') {
+      } else if ((error.code === 'validation_error' || error.code === 'salary_range_invalid') && Object.keys(fields).length) {
         setErrors(fields)
         setBanner(null)
+      } else if (error.code === 'not_found') {
+        setBanner({ code: error.code, message: 'Кандидат недоступен: он скрыл профиль или поставил поиск на паузу.' })
       } else {
         setBanner({ code: error.code, message: error.message })
       }
@@ -309,7 +327,7 @@ function MarketHintBox({
 }) {
   if (loading) return <Skeleton className="h-20 w-full" />
   if (!hint) return null
-  const tone = probability === null ? 'bg-fsp-plum' : probability < 0.4 ? 'bg-danger' : probability < 0.65 ? 'bg-[#c27100]' : 'bg-success'
+  const tone = probability === null ? 'bg-fsp-plum' : probability < 0.4 ? 'bg-danger' : probability < 0.65 ? 'bg-warning' : 'bg-success'
   return (
     <div className="rounded-md bg-violet-soft p-3 text-sm" aria-live="polite" data-testid="market-hint">
       <p className="flex gap-2 font-medium text-ink">
@@ -326,7 +344,7 @@ function MarketHintBox({
             <span className="text-muted">Вероятность принятия с такой вилкой</span>
             <b className="tabular-nums text-ink">{formatPercent(probability)}</b>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-white" role="meter" aria-label="Вероятность принятия" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(probability * 100)}>
+          <div className="h-2 overflow-hidden rounded-full bg-surface" role="meter" aria-label="Вероятность принятия" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(probability * 100)}>
             <div className={cn('h-full rounded-full transition-[width]', tone)} style={{ width: `${probability * 100}%` }} />
           </div>
         </div>
