@@ -190,6 +190,7 @@ function ProfileStepForm({ profile, pdf, onBack, onDone }: { profile: CandidateP
           <span>
             Заполнили из «{parsed.filename}». Поля с пометкой «Из резюме» проверьте, жёлтые — распознаны неуверенно.
             {parsed.unmatched_skills?.length ? ` Не нашли в справочнике: ${parsed.unmatched_skills.join(', ')}.` : ''}
+            {parsed.warnings?.length ? ` ${parsed.warnings.join(' ')}` : ''}
           </span>
         </div>
       )}
@@ -552,7 +553,7 @@ function StepTest({
           {SPECIALIZATION_LABELS[specialization]} · {GRADE_LABELS[grade]}
         </h2>
         <ul className="mt-5 grid gap-4 sm:grid-cols-2">
-          <Rule icon={<ListChecks aria-hidden />} title="12–15 задач">
+          <Rule icon={<ListChecks aria-hidden />} title="До 20 задач">
             Тест закончится, когда уровень станет понятен.
           </Rule>
           <Rule icon={<Clock aria-hidden />} title="Время на задачу ограничено">

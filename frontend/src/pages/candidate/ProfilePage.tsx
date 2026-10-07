@@ -70,7 +70,7 @@ function ProfileEditor({ profile }: { profile: CandidateProfile }) {
     toast({
       tone: 'info',
       title: 'Поля заполнены из резюме',
-      description: 'Проверьте подсвеченные поля и сохраните профиль.',
+      description: ['Проверьте подсвеченные поля и сохраните профиль.', ...(result.warnings ?? [])].join(' '),
     })
   }
 
