@@ -209,6 +209,12 @@ export default function VacanciesPage() {
               </p>
             </div>
             <p className="text-[15px] leading-relaxed whitespace-pre-line text-ink">{opened.description}</p>
+            {opened.team_description?.trim() && (
+              <div>
+                <p className="mb-1 text-sm font-medium text-ink">Чем занимается команда</p>
+                <p className="text-[15px] leading-relaxed whitespace-pre-line text-ink">{opened.team_description}</p>
+              </div>
+            )}
             {(opened.skills_required ?? []).length > 0 && (
               <div>
                 <p className="mb-1.5 text-sm font-medium text-ink">Обязательно</p>

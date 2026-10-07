@@ -4,7 +4,7 @@ import { Building, CheckCircle2, Eye, Flag, XCircle } from 'lucide-react'
 import { api } from '@/shared/api'
 import { formatDateTime } from '@/shared/lib/format'
 import { Badge, Button, Card, Checkbox, EmptyState, ErrorState, PageHeader, SkeletonCard, Tabs } from '@/shared/ui'
-import { useAdminMutation, type AdminCompany, type Report, type ReportStatus } from './api'
+import { useAdminMutation, type AdminCompany, type Report, type ReportDecision, type ReportStatus } from './api'
 import { ConfirmModal } from './components/common'
 import { REPORT_REASON_LABELS, REPORT_STATUS_LABELS, REPORT_STATUS_TONES } from './labels'
 
@@ -19,19 +19,20 @@ export default function AdminReportsPage() {
   const [tab, setTab] = useState('open')
   const [decide, setDecide] = useState<{ report: Report; status: 'resolved' | 'rejected' } | null>(null)
   const [blockCompany, setBlockCompany] = useState(false)
-  // Ответы сервера на действия с жалобами. Пока жалобы на бэкенде — заглушка на фикстурах (волна 5b),
-  // изменения там не сохраняются, поэтому поверх списка показываем то, что сервер вернул на действие.
+  // Ответ сервера на действие показываем сразу, не дожидаясь перезапроса списка.
   const [acted, setActed] = useState<Record<number, Report>>({})
   const reports = useQuery({ queryKey: ['admin', 'reports'], queryFn: () => api.get<Report[]>('/admin/reports') })
   const companies = useQuery({ queryKey: ['admin', 'companies'], queryFn: () => api.get<AdminCompany[]>('/admin/companies') })
 
   const update = useAdminMutation(
-    (v: { id: number; status: ReportStatus; resolution?: string }) => api.patch<Report>(`/admin/reports/${v.id}`, { status: v.status, resolution: v.resolution ?? null }),
-    { success: (r) => `Жалоба: ${REPORT_STATUS_LABELS[r.status].toLowerCase()}`, onSuccess: (r) => setActed((m) => ({ ...m, [r.id]: r })) },
+    (v: { id: number; status: ReportStatus; resolution?: string; block_company?: boolean }) =>
+      api.patch<Report>(`/admin/reports/${v.id}`, { status: v.status, resolution: v.resolution ?? null, block_company: Boolean(v.block_company) } satisfies ReportDecision),
+    {
+      success: (r, v) =>
+        `Жалоба: ${REPORT_STATUS_LABELS[r.status].toLowerCase()}${v.block_company ? `, компания «${r.company_name}» заблокирована` : ''}`,
+      onSuccess: (r) => setActed((m) => ({ ...m, [r.id]: r })),
+    },
   )
-  const block = useAdminMutation((companyId: number) => api.patch<AdminCompany>(`/admin/companies/${companyId}`, { blocked: true }), {
-    success: (c) => `Компания «${c.name}» заблокирована`,
-  })
 
   const list = (reports.data ?? []).map((r) => acted[r.id] ?? r)
   const current = TABS.find((t) => t.id === tab)!
@@ -40,8 +41,8 @@ export default function AdminReportsPage() {
 
   async function confirmDecision(resolution: string) {
     if (!decide) return
-    await update.mutateAsync({ id: decide.report.id, status: decide.status, resolution })
-    if (decide.status === 'resolved' && blockCompany && !company(decide.report.company_id)?.blocked) await block.mutateAsync(decide.report.company_id)
+    const block = decide.status === 'resolved' && blockCompany && !company(decide.report.company_id)?.blocked
+    await update.mutateAsync({ id: decide.report.id, status: decide.status, resolution, block_company: block })
     setDecide(null)
     setBlockCompany(false)
   }
@@ -134,7 +135,7 @@ export default function AdminReportsPage() {
         open={decide !== null}
         onClose={() => (setDecide(null), setBlockCompany(false))}
         onConfirm={(text) => void confirmDecision(text).catch(() => undefined)}
-        loading={update.isPending || block.isPending}
+        loading={update.isPending}
         danger={decide?.status === 'resolved' && blockCompany}
         title={decide?.status === 'resolved' ? 'Жалоба подтверждена' : 'Отклонить жалобу?'}
         description={`«${decide?.report.company_name ?? ''}»: ${decide ? REPORT_REASON_LABELS[decide.report.reason].toLowerCase() : ''}`}

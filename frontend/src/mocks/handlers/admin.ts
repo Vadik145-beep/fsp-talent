@@ -2,6 +2,7 @@ import { http, HttpResponse, type HttpHandler, type HttpResponseResolver } from 
 import type { components } from '@/shared/api/schema'
 import { db, demoUser, type CollectionName } from '../db'
 import { apiError, mockLatency, withScenario } from '../utils'
+import validationResults from '../fixtures/validation_results.json'
 
 /**
  * Моки API кабинета администратора (трек 1c).
@@ -608,140 +609,28 @@ export function buildVacancyTest(text: string, specialization?: SpecCode | null)
 
 // --- Валидация -------------------------------------------------------------------------------
 /**
- * Графики валидации. Пока в фикстуре заглушки (is_stub), подставляем цифры настоящей симуляции
- * движка из docs/testing/engine.md (seed 20261011, 1000 кандидатов, банк 240 задач).
- * Разбивка точности по грейдам и точки графиков восстановлены так, чтобы итог совпадал с таблицами
- * документа. Когда волна 5c положит в фикстуру настоящие данные (is_stub=false), они покажутся как есть.
+ * Графики валидации — копия `data/validation/results.json` (прогон `python scripts/validation/run_all.py`,
+ * seed 20261011): те же 9 графиков, что отдаёт бэкенд. После нового прогона скопировать заново.
  */
-function engineCharts(): Record<string, ValidationChart> {
-  const rnd = mulberry32(VALIDATION_SEED)
-  const gauss = () => Math.sqrt(-2 * Math.log(rnd() + 1e-12)) * Math.cos(2 * Math.PI * rnd())
-  const recovery = Array.from({ length: 150 }, () => {
-    const t = Math.max(-2.8, Math.min(2.8, gauss()))
-    return { x: round(t), y: round(Math.max(-3.2, Math.min(3.2, t + 0.33 * gauss()))) }
-  })
-  return {
-    grade_accuracy: {
-      id: 'grade_accuracy',
-      title: 'Точность определения грейда',
-      description: 'Доля синтетических кандидатов, у которых грейд по тесту совпал с истинным (точно и с ошибкой не больше одного грейда).',
-      chart_type: 'bar',
-      x_label: 'Истинный грейд',
-      y_label: 'Доля кандидатов',
-      series: [
-        { name: 'Точно', points: [{ x: 'Стажёр', y: 0.87 }, { x: 'Junior', y: 0.75 }, { x: 'Middle', y: 0.75 }, { x: 'Senior', y: 0.86 }] },
-        { name: '±1 грейд', points: [{ x: 'Стажёр', y: 1 }, { x: 'Junior', y: 1 }, { x: 'Middle', y: 1 }, { x: 'Senior', y: 1 }] },
-      ],
-      summary: { exact: 0.784, within_one: 1.0, exact_far_from_threshold: 0.885 },
-      is_stub: true,
-    },
-    theta_recovery: {
-      id: 'theta_recovery',
-      title: 'Оценка уровня против истинного',
-      description: 'Истинный уровень синтетического кандидата (известен заранее) против оценки теста.',
-      chart_type: 'scatter',
-      x_label: 'Истинный уровень θ',
-      y_label: 'Оценка теста θ̂',
-      series: [{ name: 'Кандидаты', points: recovery }],
-      summary: { correlation: 0.945, rmse: 0.332, mean_se: 0.349, mean_test_length: 12.8 },
-      is_stub: true,
-    },
-    retest_stability: {
-      id: 'retest_stability',
-      title: 'Стабильность при повторном тесте',
-      description: 'Те же кандидаты проходят тест второй раз с другими вариантами задач.',
-      chart_type: 'bar',
-      x_label: 'Правило остановки теста',
-      y_label: 'Доля совпадений',
-      series: [
-        { name: 'Тот же грейд', points: [{ x: 'до 15 задач (SE < 0,35)', y: 0.679 }, { x: 'до 20 задач (SE < 0,30)', y: 0.736 }] },
-        { name: 'То же решение «подтверждён / нет»', points: [{ x: 'до 15 задач (SE < 0,35)', y: 0.864 }, { x: 'до 20 задач (SE < 0,30)', y: 0.882 }] },
-      ],
-      summary: { agreement: 0.679, cohen_kappa: 0.558, theta_retest_corr: 0.891, decision_agreement: 0.864, agreement_long: 0.736 },
-      is_stub: true,
-    },
-    test_length: {
-      id: 'test_length',
-      title: 'Длина адаптивного теста',
-      description: 'Сколько задач понадобилось до остановки (SE < 0,35 или 15 задач).',
-      chart_type: 'histogram',
-      x_label: 'Задач в тесте',
-      y_label: 'Кандидатов',
-      series: [
-        {
-          name: 'Тесты',
-          points: [[6, 5], [7, 10], [8, 20], [9, 35], [10, 60], [11, 100], [12, 140], [13, 177], [14, 220], [15, 233]].map(([x, y]) => ({ x, y })),
-        },
-      ],
-      summary: { mean: 12.8, share_max_length: 0.233, share_stopped_by_se: 0.767 },
-      is_stub: true,
-    },
-    leak_detector: {
-      id: 'leak_detector',
-      title: 'Защита от утечки заданий',
-      description: 'Симуляция: 20% задач слиты, 10% кандидатов — «читеры». Как часто читеру завышают грейд в каждом режиме защиты.',
-      chart_type: 'bar',
-      x_label: 'Режим',
-      y_label: 'Доля завышенных грейдов',
-      series: [
-        {
-          name: 'Читеры',
-          points: [
-            { x: 'Нет утечки', y: 0.1 },
-            { x: 'Без защиты', y: 0.85 },
-            { x: 'Детектор', y: 0.38 },
-            { x: 'Параметризация', y: 0.14 },
-            { x: 'Обе защиты', y: 0.14 },
-          ],
-        },
-        {
-          name: 'Честные',
-          points: [
-            { x: 'Нет утечки', y: 0.101 },
-            { x: 'Без защиты', y: 0.099 },
-            { x: 'Детектор', y: 0.118 },
-            { x: 'Параметризация', y: 0.098 },
-            { x: 'Обе защиты', y: 0.098 },
-          ],
-        },
-      ],
-      summary: { precision: 1.0, recall: 0.938, recall_speed_signal: 0.729, recall_irt_signal: 0.062, cheater_recall: 0.83 },
-      is_stub: true,
-    },
-    bank_size: {
-      id: 'bank_size',
-      title: 'Сколько шаблонов нужно в банке',
-      description: 'Точность теста при разном размере банка одной специализации (500 кандидатов на каждый размер).',
-      chart_type: 'line',
-      x_label: 'Шаблонов в банке',
-      y_label: 'Значение',
-      series: [
-        { name: 'Корреляция с истинным уровнем', points: [[15, 0.898], [30, 0.921], [60, 0.898], [120, 0.939], [240, 0.941]].map(([x, y]) => ({ x, y })) },
-        { name: 'Грейд точно', points: [[15, 0.73], [30, 0.774], [60, 0.718], [120, 0.77], [240, 0.794]].map(([x, y]) => ({ x, y })) },
-      ],
-      summary: { se_at_15: 0.484, se_at_240: 0.344 },
-      is_stub: true,
-    },
-  }
-}
-
 function buildCharts(): ValidationChart[] {
-  const engine = engineCharts()
-  const fromSeed = col<ValidationChart>('validation_charts').map((c) => (c.is_stub && engine[c.id] ? engine[c.id] : c))
-  const extra = Object.values(engine).filter((c) => !fromSeed.some((s) => s.id === c.id))
-  // Различающая сила: точки из фикстуры (шаблоны банка); средняя r_pb — из симуляции (линейная форма 30 задач).
-  return [...fromSeed, ...extra].map((c) =>
-    c.id === 'item_discrimination' && c.is_stub
-      ? {
-          ...c,
-          description: 'Каждая точка — шаблон: параметр a модели против корреляции ответа на задачу с итоговым баллом.',
-          summary: { mean_point_biserial: 0.348, mean_a: 1.32, share_above_02: 1.0, adaptive_mean_point_biserial: 0.269 },
-        }
-      : c,
-  )
+  return validationResults.charts as unknown as ValidationChart[]
 }
 
-/** CSV пар «потребность — кандидат» → метрики подбора (порядок строк внутри потребности = ранжирование). */
+type CsvMode = 'platform' | 'file_order'
+
+const CSV_NOTES: Record<CsvMode, string> = {
+  platform:
+    'Данные платформы: кандидатов каждой потребности ранжирует формула подбора с текущими весами. Без колонки relevant подходящим считается кандидат той же категории.',
+  file_order:
+    'id не найдены ни в синтетическом наборе, ни на платформе: оценён порядок строк файла как готовая выдача. Поиск по словам здесь недоступен — базовая линия = исходный порядок.',
+}
+
+/**
+ * CSV пар «потребность — кандидат» → метрики подбора, как `POST /api/eval/matching`.
+ * Если id есть в базе моков — кандидатов каждой потребности ранжирует упрощённая формула (категория, затем стек),
+ * порядок строк файла не важен. Иначе (нужна колонка relevant) оценивается порядок строк файла.
+ * Синтетического набора в моках нет: его id (N001, C0001…) оцениваются как порядок строк файла.
+ */
 export function evaluateMatchingCsv(filename: string, text: string): S['MatchingEvalResult'] | { error: string } {
   const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/).map((l) => l.trim()).filter(Boolean)
   if (lines.length < 2) return { error: 'В файле нет строк с данными' }
@@ -752,78 +641,144 @@ export function evaluateMatchingCsv(filename: string, text: string): S['Matching
   const iRel = header.indexOf('relevant')
   if (iNeed < 0 || iCand < 0) return { error: 'Нужны колонки need_id и candidate_id (relevant — необязательно)' }
 
-  const needs = col<NeedRow>('needs')
-  const candidates = col<CandidateRow>('candidates')
-  const groups = new Map<string, Array<{ cand: string; rel: number }>>()
+  const pairs: Array<{ need: string; cand: string; rel: number | null }> = []
   for (const line of lines.slice(1)) {
     const cells = line.split(sep).map((c) => c.trim().replace(/^"|"$/g, ''))
-    const needId = cells[iNeed]
-    const candId = cells[iCand]
-    if (!needId || !candId) continue
-    let rel: number
-    if (iRel >= 0 && cells[iRel] !== undefined && cells[iRel] !== '') {
-      rel = Number(cells[iRel]) > 0 ? 1 : 0
-    } else {
-      // Без разметки: релевантен, если категория кандидата совпала с категорией потребности.
-      const need = needs.find((n) => String(n.id) === needId)
-      const cand = candidates.find((c) => String(c.id) === candId)
-      rel = need && cand && need.category === cand.category ? 1 : 0
-    }
-    if (!groups.has(needId)) groups.set(needId, [])
-    groups.get(needId)!.push({ cand: candId, rel })
+    const need = cells[iNeed]
+    const cand = cells[iCand]
+    if (!need || !cand) continue
+    const raw = iRel >= 0 ? cells[iRel] : undefined
+    pairs.push({ need, cand, rel: raw !== undefined && raw !== '' ? Math.max(0, Math.min(2, Math.round(Number(raw) || 0))) : null })
   }
-  if (!groups.size) return { error: 'Не нашлось ни одной пары need_id — candidate_id' }
+  if (!pairs.length) return { error: 'Не нашлось ни одной пары need_id — candidate_id' }
 
-  const dcg = (rels: number[]) => rels.reduce((s, r, i) => s + r / Math.log2(i + 2), 0)
-  const metrics = (rows: Array<{ rel: number }>, all: Array<{ rel: number }>) => {
-    const top = rows.slice(0, 10).map((r) => r.rel)
-    const ideal = all.map((r) => r.rel).sort((a, b) => b - a).slice(0, 10)
-    const idcg = dcg(ideal)
-    return { p: top.length ? top.reduce((s, r) => s + r, 0) / top.length : 0, ndcg: idcg > 0 ? dcg(top) / idcg : 0 }
+  const needs = new Map(col<NeedRow>('needs').map((n) => [String(n.id), n]))
+  const candidates = new Map(col<CandidateRow>('candidates').map((c) => [String(c.id), c]))
+  const onPlatform = pairs.every((p) => needs.has(p.need) && candidates.has(p.cand))
+  const mode: CsvMode = onPlatform ? 'platform' : 'file_order'
+  if (mode === 'file_order' && pairs.some((p) => p.rel == null))
+    return { error: 'id не найдены в синтетическом наборе и на платформе — для оценки готовой выдачи нужна колонка relevant у каждой строки' }
+
+  // Стек кандидата против стека потребности: обязательные 75%, желательные 25%.
+  const stackScore = (needId: string, candId: string) => {
+    const need = needs.get(needId)
+    const cand = candidates.get(candId)
+    if (!need || !cand) return 0
+    const has = new Set(cand.stack)
+    const share = (list: string[]) => (list.length ? list.filter((s) => has.has(s)).length / list.length : 1)
+    return 0.75 * share(need.skills_required) + 0.25 * share(need.skills_desired)
   }
-  // Базовая линия «поиск по ключевым словам»: порядок по числу совпавших технологий стека.
+  // Базовая линия «поиск по словам»: число совпавших технологий.
   const overlap = (needId: string, candId: string) => {
-    const need = needs.find((n) => String(n.id) === needId)
-    const cand = candidates.find((c) => String(c.id) === candId)
+    const need = needs.get(needId)
+    const cand = candidates.get(candId)
     if (!need || !cand) return 0
     const want = new Set([...need.skills_required, ...need.skills_desired])
     return cand.stack.filter((s) => want.has(s)).length
   }
+  const sameCategory = (needId: string, candId: string) => needs.get(needId)?.category === candidates.get(candId)?.category
+
+  const groups = new Map<string, Array<{ cand: string; rel: number }>>()
+  for (const p of pairs) {
+    const rel = p.rel ?? (sameCategory(p.need, p.cand) ? 1 : 0)
+    if (!groups.has(p.need)) groups.set(p.need, [])
+    groups.get(p.need)!.push({ cand: p.cand, rel })
+  }
+  const graded = [...groups.values()].some((rows) => rows.some((r) => r.rel >= 2))
+  const minRel = graded ? 2 : 1
+
+  const hits = (rels: number[]) => rels.filter((r) => r >= minRel).length
+  const precision = (rels: number[]) => {
+    const top = rels.slice(0, 10)
+    return top.length ? hits(top) / top.length : 0
+  }
+  const dcg = (rels: number[]) => rels.reduce((s, r, i) => s + (2 ** r - 1) / Math.log2(i + 2), 0)
+  const ndcg = (rels: number[], all: number[]) => {
+    const best = dcg([...all].sort((a, b) => b - a).slice(0, 10))
+    return best > 0 ? dcg(rels.slice(0, 10)) / best : 0
+  }
+  const rnd = mulberry32(VALIDATION_SEED)
+  const randomNdcg = (all: number[]) => {
+    const rows = [...all]
+    let total = 0
+    for (let k = 0; k < 200; k++) {
+      for (let i = rows.length - 1; i > 0; i--) {
+        const j = Math.floor(rnd() * (i + 1))
+        ;[rows[i], rows[j]] = [rows[j], rows[i]]
+      }
+      total += ndcg(rows, all)
+    }
+    return total / 200
+  }
+  const byId = (a: string, b: string) => Number(a) - Number(b) || a.localeCompare(b)
 
   const perNeed: S['NeedMetrics'][] = []
-  let sumP = 0
-  let sumN = 0
-  let sumBP = 0
-  let sumBN = 0
-  let relTop = 0
-  let relAll = 0
-  let pairs = 0
+  const skipped: string[] = []
+  const acc = { p: 0, n: 0, r50: 0, bp: 0, bn: 0, rp: 0, rn: 0, relTop: 0, relAll: 0 }
   for (const [needId, rows] of groups) {
-    pairs += rows.length
-    const m = metrics(rows, rows)
-    const baselineOrder = [...rows].sort((a, b) => overlap(needId, b.cand) - overlap(needId, a.cand))
-    const b = metrics(baselineOrder, rows)
-    const relevantTotal = rows.reduce((s, r) => s + r.rel, 0)
-    relAll += relevantTotal
-    relTop += rows.slice(0, 10).reduce((s, r) => s + r.rel, 0)
-    sumP += m.p
-    sumN += m.ndcg
-    sumBP += b.p
-    sumBN += b.ndcg
-    perNeed.push({ need_id: needId, precision_at_10: round(m.p, 3), ndcg_at_10: round(m.ndcg, 3), relevant_total: relevantTotal })
+    const all = rows.map((r) => r.rel)
+    const relevantTotal = hits(all)
+    if (!relevantTotal) {
+      skipped.push(needId)
+      continue
+    }
+    const system =
+      mode === 'platform'
+        ? [...rows].sort(
+            (a, b) =>
+              Number(sameCategory(needId, b.cand)) - Number(sameCategory(needId, a.cand)) ||
+              stackScore(needId, b.cand) - stackScore(needId, a.cand) ||
+              byId(a.cand, b.cand),
+          )
+        : rows
+    const baseline = mode === 'platform' ? [...rows].sort((a, b) => overlap(needId, b.cand) - overlap(needId, a.cand) || byId(a.cand, b.cand)) : rows
+    const sys = system.map((r) => r.rel)
+    const base = baseline.map((r) => r.rel)
+    const m = { p: precision(sys), n: ndcg(sys, all), bp: precision(base), bn: ndcg(base, all) }
+    acc.p += m.p
+    acc.n += m.n
+    acc.bp += m.bp
+    acc.bn += m.bn
+    acc.r50 += hits(sys.slice(0, 50)) / relevantTotal
+    acc.rp += relevantTotal / all.length
+    acc.rn += randomNdcg(all)
+    acc.relTop += hits(sys.slice(0, 10))
+    acc.relAll += relevantTotal
+    perNeed.push({
+      need_id: needId,
+      precision_at_10: round(m.p, 3),
+      ndcg_at_10: round(m.n, 3),
+      relevant_total: relevantTotal,
+      candidates_total: rows.length,
+      baseline_precision_at_10: round(m.bp, 3),
+      baseline_ndcg_at_10: round(m.bn, 3),
+    })
   }
-  const n = groups.size
+  if (!perNeed.length) return { error: 'Ни у одной потребности нет подходящих кандидатов — метрики не посчитать' }
+  const n = perNeed.length
+  const warnings: string[] = []
+  if (mode === 'file_order')
+    warnings.push(
+      'Не все id найдены: оценён порядок строк файла. Чтобы платформа ранжировала сама, используйте id синтетического набора или потребностей и кандидатов стенда.',
+    )
+  if (skipped.length) warnings.push(`Без подходящих кандидатов (в средние не входят): ${skipped.slice(0, 20).join(', ')}`)
   return {
     filename,
-    pairs_count: pairs,
+    pairs_count: pairs.length,
     needs_count: n,
-    precision_at_10: round(sumP / n, 3),
-    ndcg_at_10: round(sumN / n, 3),
-    relevant_in_top_share: relAll ? round(relTop / relAll, 3) : 0,
-    baseline_precision_at_10: round(sumBP / n, 3),
-    baseline_ndcg_at_10: round(sumBN / n, 3),
+    precision_at_10: round(acc.p / n, 3),
+    ndcg_at_10: round(acc.n / n, 3),
+    recall_at_50: round(acc.r50 / n, 3),
+    relevant_in_top_share: acc.relAll ? round(acc.relTop / acc.relAll, 3) : 0,
+    baseline_precision_at_10: round(acc.bp / n, 3),
+    baseline_ndcg_at_10: round(acc.bn / n, 3),
+    random_precision_at_10: round(acc.rp / n, 3),
+    random_ndcg_at_10: round(acc.rn / n, 3),
     per_need: perNeed,
-    is_stub: true,
+    ranking: mode,
+    note: CSV_NOTES[mode],
+    warnings,
+    is_stub: false,
   }
 }
 
@@ -1298,6 +1253,10 @@ export const adminHandlers: HttpHandler[] = [
       const body = (await request.json()) as S['ReportDecision']
       if (!['new', 'in_review', 'resolved', 'rejected'].includes(body.status))
         return apiError(422, 'validation_error', 'Ошибка валидации данных', { status: 'Неизвестный статус' })
+      if (body.block_company && body.status !== 'resolved')
+        return apiError(422, 'block_requires_resolve', 'Заблокировать компанию можно только при подтверждении жалобы', {
+          fields: { block_company: 'Выберите «Подтвердить»' },
+        })
       report.status = body.status
       if (body.resolution != null) report.resolution = body.resolution
       const done = body.status === 'resolved' || body.status === 'rejected'
@@ -1305,6 +1264,11 @@ export const adminHandlers: HttpHandler[] = [
       if (done)
         addAudit(request, 'report_resolved', 'report', report.id,
           `Жалоба на «${report.company_name}» ${body.status === 'resolved' ? 'решена' : 'отклонена'}${body.resolution ? `: ${body.resolution}` : ''}`)
+      const company = body.block_company ? col<CompanyRow>('companies').find((c) => c.id === report.company_id) : undefined
+      if (company && !company.blocked) {
+        company.blocked = true
+        addAudit(request, 'company_blocked', 'company', company.id, `Заблокирована компания «${company.name}»: подтверждена жалоба #${report.id}`)
+      }
       db.save()
       return HttpResponse.json(report)
     }),
@@ -1330,8 +1294,8 @@ export const adminHandlers: HttpHandler[] = [
   // Валидация (общий путь — только для админа)
   http.get(
     '/api/eval/validation',
-    adminGet(() => ({ charts: buildCharts(), generated_at: '2026-10-06T09:00:00+03:00', seed: VALIDATION_SEED }),
-      () => ({ charts: [], generated_at: '2026-10-06T09:00:00+03:00', seed: VALIDATION_SEED }), true),
+    adminGet(() => ({ charts: buildCharts(), generated_at: validationResults.generated_at, seed: validationResults.seed }),
+      () => ({ charts: [], generated_at: '', seed: VALIDATION_SEED }), true),
   ),
   http.get('/api/eval/charts/:id', async (info) => {
     if (demoUser(info.request).role !== 'admin') return undefined

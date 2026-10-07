@@ -151,8 +151,9 @@ const authHandlers: HttpHandler[] = [
     if (body.role === 'recruiter') {
       const code = body.company?.invite_code?.trim()
       if (code) {
-        // Прототип: код приглашения в компанию — INVITE-<id компании>.
-        const id = Number(code.toUpperCase().replace('INVITE-', ''))
+        // Прототип: код приглашения — перевыпущенный администратором компании или INVITE-<id компании>.
+        const issued = db.data.companies.find((c) => (c as { invite_code?: string | null }).invite_code?.toUpperCase() === code.toUpperCase())
+        const id = issued ? issued.id : Number(code.toUpperCase().replace('INVITE-', ''))
         if (!db.data.companies.some((c) => c.id === id)) {
           return apiError(404, 'company_invite_not_found', 'Код приглашения в компанию не найден')
         }

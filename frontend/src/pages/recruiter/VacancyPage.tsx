@@ -108,6 +108,12 @@ export default function RecruiterVacancyPage() {
             </div>
           )}
           <p className="mt-4 text-sm whitespace-pre-line">{v.description}</p>
+          {v.team_description?.trim() && (
+            <div className="mt-4">
+              <p className="mb-1 text-xs text-muted">Чем занимается команда</p>
+              <p className="text-sm whitespace-pre-line">{v.team_description}</p>
+            </div>
+          )}
         </Card>
         <section aria-label="Отклики">
           <CardHeader title={`Отклики · ${v.applications_count ?? 0}`} description="Кандидат откликнулся сам — его контакты открыты сразу." />

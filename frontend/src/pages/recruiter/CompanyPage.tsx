@@ -1,6 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Copy, Globe, KeyRound, Mail, MapPin, Pencil, Phone } from 'lucide-react'
+import { Copy, Globe, KeyRound, Mail, MapPin, Pencil, Phone, RefreshCw } from 'lucide-react'
 import { useAuth } from '@/app/auth/AuthContext'
 import { api, getErrorMessage } from '@/shared/api'
 import { Avatar, Badge, Button, Card, CardHeader, Input, PageHeader, Table, Textarea, useToast } from '@/shared/ui'
@@ -89,6 +89,17 @@ export default function RecruiterCompanyPage() {
 /** Код, по которому коллеги вступают в компанию при регистрации (виден администратору компании). */
 function InviteCodeCard({ code }: { code?: string | null }) {
   const { toast } = useToast()
+  const qc = useQueryClient()
+  const [confirming, setConfirming] = useState(false)
+  const regenerate = useMutation({
+    mutationFn: () => api.post<Company>('/companies/my/invite-code'),
+    onSuccess: (saved) => {
+      qc.setQueryData<Company>(rk.company, saved)
+      setConfirming(false)
+      toast({ tone: 'success', title: 'Новый код выпущен', description: 'Старый код больше не действует.' })
+    },
+    onError: (e) => toast({ tone: 'error', title: 'Код не выпущен', description: getErrorMessage(e) }),
+  })
   async function copy() {
     if (!code) return
     try {
@@ -111,8 +122,25 @@ function InviteCodeCard({ code }: { code?: string | null }) {
       ) : (
         <p className="flex items-start gap-2 text-sm text-muted">
           <KeyRound className="mt-0.5 size-4 shrink-0" aria-hidden />
-          Код не выдан. Чтобы пригласить коллегу, напишите администратору платформы.
+          Кода пока нет — выпустите его кнопкой ниже.
         </p>
+      )}
+      {confirming ? (
+        <div className="mt-3 rounded-md border border-line bg-surface-muted p-3" role="group" aria-label="Подтверждение нового кода">
+          <p className="text-sm">{code ? 'Старый код перестанет действовать. Коллеги, которым вы его уже отправили, не смогут вступить по нему.' : 'Выпустить код приглашения?'}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Button size="sm" loading={regenerate.isPending} onClick={() => regenerate.mutate()}>
+              Выпустить
+            </Button>
+            <Button size="sm" variant="secondary" disabled={regenerate.isPending} onClick={() => setConfirming(false)}>
+              Отмена
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <Button className="mt-3" size="sm" variant="ghost" onClick={() => setConfirming(true)} leftIcon={<RefreshCw className="size-3.5" aria-hidden />}>
+          Выпустить новый код
+        </Button>
       )}
     </Card>
   )
