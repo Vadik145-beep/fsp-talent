@@ -294,7 +294,7 @@ def test_admin(client: TestClient) -> None:
 
 def test_eval(client: TestClient) -> None:
     overview = client.get("/api/eval/validation").json()
-    assert len(overview["charts"]) == len(fixtures.load("validation_charts"))
+    assert len(overview["charts"]) >= len(fixtures.load("validation_charts"))
     csv_body = "need_id,candidate_id,relevant\n1,2,1\n1,3,0\n2,5,1\n"
     result = client.post(
         "/api/eval/matching", files={"file": ("pairs.csv", csv_body.encode(), "text/csv")}

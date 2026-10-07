@@ -1,0 +1,1799 @@
+[
+ {
+  "id": "N001",
+  "title": "Middle Data Science / ML",
+  "specialization": "data_ml",
+  "grade": "middle",
+  "category": "data_ml:middle",
+  "skills_required": [
+   "spark",
+   "airflow"
+  ],
+  "skills_desired": [
+   "python"
+  ],
+  "salary_from": 240000,
+  "salary_to": 300000,
+  "work_format": "remote",
+  "keyword_query": "Middle data scientist ml Apache Spark Apache Airflow Python"
+ },
+ {
+  "id": "N002",
+  "title": "Junior DevOps",
+  "specialization": "devops",
+  "grade": "junior",
+  "category": "devops:junior",
+  "skills_required": [
+   "terraform",
+   "ansible",
+   "linux"
+  ],
+  "skills_desired": [
+   "bash",
+   "docker"
+  ],
+  "salary_from": 110000,
+  "salary_to": 150000,
+  "work_format": "hybrid",
+  "keyword_query": "Junior devops-инженер devops Terraform Ansible Linux Bash Docker"
+ },
+ {
+  "id": "N003",
+  "title": "Middle Frontend",
+  "specialization": "frontend",
+  "grade": "middle",
+  "category": "frontend:middle",
+  "skills_required": [
+   "vue"
+  ],
+  "skills_desired": [
+   "typescript",
+   "webpack"
+  ],
+  "salary_from": 210000,
+  "salary_to": 260000,
+  "work_format": "office",
+  "keyword_query": "Middle фронтенд-разработчик frontend Vue TypeScript Webpack"
+ },
+ {
+  "id": "N004",
+  "title": "Стажёр Backend",
+  "specialization": "backend",
+  "grade": "intern",
+  "category": "backend:intern",
+  "skills_required": [
+   "java",
+   "spring",
+   "postgresql"
+  ],
+  "skills_desired": [
+   "kafka",
+   "redis"
+  ],
+  "salary_from": 50000,
+  "salary_to": 60000,
+  "work_format": "remote",
+  "keyword_query": "Стажёр бэкенд-разработчик backend Java Spring PostgreSQL Kafka Redis"
+ },
+ {
+  "id": "N005",
+  "title": "Middle Backend",
+  "specialization": "backend",
+  "grade": "middle",
+  "category": "backend:middle",
+  "skills_required": [
+   "java",
+   "spring"
+  ],
+  "skills_desired": [
+   "sql"
+  ],
+  "salary_from": 200000,
+  "salary_to": 280000,
+  "work_format": "hybrid",
+  "keyword_query": "Middle бэкенд-разработчик backend Java Spring SQL"
+ },
+ {
+  "id": "N006",
+  "title": "Middle QA",
+  "specialization": "qa",
+  "grade": "middle",
+  "category": "qa:middle",
+  "skills_required": [
+   "testrail"
+  ],
+  "skills_desired": [
+   "jmeter"
+  ],
+  "salary_from": 160000,
+  "salary_to": 210000,
+  "work_format": "hybrid",
+  "keyword_query": "Middle тестировщик qa TestRail JMeter"
+ },
+ {
+  "id": "N007",
+  "title": "Junior QA",
+  "specialization": "qa",
+  "grade": "junior",
+  "category": "qa:junior",
+  "skills_required": [
+   "postman",
+   "testrail"
+  ],
+  "skills_desired": [
+   "sql"
+  ],
+  "salary_from": 100000,
+  "salary_to": 120000,
+  "work_format": "office",
+  "keyword_query": "Junior тестировщик qa Postman TestRail SQL"
+ },
+ {
+  "id": "N008",
+  "title": "Middle Data Science / ML",
+  "specialization": "data_ml",
+  "grade": "middle",
+  "category": "data_ml:middle",
+  "skills_required": [
+   "python",
+   "pandas",
+   "sql"
+  ],
+  "skills_desired": [
+   "postgresql"
+  ],
+  "salary_from": 210000,
+  "salary_to": 270000,
+  "work_format": "hybrid",
+  "keyword_query": "Middle data scientist ml Python pandas SQL PostgreSQL"
+ },
+ {
+  "id": "N009",
+  "title": "Middle Data Science / ML",
+  "specialization": "data_ml",
+  "grade": "middle",
+  "category": "data_ml:middle",
+  "skills_required": [
+   "airflow"
+  ],
+  "skills_desired": [
+   "clickhouse",
+   "python"
+  ],
+  "salary_from": 240000,
+  "salary_to": 300000,
+  "work_format": "office",
+  "keyword_query": "Middle data scientist ml Apache Airflow ClickHouse Python"
+ },
+ {
+  "id": "N010",
+  "title": "Стажёр Data Science / ML",
+  "specialization": "data_ml",
+  "grade": "intern",
+  "category": "data_ml:intern",
+  "skills_required": [
+   "python",
+   "sql"
+  ],
+  "skills_desired": [
+   "clickhouse"
+  ],
+  "salary_from": 60000,
+  "salary_to": 80000,
+  "work_format": "remote",
+  "keyword_query": "Стажёр data scientist ml Python SQL ClickHouse"
+ },
+ {
+  "id": "N011",
+  "title": "Junior Frontend",
+  "specialization": "frontend",
+  "grade": "junior",
+  "category": "frontend:junior",
+  "skills_required": [
+   "html_css"
+  ],
+  "skills_desired": [
+   "redux",
+   "vite"
+  ],
+  "salary_from": 110000,
+  "salary_to": 150000,
+  "work_format": "hybrid",
+  "keyword_query": "Junior фронтенд-разработчик frontend HTML и CSS Redux Vite"
+ },
+ {
+  "id": "N012",
+  "title": "Senior Backend",
+  "specialization": "backend",
+  "grade": "senior",
+  "category": "backend:senior",
+  "skills_required": [
+   "python",
+   "django"
+  ],
+  "skills_desired": [
+   "postgresql"
+  ],
+  "salary_from": 320000,
+  "salary_to": 390000,
+  "work_format": "office",
+  "keyword_query": "Senior бэкенд-разработчик backend Python Django PostgreSQL"
+ },
+ {
+  "id": "N013",
+  "title": "Middle Backend",
+  "specialization": "backend",
+  "grade": "middle",
+  "category": "backend:middle",
+  "skills_required": [
+   "python",
+   "postgresql"
+  ],
+  "skills_desired": [
+   "kafka"
+  ],
+  "salary_from": 190000,
+  "salary_to": 240000,
+  "work_format": "hybrid",
+  "keyword_query": "Middle бэкенд-разработчик backend Python PostgreSQL Kafka"
+ },
+ {
+  "id": "N014",
+  "title": "Middle Backend",
+  "specialization": "backend",
+  "grade": "middle",
+  "category": "backend:middle",
+  "skills_required": [
+   "nodejs",
+   "typescript"
+  ],
+  "skills_desired": [
+   "graphql"
+  ],
+  "salary_from": 220000,
+  "salary_to": 300000,
+  "work_format": "hybrid",
+  "keyword_query": "Middle бэкенд-разработчик backend Node.js TypeScript GraphQL"
+ },
+ {
+  "id": "N015",
+  "title": "Middle Frontend",
+  "specialization": "frontend",
+  "grade": "middle",
+  "category": "frontend:middle",
+  "skills_required": [
+   "typescript",
+   "html_css"
+  ],
+  "skills_desired": [
+   "javascript"
+  ],
+  "salary_from": 200000,
+  "salary_to": 260000,
+  "work_format": "remote",
+  "keyword_query": "Middle фронтенд-разработчик frontend TypeScript HTML и CSS JavaScript"
+ },
+ {
+  "id": "N016",
+  "title": "Middle Backend",
+  "specialization": "backend",
+  "grade": "middle",
+  "category": "backend:middle",
+  "skills_required": [
+   "java",
+   "postgresql"
+  ],
+  "skills_desired": [
+   "redis",
+   "spring"
+  ],
+  "salary_from": 180000,
+  "salary_to": 240000,
+  "work_format": "remote",
+  "keyword_query": "Middle бэкенд-разработчик backend Java PostgreSQL Redis Spring"
+ },
+ {
+  "id": "N017",
+  "title": "Senior QA",
+  "specialization": "qa",
+  "grade": "senior",
+  "category": "qa:senior",
+  "skills_required": [
+   "testrail"
+  ],
+  "skills_desired": [
+   "postman"
+  ],
+  "salary_from": 270000,
+  "salary_to": 370000,
+  "work_format": "office",
+  "keyword_query": "Senior тестировщик qa TestRail Postman"
+ },
+ {
+  "id": "N018",
+  "title": "Стажёр DevOps",
+  "specialization": "devops",
+  "grade": "intern",
+  "category": "devops:intern",
+  "skills_required": [
+   "docker",
+   "kubernetes"
+  ],
+  "skills_desired": [
+   "grafana"
+  ],
+  "salary_from": 60000,
+  "salary_to": 80000,
+  "work_format": "remote",
+  "keyword_query": "Стажёр devops-инженер devops Docker Kubernetes Grafana"
+ },
+ {
+  "id": "N019",
+  "title": "Junior Data Science / ML",
+  "specialization": "data_ml",
+  "grade": "junior",
+  "category": "data_ml:junior",
+  "skills_required": [
+   "python",
+   "pytorch",
+   "numpy"
+  ],
+  "skills_desired": [
+   "tensorflow"
+  ],
+  "salary_from": 120000,
+  "salary_to": 160000,
+  "work_format": "hybrid",
+  "keyword_query": "Junior data scientist ml Python PyTorch NumPy TensorFlow"
+ },
+ {
+  "id": "N020",
+  "title": "Middle Backend",
+  "specialization": "backend",
+  "grade": "middle",
+  "category": "backend:middle",
+  "skills_required": [
+   "java",
+   "spring"
+  ],
+  "skills_desired": [
+   "kotlin"
+  ],
+  "salary_from": 220000,
+  "salary_to": 290000,
+  "work_format": "remote",
+  "keyword_query": "Middle бэкенд-разработчик backend Java Spring Kotlin"
+ },
+ {
+  "id": "N021",
+  "title": "Junior QA",
+  "specialization": "qa",
+  "grade": "junior",
+  "category": "qa:junior",
+  "skills_required": [
+   "pytest",
+   "selenium"
+  ],
+  "skills_desired": [
+   "postman"
+  ],
+  "salary_from": 90000,
+  "salary_to": 110000,
+  "work_format": "remote",
+  "keyword_query": "Junior тестировщик qa pytest Selenium Postman"
+ },
+ {
+  "id": "N022",
+  "title": "Middle Backend",
+  "specialization": "backend",
+  "grade": "middle",
+  "category": "backend:middle",
+  "skills_required": [
+   "java",
+   "spring"
+  ],
+  "skills_desired": [
+   "redis"
+  ],
+  "salary_from": 200000,
+  "salary_to": 280000,
+  "work_format": "hybrid",
+  "keyword_query": "Middle бэкенд-разработчик backend Java Spring Redis"
+ },
+ {
+  "id": "N023",
+  "title": "Middle Frontend",
+  "specialization": "frontend",
+  "grade": "middle",
+  "category": "frontend:middle",
+  "skills_required": [
+   "typescript",
+   "react",
+   "html_css"
+  ],
+  "skills_desired": [
+   "redux"
+  ],
+  "salary_from": 190000,
+  "salary_to": 240000,
+  "work_format": "hybrid",
+  "keyword_query": "Middle фронтенд-разработчик frontend TypeScript React HTML и CSS Redux"
+ },
+ {
+  "id": "N024",
+  "title": "Senior Data Science / ML",
+  "specialization": "data_ml",
+  "grade": "senior",
+  "category": "data_ml:senior",
+  "skills_required": [
+   "pandas",
+   "scikit_learn"
+  ],
+  "skills_desired": [],
+  "salary_from": 360000,
+  "salary_to": 510000,
+  "work_format": "office",
+  "keyword_query": "Senior data scientist ml pandas scikit-learn"
+ },
+ {
+  "id": "N025",
+  "title": "Junior Backend",
+  "specialization": "backend",
+  "grade": "junior",
+  "category": "backend:junior",
+  "skills_required": [
+   "java",
+   "spring"
+  ],
+  "skills_desired": [
+   "redis",
+   "sql"
+  ],
+  "salary_from": 110000,
+  "salary_to": 150000,
+  "work_format": "remote",
+  "keyword_query": "Junior бэкенд-разработчик backend Java Spring Redis SQL"
+ },
+ {
+  "id": "N026",
+  "title": "Senior Mobile",
+  "specialization": "mobile",
+  "grade": "senior",
+  "category": "mobile:senior",
+  "skills_required": [
+   "swift",
+   "ios_sdk"
+  ],
+  "skills_desired": [],
+  "salary_from": 310000,
+  "salary_to": 380000,
+  "work_format": "remote",
+  "keyword_query": "Senior мобильный разработчик mobile Swift iOS SDK"
+ },
+ {
+  "id": "N027",
+  "title": "Middle Backend",
+  "specialization": "backend",
+  "grade": "middle",
+  "category": "backend:middle",
+  "skills_required": [
+   "django",
+   "postgresql"
+  ],
+  "skills_desired": [
+   "redis",
+   "pytest"
+  ],
+  "salary_from": 180000,
+  "salary_to": 240000,
+  "work_format": "hybrid",
+  "keyword_query": "Middle бэкенд-разработчик backend Django PostgreSQL Redis pytest"
+ },
+ {
+  "id": "N028",
+  "title": "Senior Mobile",
+  "specialization": "mobile",
+  "grade": "senior",
+  "category": "mobile:senior",
+  "skills_required": [
+   "swift",
+   "ios_sdk"
+  ],
+  "skills_desired": [
+   "swiftui"
+  ],
+  "salary_from": 350000,
+  "salary_to": 420000,
+  "work_format": "hybrid",
+  "keyword_query": "Senior мобильный разработчик mobile Swift iOS SDK SwiftUI"
+ },
+ {
+  "id": "N029",
+  "title": "Junior Frontend",
+  "specialization": "frontend",
+  "grade": "junior",
+  "category": "frontend:junior",
+  "skills_required": [
+   "javascript",
+   "vue"
+  ],
+  "skills_desired": [
+   "typescript"
+  ],
+  "salary_from": 100000,
+  "salary_to": 130000,
+  "work_format": "remote",
+  "keyword_query": "Junior фронтенд-разработчик frontend JavaScript Vue TypeScript"
+ },
+ {
+  "id": "N030",
+  "title": "Middle Frontend",
+  "specialization": "frontend",
+  "grade": "middle",
+  "category": "frontend:middle",
+  "skills_required": [
+   "javascript",
+   "vue",
+   "html_css"
+  ],
+  "skills_desired": [],
+  "salary_from": 210000,
+  "salary_to": 260000,
+  "work_format": "remote",
+  "keyword_query": "Middle фронтенд-разработчик frontend JavaScript Vue HTML и CSS"
+ },
+ {
+  "id": "N031",
+  "title": "Стажёр Frontend",
+  "specialization": "frontend",
+  "grade": "intern",
+  "category": "frontend:intern",
+  "skills_required": [
+   "typescript",
+   "angular",
+   "html_css"
+  ],
+  "skills_desired": [
+   "webpack"
+  ],
+  "salary_from": 60000,
+  "salary_to": 80000,
+  "work_format": "hybrid",
+  "keyword_query": "Стажёр фронтенд-разработчик frontend TypeScript Angular HTML и CSS Webpack"
+ },
+ {
+  "id": "N032",
+  "title": "Senior Data Science / ML",
+  "specialization": "data_ml",
+  "grade": "senior",
+  "category": "data_ml:senior",
+  "skills_required": [
+   "pytorch"
+  ],
+  "skills_desired": [
+   "tensorflow",
+   "python"
+  ],
+  "salary_from": 370000,
+  "salary_to": 500000,
+  "work_format": "remote",
+  "keyword_query": "Senior data scientist ml PyTorch TensorFlow Python"
+ },
+ {
+  "id": "N033",
+  "title": "Junior Frontend",
+  "specialization": "frontend",
+  "grade": "junior",
+  "category": "frontend:junior",
+  "skills_required": [
+   "javascript",
+   "react",
+   "html_css"
+  ],
+  "skills_desired": [
+   "webpack"
+  ],
+  "salary_from": 110000,
+  "salary_to": 140000,
+  "work_format": "hybrid",
+  "keyword_query": "Junior фронтенд-разработчик frontend JavaScript React HTML и CSS Webpack"
+ },
+ {
+  "id": "N034",
+  "title": "Стажёр Mobile",
+  "specialization": "mobile",
+  "grade": "intern",
+  "category": "mobile:intern",
+  "skills_required": [
+   "flutter",
+   "dart"
+  ],
+  "skills_desired": [],
+  "salary_from": 50000,
+  "salary_to": 70000,
+  "work_format": "office",
+  "keyword_query": "Стажёр мобильный разработчик mobile Flutter Dart"
+ },
+ {
+  "id": "N035",
+  "title": "Middle QA",
+  "specialization": "qa",
+  "grade": "middle",
+  "category": "qa:middle",
+  "skills_required": [
+   "javascript",
+   "cypress"
+  ],
+  "skills_desired": [
+   "jest"
+  ],
+  "salary_from": 150000,
+  "salary_to": 210000,
+  "work_format": "remote",
+  "keyword_query": "Middle тестировщик qa JavaScript Cypress Jest"
+ },
+ {
+  "id": "N036",
+  "title": "Стажёр Frontend",
+  "specialization": "frontend",
+  "grade": "intern",
+  "category": "frontend:intern",
+  "skills_required": [
+   "typescript",
+   "html_css"
+  ],
+  "skills_desired": [
+   "redux",
+   "tailwind"
+  ],
+  "salary_from": 50000,
+  "salary_to": 60000,
+  "work_format": "hybrid",
+  "keyword_query": "Стажёр фронтенд-разработчик frontend TypeScript HTML и CSS Redux Tailwind CSS"
+ },
+ {
+  "id": "N037",
+  "title": "Junior Backend",
+  "specialization": "backend",
+  "grade": "junior",
+  "category": "backend:junior",
+  "skills_required": [
+   "sql",
+   "mysql"
+  ],
+  "skills_desired": [],
+  "salary_from": 120000,
+  "salary_to": 150000,
+  "work_format": "remote",
+  "keyword_query": "Junior бэкенд-разработчик backend SQL MySQL"
+ },
+ {
+  "id": "N038",
+  "title": "Senior DevOps",
+  "specialization": "devops",
+  "grade": "senior",
+  "category": "devops:senior",
+  "skills_required": [
+   "kubernetes",
+   "helm"
+  ],
+  "skills_desired": [
+   "grafana",
+   "gitlab_ci"
+  ],
+  "salary_from": 330000,
+  "salary_to": 410000,
+  "work_format": "remote",
+  "keyword_query": "Senior devops-инженер devops Kubernetes Helm Grafana GitLab CI"
+ },
+ {
+  "id": "N039",
+  "title": "Middle Frontend",
+  "specialization": "frontend",
+  "grade": "middle",
+  "category": "frontend:middle",
+  "skills_required": [
+   "angular"
+  ],
+  "skills_desired": [
+   "javascript",
+   "html_css"
+  ],
+  "salary_from": 180000,
+  "salary_to": 250000,
+  "work_format": "remote",
+  "keyword_query": "Middle фронтенд-разработчик frontend Angular JavaScript HTML и CSS"
+ },
+ {
+  "id": "N040",
+  "title": "Middle Frontend",
+  "specialization": "frontend",
+  "grade": "middle",
+  "category": "frontend:middle",
+  "skills_required": [
+   "typescript",
+   "html_css"
+  ],
+  "skills_desired": [],
+  "salary_from": 180000,
+  "salary_to": 240000,
+  "work_format": "office",
+  "keyword_query": "Middle фронтенд-разработчик frontend TypeScript HTML и CSS"
+ },
+ {
+  "id": "N041",
+  "title": "Middle Mobile",
+  "specialization": "mobile",
+  "grade": "middle",
+  "category": "mobile:middle",
+  "skills_required": [
+   "flutter",
+   "dart"
+  ],
+  "skills_desired": [
+   "kotlin",
+   "swift"
+  ],
+  "salary_from": 210000,
+  "salary_to": 260000,
+  "work_format": "hybrid",
+  "keyword_query": "Middle мобильный разработчик mobile Flutter Dart Kotlin Swift"
+ },
+ {
+  "id": "N042",
+  "title": "Junior Backend",
+  "specialization": "backend",
+  "grade": "junior",
+  "category": "backend:junior",
+  "skills_required": [
+   "postgresql"
+  ],
+  "skills_desired": [
+   "fastapi"
+  ],
+  "salary_from": 110000,
+  "salary_to": 160000,
+  "work_format": "hybrid",
+  "keyword_query": "Junior бэкенд-разработчик backend PostgreSQL FastAPI"
+ },
+ {
+  "id": "N043",
+  "title": "Middle Backend",
+  "specialization": "backend",
+  "grade": "middle",
+  "category": "backend:middle",
+  "skills_required": [
+   "postgresql"
+  ],
+  "skills_desired": [],
+  "salary_from": 200000,
+  "salary_to": 250000,
+  "work_format": "office",
+  "keyword_query": "Middle бэкенд-разработчик backend PostgreSQL"
+ },
+ {
+  "id": "N044",
+  "title": "Middle Data Science / ML",
+  "specialization": "data_ml",
+  "grade": "middle",
+  "category": "data_ml:middle",
+  "skills_required": [
+   "spark",
+   "airflow"
+  ],
+  "skills_desired": [],
+  "salary_from": 190000,
+  "salary_to": 250000,
+  "work_format": "office",
+  "keyword_query": "Middle data scientist ml Apache Spark Apache Airflow"
+ },
+ {
+  "id": "N045",
+  "title": "Senior Mobile",
+  "specialization": "mobile",
+  "grade": "senior",
+  "category": "mobile:senior",
+  "skills_required": [
+   "android_sdk"
+  ],
+  "skills_desired": [
+   "jetpack_compose"
+  ],
+  "salary_from": 300000,
+  "salary_to": 370000,
+  "work_format": "office",
+  "keyword_query": "Senior мобильный разработчик mobile Android SDK Jetpack Compose"
+ },
+ {
+  "id": "N046",
+  "title": "Junior Frontend",
+  "specialization": "frontend",
+  "grade": "junior",
+  "category": "frontend:junior",
+  "skills_required": [
+   "javascript",
+   "vue"
+  ],
+  "skills_desired": [
+   "typescript",
+   "webpack"
+  ],
+  "salary_from": 100000,
+  "salary_to": 140000,
+  "work_format": "hybrid",
+  "keyword_query": "Junior фронтенд-разработчик frontend JavaScript Vue TypeScript Webpack"
+ },
+ {
+  "id": "N047",
+  "title": "Middle QA",
+  "specialization": "qa",
+  "grade": "middle",
+  "category": "qa:middle",
+  "skills_required": [
+   "pytest",
+   "selenium"
+  ],
+  "skills_desired": [
+   "allure",
+   "python"
+  ],
+  "salary_from": 150000,
+  "salary_to": 210000,
+  "work_format": "remote",
+  "keyword_query": "Middle тестировщик qa pytest Selenium Allure Python"
+ },
+ {
+  "id": "N048",
+  "title": "Стажёр Backend",
+  "specialization": "backend",
+  "grade": "intern",
+  "category": "backend:intern",
+  "skills_required": [
+   "postgresql"
+  ],
+  "skills_desired": [
+   "rabbitmq",
+   "sql"
+  ],
+  "salary_from": 50000,
+  "salary_to": 60000,
+  "work_format": "office",
+  "keyword_query": "Стажёр бэкенд-разработчик backend PostgreSQL RabbitMQ SQL"
+ },
+ {
+  "id": "N049",
+  "title": "Middle Frontend",
+  "specialization": "frontend",
+  "grade": "middle",
+  "category": "frontend:middle",
+  "skills_required": [
+   "angular",
+   "html_css"
+  ],
+  "skills_desired": [
+   "webpack",
+   "typescript"
+  ],
+  "salary_from": 180000,
+  "salary_to": 260000,
+  "work_format": "remote",
+  "keyword_query": "Middle фронтенд-разработчик frontend Angular HTML и CSS Webpack TypeScript"
+ },
+ {
+  "id": "N050",
+  "title": "Middle Backend",
+  "specialization": "backend",
+  "grade": "middle",
+  "category": "backend:middle",
+  "skills_required": [
+   "django",
+   "postgresql"
+  ],
+  "skills_desired": [
+   "kafka",
+   "python"
+  ],
+  "salary_from": 200000,
+  "salary_to": 270000,
+  "work_format": "remote",
+  "keyword_query": "Middle бэкенд-разработчик backend Django PostgreSQL Kafka Python"
+ },
+ {
+  "id": "N051",
+  "title": "Middle Backend",
+  "specialization": "backend",
+  "grade": "middle",
+  "category": "backend:middle",
+  "skills_required": [
+   "spring",
+   "postgresql"
+  ],
+  "skills_desired": [
+   "kafka",
+   "kotlin"
+  ],
+  "salary_from": 210000,
+  "salary_to": 280000,
+  "work_format": "hybrid",
+  "keyword_query": "Middle бэкенд-разработчик backend Spring PostgreSQL Kafka Kotlin"
+ },
+ {
+  "id": "N052",
+  "title": "Middle QA",
+  "specialization": "qa",
+  "grade": "middle",
+  "category": "qa:middle",
+  "skills_required": [
+   "postman",
+   "sql",
+   "testrail"
+  ],
+  "skills_desired": [],
+  "salary_from": 140000,
+  "salary_to": 180000,
+  "work_format": "remote",
+  "keyword_query": "Middle тестировщик qa Postman SQL TestRail"
+ },
+ {
+  "id": "N053",
+  "title": "Junior DevOps",
+  "specialization": "devops",
+  "grade": "junior",
+  "category": "devops:junior",
+  "skills_required": [
+   "ansible",
+   "linux"
+  ],
+  "skills_desired": [
+   "bash",
+   "terraform"
+  ],
+  "salary_from": 100000,
+  "salary_to": 130000,
+  "work_format": "office",
+  "keyword_query": "Junior devops-инженер devops Ansible Linux Bash Terraform"
+ },
+ {
+  "id": "N054",
+  "title": "Middle Backend",
+  "specialization": "backend",
+  "grade": "middle",
+  "category": "backend:middle",
+  "skills_required": [
+   "postgresql",
+   "grpc"
+  ],
+  "skills_desired": [],
+  "salary_from": 180000,
+  "salary_to": 220000,
+  "work_format": "remote",
+  "keyword_query": "Middle бэкенд-разработчик backend PostgreSQL gRPC"
+ },
+ {
+  "id": "N055",
+  "title": "Senior Backend",
+  "specialization": "backend",
+  "grade": "senior",
+  "category": "backend:senior",
+  "skills_required": [
+   "postgresql"
+  ],
+  "skills_desired": [
+   "python"
+  ],
+  "salary_from": 290000,
+  "salary_to": 410000,
+  "work_format": "office",
+  "keyword_query": "Senior бэкенд-разработчик backend PostgreSQL Python"
+ },
+ {
+  "id": "N056",
+  "title": "Middle QA",
+  "specialization": "qa",
+  "grade": "middle",
+  "category": "qa:middle",
+  "skills_required": [
+   "python",
+   "pytest"
+  ],
+  "skills_desired": [
+   "postman"
+  ],
+  "salary_from": 150000,
+  "salary_to": 210000,
+  "work_format": "remote",
+  "keyword_query": "Middle тестировщик qa Python pytest Postman"
+ },
+ {
+  "id": "N057",
+  "title": "Junior QA",
+  "specialization": "qa",
+  "grade": "junior",
+  "category": "qa:junior",
+  "skills_required": [
+   "sql",
+   "testrail"
+  ],
+  "skills_desired": [
+   "postman"
+  ],
+  "salary_from": 90000,
+  "salary_to": 130000,
+  "work_format": "remote",
+  "keyword_query": "Junior тестировщик qa SQL TestRail Postman"
+ },
+ {
+  "id": "N058",
+  "title": "Junior Data Science / ML",
+  "specialization": "data_ml",
+  "grade": "junior",
+  "category": "data_ml:junior",
+  "skills_required": [
+   "pytorch",
+   "numpy"
+  ],
+  "skills_desired": [],
+  "salary_from": 120000,
+  "salary_to": 160000,
+  "work_format": "remote",
+  "keyword_query": "Junior data scientist ml PyTorch NumPy"
+ },
+ {
+  "id": "N059",
+  "title": "Middle Mobile",
+  "specialization": "mobile",
+  "grade": "middle",
+  "category": "mobile:middle",
+  "skills_required": [
+   "swift",
+   "ios_sdk"
+  ],
+  "skills_desired": [
+   "swiftui"
+  ],
+  "salary_from": 200000,
+  "salary_to": 260000,
+  "work_format": "remote",
+  "keyword_query": "Middle мобильный разработчик mobile Swift iOS SDK SwiftUI"
+ },
+ {
+  "id": "N060",
+  "title": "Senior DevOps",
+  "specialization": "devops",
+  "grade": "senior",
+  "category": "devops:senior",
+  "skills_required": [
+   "linux"
+  ],
+  "skills_desired": [
+   "gitlab_ci"
+  ],
+  "salary_from": 320000,
+  "salary_to": 460000,
+  "work_format": "office",
+  "keyword_query": "Senior devops-инженер devops Linux GitLab CI"
+ },
+ {
+  "id": "N061",
+  "title": "Middle Backend",
+  "specialization": "backend",
+  "grade": "middle",
+  "category": "backend:middle",
+  "skills_required": [
+   "php"
+  ],
+  "skills_desired": [
+   "linux"
+  ],
+  "salary_from": 180000,
+  "salary_to": 250000,
+  "work_format": "hybrid",
+  "keyword_query": "Middle бэкенд-разработчик backend PHP Linux"
+ },
+ {
+  "id": "N062",
+  "title": "Junior DevOps",
+  "specialization": "devops",
+  "grade": "junior",
+  "category": "devops:junior",
+  "skills_required": [
+   "gitlab_ci",
+   "bash"
+  ],
+  "skills_desired": [
+   "docker"
+  ],
+  "salary_from": 130000,
+  "salary_to": 170000,
+  "work_format": "office",
+  "keyword_query": "Junior devops-инженер devops GitLab CI Bash Docker"
+ },
+ {
+  "id": "N063",
+  "title": "Senior Frontend",
+  "specialization": "frontend",
+  "grade": "senior",
+  "category": "frontend:senior",
+  "skills_required": [
+   "javascript",
+   "react"
+  ],
+  "skills_desired": [
+   "html_css"
+  ],
+  "salary_from": 290000,
+  "salary_to": 380000,
+  "work_format": "hybrid",
+  "keyword_query": "Senior фронтенд-разработчик frontend JavaScript React HTML и CSS"
+ },
+ {
+  "id": "N064",
+  "title": "Middle Frontend",
+  "specialization": "frontend",
+  "grade": "middle",
+  "category": "frontend:middle",
+  "skills_required": [
+   "html_css"
+  ],
+  "skills_desired": [],
+  "salary_from": 180000,
+  "salary_to": 240000,
+  "work_format": "hybrid",
+  "keyword_query": "Middle фронтенд-разработчик frontend HTML и CSS"
+ },
+ {
+  "id": "N065",
+  "title": "Senior Backend",
+  "specialization": "backend",
+  "grade": "senior",
+  "category": "backend:senior",
+  "skills_required": [
+   "spring"
+  ],
+  "skills_desired": [
+   "kotlin",
+   "postgresql"
+  ],
+  "salary_from": 300000,
+  "salary_to": 410000,
+  "work_format": "hybrid",
+  "keyword_query": "Senior бэкенд-разработчик backend Spring Kotlin PostgreSQL"
+ },
+ {
+  "id": "N066",
+  "title": "Middle DevOps",
+  "specialization": "devops",
+  "grade": "middle",
+  "category": "devops:middle",
+  "skills_required": [
+   "docker",
+   "linux"
+  ],
+  "skills_desired": [
+   "prometheus",
+   "helm"
+  ],
+  "salary_from": 220000,
+  "salary_to": 290000,
+  "work_format": "remote",
+  "keyword_query": "Middle devops-инженер devops Docker Linux Prometheus Helm"
+ },
+ {
+  "id": "N067",
+  "title": "Senior Backend",
+  "specialization": "backend",
+  "grade": "senior",
+  "category": "backend:senior",
+  "skills_required": [
+   "csharp",
+   "sql"
+  ],
+  "skills_desired": [
+   "rabbitmq",
+   "redis"
+  ],
+  "salary_from": 290000,
+  "salary_to": 370000,
+  "work_format": "remote",
+  "keyword_query": "Senior бэкенд-разработчик backend C# SQL RabbitMQ Redis"
+ },
+ {
+  "id": "N068",
+  "title": "Senior Frontend",
+  "specialization": "frontend",
+  "grade": "senior",
+  "category": "frontend:senior",
+  "skills_required": [
+   "typescript",
+   "react",
+   "html_css"
+  ],
+  "skills_desired": [
+   "redux",
+   "webpack"
+  ],
+  "salary_from": 290000,
+  "salary_to": 350000,
+  "work_format": "hybrid",
+  "keyword_query": "Senior фронтенд-разработчик frontend TypeScript React HTML и CSS Redux Webpack"
+ },
+ {
+  "id": "N069",
+  "title": "Middle Frontend",
+  "specialization": "frontend",
+  "grade": "middle",
+  "category": "frontend:middle",
+  "skills_required": [
+   "html_css"
+  ],
+  "skills_desired": [
+   "nextjs"
+  ],
+  "salary_from": 190000,
+  "salary_to": 250000,
+  "work_format": "hybrid",
+  "keyword_query": "Middle фронтенд-разработчик frontend HTML и CSS Next.js"
+ },
+ {
+  "id": "N070",
+  "title": "Junior DevOps",
+  "specialization": "devops",
+  "grade": "junior",
+  "category": "devops:junior",
+  "skills_required": [
+   "terraform",
+   "ansible"
+  ],
+  "skills_desired": [
+   "bash",
+   "linux"
+  ],
+  "salary_from": 120000,
+  "salary_to": 140000,
+  "work_format": "hybrid",
+  "keyword_query": "Junior devops-инженер devops Terraform Ansible Bash Linux"
+ },
+ {
+  "id": "N071",
+  "title": "Junior QA",
+  "specialization": "qa",
+  "grade": "junior",
+  "category": "qa:junior",
+  "skills_required": [
+   "selenium"
+  ],
+  "skills_desired": [
+   "allure",
+   "python"
+  ],
+  "salary_from": 90000,
+  "salary_to": 110000,
+  "work_format": "remote",
+  "keyword_query": "Junior тестировщик qa Selenium Allure Python"
+ },
+ {
+  "id": "N072",
+  "title": "Стажёр Frontend",
+  "specialization": "frontend",
+  "grade": "intern",
+  "category": "frontend:intern",
+  "skills_required": [
+   "react",
+   "html_css"
+  ],
+  "skills_desired": [
+   "webpack"
+  ],
+  "salary_from": 50000,
+  "salary_to": 70000,
+  "work_format": "remote",
+  "keyword_query": "Стажёр фронтенд-разработчик frontend React HTML и CSS Webpack"
+ },
+ {
+  "id": "N073",
+  "title": "Junior Mobile",
+  "specialization": "mobile",
+  "grade": "junior",
+  "category": "mobile:junior",
+  "skills_required": [
+   "kotlin",
+   "android_sdk"
+  ],
+  "skills_desired": [],
+  "salary_from": 120000,
+  "salary_to": 170000,
+  "work_format": "remote",
+  "keyword_query": "Junior мобильный разработчик mobile Kotlin Android SDK"
+ },
+ {
+  "id": "N074",
+  "title": "Senior Backend",
+  "specialization": "backend",
+  "grade": "senior",
+  "category": "backend:senior",
+  "skills_required": [
+   "fastapi",
+   "postgresql"
+  ],
+  "skills_desired": [
+   "kafka"
+  ],
+  "salary_from": 300000,
+  "salary_to": 430000,
+  "work_format": "hybrid",
+  "keyword_query": "Senior бэкенд-разработчик backend FastAPI PostgreSQL Kafka"
+ },
+ {
+  "id": "N075",
+  "title": "Junior Frontend",
+  "specialization": "frontend",
+  "grade": "junior",
+  "category": "frontend:junior",
+  "skills_required": [
+   "typescript",
+   "angular",
+   "html_css"
+  ],
+  "skills_desired": [
+   "javascript"
+  ],
+  "salary_from": 110000,
+  "salary_to": 140000,
+  "work_format": "hybrid",
+  "keyword_query": "Junior фронтенд-разработчик frontend TypeScript Angular HTML и CSS JavaScript"
+ },
+ {
+  "id": "N076",
+  "title": "Junior Mobile",
+  "specialization": "mobile",
+  "grade": "junior",
+  "category": "mobile:junior",
+  "skills_required": [
+   "swift",
+   "ios_sdk"
+  ],
+  "skills_desired": [
+   "swiftui"
+  ],
+  "salary_from": 100000,
+  "salary_to": 140000,
+  "work_format": "remote",
+  "keyword_query": "Junior мобильный разработчик mobile Swift iOS SDK SwiftUI"
+ },
+ {
+  "id": "N077",
+  "title": "Стажёр Frontend",
+  "specialization": "frontend",
+  "grade": "intern",
+  "category": "frontend:intern",
+  "skills_required": [
+   "javascript",
+   "html_css"
+  ],
+  "skills_desired": [
+   "vite"
+  ],
+  "salary_from": 50000,
+  "salary_to": 60000,
+  "work_format": "remote",
+  "keyword_query": "Стажёр фронтенд-разработчик frontend JavaScript HTML и CSS Vite"
+ },
+ {
+  "id": "N078",
+  "title": "Junior Backend",
+  "specialization": "backend",
+  "grade": "junior",
+  "category": "backend:junior",
+  "skills_required": [
+   "go"
+  ],
+  "skills_desired": [
+   "redis"
+  ],
+  "salary_from": 110000,
+  "salary_to": 160000,
+  "work_format": "office",
+  "keyword_query": "Junior бэкенд-разработчик backend Go Redis"
+ },
+ {
+  "id": "N079",
+  "title": "Junior Data Science / ML",
+  "specialization": "data_ml",
+  "grade": "junior",
+  "category": "data_ml:junior",
+  "skills_required": [
+   "python",
+   "scikit_learn",
+   "sql"
+  ],
+  "skills_desired": [
+   "pandas"
+  ],
+  "salary_from": 100000,
+  "salary_to": 140000,
+  "work_format": "office",
+  "keyword_query": "Junior data scientist ml Python scikit-learn SQL pandas"
+ },
+ {
+  "id": "N080",
+  "title": "Junior QA",
+  "specialization": "qa",
+  "grade": "junior",
+  "category": "qa:junior",
+  "skills_required": [
+   "selenium"
+  ],
+  "skills_desired": [
+   "postman"
+  ],
+  "salary_from": 90000,
+  "salary_to": 120000,
+  "work_format": "remote",
+  "keyword_query": "Junior тестировщик qa Selenium Postman"
+ },
+ {
+  "id": "N081",
+  "title": "Middle QA",
+  "specialization": "qa",
+  "grade": "middle",
+  "category": "qa:middle",
+  "skills_required": [
+   "java"
+  ],
+  "skills_desired": [
+   "allure",
+   "jmeter"
+  ],
+  "salary_from": 170000,
+  "salary_to": 240000,
+  "work_format": "remote",
+  "keyword_query": "Middle тестировщик qa Java Allure JMeter"
+ },
+ {
+  "id": "N082",
+  "title": "Junior Frontend",
+  "specialization": "frontend",
+  "grade": "junior",
+  "category": "frontend:junior",
+  "skills_required": [
+   "angular"
+  ],
+  "skills_desired": [
+   "jest",
+   "webpack"
+  ],
+  "salary_from": 110000,
+  "salary_to": 150000,
+  "work_format": "remote",
+  "keyword_query": "Junior фронтенд-разработчик frontend Angular Jest Webpack"
+ },
+ {
+  "id": "N083",
+  "title": "Middle Backend",
+  "specialization": "backend",
+  "grade": "middle",
+  "category": "backend:middle",
+  "skills_required": [
+   "go",
+   "postgresql"
+  ],
+  "skills_desired": [
+   "kubernetes"
+  ],
+  "salary_from": 190000,
+  "salary_to": 270000,
+  "work_format": "office",
+  "keyword_query": "Middle бэкенд-разработчик backend Go PostgreSQL Kubernetes"
+ },
+ {
+  "id": "N084",
+  "title": "Junior QA",
+  "specialization": "qa",
+  "grade": "junior",
+  "category": "qa:junior",
+  "skills_required": [
+   "postman",
+   "testrail"
+  ],
+  "skills_desired": [
+   "jmeter",
+   "sql"
+  ],
+  "salary_from": 90000,
+  "salary_to": 120000,
+  "work_format": "hybrid",
+  "keyword_query": "Junior тестировщик qa Postman TestRail JMeter SQL"
+ },
+ {
+  "id": "N085",
+  "title": "Middle Frontend",
+  "specialization": "frontend",
+  "grade": "middle",
+  "category": "frontend:middle",
+  "skills_required": [
+   "javascript",
+   "html_css"
+  ],
+  "skills_desired": [
+   "jest",
+   "vue"
+  ],
+  "salary_from": 200000,
+  "salary_to": 250000,
+  "work_format": "remote",
+  "keyword_query": "Middle фронтенд-разработчик frontend JavaScript HTML и CSS Jest Vue"
+ },
+ {
+  "id": "N086",
+  "title": "Middle Data Science / ML",
+  "specialization": "data_ml",
+  "grade": "middle",
+  "category": "data_ml:middle",
+  "skills_required": [
+   "pytorch"
+  ],
+  "skills_desired": [
+   "numpy"
+  ],
+  "salary_from": 210000,
+  "salary_to": 280000,
+  "work_format": "office",
+  "keyword_query": "Middle data scientist ml PyTorch NumPy"
+ },
+ {
+  "id": "N087",
+  "title": "Junior QA",
+  "specialization": "qa",
+  "grade": "junior",
+  "category": "qa:junior",
+  "skills_required": [
+   "postman",
+   "sql",
+   "testrail"
+  ],
+  "skills_desired": [
+   "jmeter"
+  ],
+  "salary_from": 90000,
+  "salary_to": 120000,
+  "work_format": "office",
+  "keyword_query": "Junior тестировщик qa Postman SQL TestRail JMeter"
+ },
+ {
+  "id": "N088",
+  "title": "Junior Data Science / ML",
+  "specialization": "data_ml",
+  "grade": "junior",
+  "category": "data_ml:junior",
+  "skills_required": [
+   "python",
+   "spark"
+  ],
+  "skills_desired": [],
+  "salary_from": 110000,
+  "salary_to": 150000,
+  "work_format": "hybrid",
+  "keyword_query": "Junior data scientist ml Python Apache Spark"
+ },
+ {
+  "id": "N089",
+  "title": "Middle Data Science / ML",
+  "specialization": "data_ml",
+  "grade": "middle",
+  "category": "data_ml:middle",
+  "skills_required": [
+   "python",
+   "scikit_learn",
+   "sql"
+  ],
+  "skills_desired": [
+   "pandas"
+  ],
+  "salary_from": 230000,
+  "salary_to": 300000,
+  "work_format": "remote",
+  "keyword_query": "Middle data scientist ml Python scikit-learn SQL pandas"
+ },
+ {
+  "id": "N090",
+  "title": "Junior QA",
+  "specialization": "qa",
+  "grade": "junior",
+  "category": "qa:junior",
+  "skills_required": [
+   "javascript"
+  ],
+  "skills_desired": [
+   "postman",
+   "playwright"
+  ],
+  "salary_from": 90000,
+  "salary_to": 130000,
+  "work_format": "office",
+  "keyword_query": "Junior тестировщик qa JavaScript Postman Playwright"
+ },
+ {
+  "id": "N091",
+  "title": "Junior Backend",
+  "specialization": "backend",
+  "grade": "junior",
+  "category": "backend:junior",
+  "skills_required": [
+   "go",
+   "postgresql",
+   "grpc"
+  ],
+  "skills_desired": [
+   "redis",
+   "kubernetes"
+  ],
+  "salary_from": 120000,
+  "salary_to": 160000,
+  "work_format": "office",
+  "keyword_query": "Junior бэкенд-разработчик backend Go PostgreSQL gRPC Redis Kubernetes"
+ },
+ {
+  "id": "N092",
+  "title": "Junior Frontend",
+  "specialization": "frontend",
+  "grade": "junior",
+  "category": "frontend:junior",
+  "skills_required": [
+   "javascript",
+   "react",
+   "html_css"
+  ],
+  "skills_desired": [
+   "webpack"
+  ],
+  "salary_from": 100000,
+  "salary_to": 140000,
+  "work_format": "office",
+  "keyword_query": "Junior фронтенд-разработчик frontend JavaScript React HTML и CSS Webpack"
+ },
+ {
+  "id": "N093",
+  "title": "Junior Backend",
+  "specialization": "backend",
+  "grade": "junior",
+  "category": "backend:junior",
+  "skills_required": [
+   "python"
+  ],
+  "skills_desired": [
+   "sql"
+  ],
+  "salary_from": 100000,
+  "salary_to": 130000,
+  "work_format": "office",
+  "keyword_query": "Junior бэкенд-разработчик backend Python SQL"
+ },
+ {
+  "id": "N094",
+  "title": "Junior Mobile",
+  "specialization": "mobile",
+  "grade": "junior",
+  "category": "mobile:junior",
+  "skills_required": [
+   "kotlin",
+   "android_sdk"
+  ],
+  "skills_desired": [],
+  "salary_from": 100000,
+  "salary_to": 140000,
+  "work_format": "hybrid",
+  "keyword_query": "Junior мобильный разработчик mobile Kotlin Android SDK"
+ },
+ {
+  "id": "N095",
+  "title": "Middle DevOps",
+  "specialization": "devops",
+  "grade": "middle",
+  "category": "devops:middle",
+  "skills_required": [
+   "kubernetes"
+  ],
+  "skills_desired": [
+   "docker",
+   "helm"
+  ],
+  "salary_from": 200000,
+  "salary_to": 290000,
+  "work_format": "office",
+  "keyword_query": "Middle devops-инженер devops Kubernetes Docker Helm"
+ },
+ {
+  "id": "N096",
+  "title": "Junior Backend",
+  "specialization": "backend",
+  "grade": "junior",
+  "category": "backend:junior",
+  "skills_required": [
+   "php",
+   "mysql"
+  ],
+  "skills_desired": [
+   "nginx"
+  ],
+  "salary_from": 100000,
+  "salary_to": 120000,
+  "work_format": "hybrid",
+  "keyword_query": "Junior бэкенд-разработчик backend PHP MySQL Nginx"
+ },
+ {
+  "id": "N097",
+  "title": "Middle Frontend",
+  "specialization": "frontend",
+  "grade": "middle",
+  "category": "frontend:middle",
+  "skills_required": [
+   "javascript",
+   "typescript",
+   "react"
+  ],
+  "skills_desired": [
+   "jest"
+  ],
+  "salary_from": 170000,
+  "salary_to": 240000,
+  "work_format": "hybrid",
+  "keyword_query": "Middle фронтенд-разработчик frontend JavaScript TypeScript React Jest"
+ },
+ {
+  "id": "N098",
+  "title": "Junior Data Science / ML",
+  "specialization": "data_ml",
+  "grade": "junior",
+  "category": "data_ml:junior",
+  "skills_required": [
+   "python",
+   "sql"
+  ],
+  "skills_desired": [
+   "numpy",
+   "scikit_learn"
+  ],
+  "salary_from": 130000,
+  "salary_to": 160000,
+  "work_format": "remote",
+  "keyword_query": "Junior data scientist ml Python SQL NumPy scikit-learn"
+ },
+ {
+  "id": "N099",
+  "title": "Junior Frontend",
+  "specialization": "frontend",
+  "grade": "junior",
+  "category": "frontend:junior",
+  "skills_required": [
+   "javascript",
+   "typescript",
+   "html_css"
+  ],
+  "skills_desired": [
+   "vite"
+  ],
+  "salary_from": 110000,
+  "salary_to": 150000,
+  "work_format": "remote",
+  "keyword_query": "Junior фронтенд-разработчик frontend JavaScript TypeScript HTML и CSS Vite"
+ },
+ {
+  "id": "N100",
+  "title": "Junior Frontend",
+  "specialization": "frontend",
+  "grade": "junior",
+  "category": "frontend:junior",
+  "skills_required": [
+   "javascript",
+   "typescript",
+   "html_css"
+  ],
+  "skills_desired": [
+   "redux"
+  ],
+  "salary_from": 90000,
+  "salary_to": 110000,
+  "work_format": "office",
+  "keyword_query": "Junior фронтенд-разработчик frontend JavaScript TypeScript HTML и CSS Redux"
+ }
+]
