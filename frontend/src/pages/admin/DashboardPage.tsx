@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
-import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, Cell, Tooltip, XAxis, YAxis } from 'recharts'
 import { ArrowRight, ClipboardCheck, Flag, Handshake, ShieldAlert, Users } from 'lucide-react'
 import { api } from '@/shared/api'
 import { INVITATION_STATUSES, INVITATION_STATUS_LABELS, SPECIALIZATION_LABELS, type Specialization } from '@/shared/config/dictionaries'
@@ -10,7 +10,7 @@ import { formatNumber, plural } from '@/shared/lib/format'
 import { Badge, Card, CardHeader, EmptyState, ErrorState, PageHeader, Tabs } from '@/shared/ui'
 import type { AdminDashboard } from './api'
 import { ChartBox } from './components/charts'
-import { AXIS, BRAND, CURSOR_FILL, GRID, TOOLTIP_STYLE } from './components/chartTheme'
+import { AXIS, BRAND, CURSOR_FILL, GRID, INVITATION_STATUS_COLORS, TOOLTIP_STYLE, VALUE_LABEL } from './components/chartTheme'
 import { StatTile, StatTileSkeleton } from './components/common'
 import { num, pct } from './labels'
 
@@ -126,7 +126,11 @@ function DashboardBody({ data, period, setPeriod }: { data: AdminDashboard; peri
                 <XAxis type="number" allowDecimals={false} {...AXIS} />
                 <YAxis type="category" dataKey="label" width={96} {...AXIS} />
                 <Tooltip {...TOOLTIP_STYLE} cursor={{ fill: CURSOR_FILL }} formatter={(v) => [v, 'Приглашений']} />
-                <Bar dataKey="count" fill={BRAND} radius={[0, 4, 4, 0]} maxBarSize={22} label={{ position: 'right', fill: '#1B1C21', fontSize: 12 }} />
+                <Bar dataKey="count" radius={[0, 4, 4, 0]} maxBarSize={22} label={{ position: 'right', ...VALUE_LABEL, fontSize: 12 }}>
+                  {invRows.map((r) => (
+                    <Cell key={r.status} fill={INVITATION_STATUS_COLORS[r.status] ?? BRAND} />
+                  ))}
+                </Bar>
               </BarChart>
             </ChartBox>
           ) : (

@@ -219,7 +219,7 @@ function VacancyTestView({ result }: { result: VacancyTestResult }) {
               калибровка.
             </p>
             <div className="grid gap-3 md:grid-cols-2">
-              {(result.drafts as ItemDraft[]).map((d) => (
+              {result.drafts.map((d) => (
                 <DraftCard key={`${d.item_id ?? ''}-${d.topic}-${d.title}`} draft={d} />
               ))}
             </div>
@@ -272,7 +272,11 @@ function DraftCard({ draft }: { draft: ItemDraft }) {
       </div>
       <p className="font-semibold text-ink">{draft.title}</p>
       <p className="mt-1 text-sm text-ink">{draft.prompt}</p>
-      <p className="mt-1 text-[13px] text-muted">Формат: {ITEM_FORMAT_LABELS[draft.format]}</p>
+      <p className="mt-1 text-[13px] text-muted">
+        Формат: {ITEM_FORMAT_LABELS[draft.format]}
+        {draft.origin ? ` · ${draft.origin === 'llm' ? 'составлен LLM' : 'заготовка словаря тем'}` : ''}
+        {draft.reused ? ' · черновик по этой теме и грейду уже был — новый не создавали' : ''}
+      </p>
       <div className="mt-3 flex flex-wrap items-center gap-2">
         {status === 'draft' && itemId != null && (
           <Button size="sm" leftIcon={<CheckCircle2 className="size-4" aria-hidden />} loading={approve.isPending} onClick={() => approve.mutate(itemId)}>

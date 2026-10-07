@@ -63,11 +63,11 @@ export function VariantPreview({ variants }: { variants: ItemVariantPreview[] })
             <Highlighted text={v.prompt} varying={promptVarying} />
           </p>
           {v.code && (
-            <pre className="mt-3 overflow-x-auto rounded-md bg-fsp-ink p-3 font-mono text-[12.5px] leading-relaxed text-[#f3f0fa]">
+            <pre className="mt-3 overflow-x-auto rounded-md bg-fsp-ink p-3 font-mono text-[12.5px] leading-relaxed text-fsp-gray">
               {v.code.split('\n').map((line, i) => (
                 <div key={i} className="flex gap-3">
-                  <span className="w-5 shrink-0 text-right text-[#9b95ad] select-none">{i + 1}</span>
-                  <span className="[&_mark]:bg-[#7a2b4f] [&_mark]:text-white">
+                  <span className="w-5 shrink-0 text-right text-fsp-silver select-none">{i + 1}</span>
+                  <span className="[&_mark]:bg-fsp-blue [&_mark]:text-on-primary">
                     <Highlighted text={line} varying={codeVarying} />
                   </span>
                 </div>

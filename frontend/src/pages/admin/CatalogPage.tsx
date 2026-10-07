@@ -34,7 +34,7 @@ import {
   type Specialization,
   type Topic,
 } from './api'
-import { BRAND_RAMP, CHART_COLORS } from './components/chartTheme'
+import { SIX_COLORS } from './components/chartTheme'
 import { pct } from './labels'
 
 export default function AdminCatalogPage() {
@@ -126,8 +126,8 @@ function NumberField(props: {
   )
 }
 
-/** Доли грейдов (порядковая шкала одного оттенка): Стажёр светлее, Senior темнее. */
-const SHARE_RAMP = [BRAND_RAMP[1], BRAND_RAMP[2], BRAND_RAMP[3], BRAND_RAMP[5]]
+/** Доли грейдов — порядковая шкала фирменного синего (токены): Стажёр светлее, Senior темнее. */
+const SHARE_RAMP = ['bg-fsp-blue-pale text-fsp-blue-deep', 'bg-fsp-blue-light text-fsp-black', 'bg-fsp-blue text-on-primary', 'bg-fsp-blue-deep text-on-primary']
 
 function SettingsForm({ settings }: { settings: PlatformSettings }) {
   const [draft, setDraft] = useState<PlatformSettings>(() => structuredClone(settings))
@@ -221,7 +221,7 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
                     <td className="py-2 pl-3">
                       <div className="flex h-5 gap-0.5 overflow-hidden rounded-sm" aria-label={shares.map((s) => pct(Math.max(0, s))).join(' · ')}>
                         {shares.map((s, i) => (
-                          <span key={i} className="flex items-center justify-center text-[10px] font-semibold" style={{ width: `${Math.max(0, s) * 100}%`, background: SHARE_RAMP[i].bg, color: SHARE_RAMP[i].text }}>
+                          <span key={i} className={`flex items-center justify-center text-[10px] font-semibold ${SHARE_RAMP[i]}`} style={{ width: `${Math.max(0, s) * 100}%` }}>
                             {s > 0.08 ? Math.round(s * 100) : ''}
                           </span>
                         ))}
@@ -286,14 +286,14 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
           />
           <div className="mb-4 flex h-3 gap-0.5 overflow-hidden rounded-full" aria-hidden>
             {(Object.keys(WEIGHT_LABELS) as Array<keyof RankingWeights>).map((k, i) => (
-              <span key={k} style={{ width: `${(draft.ranking_weights[k] / (weightSum || 1)) * 100}%`, background: CHART_COLORS[i] }} />
+              <span key={k} style={{ width: `${(draft.ranking_weights[k] / (weightSum || 1)) * 100}%`, background: SIX_COLORS[i] }} />
             ))}
           </div>
           <div className="flex flex-col gap-3">
             {(Object.keys(WEIGHT_LABELS) as Array<keyof RankingWeights>).map((k, i) => (
               <label key={k} className="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1 text-sm">
                 <span>
-                  <span className="mr-2 inline-block size-2.5 rounded-full" style={{ background: CHART_COLORS[i] }} aria-hidden />
+                  <span className="mr-2 inline-block size-2.5 rounded-full" style={{ background: SIX_COLORS[i] }} aria-hidden />
                   <span className="font-medium text-ink">{WEIGHT_LABELS[k].label}</span>
                   <span className="block pl-[18px] text-[13px] text-muted">{WEIGHT_LABELS[k].hint}</span>
                 </span>

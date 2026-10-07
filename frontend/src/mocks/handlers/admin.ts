@@ -23,7 +23,7 @@ type AuditEntry = S['AuditEntry']
 type UserRecord = S['UserRecord']
 type PlatformSettings = S['PlatformSettings']
 type ValidationChart = S['ValidationChart']
-type VacancyTestResult = S['VacancyTestResult']
+type VacancyTestResult = S['VacancyTestOut']
 type Report = S['Report']
 type Skill = S['Skill']
 type Topic = S['Topic']
@@ -510,7 +510,7 @@ export function buildVacancyTest(text: string, specialization?: SpecCode | null)
   detected.sort((a, b) => b.confidence - a.confidence)
 
   // 3. По одному активному шаблону на тему — ближайший по грейду, при равенстве с большей различающей силой.
-  const selected: S['SelectedItem'][] = []
+  const selected: S['SelectedItemOut'][] = []
   for (const d of detected.filter((x) => x.covered)) {
     const best = items
       .filter((i) => i.topic === d.topic && i.status === 'active')
@@ -535,12 +535,12 @@ export function buildVacancyTest(text: string, specialization?: SpecCode | null)
   }
 
   // 4. Темы без активных шаблонов: существующий черновик/пилот или новый черновик.
-  // item_id — id черновика в банке (бэкенд трека 3c добавляет это поле в ItemDraft).
-  const drafts: Array<S['ItemDraft'] & { item_id: number }> = []
+  // item_id — id черновика в банке, reused — черновик по теме уже был (как ItemDraftOut на бэкенде).
+  const drafts: S['ItemDraftOut'][] = []
   for (const d of detected.filter((x) => !x.covered)) {
     const existing = items.find((i) => i.topic === d.topic && (i.status === 'draft' || i.status === 'pilot'))
     if (existing) {
-      drafts.push({ item_id: existing.id, topic: d.topic, label: d.label, title: existing.title, format: existing.format, prompt: existing.preview_variants[0]?.prompt ?? existing.description, status: existing.status })
+      drafts.push({ item_id: existing.id, origin: 'vocabulary', reused: true, topic: d.topic, label: d.label, title: existing.title, format: existing.format, prompt: existing.preview_variants[0]?.prompt ?? existing.description, status: existing.status })
       continue
     }
     const tpl = DRAFT_TEMPLATES[d.topic] ?? genericDraft(d.label)
@@ -569,7 +569,7 @@ export function buildVacancyTest(text: string, specialization?: SpecCode | null)
       created_at: db.now(),
       preview_variants: makeVariants(id, tpl, d.topic, d.label),
     })
-    drafts.push({ item_id: id, topic: d.topic, label: d.label, title: tpl.title, format: tpl.format, prompt: tpl.prompt, status: 'draft' })
+    drafts.push({ item_id: id, origin: 'vocabulary', reused: false, topic: d.topic, label: d.label, title: tpl.title, format: tpl.format, prompt: tpl.prompt, status: 'draft' })
   }
 
   const explanation = [

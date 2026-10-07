@@ -31,12 +31,9 @@ export type ItemStatus = S['ItemStatus']
 export type ItemFormat = S['ItemFormat']
 export type CoverageCell = S['CoverageCell']
 export type RecalibrationResult = S['RecalibrationResult']
-export type VacancyTestResult = S['VacancyTestResult']
-/**
- * Черновик шаблона из вакансии. Бэкенд (трек 3c) добавляет item_id — id созданного черновика в банке;
- * пока поля нет в контракте, ищем шаблон по теме и названию.
- */
-export type ItemDraft = S['ItemDraft'] & { item_id?: number | null }
+export type VacancyTestResult = S['VacancyTestOut']
+/** Черновик шаблона из вакансии: item_id — id черновика в банке (если нет — ищем шаблон по теме и названию). */
+export type ItemDraft = S['ItemDraftOut']
 export type Report = S['Report']
 export type ReportStatus = S['ReportStatus']
 export type ReportReason = S['ReportReason']

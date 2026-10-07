@@ -3,6 +3,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  LabelList,
   Legend,
   Line,
   LineChart,
@@ -16,7 +17,7 @@ import {
 } from 'recharts'
 import type { ValidationChart } from '../api'
 import { num, pct } from '../labels'
-import { AXIS, AXIS_LABEL, BASELINE, CURSOR_FILL, GRID, TOOLTIP_STYLE, seriesColors } from './chartTheme'
+import { AXIS, AXIS_LABEL, CURSOR_FILL, GRID, NEUTRAL, REFERENCE, TOOLTIP_STYLE, VALUE_LABEL, seriesColors } from './chartTheme'
 
 /** Контейнер графика фиксированной высоты (ширина — по родителю). */
 export function ChartBox({ height = 260, children, label }: { height?: number; children: ReactNode; label: string }) {
@@ -67,11 +68,11 @@ export function ValidationChartView({ chart, options = {} }: { chart: Validation
           <YAxis type="number" dataKey="y" name={chart.y_label} domain={diagonal ? [lo, hi] : yDomain ?? ['auto', 'auto']} width={44} {...AXIS} tickFormatter={yTick} />
           <Tooltip {...TOOLTIP_STYLE} cursor={{ strokeDasharray: '3 3' }} formatter={(v) => fmt(v, percent)} />
           {diagonal && (
-            <ReferenceLine segment={[{ x: lo, y: lo }, { x: hi, y: hi }]} stroke={BASELINE} strokeDasharray="5 4" ifOverflow="extendDomain" />
+            <ReferenceLine segment={[{ x: lo, y: lo }, { x: hi, y: hi }]} stroke={NEUTRAL} strokeDasharray="5 4" ifOverflow="extendDomain" />
           )}
           {referenceY && (
-            <ReferenceLine y={referenceY.y} stroke="#1B1C21" strokeDasharray="5 4"
-              label={{ value: referenceY.label, position: 'insideBottomRight', fill: '#1B1C21', fontSize: 11 }} />
+            <ReferenceLine y={referenceY.y} stroke={REFERENCE} strokeDasharray="5 4"
+              label={{ value: referenceY.label, position: 'insideBottomRight', fill: REFERENCE, fontSize: 11 }} />
           )}
           {chart.series.map((s, i) => (
             <Scatter key={s.name} name={s.name} data={s.points} fill={colors[i]} fillOpacity={0.7} stroke="#fff" strokeWidth={1} />
@@ -93,6 +94,7 @@ export function ValidationChartView({ chart, options = {} }: { chart: Validation
     return row
   })
   const longLabels = xs.some((x) => String(x).length > 14)
+  const labelBars = xs.length * chart.series.length <= 12
 
   if (chart.chart_type === 'line') {
     return (
@@ -114,7 +116,7 @@ export function ValidationChartView({ chart, options = {} }: { chart: Validation
 
   return (
     <ChartBox height={height} label={chart.title}>
-      <BarChart data={rows} margin={{ top: 8, right: 8, bottom: longLabels ? 8 : 28, left: 4 }} barGap={2} barCategoryGap={chart.chart_type === 'histogram' ? 2 : '22%'}>
+      <BarChart data={rows} margin={{ top: labelBars ? 20 : 8, right: 8, bottom: longLabels ? 8 : 28, left: 4 }} barGap={2} barCategoryGap={chart.chart_type === 'histogram' ? 2 : '22%'}>
         <CartesianGrid {...GRID} vertical={false} />
         <XAxis dataKey="x" {...AXIS} interval={0} height={longLabels ? 48 : 30}
           tick={longLabels ? { ...AXIS.tick, fontSize: 11 } : AXIS.tick}
@@ -122,9 +124,12 @@ export function ValidationChartView({ chart, options = {} }: { chart: Validation
         <YAxis width={44} {...AXIS} tickFormatter={yTick} domain={yDomain ?? (percent ? [0, 1] : [0, 'auto'])} />
         <Tooltip {...TOOLTIP_STYLE} cursor={{ fill: CURSOR_FILL }} formatter={(v) => fmt(v, percent)} />
         {multi && <Legend itemSorter={null} verticalAlign="top" height={28} iconType="square" wrapperStyle={{ fontSize: 12 }} />}
-        {referenceY && <ReferenceLine y={referenceY.y} stroke="#1B1C21" strokeDasharray="5 4" />}
+        {referenceY && <ReferenceLine y={referenceY.y} stroke={REFERENCE} strokeDasharray="5 4" />}
         {chart.series.map((s, i) => (
-          <Bar key={s.name} dataKey={s.name} fill={colors[i]} radius={[4, 4, 0, 0]} maxBarSize={chart.chart_type === 'histogram' ? 48 : 40} />
+          <Bar key={s.name} dataKey={s.name} fill={colors[i]} radius={[4, 4, 0, 0]} maxBarSize={chart.chart_type === 'histogram' ? 48 : 40}>
+            {/* Подписи значений: светлые цвета палитры (оранжевый, голубой) не дотягивают до контраста 3:1 с фоном. */}
+            {labelBars && <LabelList dataKey={s.name} position="top" {...VALUE_LABEL} formatter={(v: unknown) => fmt(v, percent)} />}
+          </Bar>
         ))}
       </BarChart>
     </ChartBox>

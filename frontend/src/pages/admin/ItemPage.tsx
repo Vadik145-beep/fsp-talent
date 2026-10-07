@@ -163,7 +163,7 @@ export default function AdminItemPage() {
                 <li key={label} className="grid grid-cols-[72px_1fr_48px] items-center gap-3 text-sm">
                   <span className="text-muted">{label}</span>
                   <span className="h-2.5 overflow-hidden rounded-full bg-line">
-                    <span className="block h-full rounded-full bg-[#402FFF]" style={{ width: `${p * 100}%` }} />
+                    <span className="block h-full rounded-full bg-fsp-blue" style={{ width: `${p * 100}%` }} />
                   </span>
                   <b className="text-right tabular-nums">{pct(p)}</b>
                 </li>

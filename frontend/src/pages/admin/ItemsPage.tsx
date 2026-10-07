@@ -33,7 +33,7 @@ function CorrectRate({ row }: { row: ItemSummary }) {
         {exp != null && <span className="text-muted">ожид. {pct(exp)}</span>}
       </div>
       <div className="relative mt-1 h-1.5 rounded-full bg-line">
-        <div className={`h-full rounded-full ${high ? 'bg-danger' : 'bg-[#402FFF]'}`} style={{ width: `${row.correct_rate * 100}%` }} />
+        <div className={`h-full rounded-full ${high ? 'bg-danger' : 'bg-fsp-blue'}`} style={{ width: `${row.correct_rate * 100}%` }} />
         {exp != null && <span className="absolute -top-0.5 h-2.5 w-0.5 bg-ink" style={{ left: `${exp * 100}%` }} aria-hidden />}
       </div>
     </div>

@@ -1,20 +1,18 @@
-import { Fragment, type CSSProperties } from 'react'
+import { Fragment } from 'react'
 import { Link } from 'react-router'
 import { cn } from '@/shared/lib/cn'
 import { GRADES, GRADE_LABELS, SPECIALIZATIONS, SPECIALIZATION_LABELS } from '@/shared/config/dictionaries'
 import { plural } from '@/shared/lib/format'
 import type { CoverageCell } from '../api'
-import { BRAND_RAMP } from './chartTheme'
 
-/** Последовательная шкала фирменного оттенка (#402FFF): светлее — меньше шаблонов, 0 — пустая клетка с пунктиром. */
-const STEPS: Array<{ min: number; style?: CSSProperties }> = [
-  { min: 0 },
-  { min: 1, style: { background: BRAND_RAMP[0].bg, borderColor: BRAND_RAMP[0].bg, color: BRAND_RAMP[0].text } },
-  { min: 2, style: { background: BRAND_RAMP[1].bg, borderColor: BRAND_RAMP[1].bg, color: BRAND_RAMP[1].text } },
-  { min: 3, style: { background: BRAND_RAMP[3].bg, borderColor: BRAND_RAMP[3].bg, color: BRAND_RAMP[3].text } },
-  { min: 5, style: { background: BRAND_RAMP[5].bg, borderColor: BRAND_RAMP[5].bg, color: BRAND_RAMP[5].text } },
+/** Последовательная шкала фирменного синего на токенах: светлее — меньше шаблонов, 0 — пустая клетка с пунктиром. */
+const STEPS = [
+  { min: 0, cls: 'bg-surface-muted border-dashed border-line-strong text-subtle' },
+  { min: 1, cls: 'bg-fsp-blue-pale border-fsp-blue-pale text-fsp-blue-deep' },
+  { min: 2, cls: 'bg-fsp-blue-light border-fsp-blue-light text-fsp-black' },
+  { min: 3, cls: 'bg-fsp-blue border-fsp-blue text-on-primary' },
+  { min: 5, cls: 'bg-fsp-blue-deep border-fsp-blue-deep text-on-primary' },
 ]
-const EMPTY_CLASS = 'bg-surface-muted border-dashed border-line-strong text-subtle'
 
 function stepFor(n: number) {
   return [...STEPS].reverse().find((s) => n >= s.min) ?? STEPS[0]
@@ -35,7 +33,7 @@ export function CoverageHeatmap({ cells, specialization }: { cells: CoverageCell
         <div className="flex items-center gap-1.5 text-xs text-muted" aria-label="Легенда">
           <span>0</span>
           {STEPS.map((s) => (
-            <span key={s.min} className={cn('size-4 rounded-xs border', !s.style && EMPTY_CLASS)} style={s.style} aria-hidden />
+            <span key={s.min} className={cn('size-4 rounded-xs border', s.cls)} aria-hidden />
           ))}
           <span>5+</span>
         </div>
@@ -87,9 +85,8 @@ export function CoverageHeatmap({ cells, specialization }: { cells: CoverageCell
                               aria-label={text}
                               className={cn(
                                 'flex h-11 flex-col items-center justify-center rounded-sm border text-base font-bold tabular-nums transition-[filter] hover:brightness-95 focus-visible:shadow-[var(--shadow-focus)] focus-visible:outline-none',
-                                !st.style && EMPTY_CLASS,
+                                st.cls,
                               )}
-                              style={st.style}
                             >
                               {active}
                               {pilot > 0 && <span className="text-[10px] leading-none font-semibold">+{pilot} пилот</span>}
