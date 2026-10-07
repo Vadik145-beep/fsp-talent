@@ -202,8 +202,16 @@ def test_invitations_state_machine(client: TestClient) -> None:
     declined = next(i for i in mine if i["status"] == "declined")
     again = client.post(f"/api/invitations/{declined['id']}/accept", headers=CANDIDATE)
     assert again.status_code == 409 and again.json()["code"] == "invalid_transition"
-    reason = client.post(
+    # принятое отклонить уже нельзя (изменения теперь сохраняются в БД)
+    late = client.post(
         f"/api/invitations/{sent['id']}/decline",
+        json={"reason": "salary_too_low"},
+        headers=CANDIDATE,
+    )
+    assert late.status_code == 409 and late.json()["code"] == "invalid_transition"
+    active = next(i for i in mine if i["status"] in ("sent", "viewed") and i["id"] != sent["id"])
+    reason = client.post(
+        f"/api/invitations/{active['id']}/decline",
         json={"reason": "salary_too_low"},
         headers=CANDIDATE,
     ).json()
