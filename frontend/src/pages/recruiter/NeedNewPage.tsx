@@ -120,8 +120,14 @@ export default function RecruiterNeedNewPage() {
     },
     onError: (e) => {
       const fields = apiFieldErrors(e) as Errors
+      const unknownSkills = isApiError(e) && e.code === 'unknown_skills' && Array.isArray(e.details?.skills) ? (e.details.skills as string[]) : []
       if (Object.keys(fields).length) setErrors(fields)
-      else toast({ tone: 'error', title: 'Не удалось сохранить', description: isApiError(e) ? e.message : undefined })
+      else
+        toast({
+          tone: 'error',
+          title: 'Не удалось сохранить',
+          description: isApiError(e) ? `${e.message}${unknownSkills.length ? `: ${unknownSkills.join(', ')}` : ''}` : undefined,
+        })
     },
   })
 

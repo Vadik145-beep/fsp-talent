@@ -37,7 +37,7 @@ export function MatchCard({ match, rank, highlight, profileHref, onInvite }: Mat
               <Link to={profileHref} className="flex min-w-0 rounded-sm hover:opacity-80">
                 <Pseudonym code={pseudonymCodeOf(c.pseudonym)} subtitle={c.category_label ?? undefined} />
               </Link>
-              {meta && <p className="mt-0.5 pl-[52px] text-[13px] text-muted">{meta}</p>}
+              {meta && <p className="mt-0.5 pl-[52px] text-[13px] text-muted" data-testid="match-meta">{meta}</p>}
             </div>
           </div>
           <div className="w-[5.5rem] shrink-0 text-right">
