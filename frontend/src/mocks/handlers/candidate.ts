@@ -258,7 +258,7 @@ function profileView(c: CandidateRow): S['CandidateProfile'] {
 
 const MAX_RESUME_BYTES = 5 * 1024 * 1024
 
-function resumeFields(c: CandidateRow): S['ResumeParseResult']['fields'] {
+function resumeFields(c: CandidateRow): S['ResumeParseResponse']['fields'] {
   // Прототип: «распознанное» резюме — данные профиля плюс пара правдоподобных отличий.
   return {
     full_name: { value: c.full_name, confidence: 0.96 },
@@ -751,7 +751,7 @@ function testResult(session: SessionRow, c: CandidateRow): S['TestResult'] {
   }
 }
 
-function gradeStatus(c: CandidateRow): S['GradeStatus'] {
+function gradeStatus(c: CandidateRow): S['CandidateGradeStatus'] {
   const spec = c.specialization ?? null
   const grade = c.grade ?? null
   const change = changeAvailableAt(c)
@@ -978,7 +978,7 @@ export const candidateHandlers: HttpHandler[] = [
       const isPdf = file.type === 'application/pdf' || file.type === 'application/x-pdf' || /\.pdf$/i.test(file.name)
       if (!isPdf) return apiError(415, 'unsupported_file', 'Нужен PDF', { content_type: file.type })
       if (file.size > MAX_RESUME_BYTES) return apiError(413, 'file_too_large', 'Файл больше 5 МБ')
-      const result: S['ResumeParseResult'] = {
+      const result: S['ResumeParseResponse'] = {
         resume_id: Date.now() % 100000,
         filename: file.name || 'resume.pdf',
         parser: 'rules',

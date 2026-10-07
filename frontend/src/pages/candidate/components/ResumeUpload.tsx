@@ -9,7 +9,7 @@ import type { S } from '../api'
 const MAX_BYTES = 5 * 1024 * 1024
 
 /** Загрузка PDF-резюме: перетаскивание или выбор файла → разбор на сервере → предзаполнение формы. */
-export function ResumeUpload({ onParsed, className }: { onParsed: (result: S['ResumeParseResult']) => void; className?: string }) {
+export function ResumeUpload({ onParsed, className }: { onParsed: (result: S['ResumeParseResponse']) => void; className?: string }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [dragOver, setDragOver] = useState(false)
   const [localError, setLocalError] = useState<string | null>(null)
@@ -18,7 +18,7 @@ export function ResumeUpload({ onParsed, className }: { onParsed: (result: S['Re
     mutationFn: (file: File) => {
       const form = new FormData()
       form.append('file', file)
-      return api.post<S['ResumeParseResult']>('/candidates/me/resume', form)
+      return api.post<S['ResumeParseResponse']>('/candidates/me/resume', form)
     },
     onSuccess: onParsed,
   })
