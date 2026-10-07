@@ -447,7 +447,7 @@ export interface paths {
         put?: never;
         /**
          * Загрузить PDF-резюме и получить предзаполнение
-         * @description Заглушка: разбор PDF появится в волне 3 (T3.2); сейчас поля берутся из профиля.
+         * @description Разбор PDF (pdfplumber; страницы в две колонки режутся по колонкам) правилами, при наличии ключа — уточнение LLM. Поля формы профиля с уверенностью 0..1: `full_name`, `email`, `phone` (+7XXXXXXXXXX), `city`, `specialization`, `grade`, `stack` (коды справочника), `experience_years`, `roles_in_team`, `soft_skills`, `work_formats`, `links`, `about`; не найдено — `value: null, confidence: 0`. `unmatched_skills` — технологии, которых нет в справочнике. `warnings` — что не удалось прочитать (скан без текста, битый файл): тогда поля пустые, форму заполняют вручную.
          */
         post: operations["upload_resume_api_candidates_me_resume_post"];
         delete?: never;
@@ -465,7 +465,7 @@ export interface paths {
         };
         /**
          * Скачать стандартизированный PDF-профиль
-         * @description Заглушка: настоящий PDF в стиле ФСП — волна 3 (T3.3).
+         * @description PDF в стиле ФСП: категория и грейд, результаты теста по темам, стек, опыт и роли, достижения ФСП с отметкой «подтверждено ФСП» (или «нет данных ФСП»).
          */
         get: operations["my_profile_pdf_api_candidates_me_profile_pdf_get"];
         put?: never;
@@ -687,7 +687,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Категория и грейд: статус, кулдауны, история */
+        /**
+         * Категория и грейд: статус, кулдауны, история
+         * @description То же, что `GET /api/candidates/me/grade`: правила частоты считает движок.
+         */
         get: operations["grade_status_api_testing_grade_get"];
         put?: never;
         post?: never;
@@ -709,7 +712,7 @@ export interface paths {
         put?: never;
         /**
          * Начать тест
-         * @description Пересдача на грейд ниже/выше — не чаще раза в 90 дней (409 `cooldown_active`).
+         * @description Проверка частоты попыток — движок (`can_attempt`): смена грейда не чаще раза в 90 дней, повтор неудачной попытки на тот же грейд — через 30 дней (409 `cooldown_active`, в details — `reason_code` и `available_at`). Брошенная сессия считается неудачной попыткой. Одновременно — одна незавершённая сессия.
          */
         post: operations["start_session_api_testing_sessions_post"];
         delete?: never;
@@ -726,7 +729,7 @@ export interface paths {
             cookie?: never;
         };
         /** Экран теста: текущая задача, прогресс, таймер */
-        get: operations["get_session_api_testing_sessions__session_id__get"];
+        get: operations["get_test_session_api_testing_sessions__session_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -746,7 +749,7 @@ export interface paths {
         put?: never;
         /**
          * Ответить на текущую задачу
-         * @description Верно/неверно не сообщается. Время считает сервер.
+         * @description Верно/неверно не сообщается. Время считает сервер от выдачи задачи; ответ после лимита принимается, но засчитывается неверным (`time_expired: true`).
          */
         post: operations["submit_answer_api_testing_sessions__session_id__answers_post"];
         delete?: never;
@@ -863,9 +866,9 @@ export interface paths {
         put?: never;
         /**
          * Разобрать свободный текст потребности в поля
-         * @description Правила без LLM; с ключом LLM — точнее (волна 3c).
+         * @description Правила без LLM; с ключом LLM — точнее (трек 3c).
          */
-        post: operations["parse_need_api_matching_needs_parse_post"];
+        post: operations["parse_need_text_api_matching_needs_parse_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -884,7 +887,7 @@ export interface paths {
         put?: never;
         /**
          * Создать потребность
-         * @description Вилка от–до обязательна, от ≤ до. Заглушка: не сохраняется.
+         * @description Вилка от–до обязательна, от ≤ до. Стек — коды справочника `skills`.
          */
         post: operations["create_need_api_matching_needs_post"];
         delete?: never;
@@ -902,9 +905,17 @@ export interface paths {
         };
         /** Потребность */
         get: operations["get_need_api_matching_needs__need_id__get"];
-        put?: never;
+        /**
+         * Изменить потребность
+         * @description Те же поля, что при создании, плюс статус (`active` / `closed`).
+         */
+        put: operations["update_need_api_matching_needs__need_id__put"];
         post?: never;
-        delete?: never;
+        /**
+         * Удалить потребность
+         * @description Отправленные по ней приглашения остаются (ссылка на потребность обнуляется).
+         */
+        delete: operations["delete_need_api_matching_needs__need_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -939,7 +950,7 @@ export interface paths {
         };
         /**
          * Подборка: кандидаты категории с объяснением и разбивкой счёта
-         * @description Кандидаты обезличены. Фильтры сужают подборку, `total_before_filters` — исходный размер; без фильтров возвращается исходный список.
+         * @description Кандидаты обезличены. Счёт = Σ value × weight по факторам (стек, тест, ФСП, свежесть, зарплата, формат), веса — из настроек платформы; сумма `contribution` равна `score`. Фильтры сужают подборку, `total_before_filters` — исходный размер; без фильтров возвращается исходный список.
          */
         get: operations["need_candidates_api_matching_needs__need_id__candidates_get"];
         put?: never;
@@ -959,13 +970,13 @@ export interface paths {
         };
         /**
          * Мои приглашения
-         * @description Кандидат видит полученные приглашения, рекрутер — приглашения своей компании. Контакты другой стороны — только при статусе `accepted`.
+         * @description Кандидат видит полученные приглашения, рекрутер — приглашения своей компании. Контакты другой стороны — только при статусе `accepted`. Просроченные `sent`/`viewed` переводятся в `expired` при обращении.
          */
         get: operations["list_invitations_api_invitations_get"];
         put?: never;
         /**
          * Отправить приглашение
-         * @description Вилка от–до обязательна (от ≤ до). Если максимум вилки ниже минимальной зарплаты кандидата — 422 `salary_below_expectations`, сумма кандидата не раскрывается.
+         * @description Вилка от–до обязательна (от ≤ до). Если максимум вилки ниже минимальной зарплаты кандидата — 422 `salary_below_expectations`, сумма кандидата не раскрывается. Кандидату уходит письмо.
          */
         post: operations["create_invitation_api_invitations_post"];
         delete?: never;
@@ -991,6 +1002,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/invitations/counters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Счётчики для бейджей кабинета
+         * @description Кандидат: `new` — полученные и ещё не открытые. Рекрутер: `new` — ответы кандидатов (просмотр, принятие, отказ), которые он ещё не открывал. `active` — ждут ответа.
+         */
+        get: operations["get_counters_api_invitations_counters_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/invitations/market-hint": {
         parameters: {
             query?: never;
@@ -998,7 +1029,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Рыночная подсказка зарплаты по категории */
+        /**
+         * Рыночная подсказка зарплаты по категории
+         * @description Медиана принятых вилок в категории (если принятых ≥ 3), иначе — оценка по ожиданиям кандидатов категории. При выборке < 3 медиана и вероятность не показываются.
+         */
         get: operations["market_hint_api_invitations_market_hint_get"];
         put?: never;
         post?: never;
@@ -1039,7 +1073,7 @@ export interface paths {
         put?: never;
         /**
          * Принять приглашение (кандидат)
-         * @description После принятия обе стороны видят контакты; раскрытие пишется в журнал.
+         * @description После принятия обе стороны видят контакты; раскрытие пишется в журнал событий и в audit_log. Рекрутеру уходит письмо.
          */
         post: operations["accept_invitation_api_invitations__invitation_id__accept_post"];
         delete?: never;
@@ -1057,7 +1091,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Отклонить приглашение с причиной (кандидат) */
+        /**
+         * Отклонить приглашение с причиной (кандидат)
+         * @description Для причины `other` комментарий обязателен. Рекрутеру уходит письмо.
+         */
         post: operations["decline_invitation_api_invitations__invitation_id__decline_post"];
         delete?: never;
         options?: never;
@@ -1643,7 +1680,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Банк задач с метриками */
+        /**
+         * Банк задач с метриками
+         * @description Показы, доля верных (факт и ожидание по IRT при θ без этой задачи), a, b, статус, флаг утечки. Шаблоны движка синхронизируются в БД автоматически.
+         */
         get: operations["list_items_api_admin_items_get"];
         put?: never;
         post?: never;
@@ -1681,9 +1721,29 @@ export interface paths {
         put?: never;
         /**
          * Пересчитать калибровку a, b по накопленным ответам
-         * @description Заглушка: настоящий пересчёт — волна 3a (T4.9).
+         * @description T4.9: логистическая регрессия ответа на θ отвечавших (без этой задачи) для шаблонов с числом ответов не меньше `min_responses` (по умолчанию TESTING_CALIBRATION_MIN_RESPONSES=30). Пилотные шаблоны становятся рабочими по правилу активации движка (≥ 150 ответов, a ≥ 0,4, |b| ≤ 3,5, SE(b) ≤ 0,35). Изменения пишутся в журнал.
          */
         post: operations["recalibrate_api_admin_items_recalibrate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/items/leak-scan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Запустить детектор утечек
+         * @description T4.7: по каждому шаблону — доля верных против ожидаемой по IRT и быстрые верные ответы. Помеченные шаблоны выводятся из оборота, событие пишется в журнал. Плюс аномалии кандидатов (повод для ручной проверки). Детектор также запускается автоматически после каждой N-й завершённой сессии (TESTING_LEAK_SCAN_EVERY).
+         */
+        post: operations["leak_scan_api_admin_items_leak_scan_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1697,7 +1757,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Шаблон: метрики и предпросмотр 3 вариантов */
+        /**
+         * Шаблон: метрики и предпросмотр 3 вариантов
+         * @description Варианты генерирует движок из разных seed; у демо-записей — из фикстуры.
+         */
         get: operations["get_item_api_admin_items__item_id__get"];
         put?: never;
         post?: never;
@@ -1748,12 +1811,15 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Примеры: тесты, собранные из вакансий */
+        /**
+         * Тесты, собранные из вакансий
+         * @description Новые сверху. Пока ни одного не собрано — показываются демо-примеры.
+         */
         get: operations["list_vacancy_tests_api_admin_vacancy_tests_get"];
         put?: never;
         /**
          * Текст вакансии → темы → тест с объяснением
-         * @description Заглушка: возвращает ближайший пример. Настоящий разбор — волна 3c (T4.8).
+         * @description Специализация и грейд — правилами; темы — по словарю с уверенностью; по каждой теме шаблон банка, ближайший по грейду, с объяснением выбора. Для тем без шаблонов создаётся черновик в банке задач (status=draft, `drafts[].item_id`): LLM при наличии ключа, иначе заготовка словаря тем. Без ключа LLM всё работает (`parser: rules`).
          */
         post: operations["build_vacancy_test_api_admin_vacancy_tests_post"];
         delete?: never;
@@ -2456,6 +2522,28 @@ export interface components {
             fsp_linked: boolean;
             /** Hints */
             hints: string[];
+        };
+        /**
+         * CandidateFlag
+         * @description Аномалия кандидата: повод для ручной проверки, не автоматическое наказание.
+         */
+        CandidateFlag: {
+            /** Candidate Id */
+            candidate_id: number;
+            /** Session Id */
+            session_id: number;
+            /** Suspicious Item Ids */
+            suspicious_item_ids: number[];
+            /**
+             * Lz
+             * @description Индекс согласия ответов l_z
+             */
+            lz: number;
+            /**
+             * Reasons
+             * @description fast_hard_correct | aberrant_pattern
+             */
+            reasons: string[];
         };
         /**
          * CandidateGradeStatus
@@ -3514,46 +3602,6 @@ export interface components {
             available_at?: string | null;
         };
         /**
-         * GradeStatus
-         * @description Экран «Категория и грейд»: статус, кулдауны, история.
-         */
-        GradeStatus: {
-            /** Candidate Id */
-            candidate_id: number;
-            specialization: components["schemas"]["SpecializationCode"] | null;
-            grade: components["schemas"]["GradeCode"] | null;
-            /** Category */
-            category: string | null;
-            /** Category Label */
-            category_label: string | null;
-            /** Theta */
-            theta: number | null;
-            /** Grade Changed At */
-            grade_changed_at: string | null;
-            /**
-             * Grade Change Cooldown Days
-             * @default 90
-             */
-            grade_change_cooldown_days: number;
-            /**
-             * Retry Cooldown Days
-             * @default 30
-             */
-            retry_cooldown_days: number;
-            /** Can Test Lower */
-            can_test_lower: boolean;
-            /** Lower Available At */
-            lower_available_at: string | null;
-            /** Can Test Higher */
-            can_test_higher: boolean;
-            /** Higher Available At */
-            higher_available_at: string | null;
-            /** History */
-            history: components["schemas"]["GradeHistoryEntry"][];
-            /** Tests */
-            tests: components["schemas"]["TestSession"][];
-        };
-        /**
          * GradeThreshold
          * @description Пороги θ для грейдов в специализации: ниже junior_from — стажёр.
          */
@@ -3674,6 +3722,24 @@ export interface components {
             recruiter_contacts?: components["schemas"]["RecruiterContacts"] | null;
             /** Decline Reason Label */
             decline_reason_label?: string | null;
+        };
+        /**
+         * InvitationCounters
+         * @description Счётчики для бейджей в кабинете (T7.8).
+         *
+         *     Кандидат: `new` — полученные и ещё не открытые, `active` — ждут ответа.
+         *     Рекрутер: `new` — ответы кандидатов (просмотр, принятие, отказ), которые он ещё не открывал,
+         *     `active` — приглашения компании, ждущие ответа.
+         * @example {
+         *       "active": 5,
+         *       "new": 2
+         *     }
+         */
+        InvitationCounters: {
+            /** New */
+            new: number;
+            /** Active */
+            active: number;
         };
         /**
          * InvitationCreate
@@ -4048,11 +4114,8 @@ export interface components {
             /** Preview Variants */
             preview_variants: components["schemas"]["ItemVariantPreview"][];
         };
-        /**
-         * ItemDraft
-         * @description Черновик нового шаблона для темы, которой нет в банке (LLM или словарь тем).
-         */
-        ItemDraft: {
+        /** ItemDraftOut */
+        ItemDraftOut: {
             /** Topic */
             topic: string;
             /** Label */
@@ -4064,6 +4127,22 @@ export interface components {
             prompt: string;
             /** @default draft */
             status: components["schemas"]["ItemStatus"];
+            /**
+             * Item Id
+             * @description id черновика в банке задач (status=draft) для одобрения
+             */
+            item_id?: number | null;
+            /**
+             * Origin
+             * @description llm | vocabulary
+             */
+            origin?: string | null;
+            /**
+             * Reused
+             * @description Черновик по теме и грейду уже был
+             * @default false
+             */
+            reused: boolean;
         };
         /**
          * ItemFormat
@@ -4163,6 +4242,11 @@ export interface components {
              */
             code?: string | null;
             /**
+             * Code Language
+             * @description Язык кода для подсветки: python, javascript, sql…
+             */
+            code_language?: string | null;
+            /**
              * Options
              * @description Для выбора вариантов
              */
@@ -4205,6 +4289,11 @@ export interface components {
              * @description Код для code_output / find_error_line
              */
             code?: string | null;
+            /**
+             * Code Language
+             * @description Язык кода для подсветки: python, javascript, sql…
+             */
+            code_language?: string | null;
             /**
              * Options
              * @description Для выбора вариантов
@@ -4255,6 +4344,61 @@ export interface components {
             specialization: components["schemas"]["SpecializationCode"];
             /** Leak Score */
             leak_score: number;
+        };
+        /** LeakScanResult */
+        LeakScanResult: {
+            /**
+             * Scanned At
+             * Format: date-time
+             */
+            scanned_at: string;
+            /** Answers Checked */
+            answers_checked: number;
+            /** Items Checked */
+            items_checked: number;
+            /** Retired */
+            retired: components["schemas"]["LeakedItem"][];
+            /** Flagged Candidates */
+            flagged_candidates: components["schemas"]["CandidateFlag"][];
+        };
+        /**
+         * LeakedItem
+         * @description Шаблон, помеченный детектором и выведенный из оборота.
+         */
+        LeakedItem: {
+            /** Item Id */
+            item_id: number;
+            /** Code */
+            code: string;
+            /** Title */
+            title: string;
+            /**
+             * N
+             * @description Ответов в окне детектора
+             */
+            n: number;
+            /**
+             * Observed Rate
+             * @description Доля верных: факт
+             */
+            observed_rate: number;
+            /**
+             * Expected Rate
+             * @description Доля верных: ожидание по IRT
+             */
+            expected_rate: number;
+            /** Z */
+            z: number;
+            /**
+             * Fast Correct
+             * @description Верных ответов подозрительно быстро
+             */
+            fast_correct: number;
+            /**
+             * Reasons
+             * @description irt_drift | fast_correct
+             */
+            reasons: string[];
         };
         /**
          * LinkType
@@ -4440,7 +4584,7 @@ export interface components {
         };
         /**
          * Need
-         * @description Потребность (запись `needs.json`).
+         * @description Потребность работодателя.
          * @example {
          *       "candidates_count": 3,
          *       "category": "backend:middle",
@@ -4678,6 +4822,63 @@ export interface components {
          * @enum {string}
          */
         NeedStatus: "active" | "closed";
+        /**
+         * NeedUpdate
+         * @description Изменение потребности: те же поля + статус (закрыть / вернуть в работу).
+         * @example {
+         *       "grade": "senior",
+         *       "raw_text": "нужен сеньор на Go в финтех, удалёнка, 300–400к",
+         *       "salary_from": 300000,
+         *       "salary_to": 400000,
+         *       "skills_desired": [
+         *         "kafka",
+         *         "kubernetes"
+         *       ],
+         *       "skills_required": [
+         *         "go",
+         *         "postgresql"
+         *       ],
+         *       "specialization": "backend",
+         *       "team_description": "Платёжный шлюз, 6 человек",
+         *       "title": "Senior Go-разработчик в платёжную команду",
+         *       "work_format": "remote"
+         *     }
+         */
+        NeedUpdate: {
+            /**
+             * Salary From
+             * @description Зарплата от, ₽ в месяц
+             */
+            salary_from: number;
+            /**
+             * Salary To
+             * @description Зарплата до, ₽ в месяц
+             */
+            salary_to: number;
+            /** Title */
+            title: string;
+            /**
+             * Raw Text
+             * @description Свободный текст
+             */
+            raw_text?: string | null;
+            specialization: components["schemas"]["SpecializationCode"];
+            grade: components["schemas"]["GradeCode"];
+            /** Skills Required */
+            skills_required?: string[];
+            /** Skills Desired */
+            skills_desired?: string[];
+            /**
+             * Team Description
+             * @default
+             */
+            team_description: string;
+            work_format: components["schemas"]["WorkFormat"];
+            /** City */
+            city?: string | null;
+            /** @default active */
+            status: components["schemas"]["NeedStatus"];
+        };
         /** Page[AuditEntry] */
         Page_AuditEntry_: {
             /** Items */
@@ -5000,6 +5201,8 @@ export interface components {
             message: string;
             /** Available At */
             available_at?: string | null;
+            /** @description На какой грейд предлагается следующий тест */
+            target_grade?: components["schemas"]["GradeCode"] | null;
         };
         /**
          * RecommendedCategory
@@ -5357,8 +5560,8 @@ export interface components {
             email: string;
         };
         /**
-         * ResumeParseResult
-         * @description Предзаполнение формы из PDF-резюме; кандидат подтверждает поля [ТЗ 2.1].
+         * ResumeParseResponse
+         * @description Ответ загрузки резюме. Расширение контракта: `warnings` — что не удалось прочитать.
          * @example {
          *       "fields": {
          *         "email": {
@@ -5385,7 +5588,7 @@ export interface components {
          *       ]
          *     }
          */
-        ResumeParseResult: {
+        ResumeParseResponse: {
             /** Resume Id */
             resume_id: number;
             /** Filename */
@@ -5401,6 +5604,8 @@ export interface components {
             };
             /** Unmatched Skills */
             unmatched_skills?: string[];
+            /** Warnings */
+            warnings?: string[];
         };
         /**
          * Role
@@ -5429,8 +5634,8 @@ export interface components {
             /** Contribution */
             contribution: number;
         };
-        /** SelectedItem */
-        SelectedItem: {
+        /** SelectedItemOut */
+        SelectedItemOut: {
             /** Item Id */
             item_id: number;
             /** Code */
@@ -5441,6 +5646,12 @@ export interface components {
             topic: string;
             /** Reason */
             reason: string;
+            /**
+             * Template Id
+             * @description id шаблона в банке задач
+             */
+            template_id?: string | null;
+            target_grade?: components["schemas"]["GradeCode"] | null;
         };
         /**
          * Skill
@@ -5903,6 +6114,11 @@ export interface components {
             /** Weak Topics */
             weak_topics: string[];
             recommendation: components["schemas"]["Recommendation"];
+            /**
+             * Outcome
+             * @description Решение движка по заявленному грейду
+             */
+            outcome?: ("passed_claimed" | "suggest_lower" | "suggest_higher" | "abandoned") | null;
         };
         /**
          * TestSession
@@ -6314,19 +6530,7 @@ export interface components {
          */
         VacancyStatus: "draft" | "published" | "unpublished";
         /**
-         * VacancyTestRequest
-         * @example {
-         *       "text": "Ищем Middle Python-разработчика: FastAPI, PostgreSQL, Redis, Docker."
-         *     }
-         */
-        VacancyTestRequest: {
-            /** Text */
-            text: string;
-            specialization?: components["schemas"]["SpecializationCode"] | null;
-        };
-        /**
-         * VacancyTestResult
-         * @description Задание из вакансии (запись `vacancy_tests.json`): темы → тест → объяснение.
+         * VacancyTestOut
          * @example {
          *       "drafts": [
          *         {
@@ -6414,7 +6618,7 @@ export interface components {
          *       "vacancy_title": "Middle Python-разработчик (платежи)"
          *     }
          */
-        VacancyTestResult: {
+        VacancyTestOut: {
             /** Id */
             id: number;
             /** Vacancy Title */
@@ -6431,11 +6635,24 @@ export interface components {
             /** Topics */
             topics: components["schemas"]["DetectedTopic"][];
             /** Items */
-            items: components["schemas"]["SelectedItem"][];
+            items: components["schemas"]["SelectedItemOut"][];
             /** Drafts */
-            drafts: components["schemas"]["ItemDraft"][];
+            drafts: components["schemas"]["ItemDraftOut"][];
             /** Explanation */
             explanation: string[];
+            /** Created At */
+            created_at?: string | null;
+        };
+        /**
+         * VacancyTestRequest
+         * @example {
+         *       "text": "Ищем Middle Python-разработчика: FastAPI, PostgreSQL, Redis, Docker."
+         *     }
+         */
+        VacancyTestRequest: {
+            /** Text */
+            text: string;
+            specialization?: components["schemas"]["SpecializationCode"] | null;
         };
         /**
          * ValidationChart
@@ -7752,7 +7969,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ResumeParseResult"];
+                    "application/json": components["schemas"]["ResumeParseResponse"];
                 };
             };
             /** @description `unauthorized` — Требуется вход */
@@ -7766,6 +7983,15 @@ export interface operations {
             };
             /** @description `forbidden` — Недостаточно прав */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` — Объект не найден */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -8683,7 +8909,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GradeStatus"];
+                    "application/json": components["schemas"]["CandidateGradeStatus"];
                 };
             };
             /** @description `unauthorized` — Требуется вход */
@@ -8821,7 +9047,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description `cooldown_active` — Сменить грейд можно не чаще раза в 90 дней; `session_in_progress` — Сначала завершите начатый тест */
+            /** @description `cooldown_active` — Сменить грейд можно не чаще раза в 90 дней; `session_in_progress` — Сначала завершите начатый тест; `bank_empty` — Для специализации пока нет задач */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -8830,7 +9056,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description `validation_error` — Ошибка валидации данных */
+            /** @description `invalid_kind` — Вид теста не соответствует текущему грейду; `validation_error` — Ошибка валидации данных */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -8841,7 +9067,7 @@ export interface operations {
             };
         };
     };
-    get_session_api_testing_sessions__session_id__get: {
+    get_test_session_api_testing_sessions__session_id__get: {
         parameters: {
             query?: never;
             header?: {
@@ -9294,7 +9520,7 @@ export interface operations {
             };
         };
     };
-    parse_need_api_matching_needs_parse_post: {
+    parse_need_text_api_matching_needs_parse_post: {
         parameters: {
             query?: never;
             header?: {
@@ -9447,7 +9673,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description `validation_error` — Ошибка валидации (в т.ч. salary_range_invalid) */
+            /** @description `validation_error` — Ошибка валидации (в т.ч. salary_range_invalid); `unknown_skills` — Технологий нет в справочнике стека */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -9482,6 +9708,134 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Need"];
                 };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` — Объект не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_need_api_matching_needs__need_id__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path: {
+                need_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NeedUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Need"];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` — Объект не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `validation_error` — Ошибка валидации данных; `unknown_skills` — Технологий нет в справочнике стека */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_need_api_matching_needs__need_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path: {
+                need_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description `unauthorized` — Требуется вход */
             401: {
@@ -9802,6 +10156,58 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InvitationQuota"];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_counters_api_invitations_counters_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvitationCounters"];
                 };
             };
             /** @description `unauthorized` — Требуется вход */
@@ -12730,7 +13136,9 @@ export interface operations {
     };
     recalibrate_api_admin_items_recalibrate_post: {
         parameters: {
-            query?: never;
+            query?: {
+                min_responses?: number | null;
+            };
             header?: {
                 /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
@@ -12771,6 +13179,58 @@ export interface operations {
             };
             /** @description `recalibration_running` — Пересчёт уже идёт */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    leak_scan_api_admin_items_leak_scan_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeakScanResult"];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Недостаточно прав */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -13016,7 +13476,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["VacancyTestResult"][];
+                    "application/json": components["schemas"]["VacancyTestOut"][];
                 };
             };
             /** @description `unauthorized` — Требуется вход */
@@ -13072,7 +13532,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["VacancyTestResult"];
+                    "application/json": components["schemas"]["VacancyTestOut"];
                 };
             };
             /** @description `unauthorized` — Требуется вход */
@@ -13095,15 +13555,6 @@ export interface operations {
             };
             /** @description `validation_error` — Ошибка валидации данных */
             422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description `llm_unavailable` — LLM недоступна, работаем по словарю */
-            503: {
                 headers: {
                     [name: string]: unknown;
                 };

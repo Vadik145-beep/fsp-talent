@@ -1,219 +1,175 @@
-"""Потребности, рекомендованные категории и ранжирование с объяснением — упрощённая версия
-для контракта v0. Полная формула (эмбеддинги, ФСП-скор, свежесть) — волна 3b (T6.3)."""
+"""Потребности работодателя, рекомендованные категории и подборка с объяснением (БД).
 
-import re
-from datetime import datetime
+- `NeedService` — CRUD потребностей, категории (T6.2), подборка (T6.3, T6.4).
+- `MatchingService.parse` — разбор текста правилами; на него ссылается `app.nlp.need_parser`
+  (трек 3c), поэтому класс и сигнатура сохраняются.
+"""
+
 from typing import Any
 
-from app.candidates.service import CandidateService, is_searchable, to_card
-from app.catalog.repository import CatalogRepository
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.candidates.service import to_card
+from app.catalog.repository import CatalogDb
 from app.common.enums import GradeCode, NeedStatus, WorkFormat
 from app.common.fixtures import Record
-from app.core.errors import not_found
-from app.matching.repository import NeedRepository
-from app.matching.schemas import NeedCreate
+from app.core.errors import AppError, not_found
+from app.matching.models import Need
+from app.matching.parser import parse_need_text
+from app.matching.repository import (
+    CandidatePool,
+    NeedDb,
+    category_labels,
+    need_record,
+    skill_labels,
+)
+from app.matching.schemas import NeedCreate, NeedUpdate
+from app.matching.scoring import NeedLike, score_candidate, weights_from
 
 GRADES = [g.value for g in GradeCode]
+# Смежные специализации (как в прототипе рекрутера)
 ADJACENT: dict[str, list[str]] = {
     "backend": ["devops", "data_ml"],
-    "frontend": ["mobile"],
+    "frontend": ["mobile", "backend"],
     "mobile": ["frontend"],
     "data_ml": ["backend"],
-    "qa": ["backend"],
+    "qa": ["backend", "frontend"],
     "devops": ["backend"],
 }
-FACTOR_LABELS = {
-    "stack": "Совпадение стека",
-    "theta": "Результат теста",
-    "fsp": "Достижения ФСП",
-    "freshness": "Свежесть профиля",
-    "salary": "Зарплатные ожидания",
-    "work_format": "Формат работы",
-}
-GRADE_WORDS = {
-    "senior": ("сеньор", "синьор", "senior", "ведущ"),
-    "middle": ("мидл", "middle", "миддл"),
-    "junior": ("джун", "junior", "младш"),
-    "intern": ("стаж", "intern", "практик"),
-}
-SPEC_WORDS = {
-    "backend": ("backend", "бэкенд", "бекенд", "go", "golang", "python", "java", "сервер"),
-    "frontend": ("frontend", "фронтенд", "фронт", "react", "vue", "верст"),
-    "mobile": ("mobile", "мобил", "android", "ios", "flutter"),
-    "data_ml": ("data", "ml", "дата", "машинн", "аналитик данных", "ds"),
-    "qa": ("qa", "тестиров", "автотест"),
-    "devops": ("devops", "девопс", "k8s", "kubernetes", "sre", "инфраструкт"),
-}
-FORMAT_WORDS = {
-    "remote": ("удален", "удалён", "remote"),
-    "hybrid": ("гибрид",),
-    "office": ("офис",),
-}
-
-
-def _clip(value: float) -> float:
-    return max(0.0, min(1.0, value))
 
 
 class MatchingService:
-    def __init__(
-        self,
-        repo: NeedRepository | None = None,
-        candidates: CandidateService | None = None,
-        catalog: CatalogRepository | None = None,
-    ) -> None:
-        self.repo = repo or NeedRepository()
-        self.candidates = candidates or CandidateService()
-        self.catalog = catalog or CatalogRepository()
+    """Разбор свободного текста потребности правилами (без LLM)."""
+
+    def parse(self, text: str) -> dict[str, Any]:
+        return parse_need_text(text)
+
+
+def _clean_skills(codes: list[str]) -> list[str]:
+    return list(dict.fromkeys(c.strip().lower() for c in codes if c.strip()))
+
+
+def card_view(cand: Record) -> dict[str, Any]:
+    """Обезличенная карточка (без ФИО, контактов, минимальной зарплаты, ФСП ID)."""
+    return to_card(cand)
+
+
+class NeedService:
+    def __init__(self, session: AsyncSession) -> None:
+        self.session = session
+        self.needs = NeedDb(session)
+        self.pool = CandidatePool(session)
+        self.catalog = CatalogDb(session)
 
     # ---------- потребности ----------
 
-    def list_needs(self, company_id: int) -> list[Record]:
-        return sorted(self.repo.by_company(company_id), key=lambda n: n["created_at"], reverse=True)
+    async def _records(self, needs: list[Need]) -> list[dict[str, Any]]:
+        categories = list(dict.fromkeys(n.category for n in needs))
+        counts = await self.pool.counts(categories)
+        labels = await category_labels(self.session, categories)
+        return [
+            need_record(n, labels.get(n.category, n.category), counts[n.category]) for n in needs
+        ]
 
-    def get_need(self, need_id: int, company_id: int) -> Record:
-        need = self.repo.get(need_id)
-        if need is None or need["company_id"] != company_id:
+    async def list_needs(self, company_id: int) -> list[dict[str, Any]]:
+        return await self._records(await self.needs.by_company(company_id))
+
+    async def _own(self, need_id: int, company_id: int) -> Need:
+        need = await self.needs.get(need_id)
+        if need is None or need.company_id != company_id:
             raise not_found("need", need_id)
         return need
 
-    def _count(self, category: str) -> int:
-        return sum(
-            1 for c in self.candidates.repo.all() if is_searchable(c) and c["category"] == category
+    async def get_need(self, need_id: int, company_id: int) -> dict[str, Any]:
+        return (await self._records([await self._own(need_id, company_id)]))[0]
+
+    async def _check_skills(self, codes: list[str]) -> None:
+        known = await self.catalog.existing_skill_codes(codes)
+        unknown = [c for c in codes if c not in known]
+        if unknown:
+            raise AppError(
+                422,
+                "unknown_skills",
+                "Технологий нет в справочнике стека — выберите из списка",
+                {"skills": unknown},
+            )
+
+    async def _apply(self, need: Need, body: NeedCreate) -> None:
+        required = _clean_skills(body.skills_required)
+        desired = [s for s in _clean_skills(body.skills_desired) if s not in required]
+        await self._check_skills(required + desired)
+        need.title = body.title.strip()
+        need.raw_text = (body.raw_text or "").strip() or None
+        need.specialization = str(body.specialization)
+        need.grade = str(body.grade)
+        need.category = f"{body.specialization}:{body.grade}"
+        need.skills_required = required
+        need.skills_desired = desired
+        need.team_description = body.team_description
+        need.work_format = str(body.work_format)
+        need.city = (body.city or "").strip() or None
+        need.salary_from = body.salary_from
+        need.salary_to = body.salary_to
+
+    async def create_need(
+        self, body: NeedCreate, company_id: int, recruiter_id: int
+    ) -> dict[str, Any]:
+        need = Need(
+            company_id=company_id,
+            recruiter_id=recruiter_id,
+            status=NeedStatus.active.value,
+            saved_filters={},
         )
+        await self._apply(need, body)
+        self.session.add(need)
+        await self.session.commit()
+        await self.session.refresh(need)
+        return await self.get_need(need.id, company_id)
 
-    def create_need(self, body: NeedCreate, company_id: int, recruiter_id: int) -> dict[str, Any]:
-        category = f"{body.specialization}:{body.grade}"
-        cat = self.catalog.category(category) or {"label": category}
-        return {
-            **body.model_dump(),
-            "id": self.repo.next_id(),
-            "company_id": company_id,
-            "recruiter_id": recruiter_id,
-            "category": category,
-            "category_label": cat["label"],
-            "status": NeedStatus.active,
-            "candidates_count": self._count(category),
-            "created_at": datetime.now().astimezone().isoformat(),
-        }
+    async def update_need(self, need_id: int, company_id: int, body: NeedUpdate) -> dict[str, Any]:
+        need = await self._own(need_id, company_id)
+        await self._apply(need, body)
+        need.status = str(body.status)
+        await self.session.commit()
+        await self.session.refresh(need)
+        return await self.get_need(need_id, company_id)
 
-    def parse(self, text: str) -> dict[str, Any]:
-        """Разбор свободного текста правилами (LLM — волна 3c)."""
-        low = text.lower()
-        words = set(re.findall(r"[a-zа-яё0-9+#.]+", low))
-        draft: dict[str, Any] = {"skills_required": [], "skills_desired": []}
-        recognized: list[str] = []
-        for grade, keys in GRADE_WORDS.items():
-            if any(k in low for k in keys):
-                draft["grade"] = grade
-                recognized.append("grade")
-                break
-        for spec, keys in SPEC_WORDS.items():
-            if any((k in words) if len(k) <= 3 else (k in low) for k in keys):
-                draft["specialization"] = spec
-                recognized.append("specialization")
-                break
-        for skill in self.repo.skills():
-            label = skill["label"].lower()
-            if skill["id"] in words or label in words or (len(label) > 3 and label in low):
-                draft["skills_required"].append(skill["id"])
-        if draft["skills_required"]:
-            recognized.append("skills_required")
-        for fmt, keys in FORMAT_WORDS.items():
-            if any(k in low for k in keys):
-                draft["work_format"] = fmt
-                recognized.append("work_format")
-                break
-        money = re.search(r"(\d{2,3})\s*[–—-]\s*(\d{2,3})\s*(к|k|тыс)", low)
-        if money:
-            draft["salary_from"] = int(money.group(1)) * 1000
-            draft["salary_to"] = int(money.group(2)) * 1000
-            recognized += ["salary_from", "salary_to"]
-        if draft.get("specialization") and draft.get("grade"):
-            draft["title"] = f"{draft['grade'].capitalize()} {draft['specialization']}"
-        return {
-            "draft": draft,
-            "parser": "rules",
-            "recognized_fields": recognized,
-            "unrecognized": [],
-        }
+    async def delete_need(self, need_id: int, company_id: int) -> None:
+        need = await self._own(need_id, company_id)
+        await self.session.delete(need)
+        await self.session.commit()
 
-    # ---------- категории и подборка ----------
+    # ---------- категории (T6.2) ----------
 
-    def recommended_categories(self, need: Record) -> list[dict[str, Any]]:
+    async def recommended_categories(self, need: dict[str, Any]) -> list[dict[str, Any]]:
         spec, grade = need["specialization"], need["grade"]
         gi = GRADES.index(grade)
-        pairs: list[tuple[str, str, str]] = [(spec, grade, "primary")]
+        pairs: list[tuple[str, str]] = [(f"{spec}:{grade}", "primary")]
         if gi > 0:
-            pairs.append((spec, GRADES[gi - 1], "grade_lower"))
+            pairs.append((f"{spec}:{GRADES[gi - 1]}", "grade_lower"))
         if gi < len(GRADES) - 1:
-            pairs.append((spec, GRADES[gi + 1], "grade_higher"))
-        pairs += [(adj, grade, "adjacent_specialization") for adj in ADJACENT.get(spec, [])]
-        result = []
-        for s, g, relation in pairs:
-            category = f"{s}:{g}"
-            cat = self.catalog.category(category) or {"label": category}
-            result.append(
-                {
-                    "category": category,
-                    "label": cat["label"],
-                    "relation": relation,
-                    "candidates_count": self._count(category),
-                }
-            )
-        return result
-
-    def _score(self, need: Record, cand: Record) -> dict[str, Any]:
-        weights: dict[str, float] = self.catalog.platform_settings().get("ranking_weights") or {
-            k: 1.0 for k in FACTOR_LABELS
-        }
-        stack = set(cand["stack"])
-        req, des = set(need["skills_required"]), set(need["skills_desired"])
-        denom = len(req) + 0.5 * len(des)
-        values = {
-            "stack": (len(req & stack) + 0.5 * len(des & stack)) / denom if denom else 1.0,
-            "theta": _clip(((cand.get("theta") or 0) + 2.5) / 5),
-            "fsp": (cand.get("fsp_score") or 0) / 100,
-            "freshness": cand["freshness"],
-            "salary": 1.0 if (cand.get("min_salary") or 0) <= need["salary_to"] else 0.0,
-            "work_format": 1.0 if need["work_format"] in cand["work_formats"] else 0.0,
-        }
-        total_w = sum(weights.values()) or 1.0
-        breakdown: list[dict[str, Any]] = [
+            pairs.append((f"{spec}:{GRADES[gi + 1]}", "grade_higher"))
+        pairs += [(f"{adj}:{grade}", "adjacent_specialization") for adj in ADJACENT.get(spec, [])]
+        codes = [c for c, _ in pairs]
+        labels = await category_labels(self.session, codes)
+        counts = await self.pool.counts(codes)
+        return [
             {
-                "factor": f,
-                "label": FACTOR_LABELS[f],
-                "value": round(_clip(v), 3),
-                "weight": weights.get(f, 0.0),
-                "contribution": round(_clip(v) * weights.get(f, 0.0) / total_w, 3),
+                "category": code,
+                "label": labels.get(code, code),
+                "relation": relation,
+                "candidates_count": counts[code],
             }
-            for f, v in values.items()
+            for code, relation in pairs
+            if code in labels
         ]
-        score = round(sum(b["contribution"] for b in breakdown), 3)
-        reasons = []
-        matched = sorted(req & stack)
-        if matched:
-            reasons.append(f"Есть обязательный стек: {', '.join(matched)}")
-        if values["theta"] >= 0.55:
-            reasons.append(f"Сильный результат теста в категории (θ = {cand.get('theta')})")
-        if cand.get("fsp_score"):
-            reasons.append("Подтверждённые достижения ФСП")
-        if values["freshness"] >= 0.6:
-            reasons.append("Недавно решал регулярные задания")
-        if values["salary"]:
-            reasons.append("Ожидания по зарплате в пределах вилки")
-        return {
-            "candidate": to_card(cand),
-            "score": score,
-            "breakdown": breakdown,
-            "reasons": reasons[:4] or ["Подходит по категории"],
-            "salary_fit": bool(values["salary"]),
-            "invitation_status": None,
-        }
 
-    def matches(
+    # ---------- подборка (T6.3, T6.4) ----------
+
+    async def matches(
         self,
-        need: Record,
+        need: dict[str, Any],
+        company_id: int,
         category: str | None,
         skills: list[str],
         has_fsp: bool | None,
@@ -221,28 +177,70 @@ class MatchingService:
         city: str | None,
     ) -> dict[str, Any]:
         category = category or need["category"]
-        base = [
-            c for c in self.candidates.repo.all() if is_searchable(c) and c["category"] == category
-        ]
-        filtered = base
-        if skills:
-            filtered = [c for c in filtered if set(skills) <= set(c["stack"])]
-        if has_fsp is not None:
-            filtered = [c for c in filtered if bool(c.get("fsp_id")) == has_fsp]
-        if work_format:
-            filtered = [c for c in filtered if work_format in c["work_formats"]]
-        if city:
-            filtered = [c for c in filtered if c["privacy"].get("show_city") and c["city"] == city]
-        items = sorted((self._score(need, c) for c in filtered), key=lambda m: -m["score"])
-        cat = self.catalog.category(category) or {"label": category}
+        labels = await category_labels(self.session, [category])
+        if category not in labels:
+            raise AppError(
+                422,
+                "validation_error",
+                "Неизвестная категория",
+                {"fields": {"category": "Неизвестная категория"}},
+            )
+        ids = await self.pool.searchable_ids(category)
+        records = await self.pool.records(ids)
+        statuses = await self.pool.last_invitation_status(company_id, ids)
+        weights = weights_from(await self.catalog.settings())
+        skill_names = await skill_labels(self.session)
+        target = NeedLike(
+            skills_required=need["skills_required"],
+            skills_desired=need["skills_desired"],
+            salary_from=need["salary_from"],
+            salary_to=need["salary_to"],
+            work_format=need["work_format"],
+        )
+        ranked = []
+        for cid in ids:
+            cand = records.get(cid)
+            if cand is None:
+                continue
+            scored = score_candidate(
+                cand,
+                target,
+                weights,
+                lambda code: skill_names.get(code, code),
+                fsp_reason=cand.get("fsp_reason"),
+            )
+            ranked.append(
+                {
+                    "candidate": card_view(cand),
+                    **scored,
+                    "invitation_status": statuses.get(cid),
+                }
+            )
+        ranked.sort(key=lambda m: (-m["score"], m["candidate"]["id"]))
+
+        wanted = _clean_skills(skills)
+        city_q = (city or "").strip().lower()
+
+        def keep(m: dict[str, Any]) -> bool:
+            c = m["candidate"]
+            if wanted and not set(wanted) <= set(c["stack"]):
+                return False
+            if has_fsp is not None and bool(c["has_fsp"]) != has_fsp:
+                return False
+            if work_format and str(work_format) not in c["work_formats"]:
+                return False
+            # город — только если кандидат его показывает (иначе в карточке null)
+            return not city_q or (c.get("city") or "").lower() == city_q
+
+        items = [m for m in ranked if keep(m)]
         return {
             "need_id": need["id"],
             "category": category,
-            "category_label": cat["label"],
-            "total_before_filters": len(base),
+            "category_label": labels[category],
+            "total_before_filters": len(ranked),
             "total": len(items),
             "filters": {
-                "skills": skills,
+                "skills": wanted,
                 "has_fsp": has_fsp,
                 "work_format": work_format,
                 "city": city,

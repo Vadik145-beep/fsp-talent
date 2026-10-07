@@ -17,6 +17,7 @@ from app.core.db import Base
 from app.fsp.models import FspAchievement, FspLink
 from app.invitations.models import Invitation, InvitationEvent
 from app.matching.models import Need
+from app.nlp.models import VacancyTest
 from app.tasks.models import RegularTask, TaskSubmission
 from app.testing.models import GradeHistory, Item, ItemParamsLog, TestAnswer, TestSession
 from app.users.models import Consent, Role, User
@@ -54,6 +55,7 @@ __all__ = [
     "Topic",
     "User",
     "Vacancy",
+    "VacancyTest",
     "candidate_skills",
     "skill_specializations",
 ]
