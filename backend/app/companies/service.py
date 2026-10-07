@@ -1,14 +1,17 @@
 """Профиль компании, рекрутеры, дашборд рекрутера и скоринг надёжности компании."""
 
+import secrets
 from collections import Counter
 from typing import Any
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.admin.audit import write_audit
 from app.candidates.repository import CandidateDb
 from app.catalog.repository import CatalogDb
 from app.common.fixtures import Record
-from app.companies.models import Company
+from app.companies.models import Company, Recruiter
 from app.companies.repository import CompanyDb, company_record
 from app.companies.schemas import CompanyUpdate
 from app.core.errors import AppError, not_found
@@ -62,19 +65,56 @@ class CompanyService:
     async def get_or_404(self, company_id: int) -> Record:
         return await self.scored_record(await self._company_or_404(company_id))
 
+    async def _admin_of(self, company_id: int, user: CurrentUser) -> Recruiter | None:
+        recruiter = await self.db.recruiter(user.recruiter_id) if user.recruiter_id else None
+        if recruiter is None or recruiter.company_id != company_id:
+            return None
+        return recruiter if recruiter.is_company_admin else None
+
+    async def _new_invite_code(self) -> str:
+        """Тот же формат, что при регистрации компании (`app/auth/service.py`): 8 hex-символов."""
+        while True:
+            code = secrets.token_hex(4).upper()
+            taken = await self.session.scalar(select(Company.id).where(Company.invite_code == code))
+            if taken is None:
+                return code
+
+    async def my(self, company_id: int, user: CurrentUser, *, regenerate: bool = False) -> Record:
+        """Профиль своей компании; администратору — с кодом приглашения рекрутеров.
+
+        Кода нет (компания из демо-данных) — выпускаем при первом запросе администратора.
+        """
+        company = await self._company_or_404(company_id)
+        record = await self.scored_record(company)
+        if await self._admin_of(company_id, user) is None:
+            if regenerate:
+                raise AppError(
+                    403, "forbidden", "Код приглашения меняет только администратор компании"
+                )
+            return record
+        if company.invite_code is None or regenerate:
+            company.invite_code = await self._new_invite_code()
+            if regenerate:
+                await write_audit(
+                    self.session,
+                    user,
+                    "company_invite_code_changed",
+                    "company",
+                    company_id,
+                    f"Выпущен новый код приглашения в компанию «{company.name}»",
+                )
+            await self.session.commit()
+        record["invite_code"] = company.invite_code
+        return record
+
     async def update(self, company_id: int, body: CompanyUpdate, user: CurrentUser) -> Record:
         company = await self._company_or_404(company_id)
-        recruiter = await self.db.recruiter(user.recruiter_id) if user.recruiter_id else None
-        if (
-            recruiter is None
-            or recruiter.company_id != company_id
-            or not recruiter.is_company_admin
-        ):
+        if await self._admin_of(company_id, user) is None:
             raise AppError(403, "forbidden", "Менять профиль может только администратор компании")
         for field, value in body.model_dump().items():
             setattr(company, field, value.strip() if isinstance(value, str) else value)
         await self.session.commit()
-        return await self.get_or_404(company_id)
+        return await self.my(company_id, user)
 
     async def recruiters(self, company_id: int) -> list[Record]:
         await self._company_or_404(company_id)

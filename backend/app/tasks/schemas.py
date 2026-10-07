@@ -109,3 +109,26 @@ class SubmissionGrade(ApiModel):
 
     score: int = Field(ge=0, le=3)
     comment: str | None = Field(default=None, max_length=1000)
+
+
+class DistributionResult(OutModel):
+    """Итог ручной раздачи задания."""
+
+    model_config = ConfigDict(json_schema_extra={"examples": [{"assigned": 3}]})
+
+    assigned: int = Field(ge=0, description="Скольким кандидатам выдано задание")
+
+
+class TaskJobResult(OutModel):
+    """Итог периодической работы (раздача, просрочка, свежесть)."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [{"job": "tick", "expired": 2, "assigned": 5, "freshness_factor": 0.977}]
+        }
+    )
+
+    job: str
+    expired: int = Field(ge=0, description="Сколько заданий просрочено")
+    assigned: int = Field(ge=0, description="Сколько заданий выдано")
+    freshness_factor: float = Field(ge=0, le=1, description="Множитель свежести профилей")

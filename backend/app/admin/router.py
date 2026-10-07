@@ -1,11 +1,10 @@
 """Кабинет администратора + приём жалоб от соискателей (`POST /api/reports`).
 
-Пользователи, компании, справочники, настройки и журнал — на БД (`AdminDbService`),
-каждое действие админа пишется в журнал. Дашборд, банк задач, задания из вакансий и жалобы —
-пока на фикстурах (`AdminService`, волны 3, 4c, 5b).
+Всё на БД: дашборд, пользователи, компании, справочники, настройки и журнал —
+`AdminDbService`; жалобы — `ReportService`. Каждое действие админа пишется в журнал.
 """
 
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,12 +22,11 @@ from app.admin.schemas import (
     PlatformSettingsUpdate,
     Report,
     ReportCreate,
-    ReportUpdate,
     SkillUpsert,
     SpecializationCreate,
     TopicCreate,
 )
-from app.admin.service import AdminService
+from app.admin.service import AdminService, ReportDecision, ReportService
 from app.catalog.schemas import Category, Grade, Skill, Specialization, Topic
 from app.common.enums import GradeCode, ReportStatus, Role, SpecializationCode
 from app.common.schemas import Page
@@ -39,7 +37,8 @@ from app.users.schemas import UserRecord
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 reports_router = APIRouter(prefix="/reports", tags=["admin"])
-service = AdminService()
+service = AdminService()  # демо-примеры тестов из вакансий — для vacancy_tests_router
+PERIOD_DAYS = {"7d": 7, "30d": 30, "all": None}
 
 AUTH = (401, 403)
 TRANSITION = (409, "invalid_transition", "Действие недоступно в текущем статусе")
@@ -52,10 +51,21 @@ SessionDep = Annotated[AsyncSession, Depends(get_session)]
     "/dashboard",
     response_model=AdminDashboard,
     summary="Дашборд платформы",
-    responses=error_responses(*AUTH),
+    description=(
+        "Из БД: пользователи по ролям (почта подтверждена), завершённые тесты за период и по "
+        "дням, приглашения по статусам, конверсия «приглашение → принятие» (без отозванных), "
+        "открытые жалобы, флаги утечек шаблонов. `period` ограничивает только тесты."
+    ),
+    responses=error_responses(*AUTH, 422),
 )
-async def dashboard(user: AdminUser) -> Any:
-    return service.dashboard()
+async def dashboard(
+    user: AdminUser,
+    session: SessionDep,
+    period: Annotated[
+        Literal["7d", "30d", "all"], Query(description="Период для тестов: 7d | 30d | all")
+    ] = "all",
+) -> Any:
+    return await AdminDbService(session, user).dashboard(PERIOD_DAYS[period])
 
 
 # ---------- пользователи и компании ----------
@@ -337,19 +347,33 @@ async def delete_topic(topic_id: str, user: AdminUser, session: SessionDep) -> R
 )
 async def list_reports(
     user: AdminUser,
+    session: SessionDep,
     report_status: Annotated[ReportStatus | None, Query(alias="status")] = None,
 ) -> Any:
-    return service.reports(report_status)
+    return await ReportService(session, user).queue(report_status)
 
 
 @router.patch(
     "/reports/{report_id}",
     response_model=Report,
     summary="Обработать жалобу",
-    responses=error_responses(*AUTH, 404, 422),
+    description=(
+        "new → in_review (взять в работу) → resolved (подтвердить) | rejected (отклонить). "
+        "`block_company: true` вместе с resolved блокирует компанию: её рекрутеры получают 403 "
+        "`company_blocked`, вакансии скрываются. Подтверждённая жалоба снижает скоринг компании."
+    ),
+    responses=error_responses(
+        *AUTH,
+        404,
+        TRANSITION,
+        422,
+        (422, "block_requires_resolve", "Заблокировать компанию можно только при подтверждении"),
+    ),
 )
-async def update_report(report_id: int, body: ReportUpdate, user: AdminUser) -> Any:
-    return service.update_report(report_id, body)
+async def update_report(
+    report_id: int, body: ReportDecision, user: AdminUser, session: SessionDep
+) -> Any:
+    return await ReportService(session, user).decide(report_id, body)
 
 
 @router.get(
@@ -375,9 +399,16 @@ async def audit_log(
     response_model=Report,
     status_code=status.HTTP_201_CREATED,
     summary="Пожаловаться на работодателя (соискатель)",
-    responses=error_responses(*AUTH, 404, 422),
+    description="Только на компанию, с которой был контакт: приглашение, отклик или задание.",
+    responses=error_responses(
+        *AUTH,
+        (403, "no_contact_with_company", "Не было контакта с компанией"),
+        404,
+        (409, "report_exists", "Жалоба на эту компанию уже на рассмотрении"),
+        422,
+    ),
 )
-async def create_report(body: ReportCreate, user: CandidateUser) -> Any:
+async def create_report(body: ReportCreate, user: CandidateUser, session: SessionDep) -> Any:
     if user.candidate_id is None:
         raise AppError(404, "not_found", "Профиль кандидата не найден")
-    return service.create_report(body, user.candidate_id)
+    return await ReportService(session, user).create(body, user.candidate_id)
