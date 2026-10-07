@@ -37,7 +37,7 @@ python docs/solution/tools/gen_api_table.py --check   # проверить, чт
 
 ## 6.3. Группы методов
 
-Всего 118 методов (на 07.10.2026; актуальное число — в приложении).
+Всего 130 методов (на 07.10.2026; актуальное число — в приложении).
 
 | Группа (тег) | Префикс | Для кого | Что внутри |
 |---|---|---|---|
@@ -46,13 +46,13 @@ python docs/solution/tools/gen_api_table.py --check   # проверить, чт
 | `users` | `/api/users/me/consents` | вошедшие | согласия на обработку ПДн и публикацию профиля |
 | `catalog` | `/api/catalog` | все | специализации, грейды, категории, темы, стек, причины отказа |
 | `candidates` | `/api/candidates` | соискатель; рекрутер (банк) | свой профиль, резюме (PDF → поля), PDF-профиль, настройки приватности, грейд; банк кандидатов и обезличенный профиль для рекрутера |
-| `companies` | `/api/companies/my` | рекрутер | профиль компании, рекрутеры, дашборд |
+| `companies` | `/api/companies/my`, `/api/companies/ats/export` | рекрутер; ATS компании по API-токену | профиль компании, рекрутеры, код приглашения, дашборд; API-токены и вебхуки ATS (администратор компании), выгрузка для ATS |
 | `testing` | `/api/testing` | соискатель | опрос, сессии теста, ответы, результат, статус грейда и кулдауны |
 | `fsp` | `/api/fsp` | соискатель; реестр ФСП | статус привязки, достижения, «Обновить», вебхук реестра |
 | `matching` | `/api/matching/needs` | рекрутер | потребности, разбор свободного текста, рекомендованные категории, подборка со счётом |
 | `invitations` | `/api/invitations` | соискатель, рекрутер | приглашения, квота, счётчики, рыночная подсказка, принять / отклонить / отозвать |
 | `vacancies` | `/api/vacancies`, `/api/applications` | соискатель, рекрутер | вакансии, публикация, отклики и их статусы |
-| `tasks` | `/api/tasks` | соискатель, рекрутер | регулярные задания, ответы, оценка 0–3 |
+| `tasks` | `/api/tasks` | соискатель, рекрутер; админ (периодические работы) | регулярные задания, раздача, ответы, оценка 0–3, `jobs/run` |
 | `admin` | `/api/admin`, `/api/reports` | админ (жалоба — соискатель) | дашборд, пользователи, компании, справочники и настройки, банк задач (метрики, утечки, калибровка), тесты из вакансий, жалобы, журнал |
 | `eval` | `/api/eval` | все (данные синтетические) | графики валидации, проверка подбора по CSV |
 
@@ -96,6 +96,12 @@ sequenceDiagram
 **Вебхук реестра ФСП** (`POST /api/fsp/webhook`) аутентифицируется не токеном, а подписью
 тела: `X-FSP-Signature: sha256=<hex HMAC-SHA256>` общим секретом `FSP_WEBHOOK_SECRET`.
 
+**Выгрузка для ATS** (`GET /api/companies/ats/export`) — без входа пользователя, по API-токену
+компании в заголовке `X-Api-Token` (в Swagger — схема `APIKeyHeader`). Токен выпускает
+администратор компании (`POST /api/companies/my/api-tokens`), он показывается один раз.
+**Исходящие вебхуки в ATS** платформа подписывает сама: `X-FSP-Signature: sha256=<hex
+HMAC-SHA256(секрет вебхука, "<X-FSP-Timestamp>." + тело)>` (раздел 3.13).
+
 ## 6.5. Формат ошибок
 
 Любая ошибка — одно и то же тело:
@@ -110,9 +116,9 @@ sequenceDiagram
 |---|---|---|
 | 400 | `bad_request`, `token_invalid`, `oidc_error` | неверный запрос, ссылка из письма, ошибка входа через ФСП ID |
 | 401 | `unauthorized`, `invalid_credentials`, `invalid_refresh_token`, `invalid_signature` | нет или неверный токен, пароль, подпись |
-| 403 | `forbidden`, `user_blocked`, `email_not_verified` | чужая роль, блокировка, неподтверждённая почта |
+| 403 | `forbidden`, `user_blocked`, `email_not_verified`, `company_blocked`, `no_contact_with_company` | чужая роль, блокировка пользователя или компании, неподтверждённая почта, жалоба без контакта с компанией |
 | 404 | `not_found` (`details.resource`, `details.id`) | объекта нет **или он чужой** — чужие приглашения, отклики, потребности не раскрываются даже фактом существования |
-| 409 | `invalid_transition`, `quota_exceeded`, `already_invited`, `cooldown_active`, `fsp_id_taken`, `email_taken`, … | конфликт с состоянием (статус, квота, кулдаун, уже существует) |
+| 409 | `invalid_transition`, `quota_exceeded`, `already_invited`, `already_applied`, `cooldown_active`, `fsp_id_taken`, `email_taken`, `report_exists`, … | конфликт с состоянием (статус, квота, кулдаун, уже существует) |
 | 410 | `token_expired` | ссылка из письма истекла |
 | 413 / 415 | `file_too_large`, `unsupported_file` | PDF-резюме больше 5 МБ или не PDF |
 | 422 | `validation_error` (`details.errors` — список полей), `salary_below_expectations`, `unknown_skills`, … | ошибка данных; для «от» > «до» в `details.errors` — `salary_range_invalid` |

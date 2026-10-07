@@ -108,14 +108,14 @@ Python 3.12.15 (в образе). Прямых зависимостей: 3, вс
 | MPL-2.0 | 0 | 24 |
 | Apache-2.0 | 0 | 19 |
 | BSD-2-Clause | 0 | 8 |
-| BlueOak-1.0.0 | 0 | 4 |
 | BSD-3-Clause | 1 | 3 |
-| OFL-1.1 | 2 | 0 |
-| MIT-0 | 0 | 2 |
+| BlueOak-1.0.0 | 0 | 4 |
 | (MIT OR CC0-1.0) | 0 | 2 |
+| MIT-0 | 0 | 2 |
+| OFL-1.1 | 2 | 0 |
 | CC-BY-4.0 | 0 | 1 |
-| MIT AND ISC | 1 | 0 |
 | CC0-1.0 | 0 | 1 |
+| MIT AND ISC | 1 | 0 |
 | Python-2.0 | 0 | 1 |
 
 Лицензии вне списка MIT/BSD/Apache/ISC/PSF (проверены вручную, все открытые): @fontsource/inter 5.3.0 (OFL-1.1); @fontsource/jetbrains-mono 5.3.0 (OFL-1.1).

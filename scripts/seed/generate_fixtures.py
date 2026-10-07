@@ -2948,8 +2948,8 @@ PLATFORM_SETTINGS = [
         "retry_cooldown_days": 30,
         "invitation_quota": 20,
         "invitation_ttl_days": 7,
-        "cat_se_stop": 0.35,
-        "cat_max_items": 15,
+        "cat_se_stop": 0.30,
+        "cat_max_items": 20,
         "exposure_max_share": 0.25,
         "ranking_weights": {
             "stack": 0.3,
