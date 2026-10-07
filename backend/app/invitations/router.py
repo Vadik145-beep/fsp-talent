@@ -122,6 +122,7 @@ async def market_hint(
         (409, "already_invited", "У кандидата уже есть активное приглашение"),
         (422, "validation_error", "Ошибка валидации (в т.ч. salary_range_invalid: от > до)"),
         (422, "salary_below_expectations", "Вилка ниже ожиданий кандидата"),
+        (403, "company_blocked", "Компания заблокирована администратором платформы"),
     ),
 )
 async def create_invitation(

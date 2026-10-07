@@ -27,9 +27,11 @@ from app.common.enums import (
     Role,
 )
 from app.common.fixtures import Record
+from app.companies.antifraud import ensure_company_active
 from app.core.config import get_settings
 from app.core.errors import AppError, not_found
 from app.core.security import CurrentUser
+from app.integrations.webhooks import notify_invitation_accepted
 from app.invitations.models import Invitation, InvitationEvent
 from app.invitations.repository import InvitationDb, InvitationRow
 from app.invitations.schemas import InvitationCreate
@@ -292,6 +294,7 @@ class InvitationService:
         )
         await self.session.commit()
         await self._notify_recruiter(inv, cand, accepted=True)
+        await notify_invitation_accepted(self.session, inv.id)  # вебхук ATS компании
         return await self._view(invitation_id, user.role)
 
     async def decline(
@@ -338,6 +341,8 @@ class InvitationService:
 
     async def create(self, body: InvitationCreate, user: CurrentUser) -> dict[str, Any]:
         assert user.recruiter_id is not None and user.company_id is not None
+        # заблокированная компания (антифрод, 5b) не может отправлять приглашения
+        await ensure_company_active(self.session, user.company_id)
         if not await self.pool.is_searchable(body.candidate_id):
             raise AppError(
                 404,

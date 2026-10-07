@@ -614,7 +614,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Профиль моей компании */
+        /**
+         * Профиль моей компании
+         * @description Администратору компании приходит `invite_code` — код приглашения рекрутеров.
+         */
         get: operations["my_company_api_companies_my_get"];
         /**
          * Изменить профиль компании
@@ -622,6 +625,26 @@ export interface paths {
          */
         put: operations["update_my_company_api_companies_my_put"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/companies/my/invite-code": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Выпустить новый код приглашения рекрутеров
+         * @description Старый код перестаёт действовать. Только администратор компании.
+         */
+        post: operations["regenerate_invite_code_api_companies_my_invite_code_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -654,6 +677,136 @@ export interface paths {
         };
         /** Главная рекрутера */
         get: operations["recruiter_dashboard_api_companies_my_dashboard_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/companies/my/api-tokens": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** API-токены компании для ATS */
+        get: operations["list_api_tokens_api_companies_my_api_tokens_get"];
+        put?: never;
+        /**
+         * Выпустить API-токен
+         * @description Токен показывается один раз; в БД хранится только его хеш.
+         */
+        post: operations["issue_api_token_api_companies_my_api_tokens_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/companies/my/api-tokens/{token_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Отозвать API-токен */
+        delete: operations["revoke_api_token_api_companies_my_api_tokens__token_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/companies/my/webhooks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Вебхуки компании */
+        get: operations["list_webhooks_api_companies_my_webhooks_get"];
+        put?: never;
+        /**
+         * Добавить вебхук
+         * @description События: `invitation.accepted` (кандидат принял приглашение), `application.created` (новый отклик). Каждый запрос подписан: `X-FSP-Signature: sha256=<HMAC-SHA256(secret, X-FSP-Timestamp + '.' + тело)>`. Не 2xx — повтор с паузами до 5 попыток.
+         */
+        post: operations["create_webhook_api_companies_my_webhooks_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/companies/my/webhooks/{webhook_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Удалить вебхук */
+        delete: operations["delete_webhook_api_companies_my_webhooks__webhook_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/companies/my/webhooks/{webhook_id}/ping": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Проверить вебхук: отправить событие ping */
+        post: operations["ping_webhook_api_companies_my_webhooks__webhook_id__ping_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/companies/my/webhooks/{webhook_id}/deliveries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Журнал доставок вебхука */
+        get: operations["webhook_deliveries_api_companies_my_webhooks__webhook_id__deliveries_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/companies/ats/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Выгрузка данных компании для ATS (по API-токену)
+         * @description Авторизация — заголовок `X-Api-Token` (без входа пользователя). Вакансии, приглашения (контакты — только у принятых) и отклики с контактами. `since` — только изменённые после этого момента (для инкрементальной синхронизации).
+         */
+        get: operations["ats_export_api_companies_ats_export_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1272,7 +1425,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Мои задания: активное и история (кандидат) */
+        /**
+         * Мои задания: активное и история (кандидат)
+         * @description Задания с прошедшим сроком без ответа при открытии становятся «истекло».
+         */
         get: operations["task_inbox_api_tasks_inbox_get"];
         put?: never;
         post?: never;
@@ -1291,7 +1447,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Ответить на задание (кандидат) */
+        /**
+         * Ответить на задание (кандидат)
+         * @description Ответ — текст, код или подход. Свежесть профиля растёт сразу после ответа.
+         */
         post: operations["answer_task_api_tasks_submissions__submission_id__answer_post"];
         delete?: never;
         options?: never;
@@ -1309,8 +1468,31 @@ export interface paths {
         /** Задания моей компании (рекрутер) */
         get: operations["list_tasks_api_tasks_get"];
         put?: never;
-        /** Создать короткое задание (рекрутер) */
+        /**
+         * Создать короткое задание (рекрутер)
+         * @description Задание сразу раздаётся кандидатам категории без активного задания; дальше — планировщиком раз в N дней. `submissions_count` — скольким выдано.
+         */
         post: operations["create_task_api_tasks_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tasks/jobs/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Запустить периодическую работу заданий (админ)
+         * @description То же, что `python -m app.tasks <job>` для планировщика: `distribute` — раздать задания, `daily` — просрочить задания без ответа и снизить свежесть профилей, `tick` — всё сразу.
+         */
+        post: operations["run_tasks_job_api_tasks_jobs_run_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1334,6 +1516,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tasks/{task_id}/distribute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Раздать задание ещё раз (рекрутер)
+         * @description Выдаёт задание новым кандидатам категории, у которых нет активного задания.
+         */
+        post: operations["distribute_task_api_tasks__task_id__distribute_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/tasks/submissions/{submission_id}/grade": {
         parameters: {
             query?: never;
@@ -1343,7 +1545,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Оценить ответ 0–3 (рекрутер) */
+        /**
+         * Оценить ответ 0–3 (рекрутер)
+         * @description Первая оценка поднимает свежесть профиля кандидата: +0,04 + 0,03 × балл.
+         */
         post: operations["grade_submission_api_tasks_submissions__submission_id__grade_post"];
         delete?: never;
         options?: never;
@@ -1358,7 +1563,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Дашборд платформы */
+        /**
+         * Дашборд платформы
+         * @description Из БД: пользователи по ролям (почта подтверждена), завершённые тесты за период и по дням, приглашения по статусам, конверсия «приглашение → принятие» (без отозванных), открытые жалобы, флаги утечек шаблонов. `period` ограничивает только тесты.
+         */
         get: operations["dashboard_api_admin_dashboard_get"];
         put?: never;
         post?: never;
@@ -1661,7 +1869,10 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Обработать жалобу */
+        /**
+         * Обработать жалобу
+         * @description new → in_review (взять в работу) → resolved (подтвердить) | rejected (отклонить). `block_company: true` вместе с resolved блокирует компанию: её рекрутеры получают 403 `company_blocked`, вакансии скрываются. Подтверждённая жалоба снижает скоринг компании.
+         */
         patch: operations["update_report_api_admin_reports__report_id__patch"];
         trace?: never;
     };
@@ -1849,7 +2060,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Пожаловаться на работодателя (соискатель) */
+        /**
+         * Пожаловаться на работодателя (соискатель)
+         * @description Только на компанию, с которой был контакт: приглашение, отклик или задание.
+         */
         post: operations["create_report_api_reports_post"];
         delete?: never;
         options?: never;
@@ -2223,6 +2437,73 @@ export interface components {
             /** Instance Id */
             instance_id: string;
             answer: components["schemas"]["AnswerPayload"];
+        };
+        /**
+         * ApiToken
+         * @description API-токен компании. Сам токен показывается один раз — при выпуске.
+         */
+        ApiToken: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /**
+             * Token Prefix
+             * @description Начало токена — чтобы узнать его в списке
+             */
+            token_prefix: string;
+            /** Active */
+            active: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Last Used At */
+            last_used_at?: string | null;
+            /** Revoked At */
+            revoked_at?: string | null;
+        };
+        /**
+         * ApiTokenCreate
+         * @example {
+         *       "name": "Хантфлоу"
+         *     }
+         */
+        ApiTokenCreate: {
+            /**
+             * Name
+             * @description Для чего токен (подпись)
+             */
+            name: string;
+        };
+        /** ApiTokenIssued */
+        ApiTokenIssued: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /**
+             * Token Prefix
+             * @description Начало токена — чтобы узнать его в списке
+             */
+            token_prefix: string;
+            /** Active */
+            active: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Last Used At */
+            last_used_at?: string | null;
+            /** Revoked At */
+            revoked_at?: string | null;
+            /**
+             * Token
+             * @description Токен целиком. Сохраните: больше он не показывается
+             */
+            token: string;
         };
         /**
          * Application
@@ -2994,67 +3275,6 @@ export interface components {
             text: string;
         };
         /**
-         * Company
-         * @example {
-         *       "blocked": false,
-         *       "city": "Москва",
-         *       "contact_email": "hr.severny@example.com",
-         *       "contact_phone": "+7 900 000-10-00",
-         *       "created_at": "2026-06-08T12:00:00+03:00",
-         *       "description": "Разрабатываем платёжные сервисы и мобильный банк для региональных банков.",
-         *       "id": 1,
-         *       "industry": "Финтех",
-         *       "inn": "7700000001",
-         *       "name": "Северный код",
-         *       "trust_score": 86,
-         *       "verified_domain": true,
-         *       "website": "https://severny-kod.example.com"
-         *     }
-         */
-        Company: {
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
-            /** Description */
-            description: string;
-            /**
-             * Industry
-             * @example Финтех
-             */
-            industry: string;
-            /** Website */
-            website?: string | null;
-            /** City */
-            city?: string | null;
-            /** Contact Email */
-            contact_email: string;
-            /** Contact Phone */
-            contact_phone?: string | null;
-            /** Inn */
-            inn?: string | null;
-            /**
-             * Verified Domain
-             * @description Почта рекрутеров на домене компании
-             */
-            verified_domain: boolean;
-            /**
-             * Trust Score
-             * @description Скоринг надёжности (антифрод)
-             */
-            trust_score: number;
-            /**
-             * Blocked
-             * @default false
-             */
-            blocked: boolean;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-        };
-        /**
          * CompanyAdminUpdate
          * @example {
          *       "blocked": true
@@ -3063,6 +3283,41 @@ export interface components {
         CompanyAdminUpdate: {
             /** Blocked */
             blocked: boolean;
+        };
+        /**
+         * CompanyExport
+         * @description Выгрузка данных компании для ATS (по API-токену).
+         */
+        CompanyExport: {
+            /** Company */
+            company: {
+                [key: string]: unknown;
+            };
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            /** Since */
+            since?: string | null;
+            /** Vacancies */
+            vacancies: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Invitations
+             * @description Контакты кандидата — только у принятых приглашений
+             */
+            invitations: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Applications
+             * @description Отклики с контактами кандидатов
+             */
+            applications: {
+                [key: string]: unknown;
+            }[];
         };
         /**
          * CompanyRegistration
@@ -3284,6 +3539,20 @@ export interface components {
              * @description Есть ли активные шаблоны по теме в банке
              */
             covered: boolean;
+        };
+        /**
+         * DistributionResult
+         * @description Итог ручной раздачи задания.
+         * @example {
+         *       "assigned": 3
+         *     }
+         */
+        DistributionResult: {
+            /**
+             * Assigned
+             * @description Скольким кандидатам выдано задание
+             */
+            assigned: number;
         };
         /**
          * ErrorResponse
@@ -4595,6 +4864,73 @@ export interface components {
             message: string;
         };
         /**
+         * MyCompany
+         * @description Профиль своей компании в кабинете рекрутера.
+         * @example {
+         *       "blocked": false,
+         *       "city": "Москва",
+         *       "contact_email": "hr.severny@example.com",
+         *       "contact_phone": "+7 900 000-10-00",
+         *       "created_at": "2026-06-08T12:00:00+03:00",
+         *       "description": "Разрабатываем платёжные сервисы и мобильный банк для региональных банков.",
+         *       "id": 1,
+         *       "industry": "Финтех",
+         *       "inn": "7700000001",
+         *       "name": "Северный код",
+         *       "trust_score": 86,
+         *       "verified_domain": true,
+         *       "website": "https://severny-kod.example.com"
+         *     }
+         */
+        MyCompany: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /**
+             * Industry
+             * @example Финтех
+             */
+            industry: string;
+            /** Website */
+            website?: string | null;
+            /** City */
+            city?: string | null;
+            /** Contact Email */
+            contact_email: string;
+            /** Contact Phone */
+            contact_phone?: string | null;
+            /** Inn */
+            inn?: string | null;
+            /**
+             * Verified Domain
+             * @description Почта рекрутеров на домене компании
+             */
+            verified_domain: boolean;
+            /**
+             * Trust Score
+             * @description Скоринг надёжности (антифрод)
+             */
+            trust_score: number;
+            /**
+             * Blocked
+             * @default false
+             */
+            blocked: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Invite Code
+             * @description Код приглашения рекрутеров в компанию — только администратору компании
+             */
+            invite_code?: string | null;
+        };
+        /**
          * Need
          * @description Потребность работодателя.
          * @example {
@@ -5537,6 +5873,25 @@ export interface components {
             text: string;
         };
         /**
+         * ReportDecision
+         * @description Решение по жалобе. Схема живёт здесь, чтобы не трогать общий `admin/schemas.py`.
+         * @example {
+         *       "resolution": "Компания заблокирована",
+         *       "status": "resolved"
+         *     }
+         */
+        ReportDecision: {
+            status: components["schemas"]["ReportStatus"];
+            /** Resolution */
+            resolution?: string | null;
+            /**
+             * Block Company
+             * @description Вместе с подтверждением (resolved) заблокировать компанию
+             * @default false
+             */
+            block_company: boolean;
+        };
+        /**
          * ReportReason
          * @enum {string}
          */
@@ -5546,18 +5901,6 @@ export interface components {
          * @enum {string}
          */
         ReportStatus: "new" | "in_review" | "resolved" | "rejected";
-        /**
-         * ReportUpdate
-         * @example {
-         *       "resolution": "Компания заблокирована",
-         *       "status": "resolved"
-         *     }
-         */
-        ReportUpdate: {
-            status: components["schemas"]["ReportStatus"];
-            /** Resolution */
-            resolution?: string | null;
-        };
         /**
          * ResendVerificationRequest
          * @example {
@@ -5955,6 +6298,35 @@ export interface components {
             history: components["schemas"]["TaskSubmission"][];
             /** Freshness */
             freshness: number;
+        };
+        /**
+         * TaskJobResult
+         * @description Итог периодической работы (раздача, просрочка, свежесть).
+         * @example {
+         *       "assigned": 5,
+         *       "expired": 2,
+         *       "freshness_factor": 0.977,
+         *       "job": "tick"
+         *     }
+         */
+        TaskJobResult: {
+            /** Job */
+            job: string;
+            /**
+             * Expired
+             * @description Сколько заданий просрочено
+             */
+            expired: number;
+            /**
+             * Assigned
+             * @description Сколько заданий выдано
+             */
+            assigned: number;
+            /**
+             * Freshness Factor
+             * @description Множитель свежести профилей
+             */
+            freshness_factor: number;
         };
         /**
          * TaskStatus
@@ -6801,6 +7173,106 @@ export interface components {
         VerifyEmailRequest: {
             /** Token */
             token: string;
+        };
+        /** Webhook */
+        Webhook: {
+            /** Id */
+            id: number;
+            /** Url */
+            url: string;
+            /** Events */
+            events: string[];
+            /** Active */
+            active: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /**
+         * WebhookCreate
+         * @example {
+         *       "events": [
+         *         "invitation.accepted",
+         *         "application.created"
+         *       ],
+         *       "url": "https://ats.example.com/hooks/fsp"
+         *     }
+         */
+        WebhookCreate: {
+            /**
+             * Url
+             * @description http(s)-адрес приёма событий
+             */
+            url: string;
+            /**
+             * Events
+             * @description На какие события подписаться
+             */
+            events: ("invitation.accepted" | "application.created")[];
+            /**
+             * Secret
+             * @description Секрет подписи HMAC; не передан — сгенерируем
+             */
+            secret?: string | null;
+        };
+        /** WebhookCreated */
+        WebhookCreated: {
+            /** Id */
+            id: number;
+            /** Url */
+            url: string;
+            /** Events */
+            events: string[];
+            /** Active */
+            active: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Secret
+             * @description Секрет подписи. Показывается один раз — при создании
+             */
+            secret: string;
+        };
+        /**
+         * WebhookDeliveryOut
+         * @description Попытка доставки события на адрес компании.
+         */
+        WebhookDeliveryOut: {
+            /** Id */
+            id: number;
+            /** Endpoint Id */
+            endpoint_id: number;
+            /** Event */
+            event: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "delivered" | "failed";
+            /** Attempts */
+            attempts: number;
+            /** Last Status Code */
+            last_status_code?: number | null;
+            /** Last Error */
+            last_error?: string | null;
+            /** Next Attempt At */
+            next_attempt_at?: string | null;
+            /** Delivered At */
+            delivered_at?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            };
         };
         /**
          * WorkFormat
@@ -8578,7 +9050,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Company"];
+                    "application/json": components["schemas"]["MyCompany"];
                 };
             };
             /** @description `unauthorized` — Требуется вход */
@@ -8643,7 +9115,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Company"];
+                    "application/json": components["schemas"]["MyCompany"];
                 };
             };
             /** @description `unauthorized` — Требуется вход */
@@ -8680,6 +9152,67 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    regenerate_invite_code_api_companies_my_invite_code_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyCompany"];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Код приглашения меняет только администратор компании */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` — Объект не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -8802,6 +9335,522 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_api_tokens_api_companies_my_api_tokens_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiToken"][];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Интеграциями управляет только администратор компании */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    issue_api_token_api_companies_my_api_tokens_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApiTokenCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiTokenIssued"];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Интеграциями управляет только администратор компании */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `validation_error` — Ошибка валидации данных */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    revoke_api_token_api_companies_my_api_tokens__token_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path: {
+                token_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Интеграциями управляет только администратор компании */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` — Объект не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_webhooks_api_companies_my_webhooks_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Webhook"][];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Интеграциями управляет только администратор компании */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_webhook_api_companies_my_webhooks_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WebhookCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebhookCreated"];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Интеграциями управляет только администратор компании */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `validation_error` — Ошибка валидации данных; `invalid_webhook_url` — Адрес должен начинаться с http:// или https:// */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_webhook_api_companies_my_webhooks__webhook_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path: {
+                webhook_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Интеграциями управляет только администратор компании */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` — Объект не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ping_webhook_api_companies_my_webhooks__webhook_id__ping_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path: {
+                webhook_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebhookDeliveryOut"];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Интеграциями управляет только администратор компании */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` — Объект не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    webhook_deliveries_api_companies_my_webhooks__webhook_id__deliveries_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path: {
+                webhook_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebhookDeliveryOut"][];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Интеграциями управляет только администратор компании */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` — Объект не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `validation_error` — Ошибка валидации данных */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    ats_export_api_companies_ats_export_get: {
+        parameters: {
+            query?: {
+                /** @description ISO-время, например 2026-10-01T00:00:00+03:00 */
+                since?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompanyExport"];
+                };
+            };
+            /** @description `invalid_api_token` — API-токен не найден или отозван */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `company_blocked` — Компания заблокирована администратором платформы */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `validation_error` — Ошибка валидации данных */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -10122,7 +11171,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description `forbidden` — Недостаточно прав */
+            /** @description `forbidden` — Недостаточно прав; `company_blocked` — Компания заблокирована администратором платформы */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -11390,7 +12439,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description `invalid_transition` — Действие недоступно в текущем статусе */
+            /** @description `invalid_transition` — Действие недоступно в текущем статусе; `submission_expired` — Срок ответа истёк */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -11498,6 +12547,61 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description `forbidden` — Недостаточно прав; `company_blocked` — Компания заблокирована администратором платформы */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `validation_error` — Ошибка валидации данных; `unknown_category` — Неизвестная категория */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    run_tasks_job_api_tasks_jobs_run_post: {
+        parameters: {
+            query?: {
+                /** @description distribute | daily | tick */
+                job?: "distribute" | "daily" | "tick";
+            };
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskJobResult"];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description `forbidden` — Недостаточно прав */
             403: {
                 headers: {
@@ -11507,7 +12611,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description `unknown_category` — Неизвестная категория */
+            /** @description `validation_error` — Ошибка валидации данных */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -11563,6 +12667,78 @@ export interface operations {
             };
             /** @description `not_found` — Объект не найден */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    distribute_task_api_tasks__task_id__distribute_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path: {
+                task_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DistributionResult"];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Недостаточно прав; `company_blocked` — Компания заблокирована администратором платформы */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` — Объект не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `invalid_transition` — Действие недоступно в текущем статусе */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -11659,7 +12835,10 @@ export interface operations {
     };
     dashboard_api_admin_dashboard_get: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Период для тестов: 7d | 30d | all */
+                period?: "7d" | "30d" | "all";
+            };
             header?: {
                 /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
                 "x-demo-role"?: components["schemas"]["Role"] | null;
@@ -11698,13 +12877,13 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Validation Error */
+            /** @description `validation_error` — Ошибка валидации данных */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -12953,7 +14132,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ReportUpdate"];
+                "application/json": components["schemas"]["ReportDecision"];
             };
         };
         responses: {
@@ -12993,7 +14172,16 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description `validation_error` — Ошибка валидации данных */
+            /** @description `invalid_transition` — Действие недоступно в текущем статусе */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `validation_error` — Ошибка валидации данных; `block_requires_resolve` — Заблокировать компанию можно только при подтверждении */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -13638,7 +14826,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description `forbidden` — Недостаточно прав */
+            /** @description `forbidden` — Недостаточно прав; `no_contact_with_company` — Не было контакта с компанией */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13649,6 +14837,15 @@ export interface operations {
             };
             /** @description `not_found` — Объект не найден */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `report_exists` — Жалоба на эту компанию уже на рассмотрении */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -15,6 +15,7 @@ from app.catalog.models import (
 from app.companies.models import Company, Recruiter
 from app.core.db import Base
 from app.fsp.models import FspAchievement, FspLink
+from app.integrations.models import CompanyApiToken, WebhookDelivery, WebhookEndpoint
 from app.invitations.models import Invitation, InvitationEvent
 from app.matching.models import Need
 from app.nlp.models import VacancyTest
@@ -30,6 +31,7 @@ __all__ = [
     "CandidateProfile",
     "Category",
     "Company",
+    "CompanyApiToken",
     "Consent",
     "EmailToken",
     "FspAchievement",
@@ -56,6 +58,8 @@ __all__ = [
     "User",
     "Vacancy",
     "VacancyTest",
+    "WebhookDelivery",
+    "WebhookEndpoint",
     "candidate_skills",
     "skill_specializations",
 ]

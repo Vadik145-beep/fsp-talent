@@ -3798,6 +3798,7 @@
           "companies"
         ],
         "summary": "Профиль моей компании",
+        "description": "Администратору компании приходит `invite_code` — код приглашения рекрутеров.",
         "operationId": "my_company_api_companies_my_get",
         "security": [
           {
@@ -3848,7 +3849,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Company"
+                  "$ref": "#/components/schemas/MyCompany"
                 }
               }
             }
@@ -3991,7 +3992,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Company"
+                  "$ref": "#/components/schemas/MyCompany"
                 }
               }
             }
@@ -4072,6 +4073,141 @@
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/companies/my/invite-code": {
+      "post": {
+        "tags": [
+          "companies"
+        ],
+        "summary": "Выпустить новый код приглашения рекрутеров",
+        "description": "Старый код перестаёт действовать. Только администратор компании.",
+        "operationId": "regenerate_invite_code_api_companies_my_invite_code_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyCompany"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Код приглашения меняет только администратор компании",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Код приглашения меняет только администратор компании",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Код приглашения меняет только администратор компании",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`not_found` — Объект не найден",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Объект не найден",
+                    "value": {
+                      "code": "not_found",
+                      "message": "Объект не найден",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -4344,6 +4480,1217 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/companies/my/api-tokens": {
+      "get": {
+        "tags": [
+          "companies",
+          "companies"
+        ],
+        "summary": "API-токены компании для ATS",
+        "operationId": "list_api_tokens_api_companies_my_api_tokens_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ApiToken"
+                  },
+                  "title": "Response List Api Tokens Api Companies My Api Tokens Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Интеграциями управляет только администратор компании",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Интеграциями управляет только администратор компании",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Интеграциями управляет только администратор компании",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "companies",
+          "companies"
+        ],
+        "summary": "Выпустить API-токен",
+        "description": "Токен показывается один раз; в БД хранится только его хеш.",
+        "operationId": "issue_api_token_api_companies_my_api_tokens_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiTokenCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiTokenIssued"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Интеграциями управляет только администратор компании",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Интеграциями управляет только администратор компании",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Интеграциями управляет только администратор компании",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_error` — Ошибка валидации данных",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "validation_error": {
+                    "summary": "Ошибка валидации данных",
+                    "value": {
+                      "code": "validation_error",
+                      "message": "Ошибка валидации данных",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/companies/my/api-tokens/{token_id}": {
+      "delete": {
+        "tags": [
+          "companies",
+          "companies"
+        ],
+        "summary": "Отозвать API-токен",
+        "operationId": "revoke_api_token_api_companies_my_api_tokens__token_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "token_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Token Id"
+            }
+          },
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Интеграциями управляет только администратор компании",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Интеграциями управляет только администратор компании",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Интеграциями управляет только администратор компании",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`not_found` — Объект не найден",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Объект не найден",
+                    "value": {
+                      "code": "not_found",
+                      "message": "Объект не найден",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/companies/my/webhooks": {
+      "get": {
+        "tags": [
+          "companies",
+          "companies"
+        ],
+        "summary": "Вебхуки компании",
+        "operationId": "list_webhooks_api_companies_my_webhooks_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Webhook"
+                  },
+                  "title": "Response List Webhooks Api Companies My Webhooks Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Интеграциями управляет только администратор компании",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Интеграциями управляет только администратор компании",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Интеграциями управляет только администратор компании",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "companies",
+          "companies"
+        ],
+        "summary": "Добавить вебхук",
+        "description": "События: `invitation.accepted` (кандидат принял приглашение), `application.created` (новый отклик). Каждый запрос подписан: `X-FSP-Signature: sha256=<HMAC-SHA256(secret, X-FSP-Timestamp + '.' + тело)>`. Не 2xx — повтор с паузами до 5 попыток.",
+        "operationId": "create_webhook_api_companies_my_webhooks_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookCreated"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Интеграциями управляет только администратор компании",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Интеграциями управляет только администратор компании",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Интеграциями управляет только администратор компании",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_error` — Ошибка валидации данных; `invalid_webhook_url` — Адрес должен начинаться с http:// или https://",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "validation_error": {
+                    "summary": "Ошибка валидации данных",
+                    "value": {
+                      "code": "validation_error",
+                      "message": "Ошибка валидации данных",
+                      "details": {}
+                    }
+                  },
+                  "invalid_webhook_url": {
+                    "summary": "Адрес должен начинаться с http:// или https://",
+                    "value": {
+                      "code": "invalid_webhook_url",
+                      "message": "Адрес должен начинаться с http:// или https://",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/companies/my/webhooks/{webhook_id}": {
+      "delete": {
+        "tags": [
+          "companies",
+          "companies"
+        ],
+        "summary": "Удалить вебхук",
+        "operationId": "delete_webhook_api_companies_my_webhooks__webhook_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "webhook_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Webhook Id"
+            }
+          },
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Интеграциями управляет только администратор компании",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Интеграциями управляет только администратор компании",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Интеграциями управляет только администратор компании",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`not_found` — Объект не найден",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Объект не найден",
+                    "value": {
+                      "code": "not_found",
+                      "message": "Объект не найден",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/companies/my/webhooks/{webhook_id}/ping": {
+      "post": {
+        "tags": [
+          "companies",
+          "companies"
+        ],
+        "summary": "Проверить вебхук: отправить событие ping",
+        "operationId": "ping_webhook_api_companies_my_webhooks__webhook_id__ping_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "webhook_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Webhook Id"
+            }
+          },
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookDeliveryOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Интеграциями управляет только администратор компании",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Интеграциями управляет только администратор компании",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Интеграциями управляет только администратор компании",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`not_found` — Объект не найден",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Объект не найден",
+                    "value": {
+                      "code": "not_found",
+                      "message": "Объект не найден",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/companies/my/webhooks/{webhook_id}/deliveries": {
+      "get": {
+        "tags": [
+          "companies",
+          "companies"
+        ],
+        "summary": "Журнал доставок вебхука",
+        "operationId": "webhook_deliveries_api_companies_my_webhooks__webhook_id__deliveries_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "webhook_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Webhook Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WebhookDeliveryOut"
+                  },
+                  "title": "Response Webhook Deliveries Api Companies My Webhooks  Webhook Id  Deliveries Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Интеграциями управляет только администратор компании",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Интеграциями управляет только администратор компании",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Интеграциями управляет только администратор компании",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`not_found` — Объект не найден",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Объект не найден",
+                    "value": {
+                      "code": "not_found",
+                      "message": "Объект не найден",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_error` — Ошибка валидации данных",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "validation_error": {
+                    "summary": "Ошибка валидации данных",
+                    "value": {
+                      "code": "validation_error",
+                      "message": "Ошибка валидации данных",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/companies/ats/export": {
+      "get": {
+        "tags": [
+          "companies",
+          "companies"
+        ],
+        "summary": "Выгрузка данных компании для ATS (по API-токену)",
+        "description": "Авторизация — заголовок `X-Api-Token` (без входа пользователя). Вакансии, приглашения (контакты — только у принятых) и отклики с контактами. `since` — только изменённые после этого момента (для инкрементальной синхронизации).",
+        "operationId": "ats_export_api_companies_ats_export_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ISO-время, например 2026-10-01T00:00:00+03:00",
+              "title": "Since"
+            },
+            "description": "ISO-время, например 2026-10-01T00:00:00+03:00"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyExport"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`invalid_api_token` — API-токен не найден или отозван",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "invalid_api_token": {
+                    "summary": "API-токен не найден или отозван",
+                    "value": {
+                      "code": "invalid_api_token",
+                      "message": "API-токен не найден или отозван",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`company_blocked` — Компания заблокирована администратором платформы",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "company_blocked": {
+                    "summary": "Компания заблокирована администратором платформы",
+                    "value": {
+                      "code": "company_blocked",
+                      "message": "Компания заблокирована администратором платформы",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_error` — Ошибка валидации данных",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "validation_error": {
+                    "summary": "Ошибка валидации данных",
+                    "value": {
+                      "code": "validation_error",
+                      "message": "Ошибка валидации данных",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -7532,7 +8879,7 @@
             }
           },
           "403": {
-            "description": "`forbidden` — Недостаточно прав",
+            "description": "`forbidden` — Недостаточно прав; `company_blocked` — Компания заблокирована администратором платформы",
             "content": {
               "application/json": {
                 "examples": {
@@ -7541,6 +8888,14 @@
                     "value": {
                       "code": "forbidden",
                       "message": "Недостаточно прав",
+                      "details": {}
+                    }
+                  },
+                  "company_blocked": {
+                    "summary": "Компания заблокирована администратором платформы",
+                    "value": {
+                      "code": "company_blocked",
+                      "message": "Компания заблокирована администратором платформы",
                       "details": {}
                     }
                   }
@@ -10374,6 +11729,7 @@
           "tasks"
         ],
         "summary": "Мои задания: активное и история (кандидат)",
+        "description": "Задания с прошедшим сроком без ответа при открытии становятся «истекло».",
         "operationId": "task_inbox_api_tasks_inbox_get",
         "security": [
           {
@@ -10508,6 +11864,7 @@
           "tasks"
         ],
         "summary": "Ответить на задание (кандидат)",
+        "description": "Ответ — текст, код или подход. Свежесть профиля растёт сразу после ответа.",
         "operationId": "answer_task_api_tasks_submissions__submission_id__answer_post",
         "security": [
           {
@@ -10643,7 +12000,7 @@
             }
           },
           "409": {
-            "description": "`invalid_transition` — Действие недоступно в текущем статусе",
+            "description": "`invalid_transition` — Действие недоступно в текущем статусе; `submission_expired` — Срок ответа истёк",
             "content": {
               "application/json": {
                 "examples": {
@@ -10652,6 +12009,14 @@
                     "value": {
                       "code": "invalid_transition",
                       "message": "Действие недоступно в текущем статусе",
+                      "details": {}
+                    }
+                  },
+                  "submission_expired": {
+                    "summary": "Срок ответа истёк",
+                    "value": {
+                      "code": "submission_expired",
+                      "message": "Срок ответа истёк",
                       "details": {}
                     }
                   }
@@ -10807,6 +12172,7 @@
           "tasks"
         ],
         "summary": "Создать короткое задание (рекрутер)",
+        "description": "Задание сразу раздаётся кандидатам категории без активного задания; дальше — планировщиком раз в N дней. `submissions_count` — скольким выдано.",
         "operationId": "create_task_api_tasks_post",
         "security": [
           {
@@ -10893,6 +12259,164 @@
             }
           },
           "403": {
+            "description": "`forbidden` — Недостаточно прав; `company_blocked` — Компания заблокирована администратором платформы",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Недостаточно прав",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Недостаточно прав",
+                      "details": {}
+                    }
+                  },
+                  "company_blocked": {
+                    "summary": "Компания заблокирована администратором платформы",
+                    "value": {
+                      "code": "company_blocked",
+                      "message": "Компания заблокирована администратором платформы",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_error` — Ошибка валидации данных; `unknown_category` — Неизвестная категория",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "validation_error": {
+                    "summary": "Ошибка валидации данных",
+                    "value": {
+                      "code": "validation_error",
+                      "message": "Ошибка валидации данных",
+                      "details": {}
+                    }
+                  },
+                  "unknown_category": {
+                    "summary": "Неизвестная категория",
+                    "value": {
+                      "code": "unknown_category",
+                      "message": "Неизвестная категория",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tasks/jobs/run": {
+      "post": {
+        "tags": [
+          "tasks"
+        ],
+        "summary": "Запустить периодическую работу заданий (админ)",
+        "description": "То же, что `python -m app.tasks <job>` для планировщика: `distribute` — раздать задания, `daily` — просрочить задания без ответа и снизить свежесть профилей, `tick` — всё сразу.",
+        "operationId": "run_tasks_job_api_tasks_jobs_run_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "job",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "distribute",
+                "daily",
+                "tick"
+              ],
+              "type": "string",
+              "description": "distribute | daily | tick",
+              "default": "tick",
+              "title": "Job"
+            },
+            "description": "distribute | daily | tick"
+          },
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskJobResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
             "description": "`forbidden` — Недостаточно прав",
             "content": {
               "application/json": {
@@ -10913,15 +12437,15 @@
             }
           },
           "422": {
-            "description": "`unknown_category` — Неизвестная категория",
+            "description": "`validation_error` — Ошибка валидации данных",
             "content": {
               "application/json": {
                 "examples": {
-                  "unknown_category": {
-                    "summary": "Неизвестная категория",
+                  "validation_error": {
+                    "summary": "Ошибка валидации данных",
                     "value": {
-                      "code": "unknown_category",
-                      "message": "Неизвестная категория",
+                      "code": "validation_error",
+                      "message": "Ошибка валидации данных",
                       "details": {}
                     }
                   }
@@ -11082,12 +12606,185 @@
         }
       }
     },
+    "/api/tasks/{task_id}/distribute": {
+      "post": {
+        "tags": [
+          "tasks"
+        ],
+        "summary": "Раздать задание ещё раз (рекрутер)",
+        "description": "Выдаёт задание новым кандидатам категории, у которых нет активного задания.",
+        "operationId": "distribute_task_api_tasks__task_id__distribute_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Task Id"
+            }
+          },
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DistributionResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Недостаточно прав; `company_blocked` — Компания заблокирована администратором платформы",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Недостаточно прав",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Недостаточно прав",
+                      "details": {}
+                    }
+                  },
+                  "company_blocked": {
+                    "summary": "Компания заблокирована администратором платформы",
+                    "value": {
+                      "code": "company_blocked",
+                      "message": "Компания заблокирована администратором платформы",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`not_found` — Объект не найден",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Объект не найден",
+                    "value": {
+                      "code": "not_found",
+                      "message": "Объект не найден",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`invalid_transition` — Действие недоступно в текущем статусе",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "invalid_transition": {
+                    "summary": "Действие недоступно в текущем статусе",
+                    "value": {
+                      "code": "invalid_transition",
+                      "message": "Действие недоступно в текущем статусе",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/tasks/submissions/{submission_id}/grade": {
       "post": {
         "tags": [
           "tasks"
         ],
         "summary": "Оценить ответ 0–3 (рекрутер)",
+        "description": "Первая оценка поднимает свежесть профиля кандидата: +0,04 + 0,03 × балл.",
         "operationId": "grade_submission_api_tasks_submissions__submission_id__grade_post",
         "security": [
           {
@@ -11271,6 +12968,7 @@
           "admin"
         ],
         "summary": "Дашборд платформы",
+        "description": "Из БД: пользователи по ролям (почта подтверждена), завершённые тесты за период и по дням, приглашения по статусам, конверсия «приглашение → принятие» (без отозванных), открытые жалобы, флаги утечек шаблонов. `period` ограничивает только тесты.",
         "operationId": "dashboard_api_admin_dashboard_get",
         "security": [
           {
@@ -11278,6 +12976,23 @@
           }
         ],
         "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "7d",
+                "30d",
+                "all"
+              ],
+              "type": "string",
+              "description": "Период для тестов: 7d | 30d | all",
+              "default": "all",
+              "title": "Period"
+            },
+            "description": "Период для тестов: 7d | 30d | all"
+          },
           {
             "name": "x-demo-role",
             "in": "header",
@@ -11367,11 +13082,21 @@
             }
           },
           "422": {
-            "description": "Validation Error",
+            "description": "`validation_error` — Ошибка валидации данных",
             "content": {
               "application/json": {
+                "examples": {
+                  "validation_error": {
+                    "summary": "Ошибка валидации данных",
+                    "value": {
+                      "code": "validation_error",
+                      "message": "Ошибка валидации данных",
+                      "details": {}
+                    }
+                  }
+                },
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -14387,6 +16112,7 @@
           "admin"
         ],
         "summary": "Обработать жалобу",
+        "description": "new → in_review (взять в работу) → resolved (подтвердить) | rejected (отклонить). `block_company: true` вместе с resolved блокирует компанию: её рекрутеры получают 403 `company_blocked`, вакансии скрываются. Подтверждённая жалоба снижает скоринг компании.",
         "operationId": "update_report_api_admin_reports__report_id__patch",
         "security": [
           {
@@ -14445,7 +16171,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ReportUpdate"
+                "$ref": "#/components/schemas/ReportDecision"
               }
             }
           }
@@ -14521,8 +16247,28 @@
               }
             }
           },
+          "409": {
+            "description": "`invalid_transition` — Действие недоступно в текущем статусе",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "invalid_transition": {
+                    "summary": "Действие недоступно в текущем статусе",
+                    "value": {
+                      "code": "invalid_transition",
+                      "message": "Действие недоступно в текущем статусе",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "`validation_error` — Ошибка валидации данных",
+            "description": "`validation_error` — Ошибка валидации данных; `block_requires_resolve` — Заблокировать компанию можно только при подтверждении",
             "content": {
               "application/json": {
                 "examples": {
@@ -14531,6 +16277,14 @@
                     "value": {
                       "code": "validation_error",
                       "message": "Ошибка валидации данных",
+                      "details": {}
+                    }
+                  },
+                  "block_requires_resolve": {
+                    "summary": "Заблокировать компанию можно только при подтверждении",
+                    "value": {
+                      "code": "block_requires_resolve",
+                      "message": "Заблокировать компанию можно только при подтверждении",
                       "details": {}
                     }
                   }
@@ -16050,6 +17804,7 @@
           "admin"
         ],
         "summary": "Пожаловаться на работодателя (соискатель)",
+        "description": "Только на компанию, с которой был контакт: приглашение, отклик или задание.",
         "operationId": "create_report_api_reports_post",
         "security": [
           {
@@ -16136,7 +17891,7 @@
             }
           },
           "403": {
-            "description": "`forbidden` — Недостаточно прав",
+            "description": "`forbidden` — Недостаточно прав; `no_contact_with_company` — Не было контакта с компанией",
             "content": {
               "application/json": {
                 "examples": {
@@ -16145,6 +17900,14 @@
                     "value": {
                       "code": "forbidden",
                       "message": "Недостаточно прав",
+                      "details": {}
+                    }
+                  },
+                  "no_contact_with_company": {
+                    "summary": "Не было контакта с компанией",
+                    "value": {
+                      "code": "no_contact_with_company",
+                      "message": "Не было контакта с компанией",
                       "details": {}
                     }
                   }
@@ -16165,6 +17928,26 @@
                     "value": {
                       "code": "not_found",
                       "message": "Объект не найден",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`report_exists` — Жалоба на эту компанию уже на рассмотрении",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "report_exists": {
+                    "summary": "Жалоба на эту компанию уже на рассмотрении",
+                    "value": {
+                      "code": "report_exists",
+                      "message": "Жалоба на эту компанию уже на рассмотрении",
                       "details": {}
                     }
                   }
@@ -17043,6 +18826,153 @@
             "instance_id": "it-0001-s42"
           }
         ]
+      },
+      "ApiToken": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "token_prefix": {
+            "type": "string",
+            "title": "Token Prefix",
+            "description": "Начало токена — чтобы узнать его в списке"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "last_used_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Used At"
+          },
+          "revoked_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revoked At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "token_prefix",
+          "active",
+          "created_at"
+        ],
+        "title": "ApiToken",
+        "description": "API-токен компании. Сам токен показывается один раз — при выпуске."
+      },
+      "ApiTokenCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name",
+            "description": "Для чего токен (подпись)"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "ApiTokenCreate",
+        "examples": [
+          {
+            "name": "Хантфлоу"
+          }
+        ]
+      },
+      "ApiTokenIssued": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "token_prefix": {
+            "type": "string",
+            "title": "Token Prefix",
+            "description": "Начало токена — чтобы узнать его в списке"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "last_used_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Used At"
+          },
+          "revoked_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revoked At"
+          },
+          "token": {
+            "type": "string",
+            "title": "Token",
+            "description": "Токен целиком. Сохраните: больше он не показывается"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "token_prefix",
+          "active",
+          "created_at",
+          "token"
+        ],
+        "title": "ApiTokenIssued"
       },
       "Application": {
         "properties": {
@@ -18770,128 +20700,6 @@
         ],
         "title": "ChoiceOption"
       },
-      "Company": {
-        "properties": {
-          "id": {
-            "type": "integer",
-            "title": "Id"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "description": {
-            "type": "string",
-            "title": "Description"
-          },
-          "industry": {
-            "type": "string",
-            "title": "Industry",
-            "examples": [
-              "Финтех"
-            ]
-          },
-          "website": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Website"
-          },
-          "city": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "City"
-          },
-          "contact_email": {
-            "type": "string",
-            "title": "Contact Email"
-          },
-          "contact_phone": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Contact Phone"
-          },
-          "inn": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Inn"
-          },
-          "verified_domain": {
-            "type": "boolean",
-            "title": "Verified Domain",
-            "description": "Почта рекрутеров на домене компании"
-          },
-          "trust_score": {
-            "type": "number",
-            "maximum": 100.0,
-            "minimum": 0.0,
-            "title": "Trust Score",
-            "description": "Скоринг надёжности (антифрод)"
-          },
-          "blocked": {
-            "type": "boolean",
-            "title": "Blocked",
-            "default": false
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Created At"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "name",
-          "description",
-          "industry",
-          "contact_email",
-          "verified_domain",
-          "trust_score",
-          "created_at"
-        ],
-        "title": "Company",
-        "examples": [
-          {
-            "blocked": false,
-            "city": "Москва",
-            "contact_email": "hr.severny@example.com",
-            "contact_phone": "+7 900 000-10-00",
-            "created_at": "2026-06-08T12:00:00+03:00",
-            "description": "Разрабатываем платёжные сервисы и мобильный банк для региональных банков.",
-            "id": 1,
-            "industry": "Финтех",
-            "inn": "7700000001",
-            "name": "Северный код",
-            "trust_score": 86.0,
-            "verified_domain": true,
-            "website": "https://severny-kod.example.com"
-          }
-        ]
-      },
       "CompanyAdminUpdate": {
         "properties": {
           "blocked": {
@@ -18910,6 +20718,68 @@
             "blocked": true
           }
         ]
+      },
+      "CompanyExport": {
+        "properties": {
+          "company": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Company"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "since": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Since"
+          },
+          "vacancies": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Vacancies"
+          },
+          "invitations": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Invitations",
+            "description": "Контакты кандидата — только у принятых приглашений"
+          },
+          "applications": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Applications",
+            "description": "Отклики с контактами кандидатов"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company",
+          "generated_at",
+          "vacancies",
+          "invitations",
+          "applications"
+        ],
+        "title": "CompanyExport",
+        "description": "Выгрузка данных компании для ATS (по API-токену)."
       },
       "CompanyRegistration": {
         "properties": {
@@ -19413,6 +21283,27 @@
           "covered"
         ],
         "title": "DetectedTopic"
+      },
+      "DistributionResult": {
+        "properties": {
+          "assigned": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Assigned",
+            "description": "Скольким кандидатам выдано задание"
+          }
+        },
+        "type": "object",
+        "required": [
+          "assigned"
+        ],
+        "title": "DistributionResult",
+        "description": "Итог ручной раздачи задания.",
+        "examples": [
+          {
+            "assigned": 3
+          }
+        ]
       },
       "ErrorResponse": {
         "properties": {
@@ -22218,6 +24109,141 @@
         ],
         "title": "MessageResponse"
       },
+      "MyCompany": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "industry": {
+            "type": "string",
+            "title": "Industry",
+            "examples": [
+              "Финтех"
+            ]
+          },
+          "website": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "contact_email": {
+            "type": "string",
+            "title": "Contact Email"
+          },
+          "contact_phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Phone"
+          },
+          "inn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inn"
+          },
+          "verified_domain": {
+            "type": "boolean",
+            "title": "Verified Domain",
+            "description": "Почта рекрутеров на домене компании"
+          },
+          "trust_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Trust Score",
+            "description": "Скоринг надёжности (антифрод)"
+          },
+          "blocked": {
+            "type": "boolean",
+            "title": "Blocked",
+            "default": false
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "invite_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invite Code",
+            "description": "Код приглашения рекрутеров в компанию — только администратору компании"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "industry",
+          "contact_email",
+          "verified_domain",
+          "trust_score",
+          "created_at"
+        ],
+        "title": "MyCompany",
+        "description": "Профиль своей компании в кабинете рекрутера.",
+        "examples": [
+          {
+            "blocked": false,
+            "city": "Москва",
+            "contact_email": "hr.severny@example.com",
+            "contact_phone": "+7 900 000-10-00",
+            "created_at": "2026-06-08T12:00:00+03:00",
+            "description": "Разрабатываем платёжные сервисы и мобильный банк для региональных банков.",
+            "id": 1,
+            "industry": "Финтех",
+            "inn": "7700000001",
+            "name": "Северный код",
+            "trust_score": 86.0,
+            "verified_domain": true,
+            "website": "https://severny-kod.example.com"
+          }
+        ]
+      },
       "Need": {
         "properties": {
           "salary_from": {
@@ -24228,6 +26254,44 @@
           }
         ]
       },
+      "ReportDecision": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ReportStatus"
+          },
+          "resolution": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution"
+          },
+          "block_company": {
+            "type": "boolean",
+            "title": "Block Company",
+            "description": "Вместе с подтверждением (resolved) заблокировать компанию",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "ReportDecision",
+        "description": "Решение по жалобе. Схема живёт здесь, чтобы не трогать общий `admin/schemas.py`.",
+        "examples": [
+          {
+            "resolution": "Компания заблокирована",
+            "status": "resolved"
+          }
+        ]
+      },
       "ReportReason": {
         "type": "string",
         "enum": [
@@ -24248,37 +26312,6 @@
           "rejected"
         ],
         "title": "ReportStatus"
-      },
-      "ReportUpdate": {
-        "properties": {
-          "status": {
-            "$ref": "#/components/schemas/ReportStatus"
-          },
-          "resolution": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 2000
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Resolution"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "status"
-        ],
-        "title": "ReportUpdate",
-        "examples": [
-          {
-            "resolution": "Компания заблокирована",
-            "status": "resolved"
-          }
-        ]
       },
       "ResendVerificationRequest": {
         "properties": {
@@ -25024,6 +27057,50 @@
         ],
         "title": "TaskInbox",
         "description": "Раздел «Задания» кандидата: активное задание и история."
+      },
+      "TaskJobResult": {
+        "properties": {
+          "job": {
+            "type": "string",
+            "title": "Job"
+          },
+          "expired": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expired",
+            "description": "Сколько заданий просрочено"
+          },
+          "assigned": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Assigned",
+            "description": "Сколько заданий выдано"
+          },
+          "freshness_factor": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Freshness Factor",
+            "description": "Множитель свежести профилей"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job",
+          "expired",
+          "assigned",
+          "freshness_factor"
+        ],
+        "title": "TaskJobResult",
+        "description": "Итог периодической работы (раздача, просрочка, свежесть).",
+        "examples": [
+          {
+            "assigned": 5,
+            "expired": 2,
+            "freshness_factor": 0.977,
+            "job": "tick"
+          }
+        ]
       },
       "TaskStatus": {
         "type": "string",
@@ -26698,6 +28775,237 @@
           }
         ]
       },
+      "Webhook": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "events": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Events"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "url",
+          "events",
+          "active",
+          "created_at"
+        ],
+        "title": "Webhook"
+      },
+      "WebhookCreate": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 8,
+            "title": "Url",
+            "description": "http(s)-адрес приёма событий"
+          },
+          "events": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "invitation.accepted",
+                "application.created"
+              ]
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Events",
+            "description": "На какие события подписаться"
+          },
+          "secret": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128,
+                "minLength": 16
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Secret",
+            "description": "Секрет подписи HMAC; не передан — сгенерируем"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "url",
+          "events"
+        ],
+        "title": "WebhookCreate",
+        "examples": [
+          {
+            "events": [
+              "invitation.accepted",
+              "application.created"
+            ],
+            "url": "https://ats.example.com/hooks/fsp"
+          }
+        ]
+      },
+      "WebhookCreated": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "events": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Events"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "secret": {
+            "type": "string",
+            "title": "Secret",
+            "description": "Секрет подписи. Показывается один раз — при создании"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "url",
+          "events",
+          "active",
+          "created_at",
+          "secret"
+        ],
+        "title": "WebhookCreated"
+      },
+      "WebhookDeliveryOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "endpoint_id": {
+            "type": "integer",
+            "title": "Endpoint Id"
+          },
+          "event": {
+            "type": "string",
+            "title": "Event"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "delivered",
+              "failed"
+            ],
+            "title": "Status"
+          },
+          "attempts": {
+            "type": "integer",
+            "title": "Attempts"
+          },
+          "last_status_code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Status Code"
+          },
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error"
+          },
+          "next_attempt_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Attempt At"
+          },
+          "delivered_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delivered At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Payload"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "endpoint_id",
+          "event",
+          "status",
+          "attempts",
+          "created_at",
+          "payload"
+        ],
+        "title": "WebhookDeliveryOut",
+        "description": "Попытка доставки события на адрес компании."
+      },
       "WorkFormat": {
         "type": "string",
         "enum": [
@@ -26713,6 +29021,12 @@
         "type": "http",
         "description": "JWT access-токен из `POST /api/auth/login` (живёт 15 минут)",
         "scheme": "bearer"
+      },
+      "APIKeyHeader": {
+        "type": "apiKey",
+        "description": "API-токен компании (`POST /api/companies/my/api-tokens`)",
+        "in": "header",
+        "name": "X-Api-Token"
       }
     }
   },

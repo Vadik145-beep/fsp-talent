@@ -26,10 +26,12 @@ from app.catalog.clock import as_msk, now_msk
 from app.catalog.repository import CatalogDb
 from app.common.enums import ApplicationStatus, Role, VacancyStatus
 from app.common.fixtures import Record
+from app.companies.antifraud import ensure_company_active
 from app.companies.models import Company
 from app.core.config import get_settings
 from app.core.errors import AppError, not_found
 from app.core.security import CurrentUser
+from app.integrations.webhooks import notify_application_created
 from app.matching.repository import CandidatePool
 from app.vacancies.models import Application, Vacancy
 from app.vacancies.repository import ApplicationRow, VacancyDb, VacancyRow
@@ -284,6 +286,7 @@ class VacancyService:
     async def create(self, body: VacancyCreate, user: CurrentUser) -> dict[str, Any]:
         if user.company_id is None:
             raise AppError(404, "not_found", "Компания не найдена")
+        await ensure_company_active(self.session, user.company_id)
         vacancy = Vacancy(company_id=user.company_id, status=V.draft.value, created_at=now_msk())
         await self._apply_fields(vacancy, body)
         self.session.add(vacancy)
@@ -312,6 +315,8 @@ class VacancyService:
                 f"{message} (сейчас: «{VACANCY_STATUS_LABELS[current]}»)",
                 {"from": current.value, "to": target.value},
             )
+        if published:
+            await ensure_company_active(self.session, vacancy.company_id)
         vacancy.status = target.value
         if published:
             vacancy.published_at = now_msk()
@@ -418,6 +423,7 @@ class VacancyService:
         )
         await self.session.commit()
         await self._notify_recruiters(vacancy, app, cand)
+        await notify_application_created(self.session, app.id)  # вебхук ATS компании
         return await self._app_view(app.id, Role.candidate)
 
     @staticmethod
