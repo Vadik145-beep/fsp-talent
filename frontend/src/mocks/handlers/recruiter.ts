@@ -69,7 +69,7 @@ type ApplicationRow = Omit<S['Application'], 'candidate' | 'candidate_contacts'>
 type TaskRow = S['RegularTask']
 type SubmissionRow = Omit<S['TaskSubmissionForRecruiter'], 'candidate'>
 type RecruiterRow = S['Recruiter']
-type CompanyRow = S['Company']
+type CompanyRow = S['MyCompany']
 type EventRow = S['InvitationEvent']
 
 interface PlatformSettingsRow {

@@ -25,7 +25,7 @@ export type ApplicationStatus = S['ApplicationStatus']
 export type RegularTask = S['RegularTask']
 export type TaskSubmission = S['TaskSubmissionForRecruiter']
 /** Компания; `invite_code` приходит только администратору компании (поле может отсутствовать). */
-export type Company = S['Company'] & { invite_code?: string | null }
+export type Company = S['MyCompany'] & { invite_code?: string | null }
 export type Recruiter = S['Recruiter']
 export type RecruiterDashboard = S['RecruiterDashboard']
 export type WorkFormat = S['WorkFormat']

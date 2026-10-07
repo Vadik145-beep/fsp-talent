@@ -1295,7 +1295,7 @@ export const adminHandlers: HttpHandler[] = [
     adminWrite(async ({ request, params }) => {
       const report = col<Report>('reports').find((r) => r.id === Number(params.id))
       if (!report) return notFound()
-      const body = (await request.json()) as S['ReportUpdate']
+      const body = (await request.json()) as S['ReportDecision']
       if (!['new', 'in_review', 'resolved', 'rejected'].includes(body.status))
         return apiError(422, 'validation_error', 'Ошибка валидации данных', { status: 'Неизвестный статус' })
       report.status = body.status
