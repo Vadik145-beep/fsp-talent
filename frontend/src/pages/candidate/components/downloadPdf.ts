@@ -1,25 +1,14 @@
-import { buildUrl, getApiRole, getErrorMessage } from '@/shared/api'
-import { getApiUserId } from '@/shared/api/client'
+import { apiFetch } from '@/shared/api'
 
-/** Скачать стандартизированный PDF-профиль (GET /candidates/me/profile.pdf). */
+/**
+ * Скачать стандартизированный PDF-профиль (GET /candidates/me/profile.pdf).
+ * Через общий клиент: Bearer/демо-заголовки и обновление токена по 401 — как у остальных запросов.
+ */
 export async function downloadProfilePdf(): Promise<void> {
-  const headers: Record<string, string> = { Accept: 'application/pdf' }
-  const role = getApiRole()
-  const userId = getApiUserId()
-  if (role) headers['X-Demo-Role'] = role
-  if (userId !== null) headers['X-Demo-User-Id'] = String(userId)
-  const res = await fetch(buildUrl('/candidates/me/profile.pdf'), { headers, credentials: 'include' })
-  if (!res.ok) {
-    let message = 'Не удалось сформировать PDF'
-    try {
-      const body = (await res.json()) as { message?: string }
-      if (body.message) message = body.message
-    } catch (err) {
-      message = getErrorMessage(err) || message
-    }
-    throw new Error(message)
-  }
-  const blob = await res.blob()
+  const blob = await apiFetch<Blob>('/candidates/me/profile.pdf', {
+    headers: { Accept: 'application/pdf' },
+    responseType: 'blob',
+  })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url

@@ -79,7 +79,7 @@ export function ProfileForm({
     )
   }
   const parsedClass = (key: keyof ProfileFormState) =>
-    confidence[key] === undefined ? undefined : confidence[key]! < 0.7 ? 'border-[#c27100] bg-warning-soft/40' : 'border-fsp-lavender bg-violet-soft/40'
+    confidence[key] === undefined ? undefined : confidence[key]! < 0.7 ? 'border-warning bg-warning-soft/40' : 'border-fsp-lavender bg-violet-soft/40'
 
   return (
     <form onSubmit={submit} noValidate className="grid gap-5">

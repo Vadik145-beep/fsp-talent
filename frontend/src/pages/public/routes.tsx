@@ -10,5 +10,6 @@ export const publicRoutes: RouteObject[] = [
   { path: 'login', ...lazyPage(() => import('./LoginPage')) },
   { path: 'register', ...lazyPage(() => import('./RegisterPage')) },
   { path: 'verify-email', ...lazyPage(() => import('./VerifyEmailPage')) },
+  { path: 'reset-password', ...lazyPage(() => import('./ResetPasswordPage')) },
   { path: 'auth/fsp-callback', ...lazyPage(() => import('./FspCallbackPage')) },
 ]
