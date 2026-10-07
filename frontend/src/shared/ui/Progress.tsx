@@ -17,7 +17,7 @@ export interface ProgressBarProps {
 
 const barTone = {
   primary: 'bg-primary',
-  violet: 'bg-fsp-plum',
+  violet: 'bg-fsp-blue-deep',
   success: 'bg-success',
   warning: 'bg-[#c27100]',
 }
@@ -38,7 +38,7 @@ export function ProgressBar({
       {(label || showValue) && (
         <div className="mb-1.5 flex items-baseline justify-between gap-2 text-sm">
           {label && <span className="font-medium text-ink">{label}</span>}
-          {showValue && <span className="tabular-nums text-muted">{valueText}</span>}
+          {showValue && <span className="font-num text-muted">{valueText}</span>}
         </div>
       )}
       <div
@@ -79,8 +79,8 @@ export function ScoreBar({ label, value, contribution, hint, className }: ScoreB
         {contribution !== undefined && (
           <span
             className={cn(
-              'font-semibold tabular-nums',
-              contribution < 0 ? 'text-danger' : 'text-fsp-plum',
+              'font-num font-semibold',
+              contribution < 0 ? 'text-danger' : 'text-primary',
             )}
           >
             {formatSigned(contribution)}
@@ -88,7 +88,7 @@ export function ScoreBar({ label, value, contribution, hint, className }: ScoreB
         )}
       </div>
       <div
-        className="h-2 overflow-hidden rounded-full bg-violet-soft"
+        className="h-2 overflow-hidden rounded-full bg-primary-soft ring-1 ring-primary-tint ring-inset"
         role="meter"
         aria-valuemin={0}
         aria-valuemax={100}
@@ -96,7 +96,7 @@ export function ScoreBar({ label, value, contribution, hint, className }: ScoreB
         aria-label={typeof label === 'string' ? label : undefined}
       >
         <div
-          className="h-full rounded-full bg-gradient-to-r from-fsp-lavender to-fsp-pink"
+          className="h-full rounded-full bg-primary"
           style={{ width: `${pct}%` }}
         />
       </div>

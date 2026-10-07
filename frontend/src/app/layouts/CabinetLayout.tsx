@@ -23,8 +23,8 @@ function SideNav({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => v
             cn(
               'group relative flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors',
               isActive
-                ? 'bg-white/12 text-white'
-                : 'text-on-nav-muted hover:bg-white/6 hover:text-white',
+                ? 'bg-nav-active font-semibold text-primary'
+                : 'text-muted hover:bg-nav-hover hover:text-ink',
             )
           }
         >
@@ -32,12 +32,12 @@ function SideNav({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => v
             <>
               <span
                 className={cn(
-                  'absolute top-2 bottom-2 left-0 w-[3px] rounded-r-full bg-fsp-pink transition-opacity',
+                  'absolute top-2 bottom-2 left-0 w-[3px] rounded-r-full bg-primary transition-opacity',
                   isActive ? 'opacity-100' : 'opacity-0',
                 )}
                 aria-hidden
               />
-              <Icon className={cn('size-[18px] shrink-0', isActive ? 'text-fsp-blush' : 'opacity-80')} aria-hidden />
+              <Icon className={cn('size-[18px] shrink-0', isActive ? 'text-primary' : 'text-subtle group-hover:text-ink')} aria-hidden />
               <span className="truncate">{label}</span>
             </>
           )}
@@ -53,7 +53,7 @@ function NavigationProgress() {
   if (navigation.state === 'idle') return null
   return (
     <div className="fixed inset-x-0 top-0 z-[70] h-0.5 overflow-hidden" role="progressbar" aria-label="Загрузка экрана">
-      <div className="h-full w-1/3 animate-pulse bg-fsp-pink" />
+      <div className="h-full w-1/3 animate-pulse bg-primary" />
     </div>
   )
 }
@@ -87,23 +87,23 @@ export function CabinetLayout({ role, nav }: CabinetLayoutProps) {
   }, [location.pathname])
 
   return (
-    <div className="flex min-h-screen flex-col bg-nav">
+    <div className="flex min-h-screen flex-col bg-canvas">
       <NavigationProgress />
       <DemoBar />
-      <header className="sticky top-0 z-30 bg-nav">
+      <header className="sticky top-0 z-30 border-b border-line bg-nav">
         <div className="flex h-14 items-center gap-3 px-3 sm:px-4">
           {!focus && (
             <button
               type="button"
               onClick={() => setMenuOpen(true)}
-              className="rounded-md p-2 text-white hover:bg-nav-hover lg:hidden"
+              className="rounded-md p-2 text-ink hover:bg-nav-hover lg:hidden"
               aria-label="Открыть меню"
             >
               <Menu className="size-5" aria-hidden />
             </button>
           )}
-          <Logo to={ROLE_HOME[role]} tone="light" />
-          <span className="hidden rounded-full bg-white/10 px-2.5 py-0.5 text-xs font-semibold text-on-nav-muted sm:inline">
+          <Logo to={ROLE_HOME[role]} />
+          <span className="hidden rounded-full border border-line px-2.5 py-0.5 text-xs font-semibold text-muted sm:inline">
             {ROLE_LABELS[role]}
           </span>
           <div className="ml-auto flex items-center gap-2">{user && !roleMismatch && <UserMenu user={user} />}</div>
@@ -112,20 +112,19 @@ export function CabinetLayout({ role, nav }: CabinetLayoutProps) {
 
       <div className="flex flex-1">
         {!focus && (
-          <aside className="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-64 shrink-0 overflow-y-auto lg:block">
-            <SideNav items={nav} />
+          <aside className="hidden w-64 shrink-0 border-r border-line bg-nav lg:block">
+            <div className="sticky top-14 max-h-[calc(100vh-3.5rem)] overflow-y-auto">
+              <SideNav items={nav} />
+            </div>
           </aside>
         )}
         <main
           id="main"
-          className={cn(
-            'min-w-0 flex-1 bg-canvas',
-            !focus && 'lg:rounded-tl-2xl',
-          )}
+          className="min-w-0 flex-1 bg-canvas"
         >
           <div className={cn('mx-auto w-full px-4 py-6 sm:px-6 lg:px-8 lg:py-8', focus ? 'max-w-4xl' : 'max-w-6xl')}>
             {roleMismatch ? (
-              <div className="flex justify-center py-24 text-fsp-plum">
+              <div className="flex justify-center py-24 text-primary">
                 <Spinner size={28} label="Загрузка кабинета" />
               </div>
             ) : (
@@ -144,10 +143,10 @@ export function CabinetLayout({ role, nav }: CabinetLayoutProps) {
         hideHeader
         ariaLabel="Меню кабинета"
       >
-        <div className="flex h-14 items-center px-4">
-          <Logo to={ROLE_HOME[role]} tone="light" />
+        <div className="flex h-14 items-center border-b border-line px-4">
+          <Logo to={ROLE_HOME[role]} />
         </div>
-        <p className="px-6 pb-1 text-xs font-semibold tracking-wide text-on-nav-muted uppercase">{ROLE_LABELS[role]}</p>
+        <p className="px-6 pt-3 pb-1 text-xs font-semibold tracking-wide text-muted uppercase">{ROLE_LABELS[role]}</p>
         <SideNav items={nav} onNavigate={() => setMenuOpen(false)} />
       </Drawer>
     </div>

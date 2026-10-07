@@ -1,77 +1,128 @@
 @import 'tailwindcss';
 
 /*
- * Дизайн-токены ФСП.
- * Фирменные цвета — как в шаблоне презентации. Семантические токены (primary, muted, success…)
- * подобраны так, чтобы текст проходил WCAG AA (4.5:1) на своём фоне.
- * Каждый токен из @theme доступен и как CSS-переменная (var(--color-primary)),
+ * Шрифты — локально из @fontsource (без CDN, работает офлайн).
+ * Inter — основной текст; JetBrains Mono — шрифт бренда ФСП: заголовки, подпись логотипа, числа, код.
+ * Подключены только латиница и кириллица, чтобы не тянуть лишние файлы.
+ */
+@import '@fontsource/inter/latin-400.css';
+@import '@fontsource/inter/latin-500.css';
+@import '@fontsource/inter/latin-600.css';
+@import '@fontsource/inter/latin-700.css';
+@import '@fontsource/inter/cyrillic-400.css';
+@import '@fontsource/inter/cyrillic-500.css';
+@import '@fontsource/inter/cyrillic-600.css';
+@import '@fontsource/inter/cyrillic-700.css';
+@import '@fontsource/jetbrains-mono/latin-400.css';
+@import '@fontsource/jetbrains-mono/latin-500.css';
+@import '@fontsource/jetbrains-mono/latin-600.css';
+@import '@fontsource/jetbrains-mono/latin-700.css';
+@import '@fontsource/jetbrains-mono/cyrillic-400.css';
+@import '@fontsource/jetbrains-mono/cyrillic-500.css';
+@import '@fontsource/jetbrains-mono/cyrillic-600.css';
+@import '@fontsource/jetbrains-mono/cyrillic-700.css';
+
+/*
+ * Дизайн-токены по брендбуку ФСП.
+ * Основные цвета: #402FFF, #EC1D35, #EDEDED; дополнительные: #C8C9CA, #1B1C21.
+ * Семантические токены (primary, muted, success…) подобраны так, чтобы текст проходил WCAG AA (4.5:1)
+ * на своём фоне. Каждый токен доступен и как CSS-переменная (var(--color-primary)),
  * и как класс Tailwind (bg-primary, text-muted, border-line…).
+ *
+ * Имена токенов прошлой палитры (fsp-pink, fsp-night, fsp-plum…) оставлены как алиасы:
+ * ими пользуются экраны кабинетов. Значения у них теперь из палитры ФСП. В новом коде —
+ * брать новые имена (fsp-blue, fsp-red, fsp-gray, fsp-silver, fsp-black, primary, accent…).
  */
 @theme {
-  --font-sans: 'Montserrat', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* Шрифт заголовков и подписи логотипа — шрифт бренда */
+  --font-display: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
-  /* Фирменная палитра ФСП */
-  --color-fsp-pink: #ff0053;
-  --color-fsp-rose: #fc3777;
-  --color-fsp-lavender: #8a83d1;
-  --color-fsp-blush: #ffd6e4;
-  --color-fsp-night: #310f53;
-  --color-fsp-plum: #520978;
-  --color-fsp-ink: #1c1d22;
+  /* Палитра брендбука ФСП */
+  --color-fsp-blue: #402fff;
+  --color-fsp-red: #ec1d35;
+  --color-fsp-gray: #ededed;
+  --color-fsp-silver: #c8c9ca;
+  --color-fsp-black: #1b1c21;
   --color-fsp-white: #ffffff;
+  /* Производные от #402FFF: тёмный — для крупных чисел и тёмных плашек, светлые — подложки и выделение */
+  --color-fsp-blue-deep: #2a1eb0;
+  --color-fsp-blue-light: #7d72ff;
+  --color-fsp-blue-pale: #dcd9ff;
+
+  /* Алиасы прошлой палитры (имена используются экранами — не удалять) */
+  --color-fsp-pink: var(--color-fsp-blue); /* был главный акцент → синий ФСП */
+  --color-fsp-rose: var(--color-fsp-red); /* был вторичный акцент → красный ФСП */
+  --color-fsp-lavender: var(--color-fsp-blue-light);
+  --color-fsp-blush: var(--color-fsp-blue-pale);
+  --color-fsp-night: var(--color-fsp-blue-deep);
+  --color-fsp-plum: var(--color-fsp-blue);
+  --color-fsp-ink: var(--color-fsp-black);
 
   /*
-   * Главные кнопки. #FF0053 с белым текстом даёт 3.9:1 — ниже AA для обычного текста,
-   * поэтому фон кнопки чуть темнее (#E0004B, 4.9:1). #FF0053 — для акцентов и крупных элементов.
+   * Главные кнопки: #402FFF с белым текстом — 6.8:1 (AA).
    */
-  --color-primary: #e0004b;
-  --color-primary-hover: #c20041;
-  --color-primary-active: #a80038;
-  --color-primary-soft: #fff0f5;
-  --color-primary-tint: #ffd6e4;
+  --color-primary: #402fff;
+  --color-primary-hover: #3324e0;
+  --color-primary-active: #2a1cc0;
+  --color-primary-soft: #f0efff;
+  --color-primary-tint: #dcd9ff;
   --color-on-primary: #ffffff;
 
-  /* Поверхности и текст */
-  --color-canvas: #f6f5fa;
-  --color-surface: #ffffff;
-  --color-surface-muted: #faf9fc;
-  --color-ink: #1c1d22;
-  --color-muted: #5c5869;
-  --color-subtle: #6e6978;
-  --color-line: #e6e3ee;
-  --color-line-strong: #cfcadb;
+  /*
+   * Красный ФСП — точечный акцент. #EC1D35 с белым текстом даёт 4.4:1 (ниже AA),
+   * поэтому «как есть» — только для иконок, полосок, точек; текст и кнопки «опасно» — danger (#C4122B).
+   */
+  --color-accent: #ec1d35;
+  --color-accent-soft: #fde8ea;
 
-  /* Шапка и меню */
-  --color-nav: #310f53;
-  --color-nav-hover: #42186b;
-  --color-nav-active: #520978;
+  /* Поверхности и текст */
+  --color-canvas: #f5f5f6;
+  --color-surface: #ffffff;
+  --color-surface-muted: #fafafa;
+  --color-ink: #1b1c21;
+  --color-muted: #55565e;
+  --color-subtle: #6b6c73;
+  --color-line: #e4e4e6;
+  --color-line-strong: #c8c9ca;
+
+  /* Шапка и меню — светлые (белый фон, тонкая линия, активный пункт #402FFF); текст в них — ink/muted/primary */
+  --color-nav: #ffffff;
+  --color-nav-hover: #f3f3f4;
+  --color-nav-active: #f0efff;
+  /*
+   * Текст на тёмных/синих плашках (имя историческое — раньше меню было тёмным).
+   * Экраны пишут им пояснения на bg-fsp-night / bg-primary: #E6E4FF на #402FFF — 5.5:1, на #2A1EB0 — 9:1.
+   */
   --color-on-nav: #ffffff;
-  --color-on-nav-muted: #d9cfe6;
+  --color-on-nav-muted: #e6e4ff;
 
   /* Статусы (текст на светлой подложке — AA) */
-  --color-info: #4a4399;
-  --color-info-soft: #ecebfa;
-  --color-violet: #520978;
-  --color-violet-soft: #f3e8fa;
+  --color-info: #005a9e;
+  --color-info-soft: #e6f1fb;
+  --color-violet: #3b2bd9;
+  --color-violet-soft: #efeeff;
   --color-success: #0b6e43;
   --color-success-soft: #e3f5ec;
   --color-warning: #8a4b00;
   --color-warning-soft: #fff1d6;
-  --color-danger: #b3102b;
-  --color-danger-soft: #fde7ea;
-  --color-neutral: #4f4b5c;
-  --color-neutral-soft: #efedf3;
+  --color-danger: #c4122b;
+  --color-danger-hover: #a50e24;
+  --color-danger-active: #870b1d;
+  --color-danger-soft: #fde8ea;
+  --color-neutral: #4f5058;
+  --color-neutral-soft: #efeff0;
 
   --radius-xs: 4px;
   --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
 
-  --shadow-card: 0 1px 2px rgb(49 15 83 / 0.04), 0 1px 3px rgb(49 15 83 / 0.06);
-  --shadow-pop: 0 10px 30px -10px rgb(49 15 83 / 0.25), 0 4px 10px -4px rgb(49 15 83 / 0.1);
-  --shadow-focus: 0 0 0 3px rgb(255 0 83 / 0.28);
+  --shadow-card: 0 1px 2px rgb(27 28 33 / 0.04);
+  --shadow-pop: 0 12px 32px -12px rgb(27 28 33 / 0.22), 0 4px 10px -4px rgb(27 28 33 / 0.08);
+  --shadow-focus: 0 0 0 3px rgb(64 47 255 / 0.3);
 
   --animate-fade-in: fade-in 150ms ease-out;
   --animate-slide-in-right: slide-in-right 200ms ease-out;
@@ -96,6 +147,20 @@
   }
 }
 
+/* Числа шрифтом бренда: font-num — явно; tabular-nums (зарплаты, баллы, θ, счётчики на экранах) — тоже. */
+@utility font-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+@layer utilities {
+  .tabular-nums {
+    font-family: var(--font-mono);
+    letter-spacing: -0.02em;
+  }
+}
+
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
@@ -107,16 +172,23 @@
     min-height: 100vh;
   }
   :focus-visible {
-    outline: 2px solid var(--color-fsp-pink);
+    outline: 2px solid var(--color-fsp-blue);
     outline-offset: 2px;
   }
   ::selection {
-    background: var(--color-fsp-blush);
-    color: var(--color-fsp-ink);
+    background: var(--color-fsp-blue-pale);
+    color: var(--color-fsp-black);
   }
-  h1, h2, h3, h4 {
+  h1, h2, h3 {
     @apply text-ink;
-    letter-spacing: -0.01em;
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+  h4 {
+    @apply text-ink;
+  }
+  code, kbd, samp, pre {
+    font-family: var(--font-mono);
   }
 }
 

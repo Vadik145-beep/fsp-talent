@@ -102,7 +102,7 @@ export function TagInput({
         <div
           className={cn(
             'flex min-h-10 w-full flex-wrap items-center gap-1.5 rounded-md border border-line-strong bg-surface px-2 py-1.5',
-            'transition-colors hover:border-fsp-lavender focus-within:border-fsp-pink focus-within:shadow-[var(--shadow-focus)]',
+            'transition-colors hover:border-subtle focus-within:border-primary focus-within:shadow-[var(--shadow-focus)]',
             error && 'border-danger',
             disabled && 'cursor-not-allowed bg-surface-muted',
           )}
@@ -111,13 +111,13 @@ export function TagInput({
           {value.map((item) => (
             <span
               key={item}
-              className="inline-flex items-center gap-1 rounded-sm bg-violet-soft py-0.5 pr-1 pl-2 text-[13px] font-medium text-fsp-plum"
+              className="inline-flex items-center gap-1 rounded-sm bg-primary-soft py-0.5 pr-1 pl-2 text-[13px] font-medium text-fsp-blue-deep"
             >
               {item}
               {!disabled && (
                 <button
                   type="button"
-                  className="rounded-xs p-0.5 hover:bg-fsp-lavender/25"
+                  className="rounded-xs p-0.5 hover:bg-primary-tint"
                   aria-label={`Убрать ${item}`}
                   onClick={(e) => {
                     e.stopPropagation()
@@ -166,7 +166,7 @@ export function TagInput({
                 aria-selected={i === active}
                 className={cn(
                   'cursor-pointer px-3 py-1.5 text-sm',
-                  i === active ? 'bg-violet-soft text-fsp-plum' : 'text-ink',
+                  i === active ? 'bg-primary-soft text-fsp-blue-deep' : 'text-ink',
                 )}
                 onMouseDown={(e) => {
                   e.preventDefault()

@@ -37,7 +37,7 @@ export function PageHeader({ title, description, actions, back, breadcrumbs, met
       {back && (
         <Link
           to={back.to}
-          className="mb-2 inline-flex items-center gap-1 text-sm font-medium text-muted hover:text-fsp-plum"
+          className="mb-2 inline-flex items-center gap-1 text-sm font-medium text-muted hover:text-primary"
         >
           <ArrowLeft className="size-4" aria-hidden />
           {back.label ?? 'Назад'}
@@ -50,7 +50,7 @@ export function PageHeader({ title, description, actions, back, breadcrumbs, met
               <li key={i} className="flex items-center gap-1">
                 {i > 0 && <ChevronRight className="size-3.5" aria-hidden />}
                 {c.to ? (
-                  <Link to={c.to} className="hover:text-fsp-plum">
+                  <Link to={c.to} className="hover:text-primary">
                     {c.label}
                   </Link>
                 ) : (
@@ -64,7 +64,7 @@ export function PageHeader({ title, description, actions, back, breadcrumbs, met
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-bold sm:text-[28px]">{title}</h1>
+            <h1 className="text-2xl leading-tight font-semibold sm:text-[28px]">{title}</h1>
             {meta}
           </div>
           {description && <p className="mt-1 max-w-3xl text-[15px] text-muted">{description}</p>}
@@ -101,7 +101,7 @@ export function FilterBar({ search, activeCount = 0, onReset, children, actions,
               onChange={(e) => search.onChange(e.target.value)}
               placeholder={search.placeholder ?? 'Поиск'}
               aria-label={search.placeholder ?? 'Поиск'}
-              className="h-10 w-full rounded-md border border-line-strong bg-surface pr-3 pl-9 text-[15px] placeholder:text-subtle hover:border-fsp-lavender focus:border-fsp-pink focus:shadow-[var(--shadow-focus)] focus:outline-none"
+              className="h-10 w-full rounded-md border border-line-strong bg-surface pr-3 pl-9 text-[15px] placeholder:text-subtle hover:border-subtle focus:border-primary focus:shadow-[var(--shadow-focus)] focus:outline-none"
             />
           </div>
         )}
@@ -150,7 +150,7 @@ export function Pagination({ page, pageCount, onChange, className }: PaginationP
     <nav aria-label="Страницы" className={cn('flex items-center justify-center gap-1', className)}>
       <button
         type="button"
-        className={cn(btn, 'text-fsp-plum hover:bg-violet-soft')}
+        className={cn(btn, 'text-primary hover:bg-primary-soft')}
         onClick={() => onChange(page - 1)}
         disabled={page <= 1}
         aria-label="Предыдущая страница"
@@ -168,7 +168,7 @@ export function Pagination({ page, pageCount, onChange, className }: PaginationP
             type="button"
             onClick={() => onChange(p)}
             aria-current={p === page ? 'page' : undefined}
-            className={cn(btn, p === page ? 'bg-fsp-plum text-white' : 'text-ink hover:bg-violet-soft')}
+            className={cn(btn, 'font-num', p === page ? 'bg-primary text-on-primary' : 'text-ink hover:bg-primary-soft')}
           >
             {p}
           </button>
@@ -176,7 +176,7 @@ export function Pagination({ page, pageCount, onChange, className }: PaginationP
       )}
       <button
         type="button"
-        className={cn(btn, 'text-fsp-plum hover:bg-violet-soft')}
+        className={cn(btn, 'text-primary hover:bg-primary-soft')}
         onClick={() => onChange(page + 1)}
         disabled={page >= pageCount}
         aria-label="Следующая страница"
