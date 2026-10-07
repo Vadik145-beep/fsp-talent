@@ -177,7 +177,7 @@ function GradeView({ g }: { g: GradeStatus }) {
         onClose={() => setConfirm(null)}
         size="sm"
         title={confirm ? `Тест на ${GRADE_LABELS[confirm.grade]}` : ''}
-        description="12–15 задач, время на каждую ограничено."
+        description="До 20 задач, время на каждую ограничено."
         footer={
           <>
             <Button variant="ghost" onClick={() => setConfirm(null)}>

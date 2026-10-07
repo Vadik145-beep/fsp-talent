@@ -13,7 +13,8 @@ import { ONBOARDING_STEPS } from './components/onboardingSteps'
 import { isAnswerReady, normalizeAnswer } from './components/testAnswer'
 import { ITEM_FORMAT_LABELS } from './labels'
 
-const MAX_ITEMS = 15
+/** Если бэкенд не прислал max_items — верхняя граница адаптивного теста. */
+const DEFAULT_MAX_ITEMS = 20
 
 /** Экран теста: задача, таймер, прогресс. Верно/неверно не показываем. */
 export default function TestPage() {
@@ -117,8 +118,8 @@ function TestRunner({ state, onboarding }: { state: TestSessionState; onboarding
       <ProgressBar
         className="mb-5"
         value={number - 1}
-        max={MAX_ITEMS}
-        label={`Отвечено ${number - 1} · обычно 12–15 задач`}
+        max={session.max_items ?? DEFAULT_MAX_ITEMS}
+        label={`Отвечено ${number - 1} · не больше ${session.max_items ?? DEFAULT_MAX_ITEMS} задач`}
         showValue={false}
         tone="violet"
         size="sm"

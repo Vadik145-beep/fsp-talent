@@ -54,14 +54,16 @@ describe('моки соискателя: приглашения', () => {
 
 describe('моки соискателя: тест и грейд', () => {
   it('кулдаун: тест на грейд выше недоступен 90 дней после смены грейда', async () => {
-    const grade = await call<S['GradeStatus']>('GET', '/testing/grade')
+    const grade = await call<S['CandidateGradeStatus']>('GET', '/testing/grade')
     expect(grade.data.can_test_higher).toBe(false)
     expect(grade.data.higher_available_at).toMatch(/^2026-12-09/)
-    const start = await call<{ code: string }>('POST', '/testing/sessions', {
+    const start = await call<{ code: string; details: Record<string, unknown> }>('POST', '/testing/sessions', {
       body: { specialization: 'backend', target_grade: 'senior', kind: 'higher' },
     })
     expect(start.status).toBe(409)
     expect(start.data.code).toBe('cooldown_active')
+    expect(start.data.details.reason_code).toBe('grade_change_cooldown')
+    expect(String(start.data.details.available_at)).toMatch(/^2026-12-09/)
   })
 
   it('GET /candidates/me/grade: статус + варианты пересдачи с причиной (как бэкенд)', async () => {
@@ -74,7 +76,7 @@ describe('моки соискателя: тест и грейд', () => {
     expect(grade.data.can_test_higher).toBe(false)
   })
 
-  it('адаптивный тест: 12–15 задач, затем категория, θ и интервал', async () => {
+  it('адаптивный тест: 12–20 задач, затем категория, θ и интервал', async () => {
     const created = await call<S['TestSessionState']>('POST', '/testing/sessions', {
       body: { specialization: 'backend', target_grade: 'middle', kind: 'placement' },
     })
@@ -93,7 +95,7 @@ describe('моки соискателя: тест и грейд', () => {
       item = ack.data.finished ? null : (ack.data.next_item ?? null)
     }
     expect(answered).toBeGreaterThanOrEqual(12)
-    expect(answered).toBeLessThanOrEqual(15)
+    expect(answered).toBeLessThanOrEqual(20)
     expect(formats.size).toBeGreaterThanOrEqual(4)
     const result = await call<S['TestResult']>('GET', `/testing/sessions/${id}/result`)
     expect(result.status).toBe(200)

@@ -12,7 +12,7 @@ import { apiError, mockLatency, withScenario } from '../utils'
  *   только для роли candidate, иначе хендлер возвращает undefined и запрос уходит хендлеру роли.
  * - Тест: упрощённая адаптивность на вариантах из items.json (preview_variants): следующая
  *   задача — самая информативная для текущей θ (2PL, информация Фишера, случайно из топ-3),
- *   θ и SE пересчитываются EAP по сетке, стоп — 12–15 задач (SE < 0,35 после 12-й).
+ *   θ и SE пересчитываются EAP по сетке, стоп — до 20 задач (раньше, если SE < 0,35 после 12-й).
  *   Внутреннее состояние сессии лежит в поле `_mock` записи test_sessions и наружу не отдаётся.
  */
 
@@ -123,7 +123,7 @@ const SPEC_LABELS: Record<Spec, string> = {
 }
 const DAY = 24 * 60 * 60 * 1000
 const MIN_ITEMS = 12
-const MAX_ITEMS = 15
+const MAX_ITEMS = 20
 const SE_STOP = 0.35
 /** Запас на сеть: ответ позже лимита на столько секунд ещё засчитывается. */
 const TIME_GRACE_SEC = 5
@@ -258,7 +258,7 @@ function profileView(c: CandidateRow): S['CandidateProfile'] {
 
 const MAX_RESUME_BYTES = 5 * 1024 * 1024
 
-function resumeFields(c: CandidateRow): S['ResumeParseResult']['fields'] {
+function resumeFields(c: CandidateRow): S['ResumeParseResponse']['fields'] {
   // Прототип: «распознанное» резюме — данные профиля плюс пара правдоподобных отличий.
   return {
     full_name: { value: c.full_name, confidence: 0.96 },
@@ -751,7 +751,7 @@ function testResult(session: SessionRow, c: CandidateRow): S['TestResult'] {
   }
 }
 
-function gradeStatus(c: CandidateRow): S['GradeStatus'] {
+function gradeStatus(c: CandidateRow): Omit<S['CandidateGradeStatus'], 'lower' | 'higher'> {
   const spec = c.specialization ?? null
   const grade = c.grade ?? null
   const change = changeAvailableAt(c)
@@ -978,7 +978,7 @@ export const candidateHandlers: HttpHandler[] = [
       const isPdf = file.type === 'application/pdf' || file.type === 'application/x-pdf' || /\.pdf$/i.test(file.name)
       if (!isPdf) return apiError(415, 'unsupported_file', 'Нужен PDF', { content_type: file.type })
       if (file.size > MAX_RESUME_BYTES) return apiError(413, 'file_too_large', 'Файл больше 5 МБ')
-      const result: S['ResumeParseResult'] = {
+      const result: S['ResumeParseResponse'] = {
         resume_id: Date.now() % 100000,
         filename: file.name || 'resume.pdf',
         parser: 'rules',
@@ -1184,7 +1184,7 @@ export const candidateHandlers: HttpHandler[] = [
     }),
   ),
 
-  http.get('/api/testing/grade', candidateGet((c) => gradeStatus(c))),
+  http.get('/api/testing/grade', candidateGet((c) => candidateGradeStatus(c))),
 
   http.get('/api/candidates/me/grade', candidateGet((c) => candidateGradeStatus(c))),
 
@@ -1213,12 +1213,12 @@ export const candidateHandlers: HttpHandler[] = [
       if (kind !== 'placement') {
         const at = maxDate(c.grade ? changeAvailableAt(c) : null, retryAvailableAt(c, spec, target))
         if (at) {
-          return apiError(409, 'cooldown_active', 'Сменить грейд можно не чаще раза в 90 дней', { available_at: at })
+          return apiError(409, 'cooldown_active', 'Сменить грейд можно не чаще раза в 90 дней', { reason_code: 'grade_change_cooldown', available_at: at })
         }
       } else {
         const retry = retryAvailableAt(c, spec, target)
         if (retry) {
-          return apiError(409, 'cooldown_active', 'Повторить неудачную попытку на этот грейд можно через 30 дней', { available_at: retry })
+          return apiError(409, 'cooldown_active', 'Повторить неудачную попытку на этот грейд можно через 30 дней', { reason_code: 'failed_retry_cooldown', available_at: retry })
         }
       }
       const prior = START_THETA[target]
@@ -1296,7 +1296,7 @@ export const candidateHandlers: HttpHandler[] = [
       session.se = round2(se)
 
       const n = state.answers.length
-      // Стоп: 15 задач или SE < 0,35 после 12-й (и если банк кончился раньше).
+      // Стоп: 20 задач или SE < 0,35 после 12-й (и если банк кончился раньше).
       const next = n >= MAX_ITEMS || (n >= MIN_ITEMS && se < SE_STOP) ? undefined : pickNext(session, state, theta)
       if (next) {
         state.current = { instance_id: next.variant.instance_id, item_id: next.item.id, started_at: db.now() }

@@ -49,13 +49,14 @@ const asList = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => 
 /** Подставить распознанные из PDF поля в форму. Возвращает форму и уверенность по полям. */
 export function applyParsedResume(
   base: ProfileFormState,
-  parsed: S['ResumeParseResult'],
+  parsed: S['ResumeParseResponse'],
 ): { form: ProfileFormState; confidence: ParsedConfidence } {
   const form = { ...base }
   const confidence: ParsedConfidence = {}
   for (const [key, field] of Object.entries(parsed.fields)) {
     const v = field.value
-    if (v === null || v === undefined || (Array.isArray(v) && v.length === 0) || v === '') continue
+    // Не найдено в резюме: value null, confidence 0 — поле формы не трогаем.
+    if (field.confidence <= 0 || v === null || v === undefined || (Array.isArray(v) && v.length === 0) || v === '') continue
     switch (key) {
       case 'full_name':
       case 'phone':
