@@ -1128,13 +1128,13 @@ export interface paths {
         };
         /**
          * Вакансии
-         * @description Кандидат — лента опубликованных вакансий с фильтрами (и `my_application_id`). Рекрутер — все вакансии своей компании в любом статусе.
+         * @description Кандидат — лента опубликованных вакансий с фильтрами (и `my_application_id`). Рекрутер — все вакансии своей компании в любом статусе. `skills` — все перечисленные навыки (в обязательном или желательном стеке). Пагинация необязательна: `limit` и `offset`; всего по фильтрам — в заголовке `X-Total-Count`.
          */
         get: operations["list_vacancies_api_vacancies_get"];
         put?: never;
         /**
          * Создать вакансию (черновик)
-         * @description Зарплата от–до обязательна [ТЗ 2.2 п.1]. Заглушка: не сохраняется.
+         * @description Зарплата от–до обязательна [ТЗ 2.2 п.1]. Стек — коды справочника. Вакансия создаётся черновиком своей компании.
          */
         post: operations["create_vacancy_api_vacancies_post"];
         delete?: never;
@@ -1150,7 +1150,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Карточка вакансии */
+        /**
+         * Карточка вакансии
+         * @description Рекрутер — только своей компании. Кандидат — опубликованная вакансия или та, на которую он уже откликнулся.
+         */
         get: operations["get_vacancy_api_vacancies__vacancy_id__get"];
         /** Изменить вакансию своей компании */
         put: operations["update_vacancy_api_vacancies__vacancy_id__put"];
@@ -1170,7 +1173,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Опубликовать вакансию */
+        /**
+         * Опубликовать вакансию
+         * @description Из черновика или снятой с публикации.
+         */
         post: operations["publish_vacancy_api_vacancies__vacancy_id__publish_post"];
         delete?: never;
         options?: never;
@@ -1204,11 +1210,14 @@ export interface paths {
         };
         /**
          * Отклики на вакансию (рекрутер)
-         * @description Контакты кандидата открыты сразу: он откликнулся сам [ТЗ 2.1].
+         * @description Контакты кандидата открыты сразу: он откликнулся сам [ТЗ 2.1]. В карточке — категория кандидата и результат теста (θ, темы).
          */
         get: operations["vacancy_applications_api_vacancies__vacancy_id__applications_get"];
         put?: never;
-        /** Откликнуться на вакансию (кандидат) */
+        /**
+         * Откликнуться на вакансию (кандидат)
+         * @description Только на опубликованную вакансию, один раз. Компания сразу видит контакты кандидата (запись в audit_log), рекрутерам компании уходит письмо.
+         */
         post: operations["apply_to_vacancy_api_vacancies__vacancy_id__applications_post"];
         delete?: never;
         options?: never;
@@ -1249,7 +1258,10 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Сменить статус отклика (рекрутер) */
+        /**
+         * Сменить статус отклика (рекрутер)
+         * @description `new → viewed → invited / rejected`; назад к `new`/`viewed` нельзя, `invited` ↔ `rejected` можно. Статус виден кандидату, ему уходит письмо.
+         */
         patch: operations["update_application_api_applications__application_id__patch"];
         trace?: never;
     };
@@ -6396,7 +6408,7 @@ export interface components {
         };
         /**
          * Vacancy
-         * @description Вакансия (запись `vacancies.json`).
+         * @description Вакансия (таблица `vacancies`; фикстура `vacancies.json`).
          * @example {
          *       "applications_count": 3,
          *       "category": "backend:middle",
@@ -6449,6 +6461,12 @@ export interface components {
             work_format: components["schemas"]["WorkFormat"];
             /** City */
             city?: string | null;
+            /**
+             * Team Description
+             * @description Описание команды (необязательно)
+             * @default
+             */
+            team_description: string;
             /** Id */
             id: number;
             /** Company Id */
@@ -6495,6 +6513,7 @@ export interface components {
          *         "postgresql"
          *       ],
          *       "specialization": "backend",
+         *       "team_description": "Платёжный шлюз, 6 человек",
          *       "title": "Middle Python-разработчик",
          *       "work_format": "hybrid"
          *     }
@@ -6523,6 +6542,12 @@ export interface components {
             work_format: components["schemas"]["WorkFormat"];
             /** City */
             city?: string | null;
+            /**
+             * Team Description
+             * @description Описание команды (необязательно)
+             * @default
+             */
+            team_description: string;
         };
         /**
          * VacancyStatus
@@ -10597,6 +10622,10 @@ export interface operations {
                 /** @description Зарплата «до» не ниже */
                 salary_min?: number | null;
                 q?: string | null;
+                /** @description Размер страницы */
+                limit?: number | null;
+                /** @description Сколько пропустить */
+                offset?: number;
             };
             header?: {
                 /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
@@ -10692,7 +10721,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description `validation_error` — Ошибка валидации (в т.ч. salary_range_invalid: от > до) */
+            /** @description `validation_error` — Ошибка валидации (в т.ч. salary_range_invalid: от > до; unknown_skills — стек не из справочника) */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -10822,7 +10851,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description `validation_error` — Ошибка валидации (в т.ч. salary_range_invalid: от > до) */
+            /** @description `validation_error` — Ошибка валидации (в т.ч. salary_range_invalid: от > до; unknown_skills — стек не из справочника) */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -11217,6 +11246,15 @@ export interface operations {
             };
             /** @description `not_found` — Объект не найден */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `invalid_transition` — Недопустимая смена статуса отклика */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

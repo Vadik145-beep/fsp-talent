@@ -8711,7 +8711,7 @@
           "vacancies"
         ],
         "summary": "Вакансии",
-        "description": "Кандидат — лента опубликованных вакансий с фильтрами (и `my_application_id`). Рекрутер — все вакансии своей компании в любом статусе.",
+        "description": "Кандидат — лента опубликованных вакансий с фильтрами (и `my_application_id`). Рекрутер — все вакансии своей компании в любом статусе. `skills` — все перечисленные навыки (в обязательном или желательном стеке). Пагинация необязательна: `limit` и `offset`; всего по фильтрам — в заголовке `X-Total-Count`.",
         "operationId": "list_vacancies_api_vacancies_get",
         "security": [
           {
@@ -8821,6 +8821,39 @@
               ],
               "title": "Q"
             }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 100,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Размер страницы",
+              "title": "Limit"
+            },
+            "description": "Размер страницы"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Сколько пропустить",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Сколько пропустить"
           },
           {
             "name": "x-demo-role",
@@ -8941,7 +8974,7 @@
           "vacancies"
         ],
         "summary": "Создать вакансию (черновик)",
-        "description": "Зарплата от–до обязательна [ТЗ 2.2 п.1]. Заглушка: не сохраняется.",
+        "description": "Зарплата от–до обязательна [ТЗ 2.2 п.1]. Стек — коды справочника. Вакансия создаётся черновиком своей компании.",
         "operationId": "create_vacancy_api_vacancies_post",
         "security": [
           {
@@ -9048,15 +9081,15 @@
             }
           },
           "422": {
-            "description": "`validation_error` — Ошибка валидации (в т.ч. salary_range_invalid: от > до)",
+            "description": "`validation_error` — Ошибка валидации (в т.ч. salary_range_invalid: от > до; unknown_skills — стек не из справочника)",
             "content": {
               "application/json": {
                 "examples": {
                   "validation_error": {
-                    "summary": "Ошибка валидации (в т.ч. salary_range_invalid: от > до)",
+                    "summary": "Ошибка валидации (в т.ч. salary_range_invalid: от > до; unknown_skills — стек не из справочника)",
                     "value": {
                       "code": "validation_error",
-                      "message": "Ошибка валидации (в т.ч. salary_range_invalid: от > до)",
+                      "message": "Ошибка валидации (в т.ч. salary_range_invalid: от > до; unknown_skills — стек не из справочника)",
                       "details": {}
                     }
                   }
@@ -9076,6 +9109,7 @@
           "vacancies"
         ],
         "summary": "Карточка вакансии",
+        "description": "Рекрутер — только своей компании. Кандидат — опубликованная вакансия или та, на которую он уже откликнулся.",
         "operationId": "get_vacancy_api_vacancies__vacancy_id__get",
         "security": [
           {
@@ -9352,15 +9386,15 @@
             }
           },
           "422": {
-            "description": "`validation_error` — Ошибка валидации (в т.ч. salary_range_invalid: от > до)",
+            "description": "`validation_error` — Ошибка валидации (в т.ч. salary_range_invalid: от > до; unknown_skills — стек не из справочника)",
             "content": {
               "application/json": {
                 "examples": {
                   "validation_error": {
-                    "summary": "Ошибка валидации (в т.ч. salary_range_invalid: от > до)",
+                    "summary": "Ошибка валидации (в т.ч. salary_range_invalid: от > до; unknown_skills — стек не из справочника)",
                     "value": {
                       "code": "validation_error",
-                      "message": "Ошибка валидации (в т.ч. salary_range_invalid: от > до)",
+                      "message": "Ошибка валидации (в т.ч. salary_range_invalid: от > до; unknown_skills — стек не из справочника)",
                       "details": {}
                     }
                   }
@@ -9380,6 +9414,7 @@
           "vacancies"
         ],
         "summary": "Опубликовать вакансию",
+        "description": "Из черновика или снятой с публикации.",
         "operationId": "publish_vacancy_api_vacancies__vacancy_id__publish_post",
         "security": [
           {
@@ -9706,7 +9741,7 @@
           "vacancies"
         ],
         "summary": "Отклики на вакансию (рекрутер)",
-        "description": "Контакты кандидата открыты сразу: он откликнулся сам [ТЗ 2.1].",
+        "description": "Контакты кандидата открыты сразу: он откликнулся сам [ТЗ 2.1]. В карточке — категория кандидата и результат теста (θ, темы).",
         "operationId": "vacancy_applications_api_vacancies__vacancy_id__applications_get",
         "security": [
           {
@@ -9852,6 +9887,7 @@
           "vacancies"
         ],
         "summary": "Откликнуться на вакансию (кандидат)",
+        "description": "Только на опубликованную вакансию, один раз. Компания сразу видит контакты кандидата (запись в audit_log), рекрутерам компании уходит письмо.",
         "operationId": "apply_to_vacancy_api_vacancies__vacancy_id__applications_post",
         "security": [
           {
@@ -10154,6 +10190,7 @@
           "vacancies"
         ],
         "summary": "Сменить статус отклика (рекрутер)",
+        "description": "`new → viewed → invited / rejected`; назад к `new`/`viewed` нельзя, `invited` ↔ `rejected` можно. Статус виден кандидату, ему уходит письмо.",
         "operationId": "update_application_api_applications__application_id__patch",
         "security": [
           {
@@ -10278,6 +10315,26 @@
                     "value": {
                       "code": "not_found",
                       "message": "Объект не найден",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`invalid_transition` — Недопустимая смена статуса отклика",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "invalid_transition": {
+                    "summary": "Недопустимая смена статуса отклика",
+                    "value": {
+                      "code": "invalid_transition",
+                      "message": "Недопустимая смена статуса отклика",
                       "details": {}
                     }
                   }
@@ -26002,6 +26059,13 @@
             ],
             "title": "City"
           },
+          "team_description": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Team Description",
+            "description": "Описание команды (необязательно)",
+            "default": ""
+          },
           "id": {
             "type": "integer",
             "title": "Id"
@@ -26078,7 +26142,7 @@
           "created_at"
         ],
         "title": "Vacancy",
-        "description": "Вакансия (запись `vacancies.json`).",
+        "description": "Вакансия (таблица `vacancies`; фикстура `vacancies.json`).",
         "examples": [
           {
             "applications_count": 3,
@@ -26173,6 +26237,13 @@
               }
             ],
             "title": "City"
+          },
+          "team_description": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Team Description",
+            "description": "Описание команды (необязательно)",
+            "default": ""
           }
         },
         "additionalProperties": false,
@@ -26203,6 +26274,7 @@
               "postgresql"
             ],
             "specialization": "backend",
+            "team_description": "Платёжный шлюз, 6 человек",
             "title": "Middle Python-разработчик",
             "work_format": "hybrid"
           }
