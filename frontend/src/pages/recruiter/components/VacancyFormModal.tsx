@@ -21,6 +21,7 @@ function VacancyForm({ vacancy, onClose, onSaved }: { vacancy?: Vacancy | null; 
   const { toast } = useToast()
   const [title, setTitle] = useState(vacancy?.title ?? '')
   const [description, setDescription] = useState(vacancy?.description ?? '')
+  const [team, setTeam] = useState(vacancy?.team_description ?? '')
   const [spec, setSpec] = useState<Specialization | ''>(vacancy?.specialization ?? '')
   const [grade, setGrade] = useState<Grade | ''>(vacancy?.grade ?? '')
   const [required, setRequired] = useState<string[]>(vacancy?.skills_required ?? [])
@@ -68,6 +69,7 @@ function VacancyForm({ vacancy, onClose, onSaved }: { vacancy?: Vacancy | null; 
     save.mutate({
       title: title.trim(),
       description: description.trim(),
+      team_description: team.trim(),
       specialization: spec as Specialization,
       grade: grade as Grade,
       skills_required: required,
@@ -101,6 +103,7 @@ function VacancyForm({ vacancy, onClose, onSaved }: { vacancy?: Vacancy | null; 
         <Select label="Специализация" required placeholder="Выберите…" options={SPECIALIZATION_OPTIONS} value={spec} onChange={(e) => setSpec(e.target.value as Specialization)} error={errors.specialization} />
         <Select label="Грейд" required placeholder="Выберите…" options={GRADE_OPTIONS} value={grade} onChange={(e) => setGrade(e.target.value as Grade)} error={errors.grade} />
         <Textarea label="Описание" required containerClassName="sm:col-span-2" rows={4} maxLength={10000} value={description} onChange={(e) => setDescription(e.target.value)} error={errors.description} />
+        <Textarea label="Чем занимается команда" containerClassName="sm:col-span-2" rows={2} maxLength={2000} value={team} onChange={(e) => setTeam(e.target.value)} placeholder="Например: платёжный шлюз, команда 6 человек" />
         <SkillInput label="Обязательный стек" value={required} onChange={setRequired} />
         <SkillInput label="Желательный стек" value={desired} onChange={setDesired} />
         <RadioGroup label="Формат работы" orientation="horizontal" options={WORK_FORMAT_OPTIONS} value={format || null} onChange={(v) => setFormat(v as WorkFormat)} error={errors.work_format} />

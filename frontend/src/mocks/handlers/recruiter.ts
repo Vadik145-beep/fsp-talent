@@ -1246,6 +1246,7 @@ export const recruiterHandlers: HttpHandler[] = [
         company_name: ctx.company.name,
         title: body.title!.trim(),
         description: body.description!.trim(),
+        team_description: (body.team_description ?? '').trim(),
         specialization: body.specialization!,
         grade: body.grade!,
         skills_required: normSkills(body.skills_required),
