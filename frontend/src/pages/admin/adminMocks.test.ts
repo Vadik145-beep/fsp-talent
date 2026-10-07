@@ -2,7 +2,8 @@ import { setupServer } from 'msw/node'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { db } from '@/mocks/db'
 import { adminHandlers, buildVacancyTest, evaluateMatchingCsv } from '@/mocks/handlers/admin'
-import type { ItemDetail, PlatformSettings, VacancyTestResult } from './api'
+import { ApiError } from '@/shared/api'
+import { fieldErrors, type ItemDetail, type LeakScanResult, type PlatformSettings, type VacancyTestResult } from './api'
 
 // Моки админки проверяем настоящими HTTP-запросами через MSW (как в браузере).
 const server = setupServer(...adminHandlers)
@@ -48,6 +49,16 @@ describe('моки админки: банк задач', () => {
     expect((await call('POST', '/api/admin/items/1/approve')).status).toBe(409)
   })
 
+  it('детектор утечек выводит помеченные шаблоны и пишет журнал; пересчёт принимает min_responses', async () => {
+    const res = await call<LeakScanResult>('POST', '/api/admin/items/leak-scan')
+    expect(res.status).toBe(200)
+    expect(res.data.retired.map((r) => r.item_id).sort()).toEqual([13, 28]) // 21 в сиде уже выведен
+    expect(item(13).status).toBe('retired')
+    expect(db.data.audit_log.at(-1)?.action).toBe('item_leak_retired')
+    expect((await call('POST', '/api/admin/items/recalibrate?min_responses=0')).status).toBe(422)
+    expect((await call<{ items_recalibrated: number }>('POST', '/api/admin/items/recalibrate?min_responses=1000000')).data.items_recalibrated).toBe(0)
+  })
+
   it('карточка шаблона отдаёт 3 разных варианта', async () => {
     const res = await call<ItemDetail>('GET', '/api/admin/items/3')
     expect(res.data.preview_variants).toHaveLength(3)
@@ -76,15 +87,46 @@ describe('моки админки: настройки', () => {
     expect(db.data.audit_log.at(-1)?.action).toBe('settings_updated')
   })
 
-  it('неверные значения отклоняются с понятной ошибкой', async () => {
-    const res = await call<{ code: string; details: Record<string, string> }>('PUT', '/api/admin/settings', {
-      invitation_quota: 0,
+  it('неверные значения отклоняются как на бэкенде: validation_error, invalid_thresholds, invalid_weights', async () => {
+    type Err = { code: string; details: { errors?: Array<{ loc: string[]; type: string }>; specialization?: string } }
+    const range = await call<Err>('PUT', '/api/admin/settings', { invitation_quota: 0 })
+    expect(range.status).toBe(422)
+    expect(range.data.code).toBe('validation_error')
+    expect(range.data.details.errors?.[0]).toMatchObject({ loc: ['body', 'invitation_quota'], type: 'greater_than_equal' })
+    expect(fieldErrors(new ApiError(422, range.data.code, '', range.data.details)).invitation_quota).toBe('Не меньше 1')
+
+    const thresholds = await call<Err>('PUT', '/api/admin/settings', {
       grade_thresholds: [{ specialization: 'backend', junior_from: 0.5, middle_from: 0, senior_from: 1 }],
     })
-    expect(res.status).toBe(422)
-    expect(res.data.details.invitation_quota).toBeTruthy()
-    expect(res.data.details.grade_thresholds).toBeTruthy()
+    expect(thresholds.data.code).toBe('invalid_thresholds')
+    expect(thresholds.data.details.specialization).toBe('backend')
+
+    const zero = { stack: 0, theta: 0, fsp: 0, freshness: 0, salary: 0, work_format: 0 }
+    const weights = await call<Err>('PUT', '/api/admin/settings', { ranking_weights: zero })
+    expect(weights.data.code).toBe('invalid_weights')
+    expect(fieldErrors(new ApiError(422, weights.data.code, 'Хотя бы один вес', {})).ranking_weights).toBe('Хотя бы один вес')
     expect((db.data.platform_settings as unknown as PlatformSettings[])[0].invitation_quota).toBe(20)
+  })
+})
+
+describe('моки админки: темы теста и стек', () => {
+  it('тему можно добавить, переименовать и удалить; тему с шаблонами удалить нельзя', async () => {
+    const created = await call<{ id: string }>('POST', '/api/admin/catalog/topics', { id: 'backend.caching', specialization: 'backend', label: 'Кэширование' })
+    expect(created.status).toBe(201)
+    expect((await call<{ code: string }>('POST', '/api/admin/catalog/topics', { id: 'backend.caching', specialization: 'backend', label: 'x' })).data.code).toBe('topic_exists')
+    expect((await call<{ code: string }>('POST', '/api/admin/catalog/topics', { id: 'qa.caching', specialization: 'backend', label: 'x' })).data.code).toBe('topic_code_invalid')
+    expect((await call<{ label: string }>('PATCH', '/api/admin/catalog/topics/backend.caching', { label: 'Кэш' })).data.label).toBe('Кэш')
+    expect((await call('DELETE', '/api/admin/catalog/topics/backend.caching')).status).toBe(204)
+    expect((await call<{ code: string }>('DELETE', '/api/admin/catalog/topics/backend.http_api')).data.code).toBe('topic_in_use')
+  })
+
+  it('технология: ошибка кода приходит по полю, повтор — skill_exists', async () => {
+    const bad = await call<{ code: string; details: Record<string, unknown> }>('POST', '/api/admin/catalog/skills', { id: 'Bad Id', label: 'X', specializations: ['backend'] })
+    expect(fieldErrors(new ApiError(422, bad.data.code, '', bad.data.details)).id).toMatch(/латиница/)
+    expect((await call('POST', '/api/admin/catalog/skills', { id: 'svelte', label: 'Svelte', specializations: ['frontend'] })).status).toBe(201)
+    const dup = await call<{ code: string }>('POST', '/api/admin/catalog/skills', { id: 'svelte', label: 'Svelte', specializations: ['frontend'] })
+    expect(dup.data.code).toBe('skill_exists')
+    expect(fieldErrors(new ApiError(409, dup.data.code, 'Такая технология уже есть')).id).toBe('Такая технология уже есть')
   })
 })
 

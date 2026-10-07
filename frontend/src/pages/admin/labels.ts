@@ -61,16 +61,21 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   grade_changed: 'Смена грейда',
   user_blocked: 'Блокировка пользователя',
   user_unblocked: 'Разблокировка пользователя',
-  role_changed: 'Смена роли',
+  user_role_changed: 'Смена роли',
   company_blocked: 'Блокировка компании',
   company_unblocked: 'Разблокировка компании',
   item_leak_flagged: 'Флаг утечки',
   item_retired: 'Шаблон выведен',
+  item_leak_retired: 'Вывод по утечке',
+  candidate_anomaly: 'Аномалия ответов',
   item_approved: 'Черновик одобрен',
   items_recalibrated: 'Пересчёт калибровки',
   settings_updated: 'Изменены настройки',
+  catalog_created: 'Добавлено в справочник',
   catalog_updated: 'Изменён справочник',
+  catalog_deleted: 'Удалено из справочника',
   report_resolved: 'Жалоба обработана',
+  consent_granted: 'Дано согласие',
   consent_revoked: 'Отзыв согласия',
 }
 
@@ -79,8 +84,11 @@ export const AUDIT_ACTION_TONES: Record<string, Tone> = {
   grade_changed: 'violet',
   user_blocked: 'danger',
   company_blocked: 'danger',
+  catalog_deleted: 'warning',
   item_leak_flagged: 'warning',
   item_retired: 'neutral',
+  item_leak_retired: 'danger',
+  candidate_anomaly: 'warning',
   consent_revoked: 'warning',
 }
 
@@ -94,6 +102,24 @@ export const TARGET_TYPE_LABELS: Record<string, string> = {
   consent: 'Согласие',
   report: 'Жалоба',
   catalog: 'Справочник',
+  skill: 'Технология',
+  specialization: 'Специализация',
+  grade: 'Грейд',
+  category: 'Категория',
+  topic: 'Тема теста',
+}
+
+/** Подписи ключей настроек (для журнала: «было → стало»). */
+export const SETTING_LABELS: Record<string, string> = {
+  grade_thresholds: 'Пороги θ',
+  grade_change_cooldown_days: 'Кулдаун смены грейда, дней',
+  retry_cooldown_days: 'Кулдаун повтора, дней',
+  invitation_quota: 'Квота приглашений',
+  invitation_ttl_days: 'Срок приглашения, дней',
+  cat_se_stop: 'Стоп теста по точности',
+  cat_max_items: 'Максимум задач',
+  exposure_max_share: 'Лимит показов задачи',
+  ranking_weights: 'Веса ранжирования',
 }
 
 /** 0.873 → «87 %», null → «—». */

@@ -5,13 +5,13 @@ import { GRADES, GRADE_LABELS, SPECIALIZATIONS, SPECIALIZATION_LABELS } from '@/
 import { plural } from '@/shared/lib/format'
 import type { CoverageCell } from '../api'
 
-/** Последовательная шкала одного оттенка (фиолетовый): светлее — меньше шаблонов. */
+/** Последовательная шкала фирменного синего на токенах: светлее — меньше шаблонов, 0 — пустая клетка с пунктиром. */
 const STEPS = [
-  { min: 0, bg: 'bg-surface-muted border-dashed border-line-strong', text: 'text-subtle' },
-  { min: 1, bg: 'bg-[#ece3f8] border-[#ece3f8]', text: 'text-fsp-plum' },
-  { min: 2, bg: 'bg-[#cbb3ec] border-[#cbb3ec]', text: 'text-fsp-night' },
-  { min: 3, bg: 'bg-[#7c4dc8] border-[#7c4dc8]', text: 'text-white' },
-  { min: 5, bg: 'bg-[#5b2ca8] border-[#5b2ca8]', text: 'text-white' },
+  { min: 0, cls: 'bg-surface-muted border-dashed border-line-strong text-subtle' },
+  { min: 1, cls: 'bg-fsp-blue-pale border-fsp-blue-pale text-fsp-blue-deep' },
+  { min: 2, cls: 'bg-fsp-blue-light border-fsp-blue-light text-fsp-black' },
+  { min: 3, cls: 'bg-fsp-blue border-fsp-blue text-on-primary' },
+  { min: 5, cls: 'bg-fsp-blue-deep border-fsp-blue-deep text-on-primary' },
 ]
 
 function stepFor(n: number) {
@@ -33,7 +33,7 @@ export function CoverageHeatmap({ cells, specialization }: { cells: CoverageCell
         <div className="flex items-center gap-1.5 text-xs text-muted" aria-label="Легенда">
           <span>0</span>
           {STEPS.map((s) => (
-            <span key={s.min} className={cn('size-4 rounded-xs border', s.bg)} aria-hidden />
+            <span key={s.min} className={cn('size-4 rounded-xs border', s.cls)} aria-hidden />
           ))}
           <span>5+</span>
         </div>
@@ -85,8 +85,7 @@ export function CoverageHeatmap({ cells, specialization }: { cells: CoverageCell
                               aria-label={text}
                               className={cn(
                                 'flex h-11 flex-col items-center justify-center rounded-sm border text-base font-bold tabular-nums transition-[filter] hover:brightness-95 focus-visible:shadow-[var(--shadow-focus)] focus-visible:outline-none',
-                                st.bg,
-                                st.text,
+                                st.cls,
                               )}
                             >
                               {active}

@@ -12,9 +12,10 @@ import {
   type Specialization,
 } from '@/shared/config/dictionaries'
 import { Button, Card, EmptyState, ErrorState, FilterBar, PageHeader, Select, SkeletonText, Table, Tabs, Tag, type TableColumn } from '@/shared/ui'
-import type { CoverageCell, ItemPage, ItemSummary, Topic } from './api'
+import { fetchAllItems, type CoverageCell, type ItemSummary, type Topic } from './api'
 import { CoverageHeatmap } from './components/CoverageHeatmap'
 import { ItemStatusBadge, LeakBadge, StatTile } from './components/common'
+import { LeakScanButton } from './components/LeakScanButton'
 import { RecalibrateButton } from './components/RecalibrateButton'
 import { ITEM_FORMAT_LABELS, ITEM_STATUS_LABELS, num, pct } from './labels'
 
@@ -33,7 +34,7 @@ function CorrectRate({ row }: { row: ItemSummary }) {
         {exp != null && <span className="text-muted">ожид. {pct(exp)}</span>}
       </div>
       <div className="relative mt-1 h-1.5 rounded-full bg-line">
-        <div className={`h-full rounded-full ${high ? 'bg-danger' : 'bg-[#6B3FC4]'}`} style={{ width: `${row.correct_rate * 100}%` }} />
+        <div className={`h-full rounded-full ${high ? 'bg-danger' : 'bg-fsp-blue'}`} style={{ width: `${row.correct_rate * 100}%` }} />
         {exp != null && <span className="absolute -top-0.5 h-2.5 w-0.5 bg-ink" style={{ left: `${exp * 100}%` }} aria-hidden />}
       </div>
     </div>
@@ -67,12 +68,9 @@ export default function AdminItemsPage() {
 
   const items = useQuery({
     queryKey: ['admin', 'items', { spec, topic, status, leak }],
-    queryFn: () =>
-      api.get<ItemPage>('/admin/items', {
-        query: { specialization: spec, topic, status, leak_flag: leak ? true : undefined, page_size: 200 },
-      }),
+    queryFn: () => fetchAllItems({ specialization: spec, topic, status, leak_flag: leak ? true : undefined }),
   })
-  const allItems = useQuery({ queryKey: ['admin', 'items', 'all'], queryFn: () => api.get<ItemPage>('/admin/items', { query: { page_size: 200 } }) })
+  const allItems = useQuery({ queryKey: ['admin', 'items', 'all'], queryFn: () => fetchAllItems() })
   const topics = useQuery({ queryKey: ['admin', 'topics'], queryFn: () => api.get<Topic[]>('/catalog/topics') })
   const coverage = useQuery({
     queryKey: ['admin', 'coverage'],
@@ -147,7 +145,12 @@ export default function AdminItemsPage() {
       <PageHeader
         title="Банк задач"
         description="Параметрические шаблоны: у каждого кандидата свой вариант. Сложность b и различающая сила a измеряются по ответам, детектор следит за утечками."
-        actions={<RecalibrateButton />}
+        actions={
+          <>
+            <LeakScanButton />
+            <RecalibrateButton />
+          </>
+        }
       />
 
       <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">

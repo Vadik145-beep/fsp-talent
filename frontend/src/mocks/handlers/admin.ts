@@ -23,7 +23,7 @@ type AuditEntry = S['AuditEntry']
 type UserRecord = S['UserRecord']
 type PlatformSettings = S['PlatformSettings']
 type ValidationChart = S['ValidationChart']
-type VacancyTestResult = S['VacancyTestResult']
+type VacancyTestResult = S['VacancyTestOut']
 type Report = S['Report']
 type Skill = S['Skill']
 type Topic = S['Topic']
@@ -59,6 +59,7 @@ interface NeedRow {
   skills_desired: string[]
 }
 
+const ROLE_LABEL: Record<Role, string> = { candidate: 'соискатель', recruiter: 'рекрутер', admin: 'администратор' }
 const GRADE_ORDER: Record<GradeCode, number> = { intern: 0, junior: 1, middle: 2, senior: 3 }
 const GRADE_LABEL: Record<GradeCode, string> = { intern: 'Стажёр', junior: 'Junior', middle: 'Middle', senior: 'Senior' }
 const GRADES: GradeCode[] = ['intern', 'junior', 'middle', 'senior']
@@ -110,6 +111,20 @@ function addAudit(
     target_id: targetId,
     summary,
     details,
+  })
+}
+
+/** Ошибка валидации как у бэкенда (FastAPI/pydantic): details.errors = [{loc, msg, type, ctx}]. */
+interface FieldError {
+  field: string
+  type: string
+  msg: string
+  ctx?: Record<string, unknown>
+}
+
+function validationError(errors: FieldError[]) {
+  return apiError(422, 'validation_error', 'Ошибка валидации данных', {
+    errors: errors.map((e) => ({ loc: ['body', e.field], msg: e.msg, type: e.type, ...(e.ctx ? { ctx: e.ctx } : {}) })),
   })
 }
 
@@ -168,8 +183,8 @@ function buildDashboard(): S['AdminDashboard'] {
     withdrawn: 0,
   }
   for (const inv of invitations) byStatus[inv.status] += 1
-  // Отозванные рекрутером не считаем: кандидат не успел ответить по вине работодателя.
-  const base = invitations.length - byStatus.withdrawn
+  // Как на бэкенде (AdminService.dashboard): принятые / все отправленные.
+  const base = invitations.length
 
   const items = col<ItemDetail>('items')
   return {
@@ -177,7 +192,7 @@ function buildDashboard(): S['AdminDashboard'] {
     tests_total: sessions.length,
     tests_by_day: [...byDay.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([date, count]) => ({ date, count })),
     invitations_by_status: byStatus,
-    invite_to_accept_conversion: base > 0 ? round(byStatus.accepted / base, 3) : 0,
+    invite_to_accept_conversion: base > 0 ? round(byStatus.accepted / base, 2) : 0,
     leak_flags: items
       .filter((i) => i.leak_flag)
       .sort((a, b) => b.leak_score - a.leak_score)
@@ -197,16 +212,25 @@ const EMPTY_DASHBOARD: S['AdminDashboard'] = {
 }
 
 // --- Компании --------------------------------------------------------------------------------
+/** Скоринг и доля ответов — как на бэкенде (companies/service.py: trust_score, response_rate). */
 function adminCompany(c: CompanyRow): S['AdminCompany'] {
   const invitations = col<{ company_id: number; status: string }>('invitations').filter((i) => i.company_id === c.id)
   const answered = invitations.filter((i) => i.status === 'accepted' || i.status === 'declined').length
+  const decided = invitations.filter((i) => i.status === 'accepted' || i.status === 'declined' || i.status === 'expired').length
+  const reports = col<Report>('reports').filter((r) => r.company_id === c.id)
+  const responseRate = decided ? round(answered / decided, 2) : 0
+  let score = decided ? 30 + 50 * responseRate : 50
+  if (c.verified_domain) score += 10
+  score -= 15 * reports.filter((r) => r.status === 'resolved').length
+  score -= 5 * reports.filter((r) => r.status === 'new' || r.status === 'in_review').length
   return {
     ...c,
     blocked: Boolean(c.blocked),
+    trust_score: round(Math.min(100, Math.max(0, score)), 1),
     recruiters_count: col<{ company_id: number }>('recruiters').filter((r) => r.company_id === c.id).length,
     invitations_sent: invitations.length,
-    response_rate: invitations.length ? round(answered / invitations.length, 2) : 0,
-    reports_count: col<Report>('reports').filter((r) => r.company_id === c.id).length,
+    response_rate: responseRate,
+    reports_count: reports.length,
   }
 }
 
@@ -240,12 +264,12 @@ function buildCoverage(): S['CoverageCell'][] {
  * ожидаемая доля подтягивается к наблюдаемой; пилот с ≥ 150 ответами становится активным.
  * Слитые (leak_flag) шаблоны не трогаем: их ответы искажены.
  */
-function recalibrate(): S['RecalibrationResult'] {
+function recalibrate(minResponses = 15): S['RecalibrationResult'] {
   const changes: S['CalibrationChange'][] = []
   let promoted = 0
   for (const item of col<ItemDetail>('items')) {
     if (item.status !== 'active' && item.status !== 'pilot') continue
-    if (item.leak_flag || item.exposures < 15 || item.correct_rate == null || item.expected_correct_rate == null) continue
+    if (item.leak_flag || item.exposures < minResponses || item.correct_rate == null || item.expected_correct_rate == null) continue
     const gap = item.correct_rate - item.expected_correct_rate
     const bAfter = round(Math.max(-4, Math.min(4, item.b - 1.2 * gap)))
     const aAfter = round(Math.max(0.2, Math.min(4, item.a * (1 - Math.abs(gap) * 0.5))))
@@ -486,7 +510,7 @@ export function buildVacancyTest(text: string, specialization?: SpecCode | null)
   detected.sort((a, b) => b.confidence - a.confidence)
 
   // 3. По одному активному шаблону на тему — ближайший по грейду, при равенстве с большей различающей силой.
-  const selected: S['SelectedItem'][] = []
+  const selected: S['SelectedItemOut'][] = []
   for (const d of detected.filter((x) => x.covered)) {
     const best = items
       .filter((i) => i.topic === d.topic && i.status === 'active')
@@ -500,6 +524,8 @@ export function buildVacancyTest(text: string, specialization?: SpecCode | null)
       item_id: best.id,
       code: best.code,
       title: best.title,
+      template_id: best.code,
+      target_grade: best.target_grade,
       topic: d.topic,
       reason:
         `Тема «${d.label}» найдена по словам: ${d.matched_by.join(', ')}. ` +
@@ -511,11 +537,12 @@ export function buildVacancyTest(text: string, specialization?: SpecCode | null)
   }
 
   // 4. Темы без активных шаблонов: существующий черновик/пилот или новый черновик.
-  const drafts: S['ItemDraft'][] = []
+  // item_id — id черновика в банке, reused — черновик по теме уже был (как ItemDraftOut на бэкенде).
+  const drafts: S['ItemDraftOut'][] = []
   for (const d of detected.filter((x) => !x.covered)) {
     const existing = items.find((i) => i.topic === d.topic && (i.status === 'draft' || i.status === 'pilot'))
     if (existing) {
-      drafts.push({ topic: d.topic, label: d.label, title: existing.title, format: existing.format, prompt: existing.preview_variants[0]?.prompt ?? existing.description, status: existing.status })
+      drafts.push({ item_id: existing.id, origin: 'vocabulary', reused: true, topic: d.topic, label: d.label, title: existing.title, format: existing.format, prompt: existing.preview_variants[0]?.prompt ?? existing.description, status: existing.status })
       continue
     }
     const tpl = DRAFT_TEMPLATES[d.topic] ?? genericDraft(d.label)
@@ -544,7 +571,7 @@ export function buildVacancyTest(text: string, specialization?: SpecCode | null)
       created_at: db.now(),
       preview_variants: makeVariants(id, tpl, d.topic, d.label),
     })
-    drafts.push({ topic: d.topic, label: d.label, title: tpl.title, format: tpl.format, prompt: tpl.prompt, status: 'draft' })
+    drafts.push({ item_id: id, origin: 'vocabulary', reused: false, topic: d.topic, label: d.label, title: tpl.title, format: tpl.format, prompt: tpl.prompt, status: 'draft' })
   }
 
   const explanation = [
@@ -573,6 +600,7 @@ export function buildVacancyTest(text: string, specialization?: SpecCode | null)
     items: selected,
     drafts,
     explanation,
+    created_at: db.now(),
   }
   col<VacancyTestResult>('vacancy_tests').push(result)
   return result
@@ -799,34 +827,75 @@ export function evaluateMatchingCsv(filename: string, text: string): S['Matching
   }
 }
 
+// --- Детектор утечек (как POST /api/admin/items/leak-scan): шаблоны с флагом выводятся из оборота ---
+function leakScan(): S['LeakScanResult'] {
+  const items = col<ItemDetail>('items').filter((i) => i.status === 'active' || i.status === 'pilot')
+  const retired: S['LeakedItem'][] = []
+  for (const item of items) {
+    if (!item.leak_flag) continue
+    item.status = 'retired'
+    retired.push({
+      item_id: item.id,
+      code: item.code,
+      title: item.title,
+      n: item.exposures,
+      observed_rate: item.correct_rate ?? 0,
+      expected_rate: item.expected_correct_rate ?? 0,
+      z: item.leak_score,
+      fast_correct: Math.round(item.exposures * 0.12),
+      reasons: ['доля верных выше ожидаемой по IRT', 'много быстрых верных ответов'],
+    })
+  }
+  return {
+    scanned_at: db.now(),
+    answers_checked: items.reduce((s, i) => s + i.exposures, 0),
+    items_checked: items.length,
+    retired,
+    flagged_candidates: retired.length ? [{ candidate_id: 7, session_id: 12, suspicious_item_ids: retired.map((r) => r.item_id).slice(0, 2), lz: -3.1, reasons: ['верные ответы на трудные задачи за 5–8 секунд'] }] : [],
+  }
+}
+
 // --- Настройки ---------------------------------------------------------------------------------
 type Upd = S['PlatformSettingsUpdate']
 
-function validateSettings(body: Upd): Record<string, string> {
-  const errors: Record<string, string> = {}
-  const intIn = (key: keyof Upd, min: number, max: number) => {
+/** Проверки PUT /api/admin/settings как у бэкенда: pydantic-границы, затем invalid_thresholds / invalid_weights. */
+function validateSettings(body: Upd): Response | null {
+  const errors: FieldError[] = []
+  const range = (key: keyof Upd, min: number, max: number, int: boolean, minExclusive = false) => {
     const v = body[key]
     if (v == null) return
-    if (typeof v !== 'number' || !Number.isInteger(v) || v < min || v > max) errors[key] = `Целое число от ${min} до ${max}`
+    if (typeof v !== 'number' || (int && !Number.isInteger(v))) errors.push({ field: key, type: int ? 'int_type' : 'float_type', msg: 'Input should be a valid number' })
+    else if (minExclusive ? v <= min : v < min)
+      errors.push(minExclusive ? { field: key, type: 'greater_than', msg: `Input should be greater than ${min}`, ctx: { gt: min } } : { field: key, type: 'greater_than_equal', msg: `Input should be greater than or equal to ${min}`, ctx: { ge: min } })
+    else if (v > max) errors.push({ field: key, type: 'less_than_equal', msg: `Input should be less than or equal to ${max}`, ctx: { le: max } })
   }
-  intIn('grade_change_cooldown_days', 0, 365)
-  intIn('retry_cooldown_days', 0, 365)
-  intIn('invitation_quota', 1, 500)
-  intIn('invitation_ttl_days', 1, 60)
-  intIn('cat_max_items', 5, 50)
-  if (body.cat_se_stop != null && !(body.cat_se_stop > 0 && body.cat_se_stop <= 2)) errors.cat_se_stop = 'Число больше 0 и не больше 2'
-  if (body.exposure_max_share != null && !(body.exposure_max_share > 0 && body.exposure_max_share <= 1))
-    errors.exposure_max_share = 'Доля больше 0 и не больше 1'
-  if (body.ranking_weights) {
-    const w = Object.values(body.ranking_weights)
-    if (w.some((x) => typeof x !== 'number' || x < 0)) errors.ranking_weights = 'Веса не могут быть отрицательными'
-    else if (w.reduce((s, x) => s + x, 0) <= 0) errors.ranking_weights = 'Хотя бы один вес должен быть больше нуля'
-  }
+  range('grade_change_cooldown_days', 0, 365, true)
+  range('retry_cooldown_days', 0, 365, true)
+  range('invitation_quota', 1, 500, true)
+  range('invitation_ttl_days', 1, 60, true)
+  range('cat_max_items', 5, 50, true)
+  range('cat_se_stop', 0, 2, false, true)
+  range('exposure_max_share', 0, 1, false, true)
+  if (body.ranking_weights && Object.values(body.ranking_weights).some((x) => typeof x !== 'number' || x < 0))
+    errors.push({ field: 'ranking_weights', type: 'greater_than_equal', msg: 'Input should be greater than or equal to 0', ctx: { ge: 0 } })
+  if (errors.length) return validationError(errors)
   for (const t of body.grade_thresholds ?? []) {
     if (!(t.junior_from < t.middle_from && t.middle_from < t.senior_from))
-      errors.grade_thresholds = `Пороги должны расти: Junior < Middle < Senior (${t.specialization})`
+      return apiError(422, 'invalid_thresholds', 'Пороги θ должны возрастать: junior < middle < senior', { specialization: t.specialization })
   }
-  return errors
+  if (body.ranking_weights && Object.values(body.ranking_weights).reduce((sum, x) => sum + x, 0) <= 0)
+    return apiError(422, 'invalid_weights', 'Хотя бы один вес ранжирования должен быть больше нуля')
+  return null
+}
+
+/** Проверки SkillUpsert как у бэкенда (pydantic). */
+function validateSkill(body: S['SkillUpsert']): Response | null {
+  const errors: FieldError[] = []
+  if (!/^[a-z0-9_+.#-]+$/.test(body.id ?? '') || (body.id ?? '').length > 40)
+    errors.push({ field: 'id', type: 'string_pattern_mismatch', msg: "String should match pattern '^[a-z0-9_+.#-]+$'" })
+  if (!body.label?.trim()) errors.push({ field: 'label', type: 'string_too_short', msg: 'String should have at least 1 character', ctx: { min_length: 1 } })
+  if (!body.specializations?.length) errors.push({ field: 'specializations', type: 'too_short', msg: 'List should have at least 1 item after validation, not 0', ctx: { min_length: 1 } })
+  return errors.length ? validationError(errors) : null
 }
 
 const SETTINGS_LABELS: Record<string, string> = {
@@ -879,7 +948,7 @@ export const adminHandlers: HttpHandler[] = [
       if (body.role && body.role !== user.role) {
         const from = user.role
         user.role = body.role
-        addAudit(request, 'role_changed', 'user', id, `Роль ${user.full_name}: ${from} → ${body.role}`, { role_from: from, role_to: body.role })
+        addAudit(request, 'user_role_changed', 'user', id, `Роль изменена: ${ROLE_LABEL[from]} → ${ROLE_LABEL[body.role]}`, { role: [from, body.role] })
       }
       if (body.blocked != null && body.blocked !== Boolean(user.blocked)) {
         user.blocked = body.blocked
@@ -940,8 +1009,8 @@ export const adminHandlers: HttpHandler[] = [
     '/api/admin/settings',
     adminWrite(async ({ request }) => {
       const body = (await request.json()) as Upd
-      const errors = validateSettings(body)
-      if (Object.keys(errors).length) return apiError(422, 'validation_error', 'Ошибка валидации данных', errors)
+      const invalid = validateSettings(body)
+      if (invalid) return invalid
       const settings = col<PlatformSettings>('platform_settings')[0]
       const changed: string[] = []
       for (const [key, value] of Object.entries(body)) {
@@ -989,7 +1058,7 @@ export const adminHandlers: HttpHandler[] = [
       spec.label = body.label.trim()
       if (body.description != null) spec.description = body.description
       if (body.active != null) spec.active = body.active
-      addAudit(request, 'catalog_updated', 'catalog', null, `Специализация ${spec.id}: «${spec.label}»${spec.active === false ? ', скрыта' : ''}`)
+      addAudit(request, 'catalog_updated', 'specialization', null, `Изменена специализация «${spec.label}»${spec.active === false ? ', скрыта' : ''}`, { id: spec.id })
       db.save()
       return HttpResponse.json(spec)
     }),
@@ -1002,7 +1071,7 @@ export const adminHandlers: HttpHandler[] = [
       const body = (await request.json()) as S['CatalogLabelUpdate']
       if (!body.label?.trim()) return apiError(422, 'validation_error', 'Ошибка валидации данных', { label: 'Подпись не может быть пустой' })
       grade.label = body.label.trim()
-      addAudit(request, 'catalog_updated', 'catalog', null, `Грейд ${grade.id}: «${grade.label}»`)
+      addAudit(request, 'catalog_updated', 'grade', null, `Изменена подпись грейда: ${grade.label}`, { id: grade.id })
       db.save()
       return HttpResponse.json(grade)
     }),
@@ -1011,15 +1080,12 @@ export const adminHandlers: HttpHandler[] = [
     '/api/admin/catalog/skills',
     adminWrite(async ({ request }) => {
       const body = (await request.json()) as S['SkillUpsert']
-      const errors: Record<string, string> = {}
-      if (!/^[a-z0-9_+.#-]{1,40}$/.test(body.id ?? '')) errors.id = 'Латиница в нижнем регистре, цифры и _+.#-'
-      if (!body.label?.trim()) errors.label = 'Укажите название'
-      if (!body.specializations?.length) errors.specializations = 'Выберите хотя бы одну специализацию'
-      if (Object.keys(errors).length) return apiError(422, 'validation_error', 'Ошибка валидации данных', errors)
-      if (col<Skill>('skills').some((s) => s.id === body.id)) return apiError(409, 'skill_exists', 'Такая технология уже есть')
+      const invalid = validateSkill(body)
+      if (invalid) return invalid
+      if (col<Skill>('skills').some((s) => s.id === body.id)) return apiError(409, 'skill_exists', 'Такая технология уже есть', { id: body.id })
       const skill: Skill = { id: body.id, label: body.label.trim(), specializations: body.specializations }
       col<Skill>('skills').push(skill)
-      addAudit(request, 'catalog_updated', 'catalog', null, `Добавлена технология «${skill.label}»`)
+      addAudit(request, 'catalog_created', 'skill', null, `Добавлена технология «${skill.label}»`, { id: skill.id })
       db.save()
       return HttpResponse.json(skill, { status: 201 })
     }),
@@ -1030,10 +1096,12 @@ export const adminHandlers: HttpHandler[] = [
       const skill = col<Skill>('skills').find((s) => s.id === params.id)
       if (!skill) return notFound()
       const body = (await request.json()) as S['SkillUpsert']
-      if (!body.label?.trim() || !body.specializations?.length)
-        return apiError(422, 'validation_error', 'Ошибка валидации данных', { label: 'Укажите название и специализации' })
+      const invalid = validateSkill(body)
+      if (invalid) return invalid
+      if (body.id !== skill.id) return apiError(422, 'id_mismatch', 'Код технологии менять нельзя', { id: skill.id, new: body.id })
       skill.label = body.label.trim()
       skill.specializations = body.specializations
+      addAudit(request, 'catalog_updated', 'skill', null, `Изменена технология «${skill.label}»`, { id: skill.id })
       db.save()
       return HttpResponse.json(skill)
     }),
@@ -1051,9 +1119,58 @@ export const adminHandlers: HttpHandler[] = [
           (v) => v.skills_required.includes(id) || v.skills_desired.includes(id),
         ) ||
         col<NeedRow>('needs').some((n) => n.skills_required.includes(id) || n.skills_desired.includes(id))
-      if (inUse) return apiError(409, 'skill_in_use', 'Технология используется в профилях или вакансиях')
+      if (inUse) return apiError(409, 'skill_in_use', 'Технология используется в профилях, вакансиях или потребностях', { id })
       const [removed] = skills.splice(idx, 1)
-      addAudit(request, 'catalog_updated', 'catalog', null, `Удалена технология «${removed.label}»`)
+      addAudit(request, 'catalog_deleted', 'skill', null, `Удалена технология «${removed.label}»`, { id })
+      db.save()
+      return new HttpResponse(null, { status: 204 })
+    }),
+  ),
+
+  // Темы теста
+  http.post(
+    '/api/admin/catalog/topics',
+    adminWrite(async ({ request }) => {
+      const body = (await request.json()) as S['TopicCreate']
+      const errors: FieldError[] = []
+      if (!/^[a-z_]+\.[a-z0-9_]+$/.test(body.id ?? '') || (body.id ?? '').length > 64)
+        errors.push({ field: 'id', type: 'string_pattern_mismatch', msg: "String should match pattern '^[a-z_]+\\.[a-z0-9_]+$'" })
+      if (!body.label?.trim()) errors.push({ field: 'label', type: 'string_too_short', msg: 'String should have at least 1 character', ctx: { min_length: 1 } })
+      if (errors.length) return validationError(errors)
+      if (!SPECS.includes(body.specialization)) return notFound()
+      if (!body.id.startsWith(`${body.specialization}.`))
+        return apiError(422, 'topic_code_invalid', 'Код темы начинается с кода специализации: <специализация>.<тема>', { id: body.id, specialization: body.specialization })
+      if (col<Topic>('topics').some((t) => t.id === body.id)) return apiError(409, 'topic_exists', 'Такая тема уже есть', { id: body.id })
+      const topic: Topic = { id: body.id, specialization: body.specialization, label: body.label.trim() }
+      col<Topic>('topics').push(topic)
+      addAudit(request, 'catalog_created', 'topic', null, `Добавлена тема «${topic.label}»`, { id: topic.id })
+      db.save()
+      return HttpResponse.json(topic, { status: 201 })
+    }),
+  ),
+  http.patch(
+    '/api/admin/catalog/topics/:id',
+    adminWrite(async ({ request, params }) => {
+      const topic = col<Topic>('topics').find((t) => t.id === params.id)
+      if (!topic) return notFound()
+      const body = (await request.json()) as S['LabelUpdate']
+      if (!body.label?.trim()) return validationError([{ field: 'label', type: 'string_too_short', msg: 'String should have at least 1 character', ctx: { min_length: 1 } }])
+      topic.label = body.label.trim()
+      addAudit(request, 'catalog_updated', 'topic', null, `Изменена тема «${topic.label}»`, { id: topic.id })
+      db.save()
+      return HttpResponse.json(topic)
+    }),
+  ),
+  http.delete(
+    '/api/admin/catalog/topics/:id',
+    adminWrite(({ request, params }) => {
+      const topics = col<Topic>('topics')
+      const idx = topics.findIndex((t) => t.id === params.id)
+      if (idx < 0) return notFound()
+      const items = col<ItemDetail>('items').filter((i) => i.topic === params.id).length
+      if (items) return apiError(409, 'topic_in_use', 'По теме есть шаблоны задач — сначала перенесите или выведите их', { id: params.id, usage: { items } })
+      const [removed] = topics.splice(idx, 1)
+      addAudit(request, 'catalog_deleted', 'topic', null, `Удалена тема «${removed.label}»`, { id: removed.id })
       db.save()
       return new HttpResponse(null, { status: 204 })
     }),
@@ -1085,9 +1202,23 @@ export const adminHandlers: HttpHandler[] = [
   http.post(
     '/api/admin/items/recalibrate',
     adminWrite(({ request }) => {
-      const result = recalibrate()
+      const raw = new URL(request.url).searchParams.get('min_responses')
+      const min = raw ? Number(raw) : undefined
+      if (min !== undefined && (!Number.isInteger(min) || min < 1))
+        return validationError([{ field: 'min_responses', type: 'greater_than_equal', msg: 'Input should be greater than or equal to 1', ctx: { ge: 1 } }])
+      const result = recalibrate(min)
       addAudit(request, 'items_recalibrated', 'item', null,
         `Пересчитана калибровка: изменено ${result.items_recalibrated}, переведено из пилота ${result.pilot_promoted}`)
+      db.save()
+      return HttpResponse.json(result)
+    }),
+  ),
+  http.post(
+    '/api/admin/items/leak-scan',
+    adminWrite(({ request }) => {
+      const result = leakScan()
+      for (const r of result.retired)
+        addAudit(request, 'item_leak_retired', 'item', r.item_id, `Шаблон «${r.title}» выведен из оборота: признаки утечки`, { reason: 'leak', z: r.z })
       db.save()
       return HttpResponse.json(result)
     }),

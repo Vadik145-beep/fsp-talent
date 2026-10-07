@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Plus, RotateCcw, Save, Scale, Trash2 } from 'lucide-react'
+import { Pencil, Plus, RotateCcw, Save, Scale, Trash2 } from 'lucide-react'
 import { api, isApiError } from '@/shared/api'
 import { SPECIALIZATION_LABELS, SPECIALIZATION_OPTIONS, type Specialization as SpecCodeT } from '@/shared/config/dictionaries'
 import {
@@ -22,6 +22,7 @@ import {
   Tag,
 } from '@/shared/ui'
 import {
+  fieldErrors,
   useAdminMutation,
   type Grade,
   type GradeThreshold,
@@ -31,8 +32,9 @@ import {
   type Skill,
   type SpecCode,
   type Specialization,
+  type Topic,
 } from './api'
-import { CHART_COLORS } from './components/chartTheme'
+import { SIX_COLORS } from './components/chartTheme'
 import { pct } from './labels'
 
 export default function AdminCatalogPage() {
@@ -49,11 +51,13 @@ export default function AdminCatalogPage() {
           { id: 'settings', label: 'Правила и пороги' },
           { id: 'dicts', label: 'Специализации и грейды' },
           { id: 'skills', label: 'Стек' },
+          { id: 'topics', label: 'Темы теста' },
         ]}
       />
       {tab === 'settings' && <SettingsTab />}
       {tab === 'dicts' && <DictsTab />}
       {tab === 'skills' && <SkillsTab />}
+      {tab === 'topics' && <TopicsTab />}
     </>
   )
 }
@@ -122,9 +126,14 @@ function NumberField(props: {
   )
 }
 
+/** Доли грейдов — порядковая шкала фирменного синего (токены): Стажёр светлее, Senior темнее. */
+const SHARE_RAMP = ['bg-fsp-blue-pale text-fsp-blue-deep', 'bg-fsp-blue-light text-fsp-black', 'bg-fsp-blue text-on-primary', 'bg-fsp-blue-deep text-on-primary']
+
 function SettingsForm({ settings }: { settings: PlatformSettings }) {
   const [draft, setDraft] = useState<PlatformSettings>(() => structuredClone(settings))
   const [errors, setErrors] = useState<Record<string, string>>({})
+  /** Специализация, на которую указал бэкенд в invalid_thresholds. */
+  const [badSpec, setBadSpec] = useState<string | null>(null)
   const set = <K extends keyof PlatformSettings>(key: K, value: PlatformSettings[K]) => setDraft((d) => ({ ...d, [key]: value }))
   const setThreshold = (spec: string, key: keyof Omit<GradeThreshold, 'specialization'>, value: number) =>
     set('grade_thresholds', draft.grade_thresholds.map((t) => (t.specialization === spec ? { ...t, [key]: value } : t)))
@@ -141,16 +150,26 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
   const changedCount = Object.keys(changed).length
   const weightSum = Object.values(draft.ranking_weights).reduce((s, v) => s + (Number.isNaN(v) ? 0 : v), 0)
   const weightsOff = Math.abs(weightSum - 1) > 0.001
+  // Пустые числовые поля не отправляем: бэкенд принял бы null за «не менять».
+  const emptyFields = (Object.keys(changed) as Array<keyof PlatformSettingsUpdate>).filter((k) => typeof changed[k] === 'number' && Number.isNaN(changed[k]))
+  // Сумму 100% просим нормировать; нулевые веса пропускаем — их отклонит бэкенд (invalid_weights).
+  const mustNormalize = weightsOff && weightSum > 0
 
   const save = useAdminMutation((body: PlatformSettingsUpdate) => api.put<PlatformSettings>('/admin/settings', body), {
     success: 'Настройки сохранены — применяются сразу',
-    onSuccess: () => setErrors({}),
+    onSuccess: () => (setErrors({}), setBadSpec(null)),
   })
 
   function submit() {
+    if (emptyFields.length) {
+      setErrors(Object.fromEntries(emptyFields.map((k) => [k, 'Введите число'])))
+      return
+    }
     save.mutate(changed, {
       onError: (e) => {
-        if (isApiError(e)) setErrors(Object.fromEntries(Object.entries(e.details).map(([k, v]) => [k, String(v)])))
+        setErrors(fieldErrors(e))
+        const spec = isApiError(e) && e.code === 'invalid_thresholds' ? e.details.specialization : null
+        setBadSpec(typeof spec === 'string' ? spec : null)
       },
     })
   }
@@ -162,7 +181,12 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
           title="Пороги грейдов по уровню θ"
           description="Уровень θ из теста переводится в грейд по этим порогам. Ниже порога Junior — Стажёр. Поднимете порог — грейд будет получить труднее. Справа — какая доля людей попадёт в каждый грейд при обычном распределении уровней."
         />
-        {errors.grade_thresholds && <p role="alert" className="mb-3 text-sm text-danger">{errors.grade_thresholds}</p>}
+        {errors.grade_thresholds && (
+          <p role="alert" className="mb-3 text-sm text-danger">
+            {errors.grade_thresholds}
+            {badSpec ? ` (${SPECIALIZATION_LABELS[badSpec as SpecCodeT] ?? badSpec})` : ''}
+          </p>
+        )}
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-sm">
             <thead>
@@ -177,7 +201,7 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
             <tbody>
               {draft.grade_thresholds.map((t) => {
                 const shares = [normCdf(t.junior_from), normCdf(t.middle_from) - normCdf(t.junior_from), normCdf(t.senior_from) - normCdf(t.middle_from), 1 - normCdf(t.senior_from)]
-                const bad = !(t.junior_from < t.middle_from && t.middle_from < t.senior_from)
+                const bad = !(t.junior_from < t.middle_from && t.middle_from < t.senior_from) || badSpec === t.specialization
                 return (
                   <tr key={t.specialization} className="border-t border-line">
                     <th scope="row" className="py-2 pr-3 text-left font-medium">{SPECIALIZATION_LABELS[t.specialization as SpecCodeT]}</th>
@@ -195,9 +219,9 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
                       </td>
                     ))}
                     <td className="py-2 pl-3">
-                      <div className="flex h-5 overflow-hidden rounded-sm" aria-label={shares.map((s) => pct(Math.max(0, s))).join(' · ')}>
+                      <div className="flex h-5 gap-0.5 overflow-hidden rounded-sm" aria-label={shares.map((s) => pct(Math.max(0, s))).join(' · ')}>
                         {shares.map((s, i) => (
-                          <span key={i} className="flex items-center justify-center text-[10px] font-semibold text-white" style={{ width: `${Math.max(0, s) * 100}%`, background: CHART_COLORS[[0, 4, 2, 1][i]] }}>
+                          <span key={i} className={`flex items-center justify-center text-[10px] font-semibold ${SHARE_RAMP[i]}`} style={{ width: `${Math.max(0, s) * 100}%` }}>
                             {s > 0.08 ? Math.round(s * 100) : ''}
                           </span>
                         ))}
@@ -252,7 +276,7 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
             title="Веса ранжирования кандидатов"
             description="Из чего складывается место кандидата в подборке. Сумма весов — 100%."
             actions={
-              weightsOff ? (
+              mustNormalize ? (
                 <Button size="sm" variant="secondary" leftIcon={<Scale className="size-4" aria-hidden />}
                   onClick={() => set('ranking_weights', Object.fromEntries(Object.entries(draft.ranking_weights).map(([k, v]) => [k, Math.round((v / weightSum) * 100) / 100])) as RankingWeights)}>
                   Нормировать
@@ -260,16 +284,16 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
               ) : undefined
             }
           />
-          <div className="mb-4 flex h-3 overflow-hidden rounded-full" aria-hidden>
+          <div className="mb-4 flex h-3 gap-0.5 overflow-hidden rounded-full" aria-hidden>
             {(Object.keys(WEIGHT_LABELS) as Array<keyof RankingWeights>).map((k, i) => (
-              <span key={k} style={{ width: `${(draft.ranking_weights[k] / (weightSum || 1)) * 100}%`, background: [...CHART_COLORS, '#8c8798'][i] }} />
+              <span key={k} style={{ width: `${(draft.ranking_weights[k] / (weightSum || 1)) * 100}%`, background: SIX_COLORS[i] }} />
             ))}
           </div>
           <div className="flex flex-col gap-3">
             {(Object.keys(WEIGHT_LABELS) as Array<keyof RankingWeights>).map((k, i) => (
               <label key={k} className="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1 text-sm">
                 <span>
-                  <span className="mr-2 inline-block size-2.5 rounded-full" style={{ background: [...CHART_COLORS, '#8c8798'][i] }} aria-hidden />
+                  <span className="mr-2 inline-block size-2.5 rounded-full" style={{ background: SIX_COLORS[i] }} aria-hidden />
                   <span className="font-medium text-ink">{WEIGHT_LABELS[k].label}</span>
                   <span className="block pl-[18px] text-[13px] text-muted">{WEIGHT_LABELS[k].hint}</span>
                 </span>
@@ -280,18 +304,21 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
             ))}
           </div>
           <p role={weightsOff ? 'alert' : undefined} className={`mt-3 text-sm ${weightsOff ? 'text-warning' : 'text-muted'}`}>
-            Сумма: {Math.round(weightSum * 100)}%{weightsOff ? ' — нажмите «Нормировать», чтобы получилось 100%.' : ''}
+            Сумма: {Math.round(weightSum * 100)}%{mustNormalize ? ' — нажмите «Нормировать», чтобы получилось 100%.' : ''}
           </p>
           {errors.ranking_weights && <p role="alert" className="text-sm text-danger">{errors.ranking_weights}</p>}
         </Card>
       </div>
 
       <div className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center justify-end gap-3 border-t border-line bg-surface/95 px-4 py-3 backdrop-blur sm:mx-0 sm:rounded-lg sm:border">
-        <span className="mr-auto text-sm text-muted">{changedCount ? `Изменено настроек: ${changedCount}` : 'Изменений нет'}</span>
-        <Button variant="ghost" leftIcon={<RotateCcw className="size-4" aria-hidden />} disabled={!changedCount} onClick={() => (setDraft(structuredClone(settings)), setErrors({}))}>
+        <span className="mr-auto text-sm text-muted">
+          {changedCount ? `Изменено настроек: ${changedCount}` : 'Изменений нет'}
+          {errors._ && <span role="alert" className="ml-2 text-danger">{errors._}</span>}
+        </span>
+        <Button variant="ghost" leftIcon={<RotateCcw className="size-4" aria-hidden />} disabled={!changedCount} onClick={() => (setDraft(structuredClone(settings)), setErrors({}), setBadSpec(null))}>
           Отменить
         </Button>
-        <Button leftIcon={<Save className="size-4" aria-hidden />} disabled={!changedCount || weightsOff} loading={save.isPending} onClick={submit}>
+        <Button leftIcon={<Save className="size-4" aria-hidden />} disabled={!changedCount || mustNormalize} loading={save.isPending} onClick={submit}>
           Сохранить
         </Button>
       </div>
@@ -360,7 +387,7 @@ function GradeRow({ grade }: { grade: Grade }) {
 function SkillsTab() {
   const [search, setSearch] = useState('')
   const [spec, setSpec] = useState('')
-  const [adding, setAdding] = useState(false)
+  const [editing, setEditing] = useState<Skill | 'new' | null>(null)
   const q = useQuery({ queryKey: ['admin', 'catalog', 'skills'], queryFn: () => api.get<Skill[]>('/catalog/skills') })
   const del = useAdminMutation((id: string) => api.delete(`/admin/catalog/skills/${id}`), { success: 'Технология удалена' })
   const rows = (q.data ?? []).filter(
@@ -373,7 +400,7 @@ function SkillsTab() {
         search={{ value: search, onChange: setSearch, placeholder: 'Технология' }}
         activeCount={[search, spec].filter(Boolean).length}
         onReset={() => (setSearch(''), setSpec(''))}
-        actions={<Button leftIcon={<Plus className="size-4" aria-hidden />} onClick={() => setAdding(true)}>Добавить</Button>}
+        actions={<Button leftIcon={<Plus className="size-4" aria-hidden />} onClick={() => setEditing('new')}>Добавить</Button>}
       >
         <Select aria-label="Специализация" containerClassName="sm:w-52" placeholder="Все специализации" options={SPECIALIZATION_OPTIONS} value={spec} onChange={(e) => setSpec(e.target.value)} />
       </FilterBar>
@@ -394,56 +421,64 @@ function SkillsTab() {
             {
               key: 'actions', header: '', align: 'right',
               render: (s) => (
-                <Button size="sm" variant="ghost" aria-label={`Удалить ${s.label}`} loading={del.isPending && del.variables === s.id} onClick={() => del.mutate(s.id)}>
-                  <Trash2 className="size-4" aria-hidden />
-                </Button>
+                <div className="flex justify-end gap-1">
+                  <Button size="sm" variant="ghost" aria-label={`Изменить ${s.label}`} onClick={() => setEditing(s)}>
+                    <Pencil className="size-4" aria-hidden />
+                  </Button>
+                  <Button size="sm" variant="ghost" aria-label={`Удалить ${s.label}`} loading={del.isPending && del.variables === s.id} onClick={() => del.mutate(s.id)}>
+                    <Trash2 className="size-4" aria-hidden />
+                  </Button>
+                </div>
               ),
             },
           ]}
         />
       )}
       <p className="mt-2 text-[13px] text-muted">Технологию, которая уже указана в профилях, вакансиях или потребностях, удалить нельзя.</p>
-      {adding && <AddSkillModal onClose={() => setAdding(false)} />}
+      {editing && <SkillModal skill={editing === 'new' ? null : editing} onClose={() => setEditing(null)} />}
     </>
   )
 }
 
-function AddSkillModal({ onClose }: { onClose: () => void }) {
-  const [label, setLabel] = useState('')
+/** Добавить технологию (skill = null) или изменить подпись и специализации существующей (код не меняется). */
+function SkillModal({ skill, onClose }: { skill: Skill | null; onClose: () => void }) {
+  const [label, setLabel] = useState(skill?.label ?? '')
   const [id, setId] = useState('')
-  const [specs, setSpecs] = useState<SpecCode[]>([])
+  const [specs, setSpecs] = useState<SpecCode[]>(skill?.specializations ?? [])
   const [errors, setErrors] = useState<Record<string, string>>({})
   const autoId = label.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_+.#-]/g, '')
-  const m = useAdminMutation((body: Skill) => api.post<Skill>('/admin/catalog/skills', body), {
-    success: (s) => `Добавлена технология «${s.label}»`,
-    onSuccess: onClose,
-  })
+  const m = useAdminMutation(
+    (body: Skill) => (skill ? api.put<Skill>(`/admin/catalog/skills/${skill.id}`, body) : api.post<Skill>('/admin/catalog/skills', body)),
+    { success: (s) => (skill ? `Технология «${s.label}» сохранена` : `Добавлена технология «${s.label}»`), onSuccess: onClose },
+  )
+  const finalId = skill ? skill.id : id.trim() || autoId
   return (
     <Modal
       open
       onClose={onClose}
       size="sm"
-      title="Новая технология"
+      title={skill ? `Технология «${skill.label}»` : 'Новая технология'}
       footer={
         <>
           <Button variant="secondary" onClick={onClose}>Отмена</Button>
           <Button
             loading={m.isPending}
-            disabled={!label.trim() || !specs.length}
-            onClick={() =>
-              m.mutate({ id: id || autoId, label, specializations: specs }, {
-                onError: (e) => isApiError(e) && setErrors(Object.fromEntries(Object.entries(e.details).map(([k, v]) => [k, String(v)]))),
-              })
-            }
+            disabled={!label.trim() || !specs.length || !finalId}
+            onClick={() => m.mutate({ id: finalId, label: label.trim(), specializations: specs }, { onError: (e) => setErrors(fieldErrors(e)) })}
           >
-            Добавить
+            {skill ? 'Сохранить' : 'Добавить'}
           </Button>
         </>
       }
     >
       <div className="flex flex-col gap-4">
+        {errors._ && <p role="alert" className="text-sm text-danger">{errors._}</p>}
         <Input label="Название" value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Например, Svelte" error={errors.label} required />
-        <Input label="Код" value={id} onChange={(e) => setId(e.target.value)} placeholder={autoId || 'svelte'} hint="Латиница в нижнем регистре; пусто — из названия" error={errors.id} />
+        {skill ? (
+          <p className="text-sm text-muted">Код <span className="font-mono text-ink">{skill.id}</span> не меняется: на него ссылаются профили и вакансии.</p>
+        ) : (
+          <Input label="Код" value={id} onChange={(e) => setId(e.target.value)} placeholder={autoId || 'svelte'} hint="Латиница в нижнем регистре; пусто — из названия" error={errors.id} />
+        )}
         <fieldset>
           <legend className="mb-2 text-sm font-medium">Специализации</legend>
           <div className="grid grid-cols-2 gap-2">
@@ -454,6 +489,123 @@ function AddSkillModal({ onClose }: { onClose: () => void }) {
           </div>
           {errors.specializations && <p role="alert" className="mt-1 text-[13px] text-danger">{errors.specializations}</p>}
         </fieldset>
+      </div>
+    </Modal>
+  )
+}
+
+// --- Темы теста ----------------------------------------------------------------------------------
+function TopicsTab() {
+  const [spec, setSpec] = useState('')
+  const [adding, setAdding] = useState(false)
+  const q = useQuery({ queryKey: ['admin', 'catalog', 'topics'], queryFn: () => api.get<Topic[]>('/catalog/topics') })
+  const del = useAdminMutation((id: string) => api.delete(`/admin/catalog/topics/${id}`), { success: 'Тема удалена' })
+  const rows = (q.data ?? []).filter((t) => !spec || t.specialization === spec)
+
+  return (
+    <>
+      <FilterBar
+        activeCount={spec ? 1 : 0}
+        onReset={() => setSpec('')}
+        actions={<Button leftIcon={<Plus className="size-4" aria-hidden />} onClick={() => setAdding(true)}>Добавить тему</Button>}
+      >
+        <Select aria-label="Специализация" containerClassName="sm:w-52" placeholder="Все специализации" options={SPECIALIZATION_OPTIONS} value={spec} onChange={(e) => setSpec(e.target.value)} />
+      </FilterBar>
+      {q.isPending ? (
+        <Card><SkeletonText lines={6} /></Card>
+      ) : q.isError ? (
+        <Card padding="none"><ErrorState error={q.error} onRetry={() => q.refetch()} /></Card>
+      ) : rows.length === 0 ? (
+        <Card padding="none"><EmptyState compact title="Тем не найдено" /></Card>
+      ) : (
+        <Card padding="none">
+          <ul className="divide-y divide-line">
+            {rows.map((t) => (
+              <TopicRow key={JSON.stringify(t)} topic={t} deleting={del.isPending && del.variables === t.id} onDelete={() => del.mutate(t.id)} />
+            ))}
+          </ul>
+        </Card>
+      )}
+      <p className="mt-2 text-[13px] text-muted">
+        Тема — раздел теста внутри специализации, по ней строится покрытие банка задач. Тему, по которой есть шаблоны задач, удалить нельзя.
+      </p>
+      {adding && <AddTopicModal defaultSpec={(spec || 'backend') as SpecCode} onClose={() => setAdding(false)} />}
+    </>
+  )
+}
+
+function TopicRow({ topic, deleting, onDelete }: { topic: Topic; deleting: boolean; onDelete: () => void }) {
+  const [label, setLabel] = useState(topic.label)
+  const [error, setError] = useState<string>()
+  const m = useAdminMutation((body: { label: string }) => api.patch<Topic>(`/admin/catalog/topics/${topic.id}`, body), {
+    success: (r) => `Тема «${r.label}» сохранена`,
+    onSuccess: () => setError(undefined),
+  })
+  return (
+    <li className="flex flex-col gap-2 px-5 py-3 sm:flex-row sm:items-start">
+      <Input
+        label={
+          <span>
+            {SPECIALIZATION_LABELS[topic.specialization as SpecCodeT] ?? topic.specialization} <span className="font-mono text-xs text-muted">{topic.id}</span>
+          </span>
+        }
+        value={label}
+        onChange={(e) => setLabel(e.target.value)}
+        error={error}
+        containerClassName="flex-1"
+      />
+      <div className="flex gap-1 sm:mt-6">
+        <Button size="sm" variant="secondary" disabled={label === topic.label || !label.trim()} loading={m.isPending}
+          onClick={() => m.mutate({ label: label.trim() }, { onError: (e) => setError(fieldErrors(e).label) })}>
+          Сохранить
+        </Button>
+        <Button size="sm" variant="ghost" aria-label={`Удалить тему ${topic.label}`} loading={deleting} onClick={onDelete}>
+          <Trash2 className="size-4" aria-hidden />
+        </Button>
+      </div>
+    </li>
+  )
+}
+
+function AddTopicModal({ defaultSpec, onClose }: { defaultSpec: SpecCode; onClose: () => void }) {
+  const [spec, setSpec] = useState<SpecCode>(defaultSpec)
+  const [label, setLabel] = useState('')
+  const [code, setCode] = useState('')
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const m = useAdminMutation((body: { id: string; specialization: SpecCode; label: string }) => api.post<Topic>('/admin/catalog/topics', body), {
+    success: (t) => `Добавлена тема «${t.label}»`,
+    onSuccess: onClose,
+  })
+  const suffix = code.trim().toLowerCase()
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      size="sm"
+      title="Новая тема теста"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>Отмена</Button>
+          <Button loading={m.isPending} disabled={!label.trim() || !suffix}
+            onClick={() => m.mutate({ id: `${spec}.${suffix}`, specialization: spec, label: label.trim() }, { onError: (e) => setErrors(fieldErrors(e)) })}>
+            Добавить
+          </Button>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-4">
+        {errors._ && <p role="alert" className="text-sm text-danger">{errors._}</p>}
+        <Select label="Специализация" options={SPECIALIZATION_OPTIONS} value={spec} onChange={(e) => setSpec(e.target.value as SpecCode)} error={errors.specialization} />
+        <Input label="Название" value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Например, Кэширование" error={errors.label} required />
+        <Input
+          label="Код"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          placeholder="caching"
+          hint={`Полный код: ${spec}.${suffix || '…'} — латиница в нижнем регистре, цифры и _`}
+          error={errors.id}
+          required
+        />
       </div>
     </Modal>
   )
