@@ -2,7 +2,17 @@
 
 from datetime import datetime
 
-from sqlalchemy import BigInteger, CheckConstraint, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    BigInteger,
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    text,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.db import Base, TimestampMixin
@@ -25,7 +35,16 @@ class TaskSubmission(Base):
     """Выданное кандидату задание и его ответ (assigned → submitted → graded | expired)."""
 
     __tablename__ = "task_submissions"
-    __table_args__ = (CheckConstraint("score IS NULL OR score BETWEEN 0 AND 3", name="score"),)
+    __table_args__ = (
+        CheckConstraint("score IS NULL OR score BETWEEN 0 AND 3", name="score"),
+        # у кандидата не больше одного активного задания (миграция 0006_5b)
+        Index(
+            "uq_task_submissions_one_assigned",
+            "candidate_id",
+            unique=True,
+            postgresql_where=text("status = 'assigned'"),
+        ),
+    )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     task_id: Mapped[int] = mapped_column(
