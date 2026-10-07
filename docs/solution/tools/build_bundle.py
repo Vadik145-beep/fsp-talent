@@ -6,7 +6,9 @@
 
 Для --render-mermaid / --check-mermaid нужен mermaid-cli: `npx -y @mermaid-js/mermaid-cli`
 (или путь к mmdc в переменной MMDC). Ссылки между разделами переписываются в якоря
-внутри одного файла, ссылки на остальной репозиторий — в адреса GitHub.
+внутри одного файла (`#sec-<раздел>` и якоря заголовков в стиле GitHub — для pandoc
+с `gfm_auto_identifiers`), ссылки на остальной репозиторий — в адреса GitHub, локальные
+картинки (графики валидации) копируются в `<папка>/img/`. DOCX и PDF — `build_docs.py`.
 """
 
 from __future__ import annotations
@@ -36,7 +38,8 @@ ORDER = [
 ]
 REPO_URL = "https://github.com/Vadik145-beep/fsp-talent/blob/main/"
 MERMAID = re.compile(r"```mermaid\n(.*?)```", re.S)
-LINK = re.compile(r"\]\(([^)#\s]+\.md|[^)#\s]+/)(#[^)]*)?\)")
+LINK = re.compile(r"(?<!!)\[([^\]]*)\]\(([^)#\s]*)(#[^)\s]*)?\)")
+IMAGE = re.compile(r"!\[([^\]]*)\]\(([^)\s]+\.(?:png|jpe?g|svg|gif))\)")
 
 
 def mmdc_cmd() -> list[str]:
@@ -65,20 +68,42 @@ def render(code: str, target: Path) -> str | None:
     return None
 
 
+def section_anchor(name: str) -> str:
+    return "sec-" + name.removesuffix(".md")
+
+
 def rewrite_links(text: str) -> str:
     def repl(m: re.Match[str]) -> str:
-        target, anchor = m.group(1), m.group(2) or ""
+        label, target, anchor = m.group(1), m.group(2), m.group(3) or ""
+        if not target or re.match(r"^[a-z]+:", target):
+            return m.group(0)  # якорь внутри раздела или внешний адрес
         name = Path(target).name
         if "/" not in target and name in ORDER:
-            return f"]({anchor or '#' + name.removesuffix('.md')})"
+            return f"[{label}]({anchor or '#' + section_anchor(name)})"
         resolved = (DOCS / target).resolve()
         try:
             rel = resolved.relative_to(ROOT).as_posix()
         except ValueError:
             return m.group(0)
-        return f"]({REPO_URL}{rel}{anchor})"
+        base = REPO_URL.replace("/blob/", "/tree/") if resolved.is_dir() else REPO_URL
+        return f"[{label}]({base}{rel}{anchor})"
 
     return LINK.sub(repl, text)
+
+
+def copy_images(text: str, out: Path) -> str:
+    """Локальные картинки (графики валидации) → <out>/img/, путь — относительно бандла."""
+
+    def repl(m: re.Match[str]) -> str:
+        alt, target = m.group(1), m.group(2)
+        src = (DOCS / target).resolve()
+        if re.match(r"^[a-z]+:", target) or not src.exists():
+            return m.group(0)
+        (out / "img").mkdir(exist_ok=True)
+        shutil.copyfile(src, out / "img" / src.name)
+        return f"![{alt}](img/{src.name})"
+
+    return IMAGE.sub(repl, text)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -129,8 +154,8 @@ def main(argv: list[str] | None = None) -> int:
                 return f"![Диаграмма {counter}](diagrams/{png.name})"
 
             text = MERMAID.sub(to_png, text)
-        anchor = name.removesuffix(".md")
-        parts.append(f'<a id="{anchor}"></a>\n\n' + rewrite_links(text).strip() + "\n")
+        text = copy_images(text, out)
+        parts.append(f"[]{{#{section_anchor(name)}}}\n\n" + rewrite_links(text).strip() + "\n")
     bundle = out / "fsp-talent-docs.md"
     bundle.write_text("\n\n---\n\n".join(parts), encoding="utf-8", newline="\n")
     print(f"записано: {bundle}" + (f", диаграмм: {counter}" if args.render_mermaid else ""))

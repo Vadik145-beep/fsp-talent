@@ -196,33 +196,6 @@ docker compose -f infra/stand/compose.yml --env-file infra/stand/.env logs -f ba
 Резервная копия БД:
 `docker compose --env-file .env exec -T postgres pg_dump -U fsp fsp_talent > backup.sql`.
 
-## 8.6. Периодические задачи (cron)
-
-Бэкенд не держит фоновых потоков: периодические работы — отдельные команды, которые
-запускаются в контейнере `backend` (их же можно вызвать без cron — см. последнюю строку).
-
-| Команда | Что делает | Как часто |
-|---|---|---|
-| `python -m app.tasks daily` | просрочить регулярные задания без ответа, снизить свежесть профилей (полураспад 30 дней) | раз в сутки |
-| `python -m app.tasks distribute` | раздать активные задания кандидатам без активного задания | раз в неделю (или раз в N дней) |
-| `python -m app.integrations` | повторно отправить вебхуки ATS, у которых подошло время повтора | раз в минуту |
-| `POST /api/tasks/jobs/run?job=daily` (или `distribute`, `tick`) | то же для заданий по запросу администратора | вручную |
-
-Пример crontab на сервере стенда (`crontab -e` пользователя с доступом к Docker):
-
-```cron
-C="docker compose -f /opt/fsp-talent/app/infra/stand/compose.yml --env-file /opt/fsp-talent/app/infra/stand/.env exec -T backend"
-15 3 * * *  $C python -m app.tasks daily
-0 9 * * 1   $C python -m app.tasks distribute
-* * * * *   $C python -m app.integrations
-```
-
-Локально (dev-стек) — `docker compose exec backend python -m app.tasks daily` и т.д.
-Повторный или пропущенный запуск безопасен: снижение свежести считается по времени
-с прошлого запуска, раздача не выдаёт задание дважды, доставка вебхука не повторяется
-после успеха. На стенде компоуз-файл cron не поднимает — расписание ставится на хосте,
-как показано выше.
-
 ## 8.5. Разработка
 
 Бэкенд без Docker (Python 3.12+), БД — из compose:
@@ -248,6 +221,33 @@ cd frontend && npm ci && npm run lint && npm run typecheck && npm test -- --run 
 из схемы; `make fixtures` — перегенерировать `data/seed`; `make validate` — полная валидация
 (данные, симуляции, графики, `docs/validation/report.md`; нужен `matplotlib`); симуляция
 движка теста — `PYTHONPATH=backend python -m app.testing.engine.simulate --seed 20261011`.
+
+## 8.6. Периодические задачи (cron)
+
+Бэкенд не держит фоновых потоков: периодические работы — отдельные команды, которые
+запускаются в контейнере `backend` (их же можно вызвать без cron — см. последнюю строку).
+
+| Команда | Что делает | Как часто |
+|---|---|---|
+| `python -m app.tasks daily` | просрочить регулярные задания без ответа, снизить свежесть профилей (полураспад 30 дней) | раз в сутки |
+| `python -m app.tasks distribute` | раздать активные задания кандидатам без активного задания | раз в неделю (или раз в N дней) |
+| `python -m app.integrations` | повторно отправить вебхуки ATS, у которых подошло время повтора | раз в минуту |
+| `POST /api/tasks/jobs/run?job=daily` (или `distribute`, `tick`) | то же для заданий по запросу администратора | вручную |
+
+Пример crontab на сервере стенда (`crontab -e` пользователя с доступом к Docker):
+
+```cron
+C="docker compose -f /opt/fsp-talent/app/infra/stand/compose.yml --env-file /opt/fsp-talent/app/infra/stand/.env exec -T backend"
+15 3 * * *  $C python -m app.tasks daily
+0 9 * * 1   $C python -m app.tasks distribute
+* * * * *   $C python -m app.integrations
+```
+
+Локально (dev-стек) — `docker compose exec backend python -m app.tasks daily` и т.д.
+Повторный или пропущенный запуск безопасен: снижение свежести считается по времени
+с прошлого запуска, раздача не выдаёт задание дважды, доставка вебхука не повторяется
+после успеха. Compose-файл стенда cron не поднимает — расписание ставится на хосте,
+как показано выше.
 
 ## 8.7. Частые проблемы
 

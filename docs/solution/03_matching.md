@@ -273,7 +273,6 @@ stateDiagram-v2
 
 ```mermaid
 stateDiagram-v2
-    direction LR
     [*] --> new: кандидат откликнулся
     new --> viewed: рекрутер открыл
     new --> invited: пригласить
