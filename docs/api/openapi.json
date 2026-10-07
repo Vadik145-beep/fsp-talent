@@ -6045,8 +6045,8 @@
           "matching"
         ],
         "summary": "Разобрать свободный текст потребности в поля",
-        "description": "Правила без LLM; с ключом LLM — точнее (волна 3c).",
-        "operationId": "parse_need_api_matching_needs_parse_post",
+        "description": "Правила без LLM; с ключом LLM — точнее (трек 3c).",
+        "operationId": "parse_need_text_api_matching_needs_parse_post",
         "security": [
           {
             "HTTPBearer": []
@@ -6296,7 +6296,7 @@
           "matching"
         ],
         "summary": "Создать потребность",
-        "description": "Вилка от–до обязательна, от ≤ до. Заглушка: не сохраняется.",
+        "description": "Вилка от–до обязательна, от ≤ до. Стек — коды справочника `skills`.",
         "operationId": "create_need_api_matching_needs_post",
         "security": [
           {
@@ -6403,7 +6403,7 @@
             }
           },
           "422": {
-            "description": "`validation_error` — Ошибка валидации (в т.ч. salary_range_invalid)",
+            "description": "`validation_error` — Ошибка валидации (в т.ч. salary_range_invalid); `unknown_skills` — Технологий нет в справочнике стека",
             "content": {
               "application/json": {
                 "examples": {
@@ -6412,6 +6412,14 @@
                     "value": {
                       "code": "validation_error",
                       "message": "Ошибка валидации (в т.ч. salary_range_invalid)",
+                      "details": {}
+                    }
+                  },
+                  "unknown_skills": {
+                    "summary": "Технологий нет в справочнике стека",
+                    "value": {
+                      "code": "unknown_skills",
+                      "message": "Технологий нет в справочнике стека",
                       "details": {}
                     }
                   }
@@ -6494,6 +6502,311 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Недостаточно прав",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Недостаточно прав",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Недостаточно прав",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`not_found` — Объект не найден",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Объект не найден",
+                    "value": {
+                      "code": "not_found",
+                      "message": "Объект не найден",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "matching"
+        ],
+        "summary": "Изменить потребность",
+        "description": "Те же поля, что при создании, плюс статус (`active` / `closed`).",
+        "operationId": "update_need_api_matching_needs__need_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "need_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Need Id"
+            }
+          },
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NeedUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Need"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Недостаточно прав",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Недостаточно прав",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Недостаточно прав",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`not_found` — Объект не найден",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Объект не найден",
+                    "value": {
+                      "code": "not_found",
+                      "message": "Объект не найден",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_error` — Ошибка валидации данных; `unknown_skills` — Технологий нет в справочнике стека",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "validation_error": {
+                    "summary": "Ошибка валидации данных",
+                    "value": {
+                      "code": "validation_error",
+                      "message": "Ошибка валидации данных",
+                      "details": {}
+                    }
+                  },
+                  "unknown_skills": {
+                    "summary": "Технологий нет в справочнике стека",
+                    "value": {
+                      "code": "unknown_skills",
+                      "message": "Технологий нет в справочнике стека",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "matching"
+        ],
+        "summary": "Удалить потребность",
+        "description": "Отправленные по ней приглашения остаются (ссылка на потребность обнуляется).",
+        "operationId": "delete_need_api_matching_needs__need_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "need_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Need Id"
+            }
+          },
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
           },
           "401": {
             "description": "`unauthorized` — Требуется вход",
@@ -6722,7 +7035,7 @@
           "matching"
         ],
         "summary": "Подборка: кандидаты категории с объяснением и разбивкой счёта",
-        "description": "Кандидаты обезличены. Фильтры сужают подборку, `total_before_filters` — исходный размер; без фильтров возвращается исходный список.",
+        "description": "Кандидаты обезличены. Счёт = Σ value × weight по факторам (стек, тест, ФСП, свежесть, зарплата, формат), веса — из настроек платформы; сумма `contribution` равна `score`. Фильтры сужают подборку, `total_before_filters` — исходный размер; без фильтров возвращается исходный список.",
         "operationId": "need_candidates_api_matching_needs__need_id__candidates_get",
         "security": [
           {
@@ -6962,7 +7275,7 @@
           "invitations"
         ],
         "summary": "Мои приглашения",
-        "description": "Кандидат видит полученные приглашения, рекрутер — приглашения своей компании. Контакты другой стороны — только при статусе `accepted`.",
+        "description": "Кандидат видит полученные приглашения, рекрутер — приглашения своей компании. Контакты другой стороны — только при статусе `accepted`. Просроченные `sent`/`viewed` переводятся в `expired` при обращении.",
         "operationId": "list_invitations_api_invitations_get",
         "security": [
           {
@@ -7095,7 +7408,7 @@
           "invitations"
         ],
         "summary": "Отправить приглашение",
-        "description": "Вилка от–до обязательна (от ≤ до). Если максимум вилки ниже минимальной зарплаты кандидата — 422 `salary_below_expectations`, сумма кандидата не раскрывается.",
+        "description": "Вилка от–до обязательна (от ≤ до). Если максимум вилки ниже минимальной зарплаты кандидата — 422 `salary_below_expectations`, сумма кандидата не раскрывается. Кандидату уходит письмо.",
         "operationId": "create_invitation_api_invitations_post",
         "security": [
           {
@@ -7394,12 +7707,128 @@
         }
       }
     },
+    "/api/invitations/counters": {
+      "get": {
+        "tags": [
+          "invitations"
+        ],
+        "summary": "Счётчики для бейджей кабинета",
+        "description": "Кандидат: `new` — полученные и ещё не открытые. Рекрутер: `new` — ответы кандидатов (просмотр, принятие, отказ), которые он ещё не открывал. `active` — ждут ответа.",
+        "operationId": "get_counters_api_invitations_counters_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationCounters"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Недостаточно прав",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Недостаточно прав",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Недостаточно прав",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/invitations/market-hint": {
       "get": {
         "tags": [
           "invitations"
         ],
         "summary": "Рыночная подсказка зарплаты по категории",
+        "description": "Медиана принятых вилок в категории (если принятых ≥ 3), иначе — оценка по ожиданиям кандидатов категории. При выборке < 3 медиана и вероятность не показываются.",
         "operationId": "market_hint_api_invitations_market_hint_get",
         "security": [
           {
@@ -7734,7 +8163,7 @@
           "invitations"
         ],
         "summary": "Принять приглашение (кандидат)",
-        "description": "После принятия обе стороны видят контакты; раскрытие пишется в журнал.",
+        "description": "После принятия обе стороны видят контакты; раскрытие пишется в журнал событий и в audit_log. Рекрутеру уходит письмо.",
         "operationId": "accept_invitation_api_invitations__invitation_id__accept_post",
         "security": [
           {
@@ -7898,6 +8327,7 @@
           "invitations"
         ],
         "summary": "Отклонить приглашение с причиной (кандидат)",
+        "description": "Для причины `other` комментарий обязателен. Рекрутеру уходит письмо.",
         "operationId": "decline_invitation_api_invitations__invitation_id__decline_post",
         "security": [
           {
@@ -19874,6 +20304,33 @@
           }
         ]
       },
+      "InvitationCounters": {
+        "properties": {
+          "new": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "New"
+          },
+          "active": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Active"
+          }
+        },
+        "type": "object",
+        "required": [
+          "new",
+          "active"
+        ],
+        "title": "InvitationCounters",
+        "description": "Счётчики для бейджей в кабинете (T7.8).\n\nКандидат: `new` — полученные и ещё не открытые, `active` — ждут ответа.\nРекрутер: `new` — ответы кандидатов (просмотр, принятие, отказ), которые он ещё не открывал,\n`active` — приглашения компании, ждущие ответа.",
+        "examples": [
+          {
+            "active": 5,
+            "new": 2
+          }
+        ]
+      },
       "InvitationCreate": {
         "properties": {
           "salary_from": {
@@ -21632,7 +22089,7 @@
           "created_at"
         ],
         "title": "Need",
-        "description": "Потребность (запись `needs.json`).",
+        "description": "Потребность работодателя.",
         "examples": [
           {
             "candidates_count": 3,
@@ -22025,6 +22482,122 @@
           "closed"
         ],
         "title": "NeedStatus"
+      },
+      "NeedUpdate": {
+        "properties": {
+          "salary_from": {
+            "type": "integer",
+            "maximum": 10000000.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Salary From",
+            "description": "Зарплата от, ₽ в месяц"
+          },
+          "salary_to": {
+            "type": "integer",
+            "maximum": 10000000.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Salary To",
+            "description": "Зарплата до, ₽ в месяц"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 3,
+            "title": "Title"
+          },
+          "raw_text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 3000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raw Text",
+            "description": "Свободный текст"
+          },
+          "specialization": {
+            "$ref": "#/components/schemas/SpecializationCode"
+          },
+          "grade": {
+            "$ref": "#/components/schemas/GradeCode"
+          },
+          "skills_required": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Skills Required"
+          },
+          "skills_desired": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Skills Desired"
+          },
+          "team_description": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Team Description",
+            "default": ""
+          },
+          "work_format": {
+            "$ref": "#/components/schemas/WorkFormat"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "status": {
+            "$ref": "#/components/schemas/NeedStatus",
+            "default": "active"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "salary_from",
+          "salary_to",
+          "title",
+          "specialization",
+          "grade",
+          "work_format"
+        ],
+        "title": "NeedUpdate",
+        "description": "Изменение потребности: те же поля + статус (закрыть / вернуть в работу).",
+        "examples": [
+          {
+            "grade": "senior",
+            "raw_text": "нужен сеньор на Go в финтех, удалёнка, 300–400к",
+            "salary_from": 300000,
+            "salary_to": 400000,
+            "skills_desired": [
+              "kafka",
+              "kubernetes"
+            ],
+            "skills_required": [
+              "go",
+              "postgresql"
+            ],
+            "specialization": "backend",
+            "team_description": "Платёжный шлюз, 6 человек",
+            "title": "Senior Go-разработчик в платёжную команду",
+            "work_format": "remote"
+          }
+        ]
       },
       "Page_AuditEntry_": {
         "properties": {

@@ -1,15 +1,17 @@
 """Опрос специализации, адаптивный тест, результат, категория и грейд (соискатель)."""
 
-from typing import Any
+from typing import Annotated, Any
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Depends, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.candidates.grade_schemas import CandidateGradeStatus
+from app.core.db import get_session
 from app.core.errors import AppError, error_responses
 from app.core.security import CandidateUser, CurrentUser
 from app.testing.schemas import (
     AnswerAck,
     AnswerSubmit,
-    GradeStatus,
     SurveyQuestion,
     SurveyResult,
     SurveySubmit,
@@ -18,10 +20,10 @@ from app.testing.schemas import (
     TestSessionCreate,
     TestSessionState,
 )
-from app.testing.service import TestingService
+from app.testing.service import TestingDbService
 
 router = APIRouter(prefix="/testing", tags=["testing"])
-service = TestingService()
+SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 AUTH = (401, 403)
 
@@ -38,8 +40,8 @@ def _cid(user: CurrentUser) -> int:
     summary="Вопросы опроса по специализации",
     responses=error_responses(*AUTH),
 )
-async def get_survey(user: CandidateUser) -> Any:
-    return service.survey()
+async def get_survey(user: CandidateUser, session: SessionDep) -> Any:
+    return TestingDbService(session).survey()
 
 
 @router.post(
@@ -48,18 +50,19 @@ async def get_survey(user: CandidateUser) -> Any:
     summary="Отправить опрос → рекомендованная специализация и темы",
     responses=error_responses(*AUTH, 422),
 )
-async def submit_survey(body: SurveySubmit, user: CandidateUser) -> Any:
-    return service.submit_survey(body)
+async def submit_survey(body: SurveySubmit, user: CandidateUser, session: SessionDep) -> Any:
+    return await TestingDbService(session).submit_survey(body, _cid(user))
 
 
 @router.get(
     "/grade",
-    response_model=GradeStatus,
+    response_model=CandidateGradeStatus,
     summary="Категория и грейд: статус, кулдауны, история",
+    description="То же, что `GET /api/candidates/me/grade`: правила частоты считает движок.",
     responses=error_responses(*AUTH, 404),
 )
-async def grade_status(user: CandidateUser) -> Any:
-    return service.grade_status(_cid(user))
+async def grade_status(user: CandidateUser, session: SessionDep) -> Any:
+    return await TestingDbService(session).grade_status(_cid(user))
 
 
 @router.get(
@@ -68,8 +71,8 @@ async def grade_status(user: CandidateUser) -> Any:
     summary="Мои тесты",
     responses=error_responses(*AUTH),
 )
-async def list_sessions(user: CandidateUser) -> Any:
-    return service.sessions(_cid(user))
+async def list_sessions(user: CandidateUser, session: SessionDep) -> Any:
+    return await TestingDbService(session).sessions(_cid(user))
 
 
 @router.post(
@@ -77,16 +80,23 @@ async def list_sessions(user: CandidateUser) -> Any:
     response_model=TestSessionState,
     status_code=status.HTTP_201_CREATED,
     summary="Начать тест",
-    description="Пересдача на грейд ниже/выше — не чаще раза в 90 дней (409 `cooldown_active`).",
+    description=(
+        "Проверка частоты попыток — движок (`can_attempt`): смена грейда не чаще раза в 90 дней, "
+        "повтор неудачной попытки на тот же грейд — через 30 дней (409 `cooldown_active`, "
+        "в details — `reason_code` и `available_at`). Брошенная сессия считается неудачной "
+        "попыткой. Одновременно — одна незавершённая сессия."
+    ),
     responses=error_responses(
         *AUTH,
         (409, "cooldown_active", "Сменить грейд можно не чаще раза в 90 дней"),
         (409, "session_in_progress", "Сначала завершите начатый тест"),
+        (409, "bank_empty", "Для специализации пока нет задач"),
+        (422, "invalid_kind", "Вид теста не соответствует текущему грейду"),
         422,
     ),
 )
-async def start_session(body: TestSessionCreate, user: CandidateUser) -> Any:
-    return service.create(body, _cid(user))
+async def start_session(body: TestSessionCreate, user: CandidateUser, session: SessionDep) -> Any:
+    return await TestingDbService(session).create(body, _cid(user))
 
 
 @router.get(
@@ -95,15 +105,18 @@ async def start_session(body: TestSessionCreate, user: CandidateUser) -> Any:
     summary="Экран теста: текущая задача, прогресс, таймер",
     responses=error_responses(*AUTH, 404),
 )
-async def get_session(session_id: int, user: CandidateUser) -> Any:
-    return service.get_state(session_id, _cid(user))
+async def get_test_session(session_id: int, user: CandidateUser, session: SessionDep) -> Any:
+    return await TestingDbService(session).get_state(session_id, _cid(user))
 
 
 @router.post(
     "/sessions/{session_id}/answers",
     response_model=AnswerAck,
     summary="Ответить на текущую задачу",
-    description="Верно/неверно не сообщается. Время считает сервер.",
+    description=(
+        "Верно/неверно не сообщается. Время считает сервер от выдачи задачи; ответ после "
+        "лимита принимается, но засчитывается неверным (`time_expired: true`)."
+    ),
     responses=error_responses(
         *AUTH,
         404,
@@ -112,8 +125,10 @@ async def get_session(session_id: int, user: CandidateUser) -> Any:
         422,
     ),
 )
-async def submit_answer(session_id: int, body: AnswerSubmit, user: CandidateUser) -> Any:
-    return service.answer(session_id, _cid(user), body)
+async def submit_answer(
+    session_id: int, body: AnswerSubmit, user: CandidateUser, session: SessionDep
+) -> Any:
+    return await TestingDbService(session).answer(session_id, _cid(user), body)
 
 
 @router.get(
@@ -122,5 +137,5 @@ async def submit_answer(session_id: int, body: AnswerSubmit, user: CandidateUser
     summary="Результат теста: категория, θ и интервал, разбор по темам",
     responses=error_responses(*AUTH, 404, (409, "session_not_finished", "Тест ещё не завершён")),
 )
-async def get_result(session_id: int, user: CandidateUser) -> Any:
-    return service.result(session_id, _cid(user))
+async def get_result(session_id: int, user: CandidateUser, session: SessionDep) -> Any:
+    return await TestingDbService(session).result(session_id, _cid(user))

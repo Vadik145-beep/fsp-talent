@@ -9,9 +9,11 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
+    text,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
@@ -25,7 +27,8 @@ class Item(TimestampMixin, Base):
     __tablename__ = "items"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    code: Mapped[str] = mapped_column(String(32), unique=True)
+    # код шаблона: у шаблонов движка совпадает с id шаблона в `bank_registry()`
+    code: Mapped[str] = mapped_column(String(64), unique=True)
     title: Mapped[str] = mapped_column(String(200))
     description: Mapped[str] = mapped_column(Text, default="")
     specialization: Mapped[str] = mapped_column(ForeignKey("specializations.code"), index=True)
@@ -42,6 +45,7 @@ class Item(TimestampMixin, Base):
     correct_count: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
     leak_flag: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     leak_score: Mapped[float] = mapped_column(Float, default=0, server_default="0")
+    time_limit_s: Mapped[int | None] = mapped_column(Integer, comment="Лимит времени, сек")
 
 
 class ItemParamsLog(TimestampMixin, Base):
@@ -61,6 +65,15 @@ class ItemParamsLog(TimestampMixin, Base):
 
 class TestSession(Base):
     __tablename__ = "test_sessions"
+    __table_args__ = (
+        # у кандидата не больше одной незавершённой сессии
+        Index(
+            "uq_test_sessions_one_in_progress",
+            "candidate_id",
+            unique=True,
+            postgresql_where=text("status = 'in_progress'"),
+        ),
+    )
     __test__ = False
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -97,6 +110,8 @@ class TestAnswer(Base):
     )
     item_id: Mapped[int] = mapped_column(ForeignKey("items.id"), index=True)
     seed: Mapped[int] = mapped_column(BigInteger)
+    # непрозрачный id показа для клиента (шаблон и seed наружу не уходят)
+    instance_id: Mapped[str | None] = mapped_column(String(32), unique=True)
     position: Mapped[int] = mapped_column(Integer)
     shown_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     answered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
@@ -108,6 +123,10 @@ class TestAnswer(Base):
     )
     theta_after: Mapped[float | None] = mapped_column(Float)
     se_after: Mapped[float | None] = mapped_column(Float)
+    timed_out: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    theta_loo: Mapped[float | None] = mapped_column(
+        Float, comment="θ кандидата без этой задачи (для детектора утечек и калибровки)"
+    )
 
 
 class GradeHistory(Base):

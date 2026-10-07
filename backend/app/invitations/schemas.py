@@ -67,7 +67,7 @@ class InvitationCreate(SalaryRangeMixin):
 
 
 class InvitationRecord(OutModel):
-    """Хранимые поля приглашения (запись `invitations.json`)."""
+    """Хранимые поля приглашения."""
 
     model_config = ConfigDict(json_schema_extra=fixtures.first_example("invitations"))
 
@@ -168,3 +168,17 @@ class InvitationQuota(Quota):
     """Квота + подсказка, если исчерпана."""
 
     hint: str | None = None
+
+
+class InvitationCounters(OutModel):
+    """Счётчики для бейджей в кабинете (T7.8).
+
+    Кандидат: `new` — полученные и ещё не открытые, `active` — ждут ответа.
+    Рекрутер: `new` — ответы кандидатов (просмотр, принятие, отказ), которые он ещё не открывал,
+    `active` — приглашения компании, ждущие ответа.
+    """
+
+    model_config = ConfigDict(json_schema_extra={"examples": [{"new": 2, "active": 5}]})
+
+    new: int = Field(ge=0)
+    active: int = Field(ge=0)

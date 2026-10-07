@@ -863,9 +863,9 @@ export interface paths {
         put?: never;
         /**
          * Разобрать свободный текст потребности в поля
-         * @description Правила без LLM; с ключом LLM — точнее (волна 3c).
+         * @description Правила без LLM; с ключом LLM — точнее (трек 3c).
          */
-        post: operations["parse_need_api_matching_needs_parse_post"];
+        post: operations["parse_need_text_api_matching_needs_parse_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -884,7 +884,7 @@ export interface paths {
         put?: never;
         /**
          * Создать потребность
-         * @description Вилка от–до обязательна, от ≤ до. Заглушка: не сохраняется.
+         * @description Вилка от–до обязательна, от ≤ до. Стек — коды справочника `skills`.
          */
         post: operations["create_need_api_matching_needs_post"];
         delete?: never;
@@ -902,9 +902,17 @@ export interface paths {
         };
         /** Потребность */
         get: operations["get_need_api_matching_needs__need_id__get"];
-        put?: never;
+        /**
+         * Изменить потребность
+         * @description Те же поля, что при создании, плюс статус (`active` / `closed`).
+         */
+        put: operations["update_need_api_matching_needs__need_id__put"];
         post?: never;
-        delete?: never;
+        /**
+         * Удалить потребность
+         * @description Отправленные по ней приглашения остаются (ссылка на потребность обнуляется).
+         */
+        delete: operations["delete_need_api_matching_needs__need_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -939,7 +947,7 @@ export interface paths {
         };
         /**
          * Подборка: кандидаты категории с объяснением и разбивкой счёта
-         * @description Кандидаты обезличены. Фильтры сужают подборку, `total_before_filters` — исходный размер; без фильтров возвращается исходный список.
+         * @description Кандидаты обезличены. Счёт = Σ value × weight по факторам (стек, тест, ФСП, свежесть, зарплата, формат), веса — из настроек платформы; сумма `contribution` равна `score`. Фильтры сужают подборку, `total_before_filters` — исходный размер; без фильтров возвращается исходный список.
          */
         get: operations["need_candidates_api_matching_needs__need_id__candidates_get"];
         put?: never;
@@ -959,13 +967,13 @@ export interface paths {
         };
         /**
          * Мои приглашения
-         * @description Кандидат видит полученные приглашения, рекрутер — приглашения своей компании. Контакты другой стороны — только при статусе `accepted`.
+         * @description Кандидат видит полученные приглашения, рекрутер — приглашения своей компании. Контакты другой стороны — только при статусе `accepted`. Просроченные `sent`/`viewed` переводятся в `expired` при обращении.
          */
         get: operations["list_invitations_api_invitations_get"];
         put?: never;
         /**
          * Отправить приглашение
-         * @description Вилка от–до обязательна (от ≤ до). Если максимум вилки ниже минимальной зарплаты кандидата — 422 `salary_below_expectations`, сумма кандидата не раскрывается.
+         * @description Вилка от–до обязательна (от ≤ до). Если максимум вилки ниже минимальной зарплаты кандидата — 422 `salary_below_expectations`, сумма кандидата не раскрывается. Кандидату уходит письмо.
          */
         post: operations["create_invitation_api_invitations_post"];
         delete?: never;
@@ -991,6 +999,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/invitations/counters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Счётчики для бейджей кабинета
+         * @description Кандидат: `new` — полученные и ещё не открытые. Рекрутер: `new` — ответы кандидатов (просмотр, принятие, отказ), которые он ещё не открывал. `active` — ждут ответа.
+         */
+        get: operations["get_counters_api_invitations_counters_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/invitations/market-hint": {
         parameters: {
             query?: never;
@@ -998,7 +1026,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Рыночная подсказка зарплаты по категории */
+        /**
+         * Рыночная подсказка зарплаты по категории
+         * @description Медиана принятых вилок в категории (если принятых ≥ 3), иначе — оценка по ожиданиям кандидатов категории. При выборке < 3 медиана и вероятность не показываются.
+         */
         get: operations["market_hint_api_invitations_market_hint_get"];
         put?: never;
         post?: never;
@@ -1039,7 +1070,7 @@ export interface paths {
         put?: never;
         /**
          * Принять приглашение (кандидат)
-         * @description После принятия обе стороны видят контакты; раскрытие пишется в журнал.
+         * @description После принятия обе стороны видят контакты; раскрытие пишется в журнал событий и в audit_log. Рекрутеру уходит письмо.
          */
         post: operations["accept_invitation_api_invitations__invitation_id__accept_post"];
         delete?: never;
@@ -1057,7 +1088,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Отклонить приглашение с причиной (кандидат) */
+        /**
+         * Отклонить приглашение с причиной (кандидат)
+         * @description Для причины `other` комментарий обязателен. Рекрутеру уходит письмо.
+         */
         post: operations["decline_invitation_api_invitations__invitation_id__decline_post"];
         delete?: never;
         options?: never;
@@ -3676,6 +3710,24 @@ export interface components {
             decline_reason_label?: string | null;
         };
         /**
+         * InvitationCounters
+         * @description Счётчики для бейджей в кабинете (T7.8).
+         *
+         *     Кандидат: `new` — полученные и ещё не открытые, `active` — ждут ответа.
+         *     Рекрутер: `new` — ответы кандидатов (просмотр, принятие, отказ), которые он ещё не открывал,
+         *     `active` — приглашения компании, ждущие ответа.
+         * @example {
+         *       "active": 5,
+         *       "new": 2
+         *     }
+         */
+        InvitationCounters: {
+            /** New */
+            new: number;
+            /** Active */
+            active: number;
+        };
+        /**
          * InvitationCreate
          * @description Приглашение [ТЗ 2.2 п.1–2]: вилка обязательна, от ≤ до.
          *
@@ -4440,7 +4492,7 @@ export interface components {
         };
         /**
          * Need
-         * @description Потребность (запись `needs.json`).
+         * @description Потребность работодателя.
          * @example {
          *       "candidates_count": 3,
          *       "category": "backend:middle",
@@ -4678,6 +4730,63 @@ export interface components {
          * @enum {string}
          */
         NeedStatus: "active" | "closed";
+        /**
+         * NeedUpdate
+         * @description Изменение потребности: те же поля + статус (закрыть / вернуть в работу).
+         * @example {
+         *       "grade": "senior",
+         *       "raw_text": "нужен сеньор на Go в финтех, удалёнка, 300–400к",
+         *       "salary_from": 300000,
+         *       "salary_to": 400000,
+         *       "skills_desired": [
+         *         "kafka",
+         *         "kubernetes"
+         *       ],
+         *       "skills_required": [
+         *         "go",
+         *         "postgresql"
+         *       ],
+         *       "specialization": "backend",
+         *       "team_description": "Платёжный шлюз, 6 человек",
+         *       "title": "Senior Go-разработчик в платёжную команду",
+         *       "work_format": "remote"
+         *     }
+         */
+        NeedUpdate: {
+            /**
+             * Salary From
+             * @description Зарплата от, ₽ в месяц
+             */
+            salary_from: number;
+            /**
+             * Salary To
+             * @description Зарплата до, ₽ в месяц
+             */
+            salary_to: number;
+            /** Title */
+            title: string;
+            /**
+             * Raw Text
+             * @description Свободный текст
+             */
+            raw_text?: string | null;
+            specialization: components["schemas"]["SpecializationCode"];
+            grade: components["schemas"]["GradeCode"];
+            /** Skills Required */
+            skills_required?: string[];
+            /** Skills Desired */
+            skills_desired?: string[];
+            /**
+             * Team Description
+             * @default
+             */
+            team_description: string;
+            work_format: components["schemas"]["WorkFormat"];
+            /** City */
+            city?: string | null;
+            /** @default active */
+            status: components["schemas"]["NeedStatus"];
+        };
         /** Page[AuditEntry] */
         Page_AuditEntry_: {
             /** Items */
@@ -9294,7 +9403,7 @@ export interface operations {
             };
         };
     };
-    parse_need_api_matching_needs_parse_post: {
+    parse_need_text_api_matching_needs_parse_post: {
         parameters: {
             query?: never;
             header?: {
@@ -9447,7 +9556,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description `validation_error` — Ошибка валидации (в т.ч. salary_range_invalid) */
+            /** @description `validation_error` — Ошибка валидации (в т.ч. salary_range_invalid); `unknown_skills` — Технологий нет в справочнике стека */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -9482,6 +9591,134 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Need"];
                 };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` — Объект не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_need_api_matching_needs__need_id__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path: {
+                need_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NeedUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Need"];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` — Объект не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `validation_error` — Ошибка валидации данных; `unknown_skills` — Технологий нет в справочнике стека */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_need_api_matching_needs__need_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path: {
+                need_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description `unauthorized` — Требуется вход */
             401: {
@@ -9802,6 +10039,58 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InvitationQuota"];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_counters_api_invitations_counters_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvitationCounters"];
                 };
             };
             /** @description `unauthorized` — Требуется вход */

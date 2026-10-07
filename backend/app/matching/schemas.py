@@ -49,8 +49,14 @@ class NeedCreate(NeedFields):
     model_config = ConfigDict(extra="forbid", json_schema_extra={"examples": [NEED_CREATE_EXAMPLE]})
 
 
+class NeedUpdate(NeedCreate):
+    """Изменение потребности: те же поля + статус (закрыть / вернуть в работу)."""
+
+    status: NeedStatus = NeedStatus.active
+
+
 class Need(NeedFields):
-    """Потребность (запись `needs.json`)."""
+    """Потребность работодателя."""
 
     model_config = ConfigDict(extra="ignore", json_schema_extra=fixtures.first_example("needs"))
 
