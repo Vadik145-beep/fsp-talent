@@ -3,7 +3,7 @@ import { cn } from '@/shared/lib/cn'
 import { formatTheta } from '../labels'
 
 /**
- * Шкала уровня: зоны грейдов по порогам θ, точка — оценка, полоса — 95%-интервал.
+ * Шкала уровня: зоны грейдов по порогам θ, точка — оценка, полоса — 90%-интервал.
  * Пороги по умолчанию — как в настройках платформы (−1 / 0 / 1); точные пороги отдаст бэкенд.
  */
 export interface ThetaScaleProps {
@@ -84,7 +84,7 @@ export function ThetaScale({ theta, ciLow, ciHigh, thresholds = { junior: -1, mi
       </div>
       <figcaption className="sr-only">
         Уровень {formatTheta(theta)}
-        {hasCi ? `, с вероятностью 95 % от ${formatTheta(ciLow)} до ${formatTheta(ciHigh)}` : ''}, зона «{GRADE_LABELS[current]}».
+        {hasCi ? `, с вероятностью 90 % от ${formatTheta(ciLow)} до ${formatTheta(ciHigh)}` : ''}, зона «{GRADE_LABELS[current]}».
       </figcaption>
     </figure>
   )

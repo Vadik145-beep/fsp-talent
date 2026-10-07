@@ -131,7 +131,7 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
           </p>
         )}
         <p className="mt-1 text-[15px] text-muted">
-          С вероятностью 95 % ваш уровень между {formatTheta(r.ci_low)} и {formatTheta(r.ci_high)}. Пороги: Junior от −1, Middle от 0,
+          С вероятностью 90 % ваш уровень между {formatTheta(r.ci_low)} и {formatTheta(r.ci_high)}. Пороги: Junior от −1, Middle от 0,
           Senior от 1.
         </p>
         <ThetaScale className="mt-4" theta={r.theta} ciLow={r.ci_low} ciHigh={r.ci_high} />
