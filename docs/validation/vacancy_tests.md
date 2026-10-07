@@ -12,6 +12,16 @@
 | 04_data_ml_middle.md | ✅ / ✅ | Рекомендательные системы (0.95); Нейросети (PyTorch) (0.85); SQL: оконные функции и JOIN (0.85); Метрики качества и ранжирования (0.85); Статистика и A/B-тесты (0.70); Обработка данных (pandas) (0.70); Вывод моделей в прод (MLOps) (0.70); Классическое ML (scikit-learn) (0.55) | data_ml.conv_output_shape [middle]; backend.sql_index_usage [middle]; data_ml.roc_auc_pairs [middle]; data_ml.ab_ztest [middle]; data_ml.numpy_view_copy [middle]; data_ml.crisp_dm_order [junior]; data_ml.gini_split [middle] | Рекомендательные системы | ✅ Рекомендательные системы и метрики ранжирования; ✅ SQL: оконные функции и JOIN; ✅ Классическое ML (scikit-learn): валидация, переобучение; ✅ PyTorch: обучение нейросетей; ✅ Статистика A/B-тестов |
 | 05_devops_middle.md | ✅ / ✅ | Linux: сети, процессы, диагностика (0.95); Мониторинг и инциденты (0.95); CI/CD (0.85); Docker и контейнеризация (0.70); Kubernetes: объекты и отладка (0.62); Инфраструктура как код (Terraform) (0.62); Git: ветки и merge request (0.50) | devops.cidr_subnet [middle]; devops.error_budget [middle]; devops.deploy_strategies [junior]; devops.dockerfile_layers [middle]; devops.k8s_manifest_bug [middle]; devops.terraform_plan [senior] | Git: ветки и merge request | ✅ Linux: сети, процессы, диагностика; ✅ Docker: образы и контейнеризация; ✅ Kubernetes: объекты и отладка; ✅ Terraform: состояние и модули; ✅ CI/CD на GitLab CI |
 
+## Ответ API и расширение контракта
+
+`POST /api/admin/vacancy-tests` сохраняет собранный тест (таблица `vacancy_tests`), `GET` отдаёт список собранных (новые сверху; пока пусто — демо-примеры из фикстур). К форме `VacancyTestResult` добавлены только новые поля:
+
+- `drafts[].item_id` — id черновика в таблице `items` (status=draft, source=llm_vacancy); его одобряет админ (`/api/admin/items/{item_id}/approve`) и шаблон идёт в тесты как непроверочный; `drafts[].origin` — `llm` или `vocabulary`; `drafts[].reused` — черновик по той же теме и грейду уже был, новый не создан;
+- `items[].template_id` и `items[].target_grade` — шаблон банка и его грейд (`items[].item_id` — строка `items`; если шаблона там ещё нет, он регистрируется);
+- `created_at` — когда собран тест.
+
+Без ключа LLM `parser: rules`, черновики — по заготовкам словаря тем; с ключом черновик пишет LLM (ответ проверяется pydantic, при ошибке — заготовка).
+
 ## Объяснение выбора (как его видит админ)
 
 ### 01_backend_go_senior.md
