@@ -177,18 +177,58 @@ describe('моки админки: задания из вакансий', () => 
 })
 
 describe('моки админки: метрики подбора по CSV', () => {
-  it('считает precision@10 по загруженным парам', () => {
-    const csv = 'need_id,candidate_id,relevant\n1,1,1\n1,2,0\n1,3,1\n1,4,1\n2,5,0\n2,6,1\n'
-    const r = evaluateMatchingCsv('pairs.csv', csv)
+  it('id из базы: кандидатов ранжирует платформа, порядок строк не важен', () => {
+    const rows = ['1,1,1', '1,2,0', '1,3,1', '1,4,1', '2,5,0', '2,6,1']
+    const a = evaluateMatchingCsv('pairs.csv', ['need_id,candidate_id,relevant', ...rows].join('\n'))
+    const b = evaluateMatchingCsv('pairs.csv', ['need_id,candidate_id,relevant', ...rows.reverse()].join('\n'))
+    if ('error' in a || 'error' in b) throw new Error('ошибка разбора')
+    expect(a.ranking).toBe('platform')
+    expect(a.pairs_count).toBe(6)
+    expect(a.needs_count).toBe(2)
+    expect(a.per_need).toHaveLength(2)
+    expect(a.per_need[0].candidates_total).toBe(4)
+    // Все кандидаты в топ-10 — precision@10 равна доле подходящих, recall@50 = 1.
+    expect(a.precision_at_10).toBeCloseTo((3 / 4 + 1 / 2) / 2, 3)
+    expect(a.random_precision_at_10).toBeCloseTo(a.precision_at_10, 3)
+    expect(a.recall_at_50).toBe(1)
+    expect(a.relevant_in_top_share).toBe(1)
+    expect(b.ndcg_at_10).toBe(a.ndcg_at_10)
+    expect(a.warnings).toEqual([])
+  })
+
+  it('чужие id с relevant: оценивается порядок строк файла и есть предупреждение', () => {
+    const csv = 'need_id,candidate_id,relevant\nN001,C0001,1\nN001,C0002,0\nN001,C0003,0\nN002,C0004,0\n'
+    const r = evaluateMatchingCsv('example.csv', csv)
     if ('error' in r) throw new Error(r.error)
-    expect(r.pairs_count).toBe(6)
-    expect(r.needs_count).toBe(2)
-    expect(r.precision_at_10).toBeCloseTo((3 / 4 + 1 / 2) / 2, 3)
-    expect(r.relevant_in_top_share).toBe(1)
-    expect(r.per_need).toHaveLength(2)
+    expect(r.ranking).toBe('file_order')
+    expect(r.ndcg_at_10).toBe(1)
+    expect(r.needs_count).toBe(1)
+    expect(r.warnings).toHaveLength(2)
+    expect(r.warnings?.[1]).toContain('N002')
+  })
+
+  it('чужие id без relevant — понятная ошибка', () => {
+    expect(evaluateMatchingCsv('x.csv', 'need_id,candidate_id\nN001,C0001')).toEqual({ error: expect.stringContaining('relevant') })
   })
 
   it('без нужных колонок — понятная ошибка', () => {
     expect(evaluateMatchingCsv('x.csv', 'a,b\n1,2')).toEqual({ error: expect.stringContaining('need_id') })
+  })
+})
+
+describe('моки админки: жалобы', () => {
+  it('подтверждение с block_company блокирует компанию одним запросом', async () => {
+    const res = await call<{ status: string }>('PATCH', '/api/admin/reports/1', { status: 'resolved', resolution: 'ок', block_company: true })
+    expect(res.status).toBe(200)
+    expect(res.data.status).toBe('resolved')
+    const company = (db.data.companies as unknown as Array<{ id: number; blocked?: boolean }>).find((c) => c.id === 3)
+    expect(company?.blocked).toBe(true)
+    expect(db.data.audit_log.at(-1)?.action).toBe('company_blocked')
+  })
+
+  it('блокировка без подтверждения — ошибка', async () => {
+    const res = await call<{ code: string }>('PATCH', '/api/admin/reports/1', { status: 'rejected', block_company: true })
+    expect(res.status).toBe(422)
+    expect(res.data.code).toBe('block_requires_resolve')
   })
 })

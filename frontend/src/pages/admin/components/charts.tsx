@@ -39,6 +39,29 @@ export interface ChartViewOptions {
   /** Диагональ y = x для графиков «оценка против истины». */
   diagonal?: boolean
   yDomain?: [number, number]
+  /** Серые линии-пороги по обеим осям точечного графика (например, пороги грейдов на шкале θ). */
+  thresholds?: number[]
+}
+
+/** Подпись категории слева от горизонтальных столбцов: переносим по словам, не длиннее ~22 символов в строке. */
+function WrappedTick(props: { x?: number; y?: number; payload?: { value: string | number } }) {
+  const { x = 0, y = 0, payload } = props
+  const words = String(payload?.value ?? '').split(' ')
+  const lines: string[] = []
+  for (const w of words) {
+    const last = lines[lines.length - 1]
+    if (last && (last + ' ' + w).length <= 22) lines[lines.length - 1] = `${last} ${w}`
+    else lines.push(w)
+  }
+  return (
+    <text x={x - 6} y={y} textAnchor="end" fill={AXIS.tick.fill} fontSize={11}>
+      {lines.map((l, i) => (
+        <tspan key={i} x={x - 6} dy={i === 0 ? `${0.35 - (lines.length - 1) * 0.55}em` : '1.1em'}>
+          {l}
+        </tspan>
+      ))}
+    </text>
+  )
 }
 
 function fmt(v: unknown, percent?: boolean): string {
@@ -48,7 +71,7 @@ function fmt(v: unknown, percent?: boolean): string {
 
 /** Универсальный рендер графика валидации по chart_type (bar / histogram / line / scatter). */
 export function ValidationChartView({ chart, options = {} }: { chart: ValidationChart; options?: ChartViewOptions }) {
-  const { percent, height = 260, referenceY, diagonal, yDomain } = options
+  const { percent, height = 260, referenceY, diagonal, yDomain, thresholds = [] } = options
   const yTick = (v: number) => (percent ? `${Math.round(v * 100)}%` : num(v, Number.isInteger(v) ? 0 : Math.abs(v) < 1 ? 2 : 1))
   const multi = chart.series.length > 1
   const colors = seriesColors(chart.series.map((s) => s.name))
@@ -67,6 +90,10 @@ export function ValidationChartView({ chart, options = {} }: { chart: Validation
             label={{ value: chart.x_label, position: 'insideBottom', offset: -16, ...AXIS_LABEL }} />
           <YAxis type="number" dataKey="y" name={chart.y_label} domain={diagonal ? [lo, hi] : yDomain ?? ['auto', 'auto']} width={44} {...AXIS} tickFormatter={yTick} />
           <Tooltip {...TOOLTIP_STYLE} cursor={{ strokeDasharray: '3 3' }} formatter={(v) => fmt(v, percent)} />
+          {thresholds.flatMap((t) => [
+            <ReferenceLine key={`x${t}`} x={t} stroke={AXIS.stroke} />,
+            <ReferenceLine key={`y${t}`} y={t} stroke={AXIS.stroke} />,
+          ])}
           {diagonal && (
             <ReferenceLine segment={[{ x: lo, y: lo }, { x: hi, y: hi }]} stroke={NEUTRAL} strokeDasharray="5 4" ifOverflow="extendDomain" />
           )}
@@ -114,12 +141,35 @@ export function ValidationChartView({ chart, options = {} }: { chart: Validation
     )
   }
 
+  // Длинные подписи категорий не помещаются под столбцами — кладём столбцы горизонтально, подписи слева.
+  if (longLabels && chart.chart_type === 'bar') {
+    const perCategory = chart.series.length * 16 + 18
+    const h = Math.max(height, xs.length * perCategory + (multi ? 64 : 36))
+    return (
+      <ChartBox height={h} label={chart.title}>
+        <BarChart layout="vertical" data={rows} margin={{ top: 4, right: 48, bottom: 8, left: 4 }} barGap={2} barCategoryGap="18%">
+          <CartesianGrid {...GRID} horizontal={false} />
+          <XAxis type="number" {...AXIS} tickFormatter={yTick} domain={yDomain ?? (percent ? [0, 1] : [0, 'auto'])} />
+          <YAxis type="category" dataKey="x" width={150} interval={0} {...AXIS} tick={<WrappedTick />} />
+          <Tooltip {...TOOLTIP_STYLE} cursor={{ fill: CURSOR_FILL }} formatter={(v) => fmt(v, percent)} />
+          {multi && <Legend itemSorter={null} verticalAlign="top" height={28} iconType="square" wrapperStyle={{ fontSize: 12 }} />}
+          {chart.series.map((s, i) => (
+            <Bar key={s.name} dataKey={s.name} fill={colors[i]} radius={[0, 4, 4, 0]} maxBarSize={14}>
+              <LabelList dataKey={s.name} position="right" {...VALUE_LABEL} formatter={(v: unknown) => fmt(v, percent)} />
+            </Bar>
+          ))}
+        </BarChart>
+      </ChartBox>
+    )
+  }
+
+  const dense = chart.chart_type === 'histogram' && xs.length > 8
   return (
     <ChartBox height={height} label={chart.title}>
       <BarChart data={rows} margin={{ top: labelBars ? 20 : 8, right: 8, bottom: longLabels ? 8 : 28, left: 4 }} barGap={2} barCategoryGap={chart.chart_type === 'histogram' ? 2 : '22%'}>
         <CartesianGrid {...GRID} vertical={false} />
-        <XAxis dataKey="x" {...AXIS} interval={0} height={longLabels ? 48 : 30}
-          tick={longLabels ? { ...AXIS.tick, fontSize: 11 } : AXIS.tick}
+        <XAxis dataKey="x" {...AXIS} interval={dense ? 1 : 0} height={longLabels ? 48 : 30}
+          tick={longLabels || dense ? { ...AXIS.tick, fontSize: 11 } : AXIS.tick}
           label={longLabels ? undefined : { value: chart.x_label, position: 'insideBottom', offset: -16, ...AXIS_LABEL }} />
         <YAxis width={44} {...AXIS} tickFormatter={yTick} domain={yDomain ?? (percent ? [0, 1] : [0, 'auto'])} />
         <Tooltip {...TOOLTIP_STYLE} cursor={{ fill: CURSOR_FILL }} formatter={(v) => fmt(v, percent)} />

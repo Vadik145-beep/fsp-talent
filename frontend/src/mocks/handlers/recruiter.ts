@@ -767,11 +767,16 @@ function recruiterMutation(
   }
 }
 
-/** Детерминированный демо-код приглашения в компанию: «FSP-C001-7K3Q». */
+/** Демо-код приглашения в компанию: «FSP-C001-7K3Q». Пока не перевыпущен — детерминированный. */
 function inviteCodeOf(company: CompanyRow): string {
+  if (company.invite_code) return company.invite_code
+  return makeInviteCode(company, `${company.id}:${company.inn ?? company.name}`)
+}
+
+function makeInviteCode(company: CompanyRow, seed: string): string {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
   let h = 2166136261
-  for (const ch of `${company.id}:${company.inn ?? company.name}`) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0
+  for (const ch of seed) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0
   let tail = ''
   for (let i = 0; i < 4; i++) {
     tail += alphabet[h % alphabet.length]
@@ -811,7 +816,19 @@ export const recruiterHandlers: HttpHandler[] = [
   http.get(
     '/api/companies/my',
     // Код приглашения в компанию — только администратору компании.
-    recruiterGet((ctx) => (ctx.recruiter.is_company_admin ? { ...ctx.company, invite_code: inviteCodeOf(ctx.company) } : ctx.company)),
+    recruiterGet((ctx) => {
+      const { invite_code: _code, ...company } = ctx.company
+      return ctx.recruiter.is_company_admin ? { ...company, invite_code: inviteCodeOf(ctx.company) } : company
+    }),
+  ),
+  http.post(
+    '/api/companies/my/invite-code',
+    recruiterMutation((ctx) => {
+      if (!ctx.recruiter.is_company_admin) return forbidden('Код приглашения меняет только администратор компании')
+      ctx.company.invite_code = makeInviteCode(ctx.company, `${ctx.company.id}:${db.now()}:${Math.random()}`)
+      db.save()
+      return HttpResponse.json(ctx.company)
+    }),
   ),
   http.put(
     '/api/companies/my',

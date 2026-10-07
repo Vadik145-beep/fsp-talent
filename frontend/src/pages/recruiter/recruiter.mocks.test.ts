@@ -198,3 +198,20 @@ describe('роли', () => {
     expect(await getResponse(recruiterHandlers, req('recruiter'))).toBeInstanceOf(Response)
   })
 })
+
+describe('код приглашения в компанию', () => {
+  it('администратор выпускает новый код, старый больше не приходит', async () => {
+    const before = await api.get<S['MyCompany']>('/companies/my')
+    expect(before.invite_code).toMatch(/^FSP-C001-/)
+    const fresh = await api.post<S['MyCompany']>('/companies/my/invite-code')
+    expect(fresh.invite_code).toMatch(/^FSP-C001-/)
+    expect(fresh.invite_code).not.toBe(before.invite_code)
+    expect((await api.get<S['MyCompany']>('/companies/my')).invite_code).toBe(fresh.invite_code)
+  })
+
+  it('обычный рекрутер кода не видит и выпустить не может', async () => {
+    setApiRole('recruiter', 42)
+    expect(await api.get<S['MyCompany']>('/companies/my')).not.toHaveProperty('invite_code')
+    expect((await apiError(api.post('/companies/my/invite-code'))).status).toBe(403)
+  })
+})
