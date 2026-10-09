@@ -11,6 +11,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.common import fixtures
+from app.fsp.scoring import FspAchievementData, fsp_profile_note, fsp_reason_for, fsp_score_for
 from app.matching.parser import parse_need_text
 from app.matching.scoring import normal_cdf
 from app.matching.service import MatchingService
@@ -43,6 +44,16 @@ def _restore_seed_after_module() -> Iterator[None]:
 @pytest.fixture(autouse=True)
 def _fresh_db() -> None:
     reseed_sync()
+
+
+def fsp_achievements(candidate_id: int) -> list[FspAchievementData]:
+    fsp_id = (fixtures.by_id("candidates", candidate_id) or {}).get("fsp_id")
+    rows = fixtures.where("fsp_achievements", fsp_id=fsp_id) if fsp_id else []
+    return [FspAchievementData.from_mapping(r) for r in rows]
+
+
+def fsp_for(card: dict[str, Any], specialization: str) -> float | None:
+    return fsp_score_for(fsp_achievements(card["id"]), specialization)
 
 
 def matches(client: TestClient, need_id: int = 1, **params: Any) -> Any:
@@ -200,7 +211,8 @@ def test_ranking_is_explained_and_consistent(client: TestClient) -> None:
         assert abs(parts["stack"]["value"] - expected_stack) < 1e-3
         theta = card["theta"]
         assert abs(parts["theta"]["value"] - (normal_cdf(theta) if theta is not None else 0)) < 1e-3
-        fsp = (card["fsp_score"] or 0) / 100
+        # ФСП — под специализацию потребности (релевантность дисциплин, E08)
+        fsp = (fsp_for(card, need["specialization"]) or 0) / 100 if card["fsp_score"] else 0
         assert abs(parts["fsp"]["value"] - fsp) < 1e-3
         assert abs(parts["freshness"]["value"] - card["freshness"]) < 1e-3
     assert matches(client) == result, "выдача стабильна"
@@ -241,6 +253,39 @@ def test_fsp_is_bonus_without_penalty(client: TestClient) -> None:
             assert not any("ФСП" in r for r in m["reasons"])
         elif fsp["value"] > 0:
             assert any(r.startswith("Подтверждено ФСП") for r in m["reasons"])
+
+
+def test_fsp_factor_uses_discipline_relevance(client: TestClient) -> None:
+    """E08: ФСП-фактор и причина считаются под специализацию потребности (backend)."""
+    result = matches(client)
+    checked = 0
+    for m in result["items"]:
+        achs = fsp_achievements(m["candidate"]["id"])
+        if not achs or m["candidate"]["fsp_score"] is None:
+            continue
+        lines = [r for r in m["reasons"] if r.startswith("Подтверждено ФСП")]
+        if lines:
+            assert lines == [f"Подтверждено ФСП: {fsp_reason_for(achs, 'backend')}"]
+            checked += 1
+    assert checked, "в подборке есть кандидаты с достижениями ФСП"
+
+
+def test_profile_note_for_recruiter(client: TestClient) -> None:
+    """Пометка «профильно для …» в профиле кандидата у рекрутера — по его специализации."""
+    seen = 0
+    for cand in fixtures.all_records("candidates"):
+        if not cand.get("fsp_id") or not cand.get("grade") or not cand.get("publication_consent"):
+            continue
+        r = client.get(f"/api/candidates/{cand['id']}", headers=RECRUITER)
+        if r.status_code != 200:
+            continue
+        body = r.json()
+        expected = None
+        if (cand.get("privacy") or {}).get("show_fsp_achievements", True):
+            expected = fsp_profile_note(fsp_achievements(cand["id"]), cand["specialization"])
+        assert body["fsp_profile_note"] == expected
+        seen += expected is not None
+    assert seen, "у части кандидатов есть профильные достижения"
 
 
 def test_invitation_status_in_results(client: TestClient) -> None:
@@ -317,3 +362,54 @@ def test_hidden_candidates_excluded(client: TestClient) -> None:
     assert after["total_before_filters"] == len(base) - len(hidden)
     cats = client.get("/api/matching/needs/1/categories", headers=RECRUITER).json()
     assert cats[0]["candidates_count"] == len(base) - len(hidden)
+
+
+def test_score_candidate_prefers_profile_discipline() -> None:
+    """E08: при прочих равных ИБ-призёр выше робототехника в подборке DevOps; без ФСП — 0."""
+    from app.matching.scoring import NeedLike, score_candidate, weights_from
+
+    def cand(discipline: str | None) -> dict[str, Any]:
+        achs = (
+            [
+                FspAchievementData.from_mapping(
+                    {
+                        "level": "national",
+                        "place": 2,
+                        "date": "2026-05-01",
+                        "discipline": discipline,
+                    }
+                )
+            ]
+            if discipline
+            else []
+        )
+        return {
+            "stack": ["docker", "kubernetes"],
+            "theta": 0.3,
+            "fsp_id": "FSP-000001" if discipline else None,
+            "fsp_score": 50.0 if discipline else None,
+            "fsp_achievements": achs,
+            "fsp_badges": [],
+            "privacy": {"show_fsp_achievements": True},
+            "freshness": 0.5,
+            "min_salary": 300000,
+            "work_formats": ["office"],
+        }
+
+    need = NeedLike(["docker"], [], 150000, 200000, "remote", specialization="devops")
+    w = weights_from({})
+    ib, robo, none = (
+        score_candidate(cand(d), need, w, str) for d in ("cybersecurity", "robotics", None)
+    )
+    assert ib["score"] > robo["score"] > none["score"]
+    assert any(r.endswith("— профильно для DevOps") for r in ib["reasons"])
+    assert not any("профильно" in r for r in robo["reasons"])
+    # без ФСП: остальные факторы те же, ФСП-вклад 0
+    parts = {b["factor"]: b for b in none["breakdown"]}
+    assert parts["fsp"]["contribution"] == 0
+    assert none["score"] == round(ib["score"] - ib["breakdown"][2]["contribution"], 4)
+    # без специализации у потребности — общий fsp_score (как раньше)
+    plain = score_candidate(
+        cand("robotics"), NeedLike(["docker"], [], 150000, 200000, "remote"), w, str
+    )
+    assert next(b for b in plain["breakdown"] if b["factor"] == "fsp")["value"] == 0.5

@@ -14,6 +14,7 @@ from app.common import fixtures
 from app.common.enums import (
     GradeCode,
     GradeEventType,
+    GradeStatusCode,
     ItemFormat,
     SpecializationCode,
     TestSessionKind,
@@ -265,6 +266,21 @@ class GradeStatus(OutModel):
     category_label: str | None
     theta: float | None
     grade_changed_at: datetime | None
+    grade_status: GradeStatusCode = Field(
+        default=GradeStatusCode.none,
+        description=(
+            "confirmed — грейд подтверждён тестом; unconfirmed — заявлен соискателем, "
+            "тест не пройден; none — грейда нет"
+        ),
+    )
+    grade_confirmed_at: datetime | None = Field(
+        default=None, description="Когда грейд подтверждён тестом"
+    )
+    declared_specialization: SpecializationCode | None = None
+    declared_grade: GradeCode | None = Field(
+        default=None, description="Заявленный соискателем грейд (не официальный)"
+    )
+    declared_at: datetime | None = None
     grade_change_cooldown_days: int = 90
     retry_cooldown_days: int = 30
     can_test_lower: bool

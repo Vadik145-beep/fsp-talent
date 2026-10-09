@@ -8,7 +8,9 @@
 - stack — `app.nlp.similarity.stack_match` (обязательный стек 0,75, желательный 0,25);
 - theta — Φ(θ): доля специалистов с уровнем ниже (θ ~ N(0, 1)); без теста — 0;
 - fsp — ФСП-скор / 100, если кандидат показывает достижения; без ФСП — 0 (нет бонуса,
-  штрафа нет: остальные факторы не меняются);
+  штрафа нет: остальные факторы не меняются). Скор считается под специализацию потребности:
+  очки каждого достижения умножаются на релевантность дисциплины
+  (`app.fsp.scoring.fsp_score_for`, таблица `DISCIPLINE_RELEVANCE`);
 - freshness — свежесть профиля (регулярные задания);
 - salary — 1, если минимум кандидата ≤ «от» вилки; 0,7 — если ≤ «до»; иначе 0;
 - work_format — 1 при совпадении формата; 0,5 — кандидат на гибриде, а нужна удалёнка; иначе 0.
@@ -19,6 +21,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
+from app.fsp.scoring import fsp_reason_for, fsp_score_for
 from app.nlp.similarity import matched_skills, stack_match
 
 DEFAULT_WEIGHTS: dict[str, float] = {
@@ -65,6 +68,8 @@ class NeedLike:
     salary_from: int
     salary_to: int
     work_format: str
+    # специализация потребности: от неё зависит релевантность дисциплин ФСП
+    specialization: str | None = None
 
 
 def salary_value(min_salary: int | None, salary_from: int, salary_to: int) -> float:
@@ -93,6 +98,9 @@ def score_candidate(
 
     В `cand` ожидаются: stack, theta, topic_scores, fsp_id, fsp_score, fsp_badges, privacy,
     freshness, min_salary, work_formats, category_label. `label` — подпись технологии по коду.
+    Если есть `fsp_achievements` (достижения из `fsp_summaries`) и у потребности задана
+    специализация, ФСП-фактор и причина считаются с учётом релевантности дисциплин;
+    иначе берётся общий `fsp_score` (так считает валидация на синтетике без дисциплин).
     """
     stack = list(cand.get("stack") or [])
     req, des = list(need.skills_required), list(need.skills_desired)
@@ -102,12 +110,15 @@ def score_candidate(
         "show_fsp_achievements", True
     )
     theta = cand.get("theta")
+    achievements = cand.get("fsp_achievements") or []
+    fsp_score = cand.get("fsp_score")
+    if achievements and need.specialization:
+        fsp_score = fsp_score_for(achievements, need.specialization)
+        fsp_reason = fsp_reason_for(achievements, need.specialization)
     values = {
         "stack": stack_match(req, des, stack),
         "theta": 0.0 if theta is None else normal_cdf(float(theta)),
-        "fsp": min(1.0, float(cand["fsp_score"]) / 100)
-        if show_fsp and cand.get("fsp_score")
-        else 0.0,
+        "fsp": min(1.0, float(fsp_score) / 100) if show_fsp and fsp_score else 0.0,
         "freshness": float(cand.get("freshness") or 0),
         "salary": salary_value(cand.get("min_salary"), need.salary_from, need.salary_to),
         "work_format": format_value(need.work_format, list(cand.get("work_formats") or [])),

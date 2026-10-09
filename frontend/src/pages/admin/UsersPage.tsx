@@ -27,6 +27,27 @@ const PAGE_SIZE = 15
 const ROLE_OPTIONS = ROLES.map((r) => ({ value: r, label: ROLE_LABELS[r] }))
 const ROLE_TONES = { candidate: 'violet', recruiter: 'info', admin: 'accent' } as const
 
+/** Статус грейда соискателя (FTT.4): официально грейд присваивается только по результату теста. */
+function GradeStatusBadge({ user }: { user: UserRecord }) {
+  if (user.role !== 'candidate' || !user.grade_status) return <span className="text-muted">—</span>
+  const label = user.grade_label ? <span className="block text-[13px] text-muted">{user.grade_label}</span> : null
+  if (user.grade_status === 'confirmed')
+    return (
+      <span>
+        <Badge tone="success">Подтверждён тестом</Badge>
+        {label}
+      </span>
+    )
+  if (user.grade_status === 'unconfirmed')
+    return (
+      <span>
+        <Badge tone="warning">Грейд не подтверждён</Badge>
+        {label}
+      </span>
+    )
+  return <Badge tone="neutral">Без грейда</Badge>
+}
+
 export default function AdminUsersPage() {
   const [q, setQ] = useState('')
   const [role, setRole] = useState('')
@@ -75,6 +96,7 @@ export default function AdminUsersPage() {
           <Badge tone="warning">Почта не подтверждена</Badge>
         ),
     },
+    { key: 'grade_status', header: 'Грейд', hideOnMobile: true, render: (u) => <GradeStatusBadge user={u} /> },
     { key: 'created_at', header: 'Регистрация', hideOnMobile: true, render: (u) => formatDate(u.created_at) },
     { key: 'last_login_at', header: 'Последний вход', hideOnMobile: true, render: (u) => (u.last_login_at ? formatDateTime(u.last_login_at) : '—') },
   ]
@@ -171,6 +193,13 @@ function UserDrawer({ user, onChange, onClose }: { user: UserRecord | null; onCh
               <p className="text-xs text-muted">id {user.id} · с {formatDate(user.created_at)}</p>
             </div>
           </div>
+
+          {user.role === 'candidate' && (
+            <section>
+              <h3 className="mb-2 text-sm font-semibold">Грейд</h3>
+              <GradeStatusBadge user={user} />
+            </section>
+          )}
 
           <section>
             <h3 className="mb-2 text-sm font-semibold">Роль</h3>

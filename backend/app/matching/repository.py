@@ -119,6 +119,7 @@ class CandidatePool:
                 "fsp_score": summary.fsp_score if summary else None,
                 "fsp_badges": list(summary.badges) if summary else [],
                 "fsp_reason": summary.reason if summary else None,
+                "fsp_achievements": list(summary.achievements) if summary else [],
                 "privacy": dict(p.privacy or {}),
                 "job_search_paused": p.job_search_paused,
                 "publication_consent": p.publication_consent,

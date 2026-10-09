@@ -6,11 +6,16 @@ import pytest
 
 from app.common import fixtures
 from app.fsp.scoring import (
+    DISCIPLINE_RELEVANCE,
     FspAchievementData,
+    discipline_relevance,
     freshness,
     fsp_badges,
+    fsp_profile_note,
     fsp_reason,
+    fsp_reason_for,
     fsp_score,
+    fsp_score_for,
     raw_score,
     result_weight,
     summarize,
@@ -131,3 +136,75 @@ def test_fixture_names_come_from_registry() -> None:
     assert demo is not None and demo["fsp_id"] == "FSP-000001" and demo["fsp_badges"]
     no_fsp = fixtures.by_id("candidates", 26)
     assert no_fsp is not None and no_fsp["fsp_id"] is None and no_fsp["fsp_score"] is None
+
+
+# ---------------------------------------------------------------- релевантность дисциплин (E08)
+
+SPECS = ("backend", "frontend", "mobile", "data_ml", "qa", "devops")
+DISCIPLINES = ("product", "algorithmic", "cybersecurity", "uas", "robotics")
+
+
+def test_relevance_table_covers_everything_and_never_zero() -> None:
+    assert set(DISCIPLINE_RELEVANCE) == set(DISCIPLINES)
+    for discipline in DISCIPLINES:
+        assert set(DISCIPLINE_RELEVANCE[discipline]) == set(SPECS)
+        for spec in SPECS:
+            assert 0 < discipline_relevance(discipline, spec) <= 1
+    # продуктовое и алгоритмическое полезно всем
+    assert min(DISCIPLINE_RELEVANCE["product"].values()) >= 0.7
+    assert min(DISCIPLINE_RELEVANCE["algorithmic"].values()) >= 0.6
+    # ИБ — сильнее для DevOps/QA/Backend, БАС и робототехника — для Data/ML и Mobile
+    ib = DISCIPLINE_RELEVANCE["cybersecurity"]
+    assert min(ib["devops"], ib["qa"], ib["backend"]) > max(ib["frontend"], ib["mobile"])
+    for d in ("uas", "robotics"):
+        row = DISCIPLINE_RELEVANCE[d]
+        assert min(row["data_ml"], row["mobile"]) > max(row["backend"], row["frontend"])
+    assert discipline_relevance("product", None) == 1.0
+    assert discipline_relevance("unknown", "backend") == 1.0
+
+
+def test_profile_discipline_scores_higher_for_need_specialization() -> None:
+    ib = [ach("national", place=2, discipline="cybersecurity")]
+    robo = [ach("national", place=2, discipline="robotics")]
+    assert fsp_score(ib, TODAY) == fsp_score(robo, TODAY)  # общий скор одинаковый
+    devops_ib, devops_robo = (
+        fsp_score_for(ib, "devops", TODAY),
+        fsp_score_for(robo, "devops", TODAY),
+    )
+    assert devops_ib is not None and devops_robo is not None and devops_ib > devops_robo > 0
+    ml_ib, ml_robo = fsp_score_for(ib, "data_ml", TODAY), fsp_score_for(robo, "data_ml", TODAY)
+    assert ml_ib is not None and ml_robo is not None and ml_robo > ml_ib
+    # коэффициент 1 и «без специализации» — как общий скор; нет истории — None (без штрафа)
+    assert fsp_score_for(ib, "devops", TODAY) == fsp_score(ib, TODAY)
+    assert fsp_score_for(robo, None, TODAY) == fsp_score(robo, TODAY)
+    assert fsp_score_for([], "devops", TODAY) is None
+
+
+def test_reason_and_note_mark_profile_discipline() -> None:
+    ib = ach("national", place=2, discipline="cybersecurity", date="2025-05-01")
+    robo = ach("international", place=1, discipline="robotics", date="2026-05-01")
+    reason = fsp_reason_for([ib], "devops", TODAY)
+    assert reason == (
+        "Призёр всероссийского соревнования по программированию систем ИБ, 2025 — "
+        "профильно для DevOps"
+    )
+    assert fsp_reason_for([robo], "devops", TODAY) == (
+        "Победитель международного соревнования по программированию робототехники, 2026"
+    )
+    assert fsp_reason_for([ib], None, TODAY) == fsp_reason([ib], TODAY)
+    # пометка у бейджей — только по профильной дисциплине, даже если есть более сильный результат
+    assert fsp_profile_note([ib, robo], "devops", TODAY) == reason
+    assert fsp_profile_note([robo], "devops", TODAY) is None
+    assert fsp_profile_note([robo], "data_ml", TODAY) == (
+        "Победитель международного соревнования по программированию робототехники, 2026 — "
+        "профильно для Data Science / ML"
+    )
+    assert fsp_profile_note([ib], None, TODAY) is None
+
+
+def test_summary_keeps_achievements_for_ranking() -> None:
+    achs = achs_of("FSP-000001")
+    summary = summarize(1, "FSP-000001", achs, TODAY)
+    assert len(summary.achievements) == len(achs)
+    assert fsp_score_for(summary.achievements, None, TODAY) == summary.fsp_score
+    assert summarize(2, None, []).achievements == []

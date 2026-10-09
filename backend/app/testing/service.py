@@ -24,7 +24,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.candidates.grading import attempts_of, last_grade_change
 from app.candidates.models import CandidateProfile
 from app.candidates.repository import CandidateDb, session_grade, session_record
-from app.candidates.service import CandidateProfileService
+from app.candidates.service import CandidateProfileService, declare
 from app.catalog.clock import MSK, as_msk, now_msk
 from app.catalog.models import Category, Specialization, Topic
 from app.catalog.repository import CatalogDb
@@ -448,6 +448,9 @@ class TestingDbService:
             topic_scores=[],
             engine_state={},
         )
+        if kind == "placement" and profile.grade is None:
+            # тест на заявленный грейд: до результата — «грейд не подтверждён» (FTT.4)
+            declare(profile, spec, target)
         self.session.add(ts)
         try:
             await self.session.flush()

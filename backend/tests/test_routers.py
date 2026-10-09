@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 
 from app.common import fixtures
 from tests.conftest import ADMIN, CANDIDATE, CANDIDATE_NO_FSP, RECRUITER, as_role
+from tests.test_candidates_db import without_grade_status
 
 
 def test_auth_login_and_me(client: TestClient) -> None:
@@ -69,7 +70,7 @@ def test_catalog(client: TestClient) -> None:
 
 def test_candidates_own_cabinet(client: TestClient) -> None:
     profile = client.get("/api/candidates/me/profile", headers=CANDIDATE).json()
-    assert profile == fixtures.by_id("candidates", 1)
+    assert without_grade_status(profile) == fixtures.by_id("candidates", 1)
     dashboard = client.get("/api/candidates/me/dashboard", headers=CANDIDATE).json()
     assert dashboard["category"] == "backend:middle"
     no_fsp = client.get("/api/candidates/me/dashboard", headers=CANDIDATE_NO_FSP).json()

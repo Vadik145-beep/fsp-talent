@@ -16,6 +16,7 @@ from app.common import fixtures
 from app.common.enums import (
     FspLevel,
     GradeCode,
+    GradeStatusCode,
     InvitationStatus,
     LinkType,
     SpecializationCode,
@@ -23,6 +24,11 @@ from app.common.enums import (
     WorkFormat,
 )
 from app.common.schemas import ApiModel, OutModel
+
+GRADE_STATUS_DESCRIPTION = (
+    "confirmed — грейд подтверждён тестом; unconfirmed — грейд заявлен соискателем, "
+    "тест не пройден (в выдачу работодателю не попадает); none — грейда нет"
+)
 
 
 class ProfileLink(OutModel):
@@ -119,7 +125,32 @@ class CandidateProfile(OutModel):
     profile_completeness: int = Field(ge=0, le=100)
     last_test_at: datetime | None = None
     grade_changed_at: datetime | None = None
+    grade_status: GradeStatusCode = Field(
+        default=GradeStatusCode.none, description=GRADE_STATUS_DESCRIPTION
+    )
+    grade_confirmed_at: datetime | None = Field(
+        default=None, description="Когда грейд подтверждён тестом (null — не подтверждён)"
+    )
+    declared_specialization: SpecializationCode | None = Field(
+        default=None, description="Специализация, которую соискатель выбрал сам"
+    )
+    declared_grade: GradeCode | None = Field(
+        default=None,
+        description="Грейд, заявленный соискателем. Не официальный: в выдачу не пускает",
+    )
+    declared_at: datetime | None = None
     created_at: datetime
+
+
+class DeclaredGradeUpdate(ApiModel):
+    """Заявить грейд (онбординг): статус «грейд не подтверждён» до прохождения теста."""
+
+    model_config = ConfigDict(
+        json_schema_extra={"examples": [{"specialization": "backend", "grade": "middle"}]}
+    )
+
+    specialization: SpecializationCode
+    grade: GradeCode
 
 
 class CandidateProfileUpdate(ApiModel):
@@ -276,6 +307,17 @@ class AnonymousCandidateProfile(CandidateCard):
     contacts_visible: bool
     contacts: CandidateContacts | None = None
     can_invite: bool = Field(description="Можно ли отправить приглашение сейчас")
+    fsp_profile_note: str | None = Field(
+        default=None,
+        description=(
+            "Лучшее достижение ФСП по профильной для специализации кандидата дисциплине; "
+            "null — профильных достижений нет или кандидат скрыл достижения"
+        ),
+        examples=[
+            "Призёр всероссийского соревнования по программированию систем ИБ, 2025 — "
+            "профильно для DevOps"
+        ],
+    )
 
 
 class CandidateSettings(OutModel):
@@ -352,6 +394,12 @@ class CandidateDashboard(OutModel):
     category_label: str | None
     grade: GradeCode | None
     theta: float | None
+    grade_status: GradeStatusCode = Field(
+        default=GradeStatusCode.none, description=GRADE_STATUS_DESCRIPTION
+    )
+    grade_confirmed_at: datetime | None = None
+    declared_specialization: SpecializationCode | None = None
+    declared_grade: GradeCode | None = None
     onboarding_completed: bool
     new_invitations_count: int
     recent_invitations: list[DashboardInvitation]

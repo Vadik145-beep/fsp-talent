@@ -15,6 +15,10 @@
 
 Та же формула продублирована в `scripts/seed/generate_fixtures.py` (генератор только на
 стандартной библиотеке); тест `test_fsp_scoring.py` сверяет фикстуры с этим модулем.
+
+Релевантность дисциплины специальности (ответ организаторов, E08): в подборе очки каждого
+достижения умножаются на `DISCIPLINE_RELEVANCE[дисциплина][специализация потребности]` —
+`fsp_score_for(...)`. Общий ФСП-скор профиля (`fsp_score`) не меняется.
 """
 
 import math
@@ -51,6 +55,68 @@ DISCIPLINE_GENITIVE = {
     "uas": "программированию БАС",
     "robotics": "программированию робототехники",
 }
+SPECIALIZATION_LABELS = {
+    "backend": "Backend",
+    "frontend": "Frontend",
+    "mobile": "Mobile",
+    "data_ml": "Data Science / ML",
+    "qa": "QA",
+    "devops": "DevOps",
+}
+
+# Релевантность дисциплины ФСП специализации платформы, 0..1 (ответ организаторов, E08:
+# «специалист по ИБ, участвовавший в соревнованиях по ИБ, релевантнее, чем участвовавший
+# в соревнованиях по робототехнике»). Шкала:
+# - 1,0 — профильно: дисциплина тренирует ровно то, что нужно в работе;
+# - 0,7–0,9 — смежно: заметная часть навыков совпадает;
+# - 0,3–0,6 — далеко, но полезно: командная работа, дедлайны, инженерная культура.
+# Ни одна дисциплина не обнуляется: соревнования ФСП полезны любому разработчику.
+# Продуктовое и алгоритмическое программирование полезно всем; ИБ сильнее для DevOps,
+# QA и Backend; БАС и робототехника сильнее для Data Science / ML и Mobile.
+DISCIPLINE_RELEVANCE: dict[str, dict[str, float]] = {
+    "product": {
+        "backend": 1.0,
+        "frontend": 1.0,
+        "mobile": 1.0,
+        "data_ml": 0.7,
+        "qa": 0.8,
+        "devops": 0.7,
+    },
+    "algorithmic": {
+        "backend": 1.0,
+        "frontend": 0.7,
+        "mobile": 0.7,
+        "data_ml": 1.0,
+        "qa": 0.7,
+        "devops": 0.6,
+    },
+    "cybersecurity": {
+        "backend": 0.8,
+        "frontend": 0.4,
+        "mobile": 0.4,
+        "data_ml": 0.4,
+        "qa": 0.9,
+        "devops": 1.0,
+    },
+    "uas": {
+        "backend": 0.5,
+        "frontend": 0.3,
+        "mobile": 0.7,
+        "data_ml": 0.9,
+        "qa": 0.5,
+        "devops": 0.5,
+    },
+    "robotics": {
+        "backend": 0.5,
+        "frontend": 0.3,
+        "mobile": 0.6,
+        "data_ml": 0.9,
+        "qa": 0.5,
+        "devops": 0.5,
+    },
+}
+# С какого коэффициента достижение помечается «профильно для …»
+PROFILE_RELEVANCE = 0.9
 CAPTAIN_PREFIX = "Капитан"
 LEVEL_ORDER = ("international", "national", "regional")
 
@@ -194,15 +260,109 @@ def fsp_reason(achievements: Sequence[AchievementLike], today: date | None = Non
         return None
     day = today or _today()
     best = max(achievements, key=lambda a: (achievement_points(a, day), a.date))
-    if best.place == 1:
+    return describe_achievement(best)
+
+
+def describe_achievement(a: AchievementLike) -> str:
+    """«Призёр всероссийского соревнования по продуктовому программированию, 2026»."""
+    if a.place == 1:
         what = "Победитель"
-    elif is_prize(best):
+    elif is_prize(a):
         what = "Призёр"
     else:
         what = "Участник"
-    discipline = DISCIPLINE_GENITIVE.get(best.discipline, "спортивному программированию")
-    level = LEVEL_GENITIVE.get(best.level, "")
-    return f"{what} {level} соревнования по {discipline}, {best.date.year}".replace("  ", " ")
+    discipline = DISCIPLINE_GENITIVE.get(a.discipline, "спортивному программированию")
+    level = LEVEL_GENITIVE.get(a.level, "")
+    return f"{what} {level} соревнования по {discipline}, {a.date.year}".replace("  ", " ")
+
+
+# ---------------------------------------------------------------- релевантность (E08)
+
+
+def discipline_relevance(discipline: str, specialization: str | None) -> float:
+    """Коэффициент 0..1. Специализация не задана или код неизвестен — 1 (как без таблицы)."""
+    if not specialization:
+        return 1.0
+    return DISCIPLINE_RELEVANCE.get(discipline, {}).get(specialization, 1.0)
+
+
+def is_profile_discipline(discipline: str, specialization: str | None) -> bool:
+    """Профильная дисциплина для специализации (коэффициент ≥ PROFILE_RELEVANCE)."""
+    if not specialization:
+        return False
+    return discipline_relevance(discipline, specialization) >= PROFILE_RELEVANCE
+
+
+def fsp_score_for(
+    achievements: Sequence[AchievementLike],
+    specialization: str | None,
+    today: date | None = None,
+) -> float | None:
+    """ФСП-скор 0–100 под специализацию потребности — его берёт ранжирование.
+
+    Формула `fsp_score`, но очки каждого достижения умножены на `discipline_relevance`.
+    Нет достижений — None: отсутствие истории ФСП по-прежнему не штрафуется.
+    """
+    if not achievements:
+        return None
+    day = today or _today()
+    s = sum(
+        achievement_points(a, day) * discipline_relevance(a.discipline, specialization)
+        for a in achievements
+    )
+    return float(round(100 * (1 - math.exp(-s / SATURATION))))
+
+
+def profile_note(specialization: str) -> str:
+    return f"профильно для {SPECIALIZATION_LABELS.get(specialization, specialization)}"
+
+
+def fsp_reason_for(
+    achievements: Sequence[AchievementLike],
+    specialization: str | None,
+    today: date | None = None,
+) -> str | None:
+    """Строка «почему в подборке» под специализацию потребности.
+
+    Лучшее достижение — по очкам × релевантность. Профильная дисциплина — с пометкой:
+    «Призёр всероссийского соревнования по программированию систем ИБ, 2025 — профильно
+    для DevOps». Без специализации — как `fsp_reason`.
+    """
+    if not achievements:
+        return None
+    if not specialization:
+        return fsp_reason(achievements, today)
+    day = today or _today()
+    best = max(
+        achievements,
+        key=lambda a: (
+            achievement_points(a, day) * discipline_relevance(a.discipline, specialization),
+            a.date,
+        ),
+    )
+    text = describe_achievement(best)
+    if is_profile_discipline(best.discipline, specialization):
+        text += f" — {profile_note(specialization)}"
+    return text
+
+
+def fsp_profile_note(
+    achievements: Sequence[AchievementLike],
+    specialization: str | None,
+    today: date | None = None,
+) -> str | None:
+    """Пометка рядом с бейджами: лучшее достижение по профильной дисциплине специализации.
+
+    Нет профильных достижений — None (пометки нет, штрафа тоже).
+    """
+    if not specialization:
+        return None
+    profile = [a for a in achievements if is_profile_discipline(a.discipline, specialization)]
+    if not profile:
+        return None
+    day = today or _today()
+    best = max(profile, key=lambda a: (achievement_points(a, day), a.date))
+    return f"{describe_achievement(best)} — {profile_note(specialization)}"
 
 
 @dataclass
@@ -216,6 +376,8 @@ class FspSummary:
     fsp_score: float | None = None
     badges: list[dict[str, Any]] = field(default_factory=list)
     reason: str | None = None
+    # сами достижения: скор и пометки под специализацию потребности (`fsp_score_for`)
+    achievements: list[FspAchievementData] = field(default_factory=list)
 
     @property
     def has_history(self) -> bool:
@@ -238,6 +400,19 @@ def summarize(
         fsp_score=fsp_score(achievements, today),
         badges=fsp_badges(achievements),
         reason=fsp_reason(achievements, today),
+        achievements=[as_data(a) for a in achievements],
+    )
+
+
+def as_data(a: AchievementLike) -> FspAchievementData:
+    """Копия достижения без привязки к ORM-сессии."""
+    return FspAchievementData(
+        level=a.level,
+        date=a.date,
+        place=a.place,
+        diploma=a.diploma,
+        role=a.role,
+        discipline=a.discipline,
     )
 
 

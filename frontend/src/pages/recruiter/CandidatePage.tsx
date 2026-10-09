@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { useParams, useSearchParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
-import { Lock, Mail, MessageCircle, Phone, Send, UserRound } from 'lucide-react'
+import { Lock, Mail, MessageCircle, Phone, Send, Target, UserRound } from 'lucide-react'
 import { api } from '@/shared/api'
 import { categoryLabel, type InvitationStatus } from '@/shared/config/dictionaries'
 import { formatDate } from '@/shared/lib/format'
@@ -206,6 +206,12 @@ export default function RecruiterCandidatePage() {
                     <span className="text-sm font-medium">{b.title}</span>
                   </div>
                 ))}
+                {p.fsp_profile_note && (
+                  <p className="mt-1 flex gap-2 rounded-md bg-violet-soft px-3 py-2 text-sm text-fsp-plum" data-testid="fsp-profile-note">
+                    <Target className="mt-0.5 size-4 shrink-0" aria-hidden />
+                    <span>{p.fsp_profile_note}</span>
+                  </p>
+                )}
                 {p.fsp_score != null && <p className="mt-1 text-[13px] text-muted">ФСП-скор: {Math.round(p.fsp_score)} из 100</p>}
               </div>
             ) : (

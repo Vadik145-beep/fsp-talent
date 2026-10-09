@@ -8,6 +8,7 @@ import { cn } from '@/shared/lib/cn'
 import { Badge, Button, Card, CardHeader, EmptyState, Modal, PageHeader, Table, useToast, type TableColumn } from '@/shared/ui'
 import { useGradeStatus, useStartTest, type GradeStatus, type S, type TestSession } from './api'
 import { QueryView } from './components/QueryView'
+import { GradeConfirmedBadge, UnconfirmedGrade } from './components/GradeStatus'
 import { ThetaScale } from './components/ThetaScale'
 import { GRADE_EVENT_LABELS, TEST_KIND_LABELS, formatTheta } from './labels'
 
@@ -30,6 +31,69 @@ const EVENT_ICON: Record<S['GradeEventType'], typeof Sparkles> = {
   offer_higher: TrendingUp,
 }
 
+const testColumns: TableColumn<TestSession>[] = [
+  { key: 'started_at', header: 'Дата', render: (s) => formatDate(s.started_at), sortable: true },
+  { key: 'kind', header: 'Тест', render: (s) => TEST_KIND_LABELS[s.kind], hideOnMobile: true },
+  { key: 'target_grade', header: 'Заявлен', render: (s) => GRADE_LABELS[s.target_grade] },
+  {
+    key: 'result',
+    header: 'Итог',
+    render: (s) =>
+      s.status === 'in_progress' ? (
+        <Badge tone="info">Идёт</Badge>
+      ) : s.status === 'abandoned' ? (
+        <Badge>Прерван</Badge>
+      ) : s.passed ? (
+        <Badge tone="success">Подтверждён</Badge>
+      ) : (
+        <Badge tone="warning">Не подтверждён</Badge>
+      ),
+  },
+  { key: 'theta', header: 'Уровень', align: 'right', render: (s) => (typeof s.theta === 'number' ? formatTheta(s.theta) : '—'), hideOnMobile: true },
+  {
+    key: 'link',
+    header: '',
+    align: 'right',
+    render: (s) =>
+      s.status === 'in_progress' ? (
+        <Link to={`/candidate/test/${s.id}`} className="font-semibold text-primary hover:underline">
+          Продолжить
+        </Link>
+      ) : s.status === 'finished' ? (
+        <Link to={`/candidate/test/${s.id}/result`} className="font-semibold text-fsp-plum hover:underline">
+          Результат
+        </Link>
+      ) : null,
+  },
+]
+
+function GradeHistory({ g }: { g: GradeStatus }) {
+  return (
+    <Card>
+      <CardHeader title="История" />
+      {g.history.length ? (
+        <ol className="relative grid gap-4 border-l-2 border-line pl-6">
+          {g.history.map((h) => {
+            const Icon = EVENT_ICON[h.event]
+            return (
+              <li key={h.id} className="relative">
+                <span className="absolute top-0 -left-[37px] flex size-6 items-center justify-center rounded-full border-2 border-white bg-violet-soft text-fsp-plum">
+                  <Icon className="size-3.5" aria-hidden />
+                </span>
+                <p className="text-sm font-semibold text-ink">{GRADE_EVENT_LABELS[h.event]}</p>
+                {h.comment && <p className="text-[15px] text-ink">{h.comment}</p>}
+                <p className="text-[13px] text-muted">{formatDate(h.at)}</p>
+              </li>
+            )
+          })}
+        </ol>
+      ) : (
+        <EmptyState compact title="Событий пока нет" />
+      )}
+    </Card>
+  )
+}
+
 function GradeView({ g }: { g: GradeStatus }) {
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -39,6 +103,22 @@ function GradeView({ g }: { g: GradeStatus }) {
   // Соседние грейды: бэкенд присылает их в lower/higher вместе с причиной, почему тест недоступен.
   const lower = g.lower?.target_grade ?? (idx > 0 ? GRADES[idx - 1] : null)
   const higher = g.higher?.target_grade ?? (idx >= 0 && idx < GRADES.length - 1 ? GRADES[idx + 1] : null)
+
+  if ((!g.grade || !g.specialization) && g.grade_status === 'unconfirmed' && g.declared_grade) {
+    return (
+      <div className="grid grid-cols-1 gap-5">
+        <Card padding="lg">
+          <p className="mb-1 text-sm font-semibold text-muted">Заявленная категория</p>
+          <UnconfirmedGrade specialization={g.declared_specialization} grade={g.declared_grade} />
+        </Card>
+        <GradeHistory g={g} />
+        <div>
+          <h2 className="mb-3 text-lg font-semibold">Тесты</h2>
+          <Table columns={testColumns} rows={g.tests} rowKey={(s) => s.id} empty={<EmptyState compact title="Тестов пока не было" />} caption="Мои тесты" />
+        </div>
+      </div>
+    )
+  }
 
   if (!g.grade || !g.specialization) {
     return (
@@ -57,41 +137,6 @@ function GradeView({ g }: { g: GradeStatus }) {
     )
   }
 
-  const columns: TableColumn<TestSession>[] = [
-    { key: 'started_at', header: 'Дата', render: (s) => formatDate(s.started_at), sortable: true },
-    { key: 'kind', header: 'Тест', render: (s) => TEST_KIND_LABELS[s.kind], hideOnMobile: true },
-    { key: 'target_grade', header: 'Заявлен', render: (s) => GRADE_LABELS[s.target_grade] },
-    {
-      key: 'result',
-      header: 'Итог',
-      render: (s) =>
-        s.status === 'in_progress' ? (
-          <Badge tone="info">Идёт</Badge>
-        ) : s.status === 'abandoned' ? (
-          <Badge>Прерван</Badge>
-        ) : s.passed ? (
-          <Badge tone="success">Подтверждён</Badge>
-        ) : (
-          <Badge tone="warning">Не подтверждён</Badge>
-        ),
-    },
-    { key: 'theta', header: 'Уровень', align: 'right', render: (s) => (typeof s.theta === 'number' ? formatTheta(s.theta) : '—'), hideOnMobile: true },
-    {
-      key: 'link',
-      header: '',
-      align: 'right',
-      render: (s) =>
-        s.status === 'in_progress' ? (
-          <Link to={`/candidate/test/${s.id}`} className="font-semibold text-primary hover:underline">
-            Продолжить
-          </Link>
-        ) : s.status === 'finished' ? (
-          <Link to={`/candidate/test/${s.id}/result`} className="font-semibold text-fsp-plum hover:underline">
-            Результат
-          </Link>
-        ) : null,
-    },
-  ]
 
   return (
     <div className="grid grid-cols-1 gap-5">
@@ -100,6 +145,7 @@ function GradeView({ g }: { g: GradeStatus }) {
           <div>
             <p className="text-sm font-semibold text-muted">Текущая категория</p>
             <p className="mt-1 text-4xl font-bold text-fsp-night">{g.category_label}</p>
+            {g.grade_status === 'confirmed' && <GradeConfirmedBadge at={g.grade_confirmed_at} className="mt-2" />}
             <p className="mt-2 text-sm text-muted">
               {g.grade_changed_at ? `Присвоена ${formatDate(g.grade_changed_at)}` : 'Присвоена по первому тесту'}
               {typeof g.theta === 'number' && ` · уровень ${formatTheta(g.theta)}`}
@@ -144,32 +190,11 @@ function GradeView({ g }: { g: GradeStatus }) {
         </div>
       </Card>
 
-      <Card>
-        <CardHeader title="История" />
-        {g.history.length ? (
-          <ol className="relative grid gap-4 border-l-2 border-line pl-6">
-            {g.history.map((h) => {
-              const Icon = EVENT_ICON[h.event]
-              return (
-                <li key={h.id} className="relative">
-                  <span className="absolute top-0 -left-[37px] flex size-6 items-center justify-center rounded-full border-2 border-white bg-violet-soft text-fsp-plum">
-                    <Icon className="size-3.5" aria-hidden />
-                  </span>
-                  <p className="text-sm font-semibold text-ink">{GRADE_EVENT_LABELS[h.event]}</p>
-                  {h.comment && <p className="text-[15px] text-ink">{h.comment}</p>}
-                  <p className="text-[13px] text-muted">{formatDate(h.at)}</p>
-                </li>
-              )
-            })}
-          </ol>
-        ) : (
-          <EmptyState compact title="Событий пока нет" />
-        )}
-      </Card>
+      <GradeHistory g={g} />
 
       <div>
         <h2 className="mb-3 text-lg font-semibold">Тесты</h2>
-        <Table columns={columns} rows={g.tests} rowKey={(s) => s.id} empty={<EmptyState compact title="Тестов пока не было" />} caption="Мои тесты" />
+        <Table columns={testColumns} rows={g.tests} rowKey={(s) => s.id} empty={<EmptyState compact title="Тестов пока не было" />} caption="Мои тесты" />
       </div>
 
       <Modal

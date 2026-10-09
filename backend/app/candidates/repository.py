@@ -17,6 +17,7 @@ from app.candidates.models import CandidateProfile, candidate_skills
 from app.catalog.clock import as_msk
 from app.catalog.models import Category
 from app.common import fixtures
+from app.common.enums import grade_status_code
 from app.common.fixtures import Record
 from app.companies.models import Company
 from app.fsp.models import FspLink
@@ -67,8 +68,12 @@ def profile_completeness(record: Record) -> int:
 
 
 def searchable_conditions() -> list[ColumnElement[bool]]:
-    """Условия попадания в выдачу [T2.4, T3.4]: есть грейд, согласие на публикацию,
-    поиск не на паузе, пользователь не заблокирован."""
+    """Условия попадания в выдачу [T2.4, T3.4]: грейд подтверждён тестом, согласие на
+    публикацию, поиск не на паузе, пользователь не заблокирован.
+
+    Явное правило (FTT.4): `grade` пишет только результат теста; заявленный соискателем
+    грейд (`declared_grade`, статус «не подтверждён») в выдачу, подборку и банк кандидатов
+    не пускает."""
     return [
         CandidateProfile.grade.is_not(None),
         CandidateProfile.publication_consent.is_(True),
@@ -123,11 +128,32 @@ class CandidateDb:
         ).all()
         stacks = await self.stacks(ids)
         fsp = await self.fsp_ids(ids)
+        confirmed = await self.grade_confirmed_at(ids)
         result: dict[int, Record] = {}
         for p, user, category_label in rows:
             record = await self._record(p, user, category_label, stacks[p.id], fsp.get(p.id))
+            if p.grade:
+                at = confirmed.get((p.id, p.specialization or ""))
+                record["grade_confirmed_at"] = as_msk(at) if at else record["last_test_at"]
             result[p.id] = record
         return result
+
+    async def grade_confirmed_at(self, ids: Sequence[int]) -> dict[tuple[int, str], Any]:
+        """Дата последнего пройденного теста по (кандидат, специализация) — один запрос."""
+        rows = await self.session.execute(
+            select(
+                TestSession.candidate_id,
+                TestSession.specialization,
+                func.max(TestSession.finished_at),
+            )
+            .where(
+                TestSession.candidate_id.in_(ids),
+                TestSession.status == "finished",
+                TestSession.passed.is_(True),
+            )
+            .group_by(TestSession.candidate_id, TestSession.specialization)
+        )
+        return {(cid, spec): at for cid, spec, at in rows}
 
     async def record(self, candidate_id: int) -> Record | None:
         return (await self.records([candidate_id])).get(candidate_id)
@@ -180,6 +206,11 @@ class CandidateDb:
             "freshness": p.freshness,
             "last_test_at": as_msk(p.last_test_at),
             "grade_changed_at": as_msk(p.grade_changed_at),
+            "grade_status": grade_status_code(p.grade, p.declared_grade).value,
+            "grade_confirmed_at": None,
+            "declared_specialization": p.declared_specialization,
+            "declared_grade": p.declared_grade,
+            "declared_at": as_msk(p.declared_at),
             "created_at": as_msk(p.created_at),
             "blocked": user.blocked,
         }

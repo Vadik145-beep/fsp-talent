@@ -75,6 +75,15 @@ class CandidateProfile(TimestampMixin, Base):
     freshness: Mapped[float] = mapped_column(Float, default=0)
     last_test_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     grade_changed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Заявленный грейд (онбординг, старт теста). Официальный грейд — только `grade`,
+    # его пишет тест; пока теста нет, статус «грейд не подтверждён» и выдачи нет (FTT.4).
+    declared_specialization: Mapped[str | None] = mapped_column(
+        ForeignKey("specializations.code", name="fk_candidate_profiles_declared_spec")
+    )
+    declared_grade: Mapped[str | None] = mapped_column(
+        ForeignKey("grades.code", name="fk_candidate_profiles_declared_grade_grades")
+    )
+    declared_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )

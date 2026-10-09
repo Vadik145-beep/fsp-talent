@@ -567,6 +567,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/candidates/me/declared-grade": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Заявить грейд (до теста): статус «грейд не подтверждён»
+         * @description Грейд соискатель выбирает сам (онбординг), но официально он присваивается только по результату теста. До теста `grade_status = unconfirmed`: кандидата нет в подборке и банке кандидатов работодателя. Официальный `grade` этот запрос не меняет.
+         */
+        put: operations["declare_grade_api_candidates_me_declared_grade_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/candidates": {
         parameters: {
             query?: never;
@@ -576,7 +596,7 @@ export interface paths {
         };
         /**
          * Банк кандидатов (обезличенно)
-         * @description Поиск по всей базе. В выдаче только кандидаты с грейдом, согласием на публикацию и без паузы поиска. ФИО и контактов в ответе нет.
+         * @description Поиск по всей базе. В выдаче только кандидаты с грейдом, подтверждённым тестом (`grade_status = confirmed`; заявленный, но не подтверждённый грейд — не в выдаче), согласием на публикацию и без паузы поиска. ФИО и контактов в ответе нет.
          */
         get: operations["search_candidates_api_candidates_get"];
         put?: never;
@@ -2366,6 +2386,12 @@ export interface components {
              * @description Можно ли отправить приглашение сейчас
              */
             can_invite: boolean;
+            /**
+             * Fsp Profile Note
+             * @description Лучшее достижение ФСП по профильной для специализации кандидата дисциплине; null — профильных достижений нет или кандидат скрыл достижения
+             * @example Призёр всероссийского соревнования по программированию систем ИБ, 2025 — профильно для DevOps
+             */
+            fsp_profile_note?: string | null;
         };
         /**
          * AnswerAck
@@ -2802,6 +2828,15 @@ export interface components {
             grade: components["schemas"]["GradeCode"] | null;
             /** Theta */
             theta: number | null;
+            /**
+             * @description confirmed — грейд подтверждён тестом; unconfirmed — грейд заявлен соискателем, тест не пройден (в выдачу работодателю не попадает); none — грейда нет
+             * @default none
+             */
+            grade_status: components["schemas"]["GradeStatusCode"];
+            /** Grade Confirmed At */
+            grade_confirmed_at?: string | null;
+            declared_specialization?: components["schemas"]["SpecializationCode"] | null;
+            declared_grade?: components["schemas"]["GradeCode"] | null;
             /** Onboarding Completed */
             onboarding_completed: boolean;
             /** New Invitations Count */
@@ -2855,6 +2890,21 @@ export interface components {
             theta: number | null;
             /** Grade Changed At */
             grade_changed_at: string | null;
+            /**
+             * @description confirmed — грейд подтверждён тестом; unconfirmed — заявлен соискателем, тест не пройден; none — грейда нет
+             * @default none
+             */
+            grade_status: components["schemas"]["GradeStatusCode"];
+            /**
+             * Grade Confirmed At
+             * @description Когда грейд подтверждён тестом
+             */
+            grade_confirmed_at?: string | null;
+            declared_specialization?: components["schemas"]["SpecializationCode"] | null;
+            /** @description Заявленный соискателем грейд (не официальный) */
+            declared_grade?: components["schemas"]["GradeCode"] | null;
+            /** Declared At */
+            declared_at?: string | null;
             /**
              * Grade Change Cooldown Days
              * @default 90
@@ -3106,6 +3156,22 @@ export interface components {
             last_test_at?: string | null;
             /** Grade Changed At */
             grade_changed_at?: string | null;
+            /**
+             * @description confirmed — грейд подтверждён тестом; unconfirmed — грейд заявлен соискателем, тест не пройден (в выдачу работодателю не попадает); none — грейда нет
+             * @default none
+             */
+            grade_status: components["schemas"]["GradeStatusCode"];
+            /**
+             * Grade Confirmed At
+             * @description Когда грейд подтверждён тестом (null — не подтверждён)
+             */
+            grade_confirmed_at?: string | null;
+            /** @description Специализация, которую соискатель выбрал сам */
+            declared_specialization?: components["schemas"]["SpecializationCode"] | null;
+            /** @description Грейд, заявленный соискателем. Не официальный: в выдачу не пускает */
+            declared_grade?: components["schemas"]["GradeCode"] | null;
+            /** Declared At */
+            declared_at?: string | null;
             /**
              * Created At
              * Format: date-time
@@ -3491,6 +3557,18 @@ export interface components {
             date: string;
             /** Count */
             count: number;
+        };
+        /**
+         * DeclaredGradeUpdate
+         * @description Заявить грейд (онбординг): статус «грейд не подтверждён» до прохождения теста.
+         * @example {
+         *       "grade": "middle",
+         *       "specialization": "backend"
+         *     }
+         */
+        DeclaredGradeUpdate: {
+            specialization: components["schemas"]["SpecializationCode"];
+            grade: components["schemas"]["GradeCode"];
         };
         /**
          * DeclineReason
@@ -3882,6 +3960,16 @@ export interface components {
              */
             available_at?: string | null;
         };
+        /**
+         * GradeStatusCode
+         * @description Статус грейда соискателя (ответ организаторов FTT.4).
+         *
+         *     confirmed — грейд присвоен по результату теста (только такие в выдаче работодателю);
+         *     unconfirmed — грейд заявлен самим соискателем, тест ещё не пройден;
+         *     none — грейд не выбран и не присвоен.
+         * @enum {string}
+         */
+        GradeStatusCode: "confirmed" | "unconfirmed" | "none";
         /**
          * GradeThreshold
          * @description Пороги θ для грейдов в специализации: ниже junior_from — стажёр.
@@ -6841,6 +6929,13 @@ export interface components {
             created_at: string;
             /** Last Login At */
             last_login_at?: string | null;
+            /** @description Только у соискателя: confirmed — грейд подтверждён тестом, unconfirmed — заявлен, но тест не пройден, none — грейда нет; у остальных ролей null */
+            grade_status?: components["schemas"]["GradeStatusCode"] | null;
+            /**
+             * Grade Label
+             * @description Категория (подтверждённая или заявленная), «Backend · Middle»
+             */
+            grade_label?: string | null;
         };
         /**
          * Vacancy
@@ -8966,6 +9061,71 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    declare_grade_api_candidates_me_declared_grade_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeclaredGradeUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CandidateGradeStatus"];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` — Объект не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `validation_error` — Ошибка валидации данных */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };

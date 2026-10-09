@@ -151,7 +151,12 @@ class AdminDbService:
         self, q: str | None, role: Role | None, blocked: bool | None, page: int, page_size: int
     ) -> dict[str, Any]:
         rows, total = await self.db.users(q, role, blocked, page, page_size)
-        return _page([user_record(u) for u in rows], total, page, page_size)
+        return _page(await self._with_grades(rows), total, page, page_size)
+
+    async def _with_grades(self, users: list[User]) -> list[Record]:
+        """Строки списка + статус грейда соискателя («грейд не подтверждён», FTT.4)."""
+        grades = await self.db.candidate_grades([u.id for u in users])
+        return [{**user_record(u), **grades.get(u.id, {})} for u in users]
 
     async def update_user(self, user_id: int, body: AdminUserUpdate) -> Record:
         user = await self.db.user(user_id)
@@ -182,7 +187,7 @@ class AdminDbService:
                 f"Пользователь {verb}: {user.email}",
             )
         await self.session.commit()
-        return user_record(user)
+        return (await self._with_grades([user]))[0]
 
     async def _check_role_profile(self, user_id: int, role: Role) -> None:
         """Роль соискателя/рекрутера требует соответствующего профиля, иначе кабинет пустой."""

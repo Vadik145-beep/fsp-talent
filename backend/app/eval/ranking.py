@@ -58,6 +58,7 @@ def need_like(need: dict[str, Any]) -> NeedLike:
         salary_from=int(need["salary_from"]),
         salary_to=int(need["salary_to"]),
         work_format=str(need["work_format"]),
+        specialization=need.get("specialization"),
     )
 
 
