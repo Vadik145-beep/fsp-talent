@@ -480,6 +480,18 @@ function StepGrade({
   onDone: (grade: Grade) => void
 }) {
   const [grade, setGrade] = useState<Grade>(initial)
+  const client = useQueryClient()
+  const { toast } = useToast()
+  // Заявленный грейд сохраняется сразу: до теста статус «грейд не подтверждён» (FTT.4)
+  const declare = useMutation({
+    mutationFn: () => api.put<S['CandidateGradeStatus']>('/candidates/me/declared-grade', { specialization, grade }),
+    onSuccess: (status) => {
+      client.setQueryData(qk.grade, status)
+      void invalidateCandidate(client)
+      onDone(grade)
+    },
+    onError: (err) => toast({ tone: 'error', title: 'Грейд не сохранился', description: getErrorMessage(err) }),
+  })
   return (
     <div className="grid gap-5">
       <Card>
@@ -512,13 +524,17 @@ function StepGrade({
             <p>
               Подтвердите уровень — получите категорию «{SPECIALIZATION_LABELS[specialization]} · {GRADE_LABELS[grade]}».
             </p>
+            <p>
+              До теста грейд — «не подтверждён»: официально он присваивается только по результату теста, и только тогда профиль
+              попадает в подборку работодателей.
+            </p>
             <p>Не подтвердите — предложим тест на грейд ниже. Принудительно грейд не понижаем.</p>
             <p className="text-muted">Сменить грейд можно раз в 90 дней, повторить неудачную попытку — через 30 дней.</p>
           </div>
         </div>
       </Card>
       <StepActions onBack={onBack}>
-        <Button size="lg" rightIcon={<ArrowRight className="size-4" aria-hidden />} onClick={() => onDone(grade)}>
+        <Button size="lg" loading={declare.isPending} rightIcon={<ArrowRight className="size-4" aria-hidden />} onClick={() => declare.mutate()}>
           Дальше: тест
         </Button>
       </StepActions>

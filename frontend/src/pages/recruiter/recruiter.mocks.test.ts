@@ -215,3 +215,20 @@ describe('код приглашения в компанию', () => {
     expect((await apiError(api.post('/companies/my/invite-code'))).status).toBe(403)
   })
 })
+
+describe('релевантность дисциплин ФСП (E08)', () => {
+  it('профиль кандидата: пометка «профильно для …» по его специализации', async () => {
+    // кандидат 1: Backend · Middle, лучшее — победа в продуктовом программировании
+    const p = await api.get<AnonymousProfile>('/candidates/1')
+    expect(p.fsp_profile_note).toMatch(/— профильно для Backend$/)
+    // без ФСП — пометки нет
+    const none = await api.get<AnonymousProfile>(`/candidates/${CAND}`)
+    expect(none.fsp_profile_note ?? null).toBeNull()
+  })
+
+  it('подборка: причина ФСП с пометкой, если дисциплина профильная', async () => {
+    const list = await api.get<MatchList>('/matching/needs/1/candidates')
+    const first = list.items.find((m) => m.candidate.id === 1)!
+    expect(first.reasons.some((r) => r.startsWith('Подтверждено ФСП') && r.endsWith('профильно для Backend'))).toBe(true)
+  })
+})

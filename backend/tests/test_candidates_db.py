@@ -31,6 +31,20 @@ PROFILE: dict[str, Any] = {
     "min_salary": 250000,
 }
 
+GRADE_STATUS_KEYS = (
+    "grade_status",
+    "grade_confirmed_at",
+    "declared_specialization",
+    "declared_grade",
+    "declared_at",
+)
+
+
+def without_grade_status(profile: dict[str, Any]) -> dict[str, Any]:
+    """Профиль без полей статуса грейда (FTT.4): их нет в фикстурах, проверяются отдельно."""
+    assert profile["grade_status"] == ("confirmed" if profile["grade"] else "none")
+    return {k: v for k, v in profile.items() if k not in GRADE_STATUS_KEYS}
+
 
 @pytest.fixture(autouse=True, scope="module")
 def _fresh_db_module() -> Iterator[None]:
@@ -52,7 +66,7 @@ def _bank_ids(client: TestClient, headers: dict[str, str] = RECRUITER) -> set[in
 def test_profile_read_from_db_equals_fixture(client: TestClient) -> None:
     for headers, cid in ((CANDIDATE, 1), (CANDIDATE_NO_FSP, 26)):
         profile = client.get("/api/candidates/me/profile", headers=headers).json()
-        assert profile == fixtures.by_id("candidates", cid)
+        assert without_grade_status(profile) == fixtures.by_id("candidates", cid)
 
 
 def test_save_profile_persists(client: TestClient, fresh_db: None) -> None:
@@ -95,7 +109,7 @@ def test_profile_validation(client: TestClient, fresh_db: None) -> None:
         assert response.status_code == 422, patch
     # ничего не сохранилось
     profile = client.get("/api/candidates/me/profile", headers=CANDIDATE).json()
-    assert profile == fixtures.by_id("candidates", 1)
+    assert without_grade_status(profile) == fixtures.by_id("candidates", 1)
 
 
 def test_privacy_changes_anonymous_profile(client: TestClient, fresh_db: None) -> None:

@@ -196,6 +196,7 @@ class NeedService:
             salary_from=need["salary_from"],
             salary_to=need["salary_to"],
             work_format=need["work_format"],
+            specialization=need["specialization"],
         )
         ranked = []
         for cid in ids:

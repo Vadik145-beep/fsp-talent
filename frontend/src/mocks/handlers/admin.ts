@@ -866,6 +866,16 @@ const SETTINGS_LABELS: Record<string, string> = {
 }
 
 // --- Хендлеры ----------------------------------------------------------------------------------
+/** Статус грейда соискателя (FTT.4): подтверждён тестом / заявлен, но не подтверждён / нет. */
+function withGradeStatus(u: UserRecord): UserRecord {
+  if (u.role !== 'candidate') return { ...u, grade_status: null, grade_label: null }
+  const c = col<CandidateRow & { grade?: string | null; declared_specialization?: string | null; declared_grade?: string | null }>('candidates').find((x) => x.user_id === u.id)
+  if (!c) return { ...u, grade_status: null, grade_label: null }
+  const code = c.grade ? `${c.specialization}:${c.grade}` : c.declared_grade ? `${c.declared_specialization}:${c.declared_grade}` : null
+  const label = code ? (col<{ id: string; label: string }>('categories').find((x) => x.id === code)?.label ?? code) : null
+  return { ...u, grade_status: c.grade ? 'confirmed' : c.declared_grade ? 'unconfirmed' : 'none', grade_label: label }
+}
+
 export const adminHandlers: HttpHandler[] = [
   // Дашборд
   http.get('/api/admin/dashboard', adminGet(buildDashboard, () => EMPTY_DASHBOARD)),
@@ -885,7 +895,7 @@ export const adminHandlers: HttpHandler[] = [
             (!role || u.role === role) &&
             (blocked == null || blocked === '' || Boolean(u.blocked) === (blocked === 'true')),
         )
-        return pageOf(rows, url)
+        return pageOf(rows.map(withGradeStatus), url)
       },
       () => ({ items: [], total: 0, page: 1, page_size: 50 }),
     ),
@@ -916,7 +926,7 @@ export const adminHandlers: HttpHandler[] = [
         )
       }
       db.save()
-      return HttpResponse.json(user)
+      return HttpResponse.json(withGradeStatus(user))
     }),
   ),
   http.get(

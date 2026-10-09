@@ -9,6 +9,7 @@ import { ProfileForm } from './components/ProfileForm'
 import { QueryView } from './components/QueryView'
 import { ResumeUpload } from './components/ResumeUpload'
 import { downloadProfilePdf } from './components/downloadPdf'
+import { GradeConfirmedBadge, UnconfirmedGrade } from './components/GradeStatus'
 import { applyParsedResume, formFromProfile, toUpdate, type ParsedConfidence, type ProfileFormState } from './components/profileFormModel'
 
 export default function ProfilePage() {
@@ -108,6 +109,24 @@ function ProfileEditor({ profile }: { profile: CandidateProfile }) {
       </div>
 
       <aside className="grid gap-4 lg:sticky lg:top-20">
+        <Card>
+          <p className="font-semibold text-ink">Категория и грейд</p>
+          {profile.grade_status === 'confirmed' && profile.category_label ? (
+            <div className="mt-1 grid gap-1.5">
+              <p className="text-lg font-bold text-fsp-night">{profile.category_label}</p>
+              <GradeConfirmedBadge at={profile.grade_confirmed_at} className="justify-self-start" />
+            </div>
+          ) : profile.grade_status === 'unconfirmed' && profile.declared_grade ? (
+            <UnconfirmedGrade className="mt-1" compact specialization={profile.declared_specialization} grade={profile.declared_grade} />
+          ) : (
+            <p className="mt-1 text-[13px] text-muted">
+              Грейда пока нет.{' '}
+              <Link to="/candidate/onboarding" className="font-semibold text-fsp-plum hover:underline">
+                Пройти опрос и тест
+              </Link>
+            </p>
+          )}
+        </Card>
         <Card>
           <ProgressBar label="Профиль заполнен" value={profile.profile_completeness} tone={profile.profile_completeness >= 80 ? 'success' : 'primary'} />
           <p className="mt-2 text-[13px] text-muted">Полный профиль выше в подборке работодателя.</p>

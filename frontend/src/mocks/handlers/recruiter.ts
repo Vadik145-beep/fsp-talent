@@ -10,6 +10,7 @@ import {
 } from '@/shared/config/dictionaries'
 import { formatMoney, formatPercent } from '@/shared/lib/format'
 import { db, demoUser } from '../db'
+import { achievementsOf, fspProfileNote, fspReasonFor, fspScoreFor } from '../fspRelevance'
 import { apiError, mockLatency, withScenario } from '../utils'
 
 /**
@@ -342,7 +343,10 @@ export function scoreCandidate(c: CandidateRow, need: NeedRow): S['MatchedCandid
 
   const thetaValue = c.theta === null ? 0 : normalCdf(c.theta)
   const showFsp = Boolean(c.fsp_id) && c.privacy.show_fsp_achievements
-  const fspValue = showFsp && c.fsp_score ? Math.min(1, c.fsp_score / 100) : 0
+  // ФСП-скор под специализацию потребности (релевантность дисциплин, как на бэкенде)
+  const achs = achievementsOf(c.fsp_id)
+  const fspScore = achs.length ? fspScoreFor(achs, need.specialization) : c.fsp_score
+  const fspValue = showFsp && fspScore ? Math.min(1, fspScore / 100) : 0
   const freshValue = c.freshness
   const minSalary = c.min_salary ?? 0
   const salaryFit = minSalary <= need.salary_to
@@ -387,8 +391,8 @@ export function scoreCandidate(c: CandidateRow, need: NeedRow): S['MatchedCandid
     })
   }
   if (fspValue > 0) {
-    const badge = c.fsp_badges[0]?.title
-    reasons.push({ text: `Подтверждено ФСП${badge ? `: ${badge}` : ''}`, weight: breakdown[2].contribution })
+    const detail = fspReasonFor(achs, need.specialization) ?? c.fsp_badges[0]?.title
+    reasons.push({ text: `Подтверждено ФСП${detail ? `: ${detail}` : ''}`, weight: breakdown[2].contribution })
   }
   if (freshValue >= 0.6) {
     reasons.push({ text: 'Профиль свежий: недавно решал задания', weight: breakdown[3].contribution })
@@ -675,6 +679,7 @@ export function anonymousProfile(c: CandidateRow, ctx: RecruiterCtx): S['Anonymo
     contacts: open ? candidateContacts(c) : null,
     // После ответа (принято/отклонено/истекло) можно отправить новое предложение; активное — только одно.
     can_invite: isVisible(c) && !activeInv && quotaFor(ctx.recruiter.id).left > 0,
+    fsp_profile_note: c.fsp_id && c.privacy.show_fsp_achievements ? fspProfileNote(achievementsOf(c.fsp_id), c.specialization) : null,
   }
 }
 

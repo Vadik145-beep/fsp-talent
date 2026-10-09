@@ -16,6 +16,7 @@ from app.candidates.schemas import (
     CandidateProfile,
     CandidateProfileUpdate,
     CandidateSettings,
+    DeclaredGradeUpdate,
     JobSearchUpdate,
     PrivacySettings,
     PublicationConsentUpdate,
@@ -196,13 +197,31 @@ async def my_grade(user: CandidateUser, session: SessionDep) -> Any:
     return await CandidateProfileService(session).grade(_me_id(user))
 
 
+@router.put(
+    "/me/declared-grade",
+    response_model=CandidateGradeStatus,
+    summary="Заявить грейд (до теста): статус «грейд не подтверждён»",
+    description=(
+        "Грейд соискатель выбирает сам (онбординг), но официально он присваивается только "
+        "по результату теста. До теста `grade_status = unconfirmed`: кандидата нет в подборке "
+        "и банке кандидатов работодателя. Официальный `grade` этот запрос не меняет."
+    ),
+    responses=error_responses(*AUTH_ERRORS, 404, 422),
+)
+async def declare_grade(body: DeclaredGradeUpdate, user: CandidateUser, session: SessionDep) -> Any:
+    return await CandidateProfileService(session).declare_grade(
+        _me_id(user), str(body.specialization), str(body.grade)
+    )
+
+
 @router.get(
     "",
     response_model=Page[CandidateCard],
     summary="Банк кандидатов (обезличенно)",
     description=(
-        "Поиск по всей базе. В выдаче только кандидаты с грейдом, согласием на публикацию "
-        "и без паузы поиска. ФИО и контактов в ответе нет."
+        "Поиск по всей базе. В выдаче только кандидаты с грейдом, подтверждённым тестом "
+        "(`grade_status = confirmed`; заявленный, но не подтверждённый грейд — не в выдаче), "
+        "согласием на публикацию и без паузы поиска. ФИО и контактов в ответе нет."
     ),
     responses=error_responses(*AUTH_ERRORS, 422),
 )

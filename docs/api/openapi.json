@@ -3369,13 +3369,168 @@
         }
       }
     },
+    "/api/candidates/me/declared-grade": {
+      "put": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "Заявить грейд (до теста): статус «грейд не подтверждён»",
+        "description": "Грейд соискатель выбирает сам (онбординг), но официально он присваивается только по результату теста. До теста `grade_status = unconfirmed`: кандидата нет в подборке и банке кандидатов работодателя. Официальный `grade` этот запрос не меняет.",
+        "operationId": "declare_grade_api_candidates_me_declared_grade_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeclaredGradeUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateGradeStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Недостаточно прав",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Недостаточно прав",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Недостаточно прав",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`not_found` — Объект не найден",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Объект не найден",
+                    "value": {
+                      "code": "not_found",
+                      "message": "Объект не найден",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_error` — Ошибка валидации данных",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "validation_error": {
+                    "summary": "Ошибка валидации данных",
+                    "value": {
+                      "code": "validation_error",
+                      "message": "Ошибка валидации данных",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/candidates": {
       "get": {
         "tags": [
           "candidates"
         ],
         "summary": "Банк кандидатов (обезличенно)",
-        "description": "Поиск по всей базе. В выдаче только кандидаты с грейдом, согласием на публикацию и без паузы поиска. ФИО и контактов в ответе нет.",
+        "description": "Поиск по всей базе. В выдаче только кандидаты с грейдом, подтверждённым тестом (`grade_status = confirmed`; заявленный, но не подтверждённый грейд — не в выдаче), согласием на публикацию и без паузы поиска. ФИО и контактов в ответе нет.",
         "operationId": "search_candidates_api_candidates_get",
         "security": [
           {
@@ -18616,6 +18771,21 @@
             "type": "boolean",
             "title": "Can Invite",
             "description": "Можно ли отправить приглашение сейчас"
+          },
+          "fsp_profile_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fsp Profile Note",
+            "description": "Лучшее достижение ФСП по профильной для специализации кандидата дисциплине; null — профильных достижений нет или кандидат скрыл достижения",
+            "examples": [
+              "Призёр всероссийского соревнования по программированию систем ИБ, 2025 — профильно для DevOps"
+            ]
           }
         },
         "type": "object",
@@ -19606,6 +19776,43 @@
             ],
             "title": "Theta"
           },
+          "grade_status": {
+            "$ref": "#/components/schemas/GradeStatusCode",
+            "description": "confirmed — грейд подтверждён тестом; unconfirmed — грейд заявлен соискателем, тест не пройден (в выдачу работодателю не попадает); none — грейда нет",
+            "default": "none"
+          },
+          "grade_confirmed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grade Confirmed At"
+          },
+          "declared_specialization": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SpecializationCode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "declared_grade": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GradeCode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "onboarding_completed": {
             "type": "boolean",
             "title": "Onboarding Completed"
@@ -19794,6 +20001,57 @@
               }
             ],
             "title": "Grade Changed At"
+          },
+          "grade_status": {
+            "$ref": "#/components/schemas/GradeStatusCode",
+            "description": "confirmed — грейд подтверждён тестом; unconfirmed — заявлен соискателем, тест не пройден; none — грейда нет",
+            "default": "none"
+          },
+          "grade_confirmed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grade Confirmed At",
+            "description": "Когда грейд подтверждён тестом"
+          },
+          "declared_specialization": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SpecializationCode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "declared_grade": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GradeCode"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Заявленный соискателем грейд (не официальный)"
+          },
+          "declared_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Declared At"
           },
           "grade_change_cooldown_days": {
             "type": "integer",
@@ -20172,6 +20430,58 @@
               }
             ],
             "title": "Grade Changed At"
+          },
+          "grade_status": {
+            "$ref": "#/components/schemas/GradeStatusCode",
+            "description": "confirmed — грейд подтверждён тестом; unconfirmed — грейд заявлен соискателем, тест не пройден (в выдачу работодателю не попадает); none — грейда нет",
+            "default": "none"
+          },
+          "grade_confirmed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grade Confirmed At",
+            "description": "Когда грейд подтверждён тестом (null — не подтверждён)"
+          },
+          "declared_specialization": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SpecializationCode"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Специализация, которую соискатель выбрал сам"
+          },
+          "declared_grade": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GradeCode"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Грейд, заявленный соискателем. Не официальный: в выдачу не пускает"
+          },
+          "declared_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Declared At"
           },
           "created_at": {
             "type": "string",
@@ -21179,6 +21489,30 @@
         ],
         "title": "DayCount"
       },
+      "DeclaredGradeUpdate": {
+        "properties": {
+          "specialization": {
+            "$ref": "#/components/schemas/SpecializationCode"
+          },
+          "grade": {
+            "$ref": "#/components/schemas/GradeCode"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "specialization",
+          "grade"
+        ],
+        "title": "DeclaredGradeUpdate",
+        "description": "Заявить грейд (онбординг): статус «грейд не подтверждён» до прохождения теста.",
+        "examples": [
+          {
+            "grade": "middle",
+            "specialization": "backend"
+          }
+        ]
+      },
       "DeclineReason": {
         "type": "string",
         "enum": [
@@ -21972,6 +22306,16 @@
         ],
         "title": "GradeOption",
         "description": "Можно ли пройти тест на соседний грейд и с какой даты."
+      },
+      "GradeStatusCode": {
+        "type": "string",
+        "enum": [
+          "confirmed",
+          "unconfirmed",
+          "none"
+        ],
+        "title": "GradeStatusCode",
+        "description": "Статус грейда соискателя (ответ организаторов FTT.4).\n\nconfirmed — грейд присвоен по результату теста (только такие в выдаче работодателю);\nunconfirmed — грейд заявлен самим соискателем, тест ещё не пройден;\nnone — грейд не выбран и не присвоен."
       },
       "GradeThreshold": {
         "properties": {
@@ -28106,6 +28450,29 @@
               }
             ],
             "title": "Last Login At"
+          },
+          "grade_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GradeStatusCode"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Только у соискателя: confirmed — грейд подтверждён тестом, unconfirmed — заявлен, но тест не пройден, none — грейда нет; у остальных ролей null"
+          },
+          "grade_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grade Label",
+            "description": "Категория (подтверждённая или заявленная), «Backend · Middle»"
           }
         },
         "type": "object",

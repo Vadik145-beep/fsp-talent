@@ -5,6 +5,7 @@ import { formatDate, formatSalaryRange, plural } from '@/shared/lib/format'
 import { useDashboard } from './api'
 import { QueryView } from './components/QueryView'
 import { FspLinkButton } from './components/FspLinkButton'
+import { GradeConfirmedBadge, TakeTestButton, UnconfirmedGrade } from './components/GradeStatus'
 import { formatTheta } from './labels'
 import { PageHeader } from '@/shared/ui'
 
@@ -32,7 +33,22 @@ export default function CandidateDashboardPage() {
       >
         {(d) => (
           <div className="grid grid-cols-1 gap-4">
-            {!d.onboarding_completed && (
+            {!d.onboarding_completed && d.grade_status === 'unconfirmed' && d.declared_grade && d.declared_specialization ? (
+              <Card className="border-0 bg-fsp-night text-white" padding="lg">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex gap-4">
+                    <span className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-white/10 text-fsp-blush">
+                      <Rocket className="size-6" aria-hidden />
+                    </span>
+                    <div>
+                      <h2 className="text-xl font-bold text-white">Подтвердите грейд тестом — и работодатели начнут писать</h2>
+                      <p className="mt-1 text-on-nav-muted">Адаптивный тест — до 20 задач, около 15 минут.</p>
+                    </div>
+                  </div>
+                  <TakeTestButton specialization={d.declared_specialization} grade={d.declared_grade} size="lg" className="shrink-0" />
+                </div>
+              </Card>
+            ) : !d.onboarding_completed && (
               <Card className="border-0 bg-fsp-night text-white" padding="lg">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex gap-4">
@@ -72,10 +88,13 @@ export default function CandidateDashboardPage() {
                 {d.category_label ? (
                   <>
                     <p className="text-3xl font-bold text-fsp-night">{d.category_label}</p>
+                    {d.grade_status === 'confirmed' && <GradeConfirmedBadge at={d.grade_confirmed_at} className="mt-2" />}
                     {typeof d.theta === 'number' && (
                       <p className="mt-1 text-sm text-muted">Уровень по тесту: {formatTheta(d.theta)}</p>
                     )}
                   </>
+                ) : d.grade_status === 'unconfirmed' && d.declared_grade ? (
+                  <UnconfirmedGrade specialization={d.declared_specialization} grade={d.declared_grade} />
                 ) : (
                   <p className="text-[15px] text-muted">Пока нет — пройдите тест, чтобы попасть в выдачу работодателям.</p>
                 )}

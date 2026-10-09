@@ -253,7 +253,30 @@ function completeness(c: CandidateRow): number {
 }
 
 function profileView(c: CandidateRow): S['CandidateProfile'] {
-  return { ...publicView(c), profile_completeness: completeness(c) }
+  return { ...publicView(c), ...gradeStatusFields(c), profile_completeness: completeness(c) }
+}
+
+/** Статус грейда (FTT.4): официальный грейд — только по тесту, заявленный — «не подтверждён». */
+function gradeStatusFields(c: CandidateRow) {
+  const confirmedAt = c.grade
+    ? (latest(
+        T.sessions().filter((s) => s.candidate_id === c.id && s.status === 'finished' && s.passed && s.specialization === c.specialization),
+        (s) => s.finished_at ?? '',
+      )[0]?.finished_at ?? c.last_test_at ?? null)
+    : null
+  return {
+    grade_status: (c.grade ? 'confirmed' : c.declared_grade ? 'unconfirmed' : 'none') as S['GradeStatusCode'],
+    grade_confirmed_at: confirmedAt,
+    declared_specialization: c.declared_specialization ?? null,
+    declared_grade: c.declared_grade ?? null,
+    declared_at: c.declared_at ?? null,
+  }
+}
+
+function declareGrade(c: CandidateRow, spec: Spec, grade: Grade) {
+  c.declared_specialization = spec
+  c.declared_grade = grade
+  c.declared_at = db.now()
 }
 
 const MAX_RESUME_BYTES = 5 * 1024 * 1024
@@ -770,6 +793,7 @@ function gradeStatus(c: CandidateRow): Omit<S['CandidateGradeStatus'], 'lower' |
     category_label: c.category_label ?? null,
     theta: c.theta ?? null,
     grade_changed_at: c.grade_changed_at ?? null,
+    ...gradeStatusFields(c),
     grade_change_cooldown_days: settings().changeCooldownDays,
     retry_cooldown_days: settings().retryCooldownDays,
     can_test_lower: !!lower && !lowerAt,
@@ -887,7 +911,11 @@ export const candidateHandlers: HttpHandler[] = [
         const hints: string[] = []
         if (!c.fsp_id) hints.push('Привяжите ФСП ID — достижения появятся в профиле с отметкой «подтверждено ФСП»')
         if (!c.links?.length) hints.push('Добавьте ссылку на GitHub — профиль станет полнее')
-        if (!c.grade) hints.push('Пройдите тест, чтобы получить категорию и попасть в выдачу работодателям')
+        if (!c.grade && c.declared_grade) {
+          hints.push(
+            `Грейд ${GRADE_LABELS[c.declared_grade]} не подтверждён — пройдите тест: официально грейд присваивается только по результату теста, и только тогда профиль попадает в выдачу`,
+          )
+        } else if (!c.grade) hints.push('Пройдите тест, чтобы получить категорию и попасть в выдачу работодателям')
         if (!c.publication_consent) hints.push('Дайте согласие на публикацию профиля — без него работодатели вас не видят')
         if (c.job_search_paused) hints.push('Поиск на паузе: работодатели не видят ваш профиль')
         const dashboard: S['CandidateDashboard'] = {
@@ -896,6 +924,10 @@ export const candidateHandlers: HttpHandler[] = [
           category_label: c.category_label ?? null,
           grade: c.grade ?? null,
           theta: c.theta ?? null,
+          grade_status: gradeStatusFields(c).grade_status,
+          grade_confirmed_at: gradeStatusFields(c).grade_confirmed_at,
+          declared_specialization: c.declared_specialization ?? null,
+          declared_grade: c.declared_grade ?? null,
           onboarding_completed: !!c.grade,
           new_invitations_count: invitations.filter((i) => i.status === 'sent').length,
           recent_invitations: invitations.slice(0, 3).map((i) => ({
@@ -919,6 +951,7 @@ export const candidateHandlers: HttpHandler[] = [
         category_label: null,
         grade: null,
         theta: null,
+        grade_status: 'none' as const,
         onboarding_completed: false,
         new_invitations_count: 0,
         recent_invitations: [],
@@ -1191,6 +1224,19 @@ export const candidateHandlers: HttpHandler[] = [
 
   http.get('/api/candidates/me/grade', candidateGet((c) => candidateGradeStatus(c))),
 
+  http.put(
+    '/api/candidates/me/declared-grade',
+    candidateMutation(async (c, { request }) => {
+      const body = await readJson<S['DeclaredGradeUpdate']>(request)
+      if (!body.specialization || !(body.specialization in SPEC_LABELS) || !body.grade || !GRADES.includes(body.grade)) {
+        return apiError(422, 'validation_error', 'Выберите специализацию и грейд')
+      }
+      declareGrade(c, body.specialization, body.grade)
+      db.save()
+      return HttpResponse.json(candidateGradeStatus(c))
+    }),
+  ),
+
   http.get(
     '/api/testing/sessions',
     candidateGet(
@@ -1246,6 +1292,7 @@ export const candidateHandlers: HttpHandler[] = [
         topic_scores: [],
         _mock: { prior, current: null, answers: [] },
       }
+      if (kind === 'placement' && !c.grade) declareGrade(c, spec, target)
       const first = pickNext(session, session._mock!, prior)
       if (!first) return apiError(409, 'no_items', 'В банке нет задач для этой специализации')
       session._mock!.current = { instance_id: first.variant.instance_id, item_id: first.item.id, started_at: db.now() }

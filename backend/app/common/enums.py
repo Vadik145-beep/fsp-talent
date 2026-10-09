@@ -25,6 +25,25 @@ class GradeCode(StrEnum):
     senior = "senior"
 
 
+class GradeStatusCode(StrEnum):
+    """Статус грейда соискателя (ответ организаторов FTT.4).
+
+    confirmed — грейд присвоен по результату теста (только такие в выдаче работодателю);
+    unconfirmed — грейд заявлен самим соискателем, тест ещё не пройден;
+    none — грейд не выбран и не присвоен.
+    """
+
+    confirmed = "confirmed"
+    unconfirmed = "unconfirmed"
+    none = "none"
+
+
+def grade_status_code(grade: str | None, declared_grade: str | None) -> GradeStatusCode:
+    if grade:
+        return GradeStatusCode.confirmed
+    return GradeStatusCode.unconfirmed if declared_grade else GradeStatusCode.none
+
+
 class WorkFormat(StrEnum):
     office = "office"
     hybrid = "hybrid"

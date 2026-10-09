@@ -6,7 +6,7 @@ from typing import Any
 from pydantic import ConfigDict, Field
 
 from app.common import fixtures
-from app.common.enums import ConsentType, Role
+from app.common.enums import ConsentType, GradeStatusCode, Role
 from app.common.schemas import ApiModel, OutModel
 
 
@@ -23,6 +23,16 @@ class UserRecord(OutModel):
     blocked: bool = False
     created_at: datetime
     last_login_at: datetime | None = None
+    grade_status: GradeStatusCode | None = Field(
+        default=None,
+        description=(
+            "Только у соискателя: confirmed — грейд подтверждён тестом, unconfirmed — "
+            "заявлен, но тест не пройден, none — грейда нет; у остальных ролей null"
+        ),
+    )
+    grade_label: str | None = Field(
+        default=None, description="Категория (подтверждённая или заявленная), «Backend · Middle»"
+    )
 
 
 ME_EXAMPLE: dict[str, Any] = {

@@ -13,7 +13,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.admin.models import AuditLog
 from app.candidates.models import CandidateProfile
 from app.catalog.clock import as_msk
+from app.catalog.models import Category
 from app.common import fixtures
+from app.common.enums import GradeStatusCode, grade_status_code
 from app.common.fixtures import Record
 from app.companies.models import Recruiter
 from app.users.models import User
@@ -71,6 +73,37 @@ class AdminDb:
             stmt.order_by(User.id).offset((page - 1) * page_size).limit(page_size)
         )
         return list(rows.all()), total
+
+    async def candidate_grades(self, user_ids: list[int]) -> dict[int, Record]:
+        """Статус грейда соискателей для списка пользователей (FTT.4) — два запроса."""
+        if not user_ids:
+            return {}
+        rows = (
+            await self.session.execute(
+                select(
+                    CandidateProfile.user_id,
+                    CandidateProfile.specialization,
+                    CandidateProfile.grade,
+                    CandidateProfile.declared_specialization,
+                    CandidateProfile.declared_grade,
+                ).where(CandidateProfile.user_id.in_(user_ids))
+            )
+        ).all()
+        category_rows = await self.session.execute(select(Category.code, Category.label))
+        labels: dict[str, str] = {code: label for code, label in category_rows.all()}
+        result: dict[int, Record] = {}
+        for user_id, spec, grade, declared_spec, declared_grade in rows:
+            status = grade_status_code(grade, declared_grade)
+            code = None
+            if status == GradeStatusCode.confirmed:
+                code = f"{spec}:{grade}"
+            elif status == GradeStatusCode.unconfirmed:
+                code = f"{declared_spec}:{declared_grade}"
+            result[user_id] = {
+                "grade_status": status.value,
+                "grade_label": labels.get(code, code) if code else None,
+            }
+        return result
 
     async def has_candidate_profile(self, user_id: int) -> bool:
         stmt = select(CandidateProfile.id).where(CandidateProfile.user_id == user_id)

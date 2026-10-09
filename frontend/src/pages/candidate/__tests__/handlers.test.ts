@@ -192,3 +192,29 @@ describe('моки соискателя: согласие на публикац�
     expect((await call('PUT', '/candidates/me/settings/publication', { body: {} })).status).toBe(422)
   })
 })
+
+describe('моки соискателя: «грейд не подтверждён» (FTT.4)', () => {
+  const cand40 = { role: 'candidate' as const, userId: 40 } // QA, без грейда
+
+  it('заявленный грейд — статус unconfirmed, после выбора — на главной и в профиле', async () => {
+    const before = await call<S['CandidateProfile']>('GET', '/candidates/me/profile', cand40)
+    expect(before.data.grade_status).toBe('none')
+    const res = await call<S['CandidateGradeStatus']>('PUT', '/candidates/me/declared-grade', {
+      ...cand40,
+      body: { specialization: 'qa', grade: 'middle' },
+    })
+    expect(res.status).toBe(200)
+    expect(res.data.grade_status).toBe('unconfirmed')
+    expect(res.data.declared_grade).toBe('middle')
+    expect(res.data.grade).toBeNull()
+    const dashboard = await call<S['CandidateDashboard']>('GET', '/candidates/me/dashboard', cand40)
+    expect(dashboard.data.grade_status).toBe('unconfirmed')
+    expect(dashboard.data.hints.some((h) => h.includes('Middle не подтверждён'))).toBe(true)
+  })
+
+  it('кандидат с грейдом по тесту — confirmed с датой', async () => {
+    const profile = await call<S['CandidateProfile']>('GET', '/candidates/me/profile')
+    expect(profile.data.grade_status).toBe('confirmed')
+    expect(profile.data.grade_confirmed_at).toBeTruthy()
+  })
+})

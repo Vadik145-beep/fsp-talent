@@ -15,14 +15,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.admin.audit import write_audit
 from app.candidates.grading import grade_status
+from app.candidates.models import CandidateProfile
 from app.candidates.repository import CandidateDb, CandidateRepository, session_grade
 from app.candidates.schemas import CandidateProfileUpdate, PrivacySettings
 from app.catalog.clock import as_msk, now_msk
 from app.catalog.repository import CatalogDb
-from app.common.enums import ACTIVE_INVITATION_STATUSES, ConsentType
+from app.common.enums import ACTIVE_INVITATION_STATUSES, ConsentType, GradeStatusCode
 from app.common.fixtures import Record
 from app.core.errors import AppError, not_found
 from app.core.security import CurrentUser
+from app.fsp.scoring import fsp_profile_note
+from app.fsp.service import fsp_summaries
+from app.testing.engine.constants import GRADE_LABELS
 from app.users.models import Consent, User
 
 # Поля карточки, которые рекрутер видит всегда (без ФИО, контактов, зарплаты, ФСП ID)
@@ -147,7 +151,13 @@ class CandidateProfileService:
             )
         if not cand.get("links"):
             hints.append("Добавьте ссылку на GitHub — профиль станет полнее")
-        if not cand.get("grade"):
+        if cand.get("grade_status") == GradeStatusCode.unconfirmed:
+            label = GRADE_LABELS.get(cand.get("declared_grade") or "", "")
+            hints.append(
+                f"Грейд {label} не подтверждён — пройдите тест: официально грейд присваивается "
+                "только по результату теста, и только тогда профиль попадает в выдачу"
+            )
+        elif not cand.get("grade"):
             hints.append("Пройдите тест, чтобы получить категорию и попасть в выдачу работодателям")
         if not cand.get("publication_consent"):
             hints.append(
@@ -159,6 +169,10 @@ class CandidateProfileService:
             "category_label": cand.get("category_label"),
             "grade": cand.get("grade"),
             "theta": cand.get("theta"),
+            "grade_status": cand.get("grade_status"),
+            "grade_confirmed_at": cand.get("grade_confirmed_at"),
+            "declared_specialization": cand.get("declared_specialization"),
+            "declared_grade": cand.get("declared_grade"),
             "onboarding_completed": bool(cand.get("grade")),
             "new_invitations_count": len(new),
             "recent_invitations": invitations[:3],
@@ -213,6 +227,20 @@ class CandidateProfileService:
 
     # ---------- категория и грейд ----------
 
+    async def declare_grade(
+        self, candidate_id: int, specialization: str, grade: str
+    ) -> dict[str, Any]:
+        """Соискатель сам выбрал грейд (онбординг): статус «грейд не подтверждён» (FTT.4).
+
+        Официальный грейд (`grade`) не меняется — его присваивает только тест.
+        """
+        profile = await self.db.profile(candidate_id)
+        if profile is None:
+            raise not_found("candidate", candidate_id)
+        declare(profile, specialization, grade)
+        await self.session.commit()
+        return await self.grade(candidate_id)
+
     async def grade(self, candidate_id: int, today: date | None = None) -> dict[str, Any]:
         cand = await self.get_or_404(candidate_id)
         sessions = await self.db.test_sessions(candidate_id)
@@ -255,7 +283,12 @@ class CandidateProfileService:
             if s.status == "finished" and s.passed and s.finished_at and (grade := session_grade(s))
         ]
         profile = to_card(cand)
+        note = None
+        if cand.get("fsp_id") and (cand.get("privacy") or {}).get("show_fsp_achievements", True):
+            summary = (await fsp_summaries(self.session, [candidate_id]))[candidate_id]
+            note = fsp_profile_note(summary.achievements, cand.get("specialization"))
         profile.update(
+            fsp_profile_note=note,
             soft_skills=cand.get("soft_skills", []),
             test_history=history,
             invitation_id=last_inv["id"] if last_inv else None,
@@ -266,6 +299,13 @@ class CandidateProfileService:
             and not (last_inv and last_inv["status"] in ACTIVE_INVITATION_STATUSES),
         )
         return profile
+
+
+def declare(profile: CandidateProfile, specialization: str, grade: str) -> None:
+    """Запомнить заявленный грейд (онбординг или старт теста). Коммит — за вызывающим."""
+    profile.declared_specialization = specialization
+    profile.declared_grade = grade
+    profile.declared_at = now_msk()
 
 
 async def apply_publication_consent(
