@@ -43,6 +43,8 @@ from .grading import (
     decide,
     grade_for_theta,
     is_grade_change,
+    keep_grade_reason,
+    lower_test_needed,
     next_grade_change_date,
 )
 from .irt import (
@@ -133,7 +135,9 @@ __all__ = [
     "grade_for_theta",
     "information",
     "is_grade_change",
+    "keep_grade_reason",
     "leave_one_out_thetas",
+    "lower_test_needed",
     "next_grade_change_date",
     "person_fit_lz",
     "prior_for_grade",

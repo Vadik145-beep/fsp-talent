@@ -42,11 +42,26 @@ def test_decide_suggest_lower_without_forced_downgrade():
     assert d.suggested_grade == "junior"
     assert d.granted_grade is None  # первый тест: грейд пока не присвоен
     assert d.estimated_grade == "junior"
-    d2 = decide(-0.3, 0.3, "middle", current_grade="middle")
-    assert d2.granted_grade == "middle"  # действующий грейд не понижаем
+    d2 = decide(-0.3, 0.3, "middle", current_grade="intern")
+    assert d2.granted_grade == "intern"  # действующий грейд не понижаем
+    assert d2.suggested_grade == "junior"
     assert "не понижается" in d2.reason
     d3 = decide(-2.5, 0.3, "senior")
     assert d3.suggested_grade == "middle"  # предлагаем на один грейд ниже
+
+
+def test_decide_failed_higher_keeps_grade_without_lower_test():
+    # уже Middle, не прошёл на Senior: тест на Middle не предлагаем
+    d = decide(0.5, 0.3, "senior", current_grade="middle")
+    assert d.outcome == "suggest_lower"
+    assert d.granted_grade == "middle"
+    assert d.suggested_grade is None
+    assert d.reason == (
+        "Senior не подтверждён, ваш грейд Middle остаётся. "
+        "Повторить тест на Senior можно через 30 дней."
+    )
+    # пересдача своего грейда: грейд ниже тоже не нужен
+    assert decide(-0.3, 0.3, "middle", current_grade="middle").suggested_grade is None
 
 
 def test_decide_intern_always_passes():
