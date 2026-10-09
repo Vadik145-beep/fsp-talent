@@ -48,7 +48,7 @@ MUTED = colors.HexColor("#5B5C66")
 FRAME_PAD = 6  # pt, внутренний отступ Frame в SimpleDocTemplate
 MAX_ACHIEVEMENTS = 5
 
-LEVEL_LABELS = {"strong": "сильная сторона", "ok": "уверенно", "weak": "зона роста"}
+LEVEL_LABELS = {"strong": "сильная сторона", "ok": "на уровне грейда", "weak": "зона роста"}
 FORMAT_LABELS = {"office": "офис", "hybrid": "гибрид", "remote": "удалённо"}
 DISCIPLINE_LABELS = {
     "product": "продуктовое программирование",
