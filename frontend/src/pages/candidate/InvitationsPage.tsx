@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { ChevronRight, Clock, ListChecks, Mail } from 'lucide-react'
+import { ChevronRight, Clock, Mail, MessagesSquare } from 'lucide-react'
 import { formatDate, formatSalaryRange } from '@/shared/lib/format'
 import { Card, EmptyState, PageHeader, StatusPill, Tabs } from '@/shared/ui'
 import { useInvitations, type Invitation } from './api'
@@ -112,7 +112,7 @@ function InvitationRow({ inv }: { inv: Invitation }) {
             <span>Связь: {CONTACT_TYPE_LABELS[inv.contact_method.type]}</span>
             {inv.task_text && (
               <span className="inline-flex items-center gap-1">
-                <ListChecks className="size-3.5" aria-hidden /> Есть задание
+                <MessagesSquare className="size-3.5" aria-hidden /> Есть вопрос к созвону
               </span>
             )}
             {waiting ? (

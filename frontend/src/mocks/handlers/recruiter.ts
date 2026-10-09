@@ -1121,7 +1121,7 @@ export const recruiterHandlers: HttpHandler[] = [
       const cm = body.contact_method
       if (!cm || !['email', 'phone', 'telegram', 'other'].includes(cm.type)) fields.contact_method = 'Выберите способ связи'
       else if (!cm.value || cm.value.trim().length < 2) fields.contact_method = 'Укажите контакт для связи'
-      if (body.task_text && body.task_text.length > 2000) fields.task_text = 'Задание — не длиннее 2000 символов'
+      if (body.task_text && body.task_text.length > 2000) fields.task_text = 'Вопрос — не длиннее 2000 символов'
       if (Object.keys(fields).length) return validationError(fields)
       const salaryErr = checkSalary(body.salary_from, body.salary_to)
       if (salaryErr) return salaryErr

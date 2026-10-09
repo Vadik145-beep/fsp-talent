@@ -93,7 +93,7 @@ export function InvitationDrawer({
             </section>
             {inv.task_text && (
               <section>
-                <h3 className="mb-1 text-xs font-medium text-muted">Короткое задание</h3>
+                <h3 className="mb-1 text-xs font-medium text-muted">Вопрос к созвону</h3>
                 <p className="text-sm">{inv.task_text}</p>
               </section>
             )}

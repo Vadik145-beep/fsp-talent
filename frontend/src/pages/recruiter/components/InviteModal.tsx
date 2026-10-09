@@ -287,14 +287,14 @@ function InviteModalInner({ onClose, candidate, need, onSent }: InviteModalProps
 
         <div className="flex flex-col gap-2">
           <Checkbox
-            label="Добавить короткое задание"
-            description="Необязательно: 1–2 вопроса, на которые кандидат ответит при принятии."
+            label="Добавить вопрос к созвону"
+            description="Необязательно: 1–2 вопроса, которые обсудите на созвоне. Кандидат увидит их заранее."
             checked={withTask}
             onChange={(e) => setWithTask(e.target.checked)}
           />
           {withTask && (
             <Textarea
-              aria-label="Текст задания"
+              aria-label="Вопрос к созвону"
               rows={2}
               maxLength={2000}
               placeholder="Например: как бы вы ускорили API, который отвечает 2 секунды?"

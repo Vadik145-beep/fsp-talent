@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { useParams } from 'react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { AtSign, Building2, Check, Clock, Flag, ListChecks, Lock, Mail, MessageCircle, Phone, Send, X } from 'lucide-react'
+import { AtSign, Building2, Check, Clock, Flag, Lock, Mail, MessageCircle, MessagesSquare, Phone, Send, X } from 'lucide-react'
 import { api, getErrorMessage, isApiError } from '@/shared/api'
 import { INVITATION_STATUS_LABELS } from '@/shared/config/dictionaries'
 import { formatDate, formatDateTime, formatSalaryRange } from '@/shared/lib/format'
@@ -139,10 +139,10 @@ function InvitationView({ inv }: { inv: InvitationDetail }) {
             <CardHeader
               title={
                 <span className="inline-flex items-center gap-2">
-                  <ListChecks className="size-5 text-fsp-plum" aria-hidden /> Короткое задание
+                  <MessagesSquare className="size-5 text-fsp-plum" aria-hidden /> Вопрос к созвону
                 </span>
               }
-              description="Необязательно. Ответ можно обсудить с рекрутером после принятия."
+              description="Подумайте заранее — рекрутер обсудит это с вами на созвоне."
             />
             <p className="rounded-md bg-surface-muted p-3 text-[15px] text-ink">{inv.task_text}</p>
           </Card>

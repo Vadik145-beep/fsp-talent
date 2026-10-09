@@ -63,7 +63,7 @@ class InvitationCreate(SalaryRangeMixin):
     vacancy_id: int | None = None
     description: str = Field(min_length=10, max_length=3000)
     contact_method: ContactMethodIn
-    task_text: str | None = Field(default=None, max_length=2000, description="Короткое задание")
+    task_text: str | None = Field(default=None, max_length=2000, description="Вопрос к созвону (необязательно)")
 
 
 class InvitationRecord(OutModel):

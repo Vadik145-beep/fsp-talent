@@ -260,7 +260,7 @@ function InvitationPreview() {
             <MessagesSquare className="size-4 text-fsp-plum" /> Созвон в Telegram
           </li>
           <li className="flex items-center gap-2">
-            <FileText className="size-4 text-fsp-plum" /> Короткое задание — по желанию
+            <FileText className="size-4 text-fsp-plum" /> Вопрос к созвону — подумать заранее
           </li>
         </ul>
         <div className="mt-5 flex items-center gap-2 rounded-md bg-violet-soft px-3 py-2 text-[13px] text-fsp-plum">

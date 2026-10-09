@@ -22389,7 +22389,7 @@
               }
             ],
             "title": "Task Text",
-            "description": "Короткое задание"
+            "description": "Вопрос к созвону (необязательно)"
           }
         },
         "additionalProperties": false,

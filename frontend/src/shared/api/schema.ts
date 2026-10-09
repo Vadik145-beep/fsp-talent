@@ -4062,7 +4062,7 @@ export interface components {
             contact_method: components["schemas"]["ContactMethodIn"];
             /**
              * Task Text
-             * @description Короткое задание
+             * @description Вопрос к созвону (необязательно)
              */
             task_text?: string | null;
         };
