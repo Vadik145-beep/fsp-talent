@@ -155,7 +155,13 @@ def test_failed_attempt_keeps_grade_and_blocks_retry(client: TestClient) -> None
     sid = state["session"]["id"]
     res = client.get(f"/api/testing/sessions/{sid}/result", headers=CAND_26).json()
     assert not res["passed"] and res["outcome"] == "suggest_lower"
-    assert res["recommendation"]["action"] == "offer_lower"
+    # грейд Junior уже есть — тест на него не предлагаем, только повтор позже
+    assert res["recommendation"]["action"] == "retry_later"
+    assert res["recommendation"]["target_grade"] is None
+    assert res["recommendation"]["message"] == (
+        "Middle не подтверждён, ваш грейд Junior остаётся. "
+        "Повторить тест на Middle можно через 30 дней."
+    )
     profile = client.get("/api/candidates/me/profile", headers=CAND_26).json()
     assert profile["category"] == "frontend:junior"  # принудительно не понижаем
     again = client.post(

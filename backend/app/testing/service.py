@@ -47,7 +47,9 @@ from app.testing.engine import (
     can_attempt,
     check,
     decide,
+    keep_grade_reason,
     leave_one_out_thetas,
+    lower_test_needed,
     prior_for_grade,
 )
 from app.testing.formats import engine_response, item_view
@@ -761,6 +763,13 @@ class TestingDbService:
         label = await self.session.scalar(select(Category.label).where(Category.code == category))
         action = ACTIONS.get(outcome, "retry_later")
         available_at = None
+        kept = stored.get("granted_grade")
+        if outcome == "suggest_lower" and kept and not lower_test_needed(kept, suggested):
+            # свой грейд не ниже предлагаемого уже есть (и для сессий до этого правила)
+            grade = await CandidateProfileService(self.session).grade(candidate_id)
+            days = int(grade.get("retry_cooldown_days") or 30)
+            action, suggested = "retry_later", None
+            message = keep_grade_reason(ts.target_grade, kept, days)
         if action in ("offer_lower", "offer_higher") and suggested:
             grade = await CandidateProfileService(self.session).grade(candidate_id)
             for option in (grade.get("lower"), grade.get("higher")):

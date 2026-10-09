@@ -86,6 +86,22 @@ class GradeDecision:
     reason: str
 
 
+def lower_test_needed(current_grade: str | None, suggested: str | None) -> bool:
+    """Предлагать ли тест на грейд ниже: только если такого или более высокого грейда ещё нет."""
+    if suggested is None:
+        return False
+    return current_grade is None or grade_index(current_grade) < grade_index(suggested)
+
+
+def keep_grade_reason(
+    claimed_grade: str, current_grade: str | None, retry_days: int = FAILED_RETRY_COOLDOWN_DAYS
+) -> str:
+    """Не прошёл тест выше, но свой грейд уже есть: грейд остаётся, повтор — после кулдауна."""
+    label = GRADE_LABELS[claimed_grade]
+    keep = f", ваш грейд {GRADE_LABELS[current_grade]} остаётся" if current_grade else ""
+    return f"{label} не подтверждён{keep}. Повторить тест на {label} можно через {retry_days} дней."
+
+
 def decide(
     theta: float,
     se: float,
@@ -105,6 +121,19 @@ def decide(
     if theta < thresholds.lower_bound(claimed_grade):
         # для intern порог −∞, поэтому сюда попадаем только с junior и выше
         suggested = _neighbour(claimed_grade, -1)
+        if not lower_test_needed(current_grade, suggested):
+            # грейд не ниже предлагаемого уже есть — тест на него ничего не даст
+            return GradeDecision(
+                outcome="suggest_lower",
+                claimed_grade=claimed_grade,
+                estimated_grade=estimated,
+                granted_grade=current_grade,
+                suggested_grade=None,
+                theta=theta,
+                ci_low=lo,
+                ci_high=hi,
+                reason=keep_grade_reason(claimed_grade, current_grade),
+            )
         keep = f" Текущий грейд {GRADE_LABELS[current_grade]} сохраняется." if current_grade else ""
         return GradeDecision(
             outcome="suggest_lower",
