@@ -12,8 +12,10 @@ echo "версия: $(git log --oneline -1)"
 docker run --rm -v "$APP":/app -w /app/frontend -e VITE_USE_MOCKS=false node:22-alpine \
   sh -c "npm ci --no-audit --no-fund --loglevel=error && npx vite build --logLevel error"
 mkdir -p "$STAND/site"
-# копируем содержимое на место: Caddy держит примонтированную папку, подменять её нельзя
-find "$STAND/site" -mindepth 1 -delete
+# копируем содержимое на место: Caddy держит примонтированную папку, подменять её нельзя.
+# Старые чанки (assets/) не удаляем — открытые вкладки прошлой версии продолжат догружать экраны;
+# чистим только файлы старше 7 дней.
+find "$STAND/site/assets" -type f -mtime +7 -delete 2>/dev/null || true
 cp -r "$APP/frontend/dist/." "$STAND/site/"
 
 cd "$STAND"
