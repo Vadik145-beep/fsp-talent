@@ -75,8 +75,10 @@ services:
   # Открытая LLM Qwen2.5-1.5B-Instruct (Apache 2.0) в llama.cpp. Файл модели (~1,1 ГБ) заранее
   # лежит на сервере в /opt/fsp-talent/models (переменная LLM_MODELS_DIR), скачать — curl с
   # Hugging Face, см. docs/solution/08_deployment.md. Бэкенд модель не ждёт: пока она не поднялась, всё работает на правилах.
+  # Включается явно: COMPOSE_PROFILES=llm в infra/stand/.env (без него стенд работает на правилах).
   llm:
     image: ghcr.io/ggml-org/llama.cpp:server-b11541
+    profiles: ["llm"]
     restart: unless-stopped
     command:
       - -m
