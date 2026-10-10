@@ -164,6 +164,10 @@ def test_failed_attempt_keeps_grade_and_blocks_retry(client: TestClient) -> None
     )
     profile = client.get("/api/candidates/me/profile", headers=CAND_26).json()
     assert profile["category"] == "frontend:junior"  # принудительно не понижаем
+    # в истории нет «Предложен тест на грейд Junior»: этот грейд у кандидата уже есть
+    history = client.get("/api/testing/grade", headers=CAND_26).json()["history"]
+    events = [h["event"] for h in history if h["test_session_id"] == sid]
+    assert events == ["test_failed"]
     again = client.post(
         "/api/testing/sessions",
         json={"specialization": "frontend", "target_grade": "middle", "kind": "higher"},
@@ -171,6 +175,18 @@ def test_failed_attempt_keeps_grade_and_blocks_retry(client: TestClient) -> None
     )
     assert again.status_code == 409 and again.json()["code"] == "cooldown_active"
     assert again.json()["details"]["reason_code"] == "failed_retry_cooldown"
+
+
+def test_failed_without_grade_offers_lower_test(client: TestClient) -> None:
+    """Грейда нет, тест на Middle не пройден: в истории — предложение теста ниже."""
+    state = start(client, CAND_40, "backend", "middle")
+    run_to_end(client, CAND_40, state, right=False)
+    sid = state["session"]["id"]
+    res = client.get(f"/api/testing/sessions/{sid}/result", headers=CAND_40).json()
+    assert res["outcome"] == "suggest_lower" and res["recommendation"]["action"] == "offer_lower"
+    history = client.get("/api/testing/grade", headers=CAND_40).json()["history"]
+    offers = [h for h in history if h["test_session_id"] == sid and h["event"] == "offer_lower"]
+    assert len(offers) == 1 and offers[0]["grade_to"] == res["recommendation"]["target_grade"]
 
 
 def test_grade_change_cooldown_after_pass(client: TestClient) -> None:

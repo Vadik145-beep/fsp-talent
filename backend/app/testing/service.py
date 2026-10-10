@@ -718,7 +718,10 @@ class TestingDbService:
                 previous,
                 None,
             )
-            if decision.suggested_grade:
+            # тест ниже предлагаем, только если такого или более высокого грейда ещё нет
+            # (как в result(): Middle провалил Senior — «тест на Middle» не нужен)
+            if lower_test_needed(previous, decision.suggested_grade):
+                assert decision.suggested_grade is not None
                 event(
                     "offer_lower",
                     f"Предложен тест на грейд {GRADE_LABELS[decision.suggested_grade]}",
