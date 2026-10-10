@@ -213,7 +213,8 @@ export function toCandidateCard(c: CandidateRow): S['CandidateCard'] {
     city: c.privacy.show_city ? c.city : null,
     experience_years: c.privacy.show_experience ? c.experience_years : null,
     links: c.privacy.show_links ? c.links : null,
-    has_fsp: Boolean(c.fsp_id),
+    // как на бэкенде: есть достижения ФСП и кандидат их не скрыл
+    has_fsp: Boolean(c.fsp_id && showFsp && c.fsp_score != null),
     fsp_score: c.fsp_id && showFsp ? c.fsp_score : null,
     fsp_badges: c.fsp_id && showFsp ? c.fsp_badges : [],
     topic_scores: c.topic_scores,
@@ -1053,8 +1054,9 @@ export const recruiterHandlers: HttpHandler[] = [
           if (grade && c.grade !== grade) return false
           if (category && c.category !== category) return false
           if (skills.length && !skills.every((s) => c.stack.includes(s))) return false
-          if (hasFsp === true && !(c.fsp_id && c.privacy.show_fsp_achievements)) return false
-          if (hasFsp === false && c.fsp_id) return false
+          const fspShown = Boolean(c.fsp_id && c.privacy.show_fsp_achievements !== false && c.fsp_score != null)
+          if (hasFsp === true && !fspShown) return false
+          if (hasFsp === false && fspShown) return false
           if (format && !c.work_formats.includes(format as WorkFormat)) return false
           if (city && (!c.privacy.show_city || c.city !== city)) return false
           return true

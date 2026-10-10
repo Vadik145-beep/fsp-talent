@@ -20,7 +20,7 @@ from app.common import fixtures
 from app.common.enums import grade_status_code
 from app.common.fixtures import Record
 from app.companies.models import Company
-from app.fsp.models import FspLink
+from app.fsp.models import FspAchievement, FspLink
 from app.invitations.models import Invitation
 from app.tasks.models import RegularTask, TaskSubmission
 from app.testing.models import GradeHistory, TestSession
@@ -80,6 +80,25 @@ def searchable_conditions() -> list[ColumnElement[bool]]:
         CandidateProfile.job_search_paused.is_(False),
         User.blocked.is_(False),
     ]
+
+
+def has_fsp_condition() -> ColumnElement[bool]:
+    """«Есть достижения ФСП» (фильтр банка и подборки, флаг `has_fsp` карточки): у кандидата
+    есть хотя бы одно подтверждённое достижение ФСП И он не скрыл достижения настройкой
+    приватности. Привязанный ФСП ID без истории или со скрытыми достижениями — «нет»:
+    фильтр не должен выдавать скрытое участие."""
+    cp = CandidateProfile
+    achieved = (
+        exists()
+        .where(
+            FspLink.candidate_id == cp.id,
+            FspAchievement.fsp_id == FspLink.fsp_id,
+            FspAchievement.verified.is_(True),
+        )
+        .correlate(cp)
+    )
+    shown = func.coalesce(cp.privacy["show_fsp_achievements"].as_boolean(), True).is_(True)
+    return achieved & shown
 
 
 class CandidateDb:
@@ -261,8 +280,7 @@ class CandidateDb:
                 )
             )
         if has_fsp is not None:
-            linked = exists().where(FspLink.candidate_id == cp.id)
-            conditions.append(linked if has_fsp else ~linked)
+            conditions.append(has_fsp_condition() if has_fsp else ~has_fsp_condition())
         if work_format:
             conditions.append(literal(work_format) == any_(cp.work_formats))
         if city:

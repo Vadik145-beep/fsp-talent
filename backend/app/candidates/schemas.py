@@ -280,7 +280,9 @@ class CandidateCard(OutModel):
     city: str | None = Field(default=None, description="null, если кандидат скрыл")
     experience_years: float | None = Field(default=None, description="null, если скрыт")
     links: list[ProfileLink] | None = Field(default=None, description="null, если скрыты")
-    has_fsp: bool = Field(description="Привязан ли ФСП ID (без самого ID)")
+    has_fsp: bool = Field(
+        description="Есть подтверждённые достижения ФСП и кандидат их не скрыл (без ФСП ID)"
+    )
     fsp_score: float | None = None
     fsp_badges: list[FspBadge] = Field(default_factory=list)
     topic_scores: list[TopicScore] = Field(default_factory=list)

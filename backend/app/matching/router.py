@@ -142,7 +142,13 @@ async def need_candidates(
     session: SessionDep,
     category: Annotated[str | None, Query(examples=["backend:middle"])] = None,
     skills: Annotated[list[str] | None, Query()] = None,
-    has_fsp: bool | None = None,
+    has_fsp: Annotated[
+        bool | None,
+        Query(
+            description="true — есть подтверждённые достижения ФСП и кандидат их не скрыл; "
+            "false — остальные"
+        ),
+    ] = None,
     work_format: WorkFormat | None = None,
     city: str | None = None,
 ) -> Any:

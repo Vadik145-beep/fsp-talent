@@ -233,7 +233,13 @@ async def search_candidates(
     grade: GradeCode | None = None,
     category: str | None = Query(default=None, examples=["backend:middle"]),
     skills: Annotated[list[str] | None, Query(description="Все перечисленные навыки")] = None,
-    has_fsp: bool | None = None,
+    has_fsp: Annotated[
+        bool | None,
+        Query(
+            description="true — есть подтверждённые достижения ФСП и кандидат их не скрыл; "
+            "false — остальные"
+        ),
+    ] = None,
     work_format: WorkFormat | None = None,
     city: str | None = None,
     sort: Annotated[str, Query(pattern="^(theta|fsp|freshness|recent)$")] = "theta",

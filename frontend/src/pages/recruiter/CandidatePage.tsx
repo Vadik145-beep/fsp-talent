@@ -216,9 +216,7 @@ export default function RecruiterCandidatePage() {
               </div>
             ) : (
               <p className="text-sm text-muted" data-testid="no-fsp">
-                {p.has_fsp
-                  ? 'Кандидат скрыл достижения ФСП настройками приватности.'
-                  : 'Нет данных ФСП: кандидат не привязал ФСП ID. Это не минус — оценивайте по тесту.'}
+                Нет подтверждённых достижений ФСП. Это не минус — оценивайте по тесту.
               </p>
             )}
           </Card>

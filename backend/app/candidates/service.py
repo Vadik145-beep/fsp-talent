@@ -69,8 +69,12 @@ def to_card(candidate: Record) -> dict[str, Any]:
         candidate.get("experience_years") if privacy.get("show_experience") else None
     )
     card["links"] = candidate.get("links") if privacy.get("show_links") else None
-    card["has_fsp"] = bool(candidate.get("fsp_id"))
     show_fsp = privacy.get("show_fsp_achievements", True)
+    # «Есть достижения ФСП» — как фильтр банка (`has_fsp_condition`): достижения есть и не
+    # скрыты. Скрытое участие и привязку без истории карточка не выдаёт.
+    card["has_fsp"] = bool(
+        show_fsp and candidate.get("fsp_id") and candidate.get("fsp_score") is not None
+    )
     card["fsp_score"] = candidate.get("fsp_score") if show_fsp else None
     card["fsp_badges"] = candidate.get("fsp_badges", []) if show_fsp else []
     return card

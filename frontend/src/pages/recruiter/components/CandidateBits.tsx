@@ -62,7 +62,7 @@ export function FspBadges({ candidate, compact }: { candidate: Pick<CandidateCar
   }
   return (
     <Badge tone="neutral" icon={<ShieldOff aria-hidden />}>
-      {candidate.has_fsp ? 'Достижения ФСП скрыты' : 'Нет данных ФСП'}
+      Нет данных ФСП
     </Badge>
   )
 }

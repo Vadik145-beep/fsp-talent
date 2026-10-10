@@ -217,12 +217,46 @@ def test_bank_filters_and_sort(client: TestClient) -> None:
     assert len(page2.json()["items"]) == 5 and page2.json()["page"] == 2
 
 
+def test_bank_has_fsp_means_shown_achievements(client: TestClient) -> None:
+    """«Есть достижения ФСП» [ТЗ: подтверждённые достижения]: true — есть достижения и они не
+    скрыты; привязка без истории (FSP-000031…35) и скрытые достижения — false, причём карточка
+    не выдаёт скрытое участие."""
+
+    def bank(has_fsp: str) -> dict[int, dict[str, Any]]:
+        body = client.get(
+            "/api/candidates",
+            params={"has_fsp": has_fsp, "page_size": 100},
+            headers=RECRUITER,
+        ).json()
+        assert body["total"] == len(body["items"])
+        return {c["id"]: c for c in body["items"]}
+
+    yes, no = bank("true"), bank("false")
+    assert yes and no and not set(yes) & set(no)
+    shown = {
+        c["id"]
+        for c in fixtures.load("candidates")
+        if c["fsp_id"]
+        and c["fsp_score"] is not None
+        and c["privacy"].get("show_fsp_achievements", True)
+    }
+    assert set(yes) <= shown
+    for card in yes.values():
+        assert card["has_fsp"] is True and card["fsp_badges"] and card["fsp_score"] is not None
+    # 6 — скрыл достижения, 22 — ФСП ID без истории: оба «нет», бейджа участия нет
+    for cid in (6, 22):
+        assert cid in no
+        assert no[cid]["has_fsp"] is False
+        assert no[cid]["fsp_badges"] == [] and no[cid]["fsp_score"] is None
+    assert all(c["has_fsp"] is False for c in no.values())
+    profile = client.get("/api/candidates/6", headers=RECRUITER).json()
+    assert profile["has_fsp"] is False and profile["fsp_badges"] == []
+
+
 def test_dashboard_from_db(client: TestClient) -> None:
     dashboard = client.get("/api/candidates/me/dashboard", headers=CANDIDATE).json()
     unread = [
-        i
-        for i in fixtures.load("invitations")
-        if i["candidate_id"] == 1 and i["status"] == "sent"
+        i for i in fixtures.load("invitations") if i["candidate_id"] == 1 and i["status"] == "sent"
     ]
     assert dashboard["new_invitations_count"] == len(unread)
     assert (
