@@ -31,7 +31,7 @@ export const FSP_LEVEL_LABELS: Record<S['FspLevel'], string> = {
 export const APPLICATION_STATUS: Record<S['ApplicationStatus'], { label: string; tone: Tone; hint: string }> = {
   new: { label: 'Отправлен', tone: 'info', hint: 'Работодатель ещё не открыл отклик' },
   viewed: { label: 'Просмотрен', tone: 'violet', hint: 'Работодатель посмотрел ваш профиль' },
-  invited: { label: 'Приглашение', tone: 'success', hint: 'Работодатель хочет пообщаться — контакты у него есть' },
+  invited: { label: 'Приглашение', tone: 'success', hint: 'Работодатель хочет пообщаться' },
   rejected: { label: 'Отказ', tone: 'neutral', hint: 'Работодатель выбрал другого кандидата' },
 }
 

@@ -1392,6 +1392,13 @@ export const recruiterHandlers: HttpHandler[] = [
       if (!body.status || !['new', 'viewed', 'invited', 'rejected'].includes(body.status)) {
         return validationError({ status: 'Неизвестный статус отклика' })
       }
+      if (body.status === 'invited' && a.status !== 'invited') {
+        // приглашая, рекрутер указывает способ связи — кандидат увидит его в отклике
+        const cm = body.contact_method
+        if (!cm || !cm.value || cm.value.trim().length < 2) return validationError({ contact_method: 'Укажите контакт для связи' })
+        a.contact_method = { type: cm.type, value: cm.value.trim() }
+        a.invite_message = body.message?.trim() || null
+      }
       a.status = body.status
       a.updated_at = db.now()
       db.save()

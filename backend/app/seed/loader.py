@@ -369,6 +369,9 @@ def _rows_applications(ctx: SeedContext) -> list[Record]:
             "candidate_id": r["candidate_id"],
             "cover_letter": r.get("cover_letter", ""),
             "status": r["status"],
+            "contact_type": (r.get("contact_method") or {}).get("type"),
+            "contact_value": (r.get("contact_method") or {}).get("value"),
+            "invite_message": r.get("invite_message", ""),
             "created_at": _dt(r["created_at"]),
             "updated_at": _dt(r.get("updated_at") or r["created_at"]),
         }

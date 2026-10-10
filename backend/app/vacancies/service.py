@@ -9,6 +9,8 @@
 - кандидат откликнулся сам — компания сразу видит его контакты; раскрытие пишется в `audit_log`;
 - статусы отклика `new → viewed → invited / rejected`, назад к `new`/`viewed` нельзя (409);
   `invited` ↔ `rejected` — исправление решения рекрутера;
+- приглашая, рекрутер указывает способ связи (обязательно) и сообщение; кандидат видит их
+  в отклике и в письме, пока статус `invited` [ТЗ 2.2 п.2 — как в приглашении];
 - письма (рекрутерам — о новом отклике, кандидату — о смене статуса) роутер шлёт в фоне.
 """
 
@@ -24,7 +26,7 @@ from app.admin.audit import write_audit
 from app.candidates.service import to_card, to_contacts
 from app.catalog.clock import as_msk, now_msk
 from app.catalog.repository import CatalogDb
-from app.common.enums import ApplicationStatus, Role, VacancyStatus
+from app.common.enums import ApplicationStatus, ContactMethodType, Role, VacancyStatus
 from app.common.fixtures import Record
 from app.companies.antifraud import ensure_company_active
 from app.companies.models import Company
@@ -71,6 +73,12 @@ CANDIDATE_STATUS_TEXT = {
     A.viewed: "работодатель посмотрел ваш отклик",
     A.invited: "работодатель приглашает вас пообщаться — ваши контакты у него есть",
     A.rejected: "работодатель выбрал другого кандидата",
+}
+CONTACT_TYPE_TEXT = {
+    ContactMethodType.email: "почта",
+    ContactMethodType.phone: "телефон",
+    ContactMethodType.telegram: "Telegram",
+    ContactMethodType.other: "контакт",
 }
 
 
@@ -337,6 +345,12 @@ class VacancyService:
             "company_name": company_name,
             "cover_letter": app.cover_letter or "",
             "status": app.status,
+            "contact_method": (
+                {"type": app.contact_type, "value": app.contact_value}
+                if app.contact_type and app.contact_value
+                else None
+            ),
+            "invite_message": app.invite_message or None,
             "created_at": as_msk(app.created_at),
             "updated_at": as_msk(app.updated_at),
             "candidate": None,
@@ -345,8 +359,14 @@ class VacancyService:
 
     async def _app_views(self, rows: list[ApplicationRow], role: Role) -> list[dict[str, Any]]:
         """Отклики для API пачкой. Рекрутеру — карточка (категория, θ, темы теста) и контакты:
-        кандидат откликнулся сам [ТЗ 2.1]. Кандидату — только сам отклик."""
+        кандидат откликнулся сам [ТЗ 2.1]. Кандидату — только сам отклик, а способ связи
+        и сообщение рекрутера — пока его приглашают (после отказа их не видно)."""
         data = [self._app_record(r) for r in rows]
+        if role != Role.recruiter:
+            for d in data:
+                if d["status"] != A.invited:
+                    d["contact_method"] = None
+                    d["invite_message"] = None
         if role == Role.recruiter:
             cands = await self.pool.records(list({d["candidate_id"] for d in data}))
             for d in data:
@@ -436,7 +456,12 @@ class VacancyService:
         )
 
     async def update_application(
-        self, application_id: int, user: CurrentUser, new_status: ApplicationStatus
+        self,
+        application_id: int,
+        user: CurrentUser,
+        new_status: ApplicationStatus,
+        contact: tuple[ContactMethodType, str] | None = None,
+        message: str = "",
     ) -> dict[str, Any]:
         row = await self.db.application_row(application_id)
         if row is None or user.company_id is None or row[1].company_id != user.company_id:
@@ -453,6 +478,17 @@ class VacancyService:
                 f"в «{APPLICATION_STATUS_LABELS[new_status]}»",
                 {"from": current.value, "to": new_status.value},
             )
+        if new_status == A.invited:
+            if contact is None or len(contact[1].strip()) < 2:
+                raise AppError(
+                    422,
+                    "validation_error",
+                    "Укажите способ связи — кандидат увидит его в отклике",
+                    {"fields": {"contact_method": "Укажите контакт для связи"}},
+                )
+            app.contact_type = contact[0].value
+            app.contact_value = contact[1].strip()
+            app.invite_message = message.strip()
         app.status = new_status.value
         app.updated_at = now_msk()
         await self.session.commit()
@@ -491,13 +527,19 @@ class VacancyService:
             return
         status = ApplicationStatus(app.status)
         link = f"{get_settings().public_frontend_url}/candidate/applications"
+        extra = ""
+        if status == A.invited and app.contact_type and app.contact_value:
+            kind = CONTACT_TYPE_TEXT.get(ContactMethodType(app.contact_type), "контакт")
+            extra = f"\n\nКак связаться с рекрутером ({kind}): {app.contact_value}"
+            if app.invite_message:
+                extra += f"\nСообщение рекрутера: {app.invite_message}"
         self.outbox.append(
             Mail(
                 to=cand["email"],
                 subject=f"Отклик на «{vacancy.title}»: {APPLICATION_STATUS_LABELS[status]}",
                 text=(
                     f"Здравствуйте!\n\nВаш отклик на вакансию «{vacancy.title}» "
-                    f"в компании «{company}»: {CANDIDATE_STATUS_TEXT[status]}.\n\n"
+                    f"в компании «{company}»: {CANDIDATE_STATUS_TEXT[status]}.{extra}\n\n"
                     f"Мои отклики: {link}\n— ФСП · Таланты"
                 ),
             )

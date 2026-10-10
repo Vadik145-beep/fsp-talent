@@ -62,8 +62,22 @@ def apply(
     return response.json()
 
 
-def set_status(client: TestClient, app_id: int, status: str, headers: dict[str, str]) -> Any:
-    return client.patch(f"/api/applications/{app_id}", json={"status": status}, headers=headers)
+TG = {"type": "telegram", "value": "@hr_taiga"}
+
+
+def set_status(
+    client: TestClient,
+    app_id: int,
+    status: str,
+    headers: dict[str, str],
+    contact: dict[str, str] | None = None,
+    message: str = "",
+) -> Any:
+    body: dict[str, Any] = {"status": status}
+    if status == "invited":  # приглашая, рекрутер указывает способ связи
+        body["contact_method"] = contact or TG
+        body["message"] = message
+    return client.patch(f"/api/applications/{app_id}", json=body, headers=headers)
 
 
 def my_status(client: TestClient, app_id: int, headers: dict[str, str] = CANDIDATE) -> str:
@@ -244,6 +258,72 @@ def test_status_flow_visible_to_both_sides(client: TestClient, mails: list[dict[
 
     updated = sql_sync("SELECT status FROM applications WHERE id = :id", {"id": app_id})
     assert updated[0][0] == "rejected"
+
+
+def mine(client: TestClient, app_id: int, headers: dict[str, str] = CANDIDATE) -> Any:
+    return next(
+        a for a in client.get("/api/applications", headers=headers).json() if a["id"] == app_id
+    )
+
+
+def test_invite_needs_contact(client: TestClient) -> None:
+    app_id = apply(client, 7)["id"]
+    url = f"/api/applications/{app_id}"
+    no_contact = client.patch(url, json={"status": "invited"}, headers=RECRUITER_C3)
+    assert no_contact.status_code == 422
+    assert no_contact.json()["details"]["fields"]["contact_method"]
+    short = client.patch(
+        url,
+        json={"status": "invited", "contact_method": {"type": "phone", "value": " 1"}},
+        headers=RECRUITER_C3,
+    )
+    assert short.status_code == 422
+    assert my_status(client, app_id) == "new"  # статус не сменился
+    # для остальных статусов способ связи не нужен
+    assert set_status(client, app_id, "viewed", RECRUITER_C3).status_code == 200
+
+
+def test_invite_contact_visible_to_candidate_only_while_invited(
+    client: TestClient, mails: list[dict[str, str]]
+) -> None:
+    app_id = apply(client, 7)["id"]
+    before = mine(client, app_id)
+    assert before["contact_method"] is None and before["invite_message"] is None
+    mails.clear()
+
+    invited = set_status(
+        client, app_id, "invited", RECRUITER_C3, TG, "  Созвонимся в четверг в 15:00?  "
+    )
+    assert invited.status_code == 200, invited.text
+    assert invited.json()["contact_method"] == TG  # рекрутер видит, что оставил
+    seen = mine(client, app_id)
+    assert seen["contact_method"] == TG
+    assert seen["invite_message"] == "Созвонимся в четверг в 15:00?"
+    # письмо кандидату — с контактом и сообщением
+    assert len(mails) == 1
+    assert "@hr_taiga" in mails[0]["text"] and "Созвонимся в четверг" in mails[0]["text"]
+    assert "Telegram" in mails[0]["text"]
+
+    # передумал — кандидат контакт больше не видит, рекрутер видит
+    set_status(client, app_id, "rejected", RECRUITER_C3)
+    after = mine(client, app_id)
+    assert after["contact_method"] is None and after["invite_message"] is None
+    assert "@hr_taiga" not in mails[-1]["text"]
+    apps = client.get("/api/vacancies/7/applications", headers=RECRUITER_C3).json()
+    assert next(a for a in apps if a["id"] == app_id)["contact_method"] == TG
+
+    # снова пригласил с другим контактом — кандидат видит новый
+    phone = {"type": "phone", "value": "+7 900 000-00-00"}
+    set_status(client, app_id, "invited", RECRUITER_C3, phone)
+    again = mine(client, app_id)
+    assert again["contact_method"] == phone and again["invite_message"] is None
+
+
+def test_seed_invited_application_has_contact(client: TestClient) -> None:
+    seeded = mine(client, 2)  # «Middle Python-разработчик», кандидат 1 — приглашён
+    assert seeded["status"] == "invited"
+    assert seeded["contact_method"] == {"type": "telegram", "value": "@hr_belova"}
+    assert seeded["invite_message"]
 
 
 def test_unknown_status_is_422(client: TestClient) -> None:

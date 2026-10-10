@@ -62,6 +62,10 @@ class Application(TimestampMixin, Base):
     )
     cover_letter: Mapped[str] = mapped_column(Text, default="")
     status: Mapped[str] = mapped_column(String(16))  # new|viewed|invited|rejected
+    # способ связи и сообщение рекрутера при приглашении (миграция 0009)
+    contact_type: Mapped[str | None] = mapped_column(String(16))  # email|phone|telegram|other
+    contact_value: Mapped[str | None] = mapped_column(String(200))
+    invite_message: Mapped[str] = mapped_column(Text, default="", server_default="")
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )

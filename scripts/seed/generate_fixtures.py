@@ -606,7 +606,12 @@ def badges_for(achs: list[J]) -> list[J]:
         on_level = [a for a in achs if a["level"] == level]
         if any(a["place"] == 1 for a in on_level):
             badges.append(
-                {"id": f"{level}_winner", "title": LEVEL_WINNER[level], "level": level, "verified": True}
+                {
+                    "id": f"{level}_winner",
+                    "title": LEVEL_WINNER[level],
+                    "level": level,
+                    "verified": True,
+                }
             )
         elif any(is_prize(a) for a in on_level):
             badges.append(
@@ -618,7 +623,9 @@ def badges_for(achs: list[J]) -> list[J]:
                 }
             )
     if any((a["role"] or "").startswith("Капитан") for a in achs):
-        badges.append({"id": "captain", "title": "Капитан команды", "level": None, "verified": True})
+        badges.append(
+            {"id": "captain", "title": "Капитан команды", "level": None, "verified": True}
+        )
     if len(achs) >= 2:
         badges.append(
             {
@@ -2171,6 +2178,11 @@ def build_invitations() -> None:
                 ),
             }
         )
+        if status == "invited":  # приглашая, рекрутер оставляет способ связи и пару слов
+            APPLICATIONS[-1]["contact_method"] = {"type": "telegram", "value": "@hr_belova"}
+            APPLICATIONS[-1]["invite_message"] = (
+                "Добрый день! Давайте созвонимся на 30 минут — напишите в Telegram, когда удобно."
+            )
         vac["applications_count"] += 1
 
 

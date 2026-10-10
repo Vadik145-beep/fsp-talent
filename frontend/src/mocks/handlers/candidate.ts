@@ -1597,6 +1597,9 @@ export const candidateHandlers: HttpHandler[] = [
       (c) =>
         latest(T.applications().filter((a) => a.candidate_id === c.id), (a) => a.created_at).map((a) => ({
           ...a,
+          // способ связи и сообщение рекрутера — только пока кандидата приглашают
+          contact_method: a.status === 'invited' ? (a.contact_method ?? null) : null,
+          invite_message: a.status === 'invited' ? (a.invite_message ?? null) : null,
           candidate: null,
           candidate_contacts: null,
         })),

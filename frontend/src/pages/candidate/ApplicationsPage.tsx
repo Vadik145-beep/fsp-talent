@@ -3,6 +3,7 @@ import { Send } from 'lucide-react'
 import { formatDate } from '@/shared/lib/format'
 import { Badge, Card, EmptyState, PageHeader } from '@/shared/ui'
 import { useApplications } from './api'
+import { InviteContact } from './components/InviteContact'
 import { QueryView } from './components/QueryView'
 import { APPLICATION_STATUS } from './labels'
 
@@ -48,6 +49,7 @@ export default function ApplicationsPage() {
                       </Badge>
                     </div>
                     <p className="mt-2 text-sm text-muted">{st.hint}</p>
+                    {a.status === 'invited' && <InviteContact contact={a.contact_method} message={a.invite_message} />}
                     {a.cover_letter && (
                       <p className="mt-3 line-clamp-2 rounded-md bg-surface-muted p-3 text-sm text-ink">«{a.cover_letter}»</p>
                     )}

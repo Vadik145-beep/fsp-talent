@@ -202,7 +202,8 @@ async def list_applications(user: CandidateOrRecruiter, session: SessionDep) -> 
     summary="Сменить статус отклика (рекрутер)",
     description=(
         "`new → viewed → invited / rejected`; назад к `new`/`viewed` нельзя, `invited` ↔ "
-        "`rejected` можно. Статус виден кандидату, ему уходит письмо."
+        "`rejected` можно. Статус виден кандидату, ему уходит письмо. При переходе в `invited` "
+        "обязателен `contact_method` (и необязательно `message`) — кандидат увидит их в отклике."
     ),
     responses=error_responses(
         *AUTH,
@@ -220,6 +221,9 @@ async def update_application(
 ) -> Any:
     new_status: ApplicationStatus = body.status
     service = VacancyService(session)
-    result = await service.update_application(application_id, user, new_status)
+    contact = (body.contact_method.type, body.contact_method.value) if body.contact_method else None
+    result = await service.update_application(
+        application_id, user, new_status, contact, body.message
+    )
     _flush_outbox(service, background)
     return result

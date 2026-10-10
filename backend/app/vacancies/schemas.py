@@ -15,6 +15,7 @@ from app.common.enums import (
     WorkFormat,
 )
 from app.common.schemas import ApiModel, OutModel, SalaryRangeMixin
+from app.invitations.schemas import ContactMethod, ContactMethodIn
 
 
 class VacancyFields(SalaryRangeMixin):
@@ -96,6 +97,14 @@ class ApplicationRecord(OutModel):
     company_name: str
     cover_letter: str = ""
     status: ApplicationStatus
+    contact_method: ContactMethod | None = Field(
+        default=None,
+        description="Как связаться с рекрутером. Кандидату — только при статусе `invited`",
+    )
+    invite_message: str | None = Field(
+        default=None,
+        description="Сообщение рекрутера при приглашении. Кандидату — только при `invited`",
+    )
     created_at: datetime
     updated_at: datetime
 
@@ -108,6 +117,23 @@ class Application(ApplicationRecord):
 
 
 class ApplicationStatusUpdate(ApiModel):
-    model_config = ConfigDict(json_schema_extra={"examples": [{"status": "viewed"}]})
+    """Смена статуса. Для `invited` нужен способ связи — кандидат увидит его в отклике."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {"status": "viewed"},
+                {
+                    "status": "invited",
+                    "contact_method": {"type": "telegram", "value": "@hr_severny_kod"},
+                    "message": "Созвонимся в четверг в 15:00?",
+                },
+            ]
+        }
+    )
 
     status: ApplicationStatus
+    contact_method: ContactMethodIn | None = Field(
+        default=None, description="Обязателен при переходе в `invited`"
+    )
+    message: str = Field(default="", max_length=1000, description="Сообщение кандидату")

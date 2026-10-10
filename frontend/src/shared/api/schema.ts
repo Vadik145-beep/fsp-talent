@@ -1433,7 +1433,7 @@ export interface paths {
         head?: never;
         /**
          * Сменить статус отклика (рекрутер)
-         * @description `new → viewed → invited / rejected`; назад к `new`/`viewed` нельзя, `invited` ↔ `rejected` можно. Статус виден кандидату, ему уходит письмо.
+         * @description `new → viewed → invited / rejected`; назад к `new`/`viewed` нельзя, `invited` ↔ `rejected` можно. Статус виден кандидату, ему уходит письмо. При переходе в `invited` обязателен `contact_method` (и необязательно `message`) — кандидат увидит их в отклике.
          */
         patch: operations["update_application_api_applications__application_id__patch"];
         trace?: never;
@@ -2566,6 +2566,13 @@ export interface components {
              */
             cover_letter: string;
             status: components["schemas"]["ApplicationStatus"];
+            /** @description Как связаться с рекрутером. Кандидату — только при статусе `invited` */
+            contact_method?: components["schemas"]["ContactMethod"] | null;
+            /**
+             * Invite Message
+             * @description Сообщение рекрутера при приглашении. Кандидату — только при `invited`
+             */
+            invite_message?: string | null;
             /**
              * Created At
              * Format: date-time
@@ -2615,12 +2622,29 @@ export interface components {
         ApplicationStatus: "new" | "viewed" | "invited" | "rejected";
         /**
          * ApplicationStatusUpdate
+         * @description Смена статуса. Для `invited` нужен способ связи — кандидат увидит его в отклике.
          * @example {
          *       "status": "viewed"
+         *     }
+         * @example {
+         *       "contact_method": {
+         *         "type": "telegram",
+         *         "value": "@hr_severny_kod"
+         *       },
+         *       "message": "Созвонимся в четверг в 15:00?",
+         *       "status": "invited"
          *     }
          */
         ApplicationStatusUpdate: {
             status: components["schemas"]["ApplicationStatus"];
+            /** @description Обязателен при переходе в `invited` */
+            contact_method?: components["schemas"]["ContactMethodIn"] | null;
+            /**
+             * Message
+             * @description Сообщение кандидату
+             * @default
+             */
+            message: string;
         };
         /**
          * AuditEntry
