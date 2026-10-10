@@ -24,13 +24,13 @@ describe('экраны соискателя', () => {
 
   it('приглашение: отклонить с причиной', async () => {
     const user = userEvent.setup()
-    renderApp('/candidate/invitations/4', { role: 'candidate' })
+    renderApp('/candidate/invitations/21', { role: 'candidate' })
     await user.click(await screen.findByRole('button', { name: 'Отклонить' }, T))
     const dialog = await screen.findByRole('dialog')
     await user.click(await within(dialog).findByLabelText('Не тот стек', {}, T))
     await user.click(within(dialog).getByRole('button', { name: 'Отклонить' }))
     expect(await screen.findByText('Вы отклонили приглашение', {}, T)).toBeInTheDocument()
-    expect(db.data.invitations.find((i) => i.id === 4)?.decline_reason).toBe('wrong_stack')
+    expect(db.data.invitations.find((i) => i.id === 21)?.decline_reason).toBe('wrong_stack')
   }, 20_000)
 
   it('категория и грейд: при кулдауне кнопки неактивны и видна дата', async () => {

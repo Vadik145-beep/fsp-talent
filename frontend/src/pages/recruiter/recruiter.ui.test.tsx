@@ -29,11 +29,11 @@ describe('экраны рекрутера', () => {
     const user = userEvent.setup()
     const { router } = renderApp('/recruiter/needs/1?skills=kafka', { role: 'recruiter' })
     const summary = await screen.findByTestId('match-summary', {}, WAIT)
-    await waitFor(() => expect(summary).toHaveTextContent('Показано 1 из 3'), WAIT)
-    expect(screen.getAllByTestId('match-card')).toHaveLength(1)
+    await waitFor(() => expect(summary).toHaveTextContent('Показано 4 из 18'), WAIT)
+    expect(screen.getAllByTestId('match-card')).toHaveLength(4)
     await user.click(screen.getByRole('button', { name: 'Вернуть исходную подборку' }))
-    await waitFor(() => expect(screen.getByTestId('match-summary')).toHaveTextContent('3 кандидата'), WAIT)
-    expect(screen.getAllByTestId('match-card')).toHaveLength(3)
+    await waitFor(() => expect(screen.getByTestId('match-summary')).toHaveTextContent('18 кандидатов'), WAIT)
+    expect(screen.getAllByTestId('match-card')).toHaveLength(18)
     expect(router.state.location.search).not.toContain('skills')
     // «Почему в подборке» и полоски счёта — у каждой карточки.
     for (const card of screen.getAllByTestId('match-card')) {

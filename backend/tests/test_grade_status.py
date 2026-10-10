@@ -31,9 +31,17 @@ def _fresh_db() -> None:
 
 
 def bank_ids(client: TestClient, **params: Any) -> set[int]:
-    r = client.get("/api/candidates", params={"page_size": 100, **params}, headers=RECRUITER)
-    assert r.status_code == 200, r.text
-    return {c["id"] for c in r.json()["items"]}
+    """id всех кандидатов банка по фильтру (с листанием: в демо-базе больше 100 кандидатов)."""
+    ids: set[int] = set()
+    page = 1
+    while True:
+        query = {"page_size": 100, "page": page, **params}
+        r = client.get("/api/candidates", params=query, headers=RECRUITER)
+        assert r.status_code == 200, r.text
+        ids |= {c["id"] for c in r.json()["items"]}
+        if page * 100 >= r.json()["total"]:
+            return ids
+        page += 1
 
 
 def qa_need(client: TestClient) -> dict[str, Any]:

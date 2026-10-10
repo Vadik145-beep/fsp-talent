@@ -240,6 +240,11 @@ def test_create_distribute_answer_grade(client: TestClient) -> None:
 
 def test_three_offers_from_different_companies(client: TestClient) -> None:
     clear_offers(1)
+    # второе задание «Северного кода» в Backend · Middle — в архив: остаётся только решённое
+    sql_sync(
+        "UPDATE regular_tasks SET status = 'archived' WHERE company_id = 1 "
+        "AND category = 'backend:middle' AND title = 'Очередь платежей без потерь'"
+    )
     solved = {
         s["task_id"]
         for s in fixtures.load("task_submissions")
@@ -361,24 +366,45 @@ def test_grade_only_submitted(client: TestClient) -> None:
     assert res.status_code == 409 and res.json()["code"] == "invalid_transition"
 
 
+def demo_offer_ids() -> list[int]:
+    """Задачи недели демо-соискателя (кандидат 1) в фикстурах."""
+    return [
+        s["id"]
+        for s in fixtures.load("task_submissions")
+        if s["candidate_id"] == 1 and s["status"] == "assigned"
+    ]
+
+
+def overdue_demo_offers() -> None:
+    sql_sync(
+        "UPDATE task_submissions SET due_at = now() - interval '1 hour' "
+        "WHERE candidate_id = 1 AND status = 'assigned'"
+    )
+
+
 def test_expired_submission(client: TestClient) -> None:
-    sql_sync("UPDATE task_submissions SET due_at = now() - interval '1 hour' WHERE id = 3")
+    overdue_demo_offers()
+    sid = demo_offer_ids()[0]
     late = client.post(
-        "/api/tasks/submissions/3/answer",
+        f"/api/tasks/submissions/{sid}/answer",
         json={"answer_kind": "text", "answer_text": "Поздно"},
         headers=CANDIDATE,
     )
     assert late.status_code == 409 and late.json()["code"] == "submission_expired"
-    assert sql_sync("SELECT status FROM task_submissions WHERE id = 3")[0][0] == "expired"
+    assert sql_sync("SELECT status FROM task_submissions WHERE id = :i", {"i": sid})[0][0] == (
+        "expired"
+    )
     inbox = client.get("/api/tasks/inbox", headers=CANDIDATE).json()
-    assert inbox["offers"] == [] and all(s["id"] != 3 for s in inbox["history"])
+    assert inbox["offers"] == [] and all(s["id"] != sid for s in inbox["history"])
 
 
 def test_inbox_expires_overdue(client: TestClient) -> None:
-    sql_sync("UPDATE task_submissions SET due_at = now() - interval '1 hour' WHERE id = 3")
+    overdue_demo_offers()
     inbox = client.get("/api/tasks/inbox", headers=CANDIDATE).json()
     assert inbox["offers"] == []
-    assert sql_sync("SELECT status FROM task_submissions WHERE id = 3")[0][0] == "expired"
+    for sid in demo_offer_ids():
+        status = sql_sync("SELECT status FROM task_submissions WHERE id = :i", {"i": sid})
+        assert status[0][0] == "expired"
 
 
 def test_validation_and_roles(client: TestClient) -> None:

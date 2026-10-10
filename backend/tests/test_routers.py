@@ -268,7 +268,8 @@ def test_tasks(client: TestClient) -> None:
 
 def test_admin(client: TestClient) -> None:
     dashboard = client.get("/api/admin/dashboard", headers=ADMIN).json()
-    assert dashboard["users_by_role"]["candidate"] == 40
+    candidates = sum(1 for u in fixtures.load("users") if u["role"] == "candidate")
+    assert dashboard["users_by_role"]["candidate"] == candidates
     assert dashboard["leak_flags"]
     users = client.get("/api/admin/users", params={"role": "recruiter"}, headers=ADMIN).json()
     assert users["total"] == 7

@@ -59,8 +59,16 @@ def fresh_db() -> None:
 
 
 def _bank_ids(client: TestClient, headers: dict[str, str] = RECRUITER) -> set[int]:
-    body = client.get("/api/candidates", params={"page_size": 100}, headers=headers).json()
-    return {c["id"] for c in body["items"]}
+    """id всех кандидатов банка (с листанием: в демо-базе больше 100 кандидатов)."""
+    ids: set[int] = set()
+    page = 1
+    while True:
+        query = {"page_size": 100, "page": page}
+        body = client.get("/api/candidates", params=query, headers=headers).json()
+        ids |= {c["id"] for c in body["items"]}
+        if page * 100 >= body["total"]:
+            return ids
+        page += 1
 
 
 def test_profile_read_from_db_equals_fixture(client: TestClient) -> None:
@@ -128,11 +136,12 @@ def test_privacy_changes_anonymous_profile(client: TestClient, fresh_db: None) -
     assert after["city"] is None and after["experience_years"] is None
     assert after["links"] is not None
     assert after["fsp_score"] is None and after["fsp_badges"] == []
+    category = fixtures.by_id("candidates", 14)["category"]  # type: ignore[index]
     card = next(
         c
-        for c in client.get("/api/candidates", params={"page_size": 100}, headers=RECRUITER).json()[
-            "items"
-        ]
+        for c in client.get(
+            "/api/candidates", params={"category": category, "page_size": 100}, headers=RECRUITER
+        ).json()["items"]
         if c["id"] == 14
     )
     assert card["city"] is None
@@ -220,9 +229,7 @@ def test_bank_filters_and_sort(client: TestClient) -> None:
 def test_dashboard_from_db(client: TestClient) -> None:
     dashboard = client.get("/api/candidates/me/dashboard", headers=CANDIDATE).json()
     unread = [
-        i
-        for i in fixtures.load("invitations")
-        if i["candidate_id"] == 1 and i["status"] == "sent"
+        i for i in fixtures.load("invitations") if i["candidate_id"] == 1 and i["status"] == "sent"
     ]
     assert dashboard["new_invitations_count"] == len(unread)
     assert (

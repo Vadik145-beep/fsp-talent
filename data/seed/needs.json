@@ -23,7 +23,7 @@
     "category": "backend:middle",
     "category_label": "Backend · Middle",
     "status": "active",
-    "candidates_count": 3,
+    "candidates_count": 18,
     "created_at": "2026-09-30T12:00:00+03:00"
   },
   {
@@ -50,7 +50,7 @@
     "category": "backend:senior",
     "category_label": "Backend · Senior",
     "status": "active",
-    "candidates_count": 1,
+    "candidates_count": 14,
     "created_at": "2026-10-03T12:00:00+03:00"
   },
   {
@@ -77,7 +77,7 @@
     "category": "data_ml:junior",
     "category_label": "Data Science / ML · Junior",
     "status": "active",
-    "candidates_count": 2,
+    "candidates_count": 13,
     "created_at": "2026-09-28T12:00:00+03:00"
   },
   {
@@ -104,7 +104,7 @@
     "category": "qa:middle",
     "category_label": "QA · Middle",
     "status": "active",
-    "candidates_count": 1,
+    "candidates_count": 10,
     "created_at": "2026-10-02T12:00:00+03:00"
   },
   {
@@ -130,7 +130,34 @@
     "category": "devops:middle",
     "category_label": "DevOps · Middle",
     "status": "closed",
-    "candidates_count": 3,
+    "candidates_count": 10,
     "created_at": "2026-09-21T12:00:00+03:00"
+  },
+  {
+    "id": 6,
+    "company_id": 1,
+    "recruiter_id": 1,
+    "title": "Frontend-разработчик в личный кабинет банка",
+    "raw_text": "Ищем мидла на React и TypeScript в личный кабинет мобильного банка, удалёнка, 180–250к",
+    "specialization": "frontend",
+    "grade": "middle",
+    "skills_required": [
+      "react",
+      "typescript"
+    ],
+    "skills_desired": [
+      "redux",
+      "jest"
+    ],
+    "team_description": "Личный кабинет и платежи физлиц, команда 5 человек",
+    "work_format": "remote",
+    "city": null,
+    "salary_from": 180000,
+    "salary_to": 250000,
+    "category": "frontend:middle",
+    "category_label": "Frontend · Middle",
+    "status": "active",
+    "candidates_count": 15,
+    "created_at": "2026-10-04T12:00:00+03:00"
   }
 ]

@@ -147,5 +147,130 @@
     "status": "rejected",
     "created_at": "2026-10-02T11:00:00+03:00",
     "updated_at": "2026-10-02T20:00:00+03:00"
+  },
+  {
+    "id": 13,
+    "vacancy_id": 1,
+    "candidate_id": 56,
+    "vacancy_title": "Middle Python-разработчик",
+    "company_id": 1,
+    "company_name": "Северный код",
+    "cover_letter": "Добрый день! Стек совпадает с моим опытом, буду рад созвониться.",
+    "status": "viewed",
+    "created_at": "2026-10-04T10:00:00+03:00",
+    "updated_at": "2026-10-04T13:00:00+03:00"
+  },
+  {
+    "id": 14,
+    "vacancy_id": 1,
+    "candidate_id": 59,
+    "vacancy_title": "Middle Python-разработчик",
+    "company_id": 1,
+    "company_name": "Северный код",
+    "cover_letter": "Здравствуйте! Давно слежу за продуктом, хочу в команду. Удобно созвониться в будни после 17:00.",
+    "status": "new",
+    "created_at": "2026-10-03T11:00:00+03:00",
+    "updated_at": "2026-10-03T11:00:00+03:00"
+  },
+  {
+    "id": 15,
+    "vacancy_id": 1,
+    "candidate_id": 85,
+    "vacancy_title": "Middle Python-разработчик",
+    "company_id": 1,
+    "company_name": "Северный код",
+    "cover_letter": "Добрый день! Подхожу по грейду и стеку, тест на платформе пройден. Готов к тестовому заданию.",
+    "status": "viewed",
+    "created_at": "2026-10-02T12:00:00+03:00",
+    "updated_at": "2026-10-02T15:00:00+03:00"
+  },
+  {
+    "id": 16,
+    "vacancy_id": 2,
+    "candidate_id": 53,
+    "vacancy_title": "Senior Android-разработчик",
+    "company_id": 1,
+    "company_name": "Северный код",
+    "cover_letter": "Здравствуйте! Интересна вакансия, готов обсудить детали.",
+    "status": "viewed",
+    "created_at": "2026-10-01T13:00:00+03:00",
+    "updated_at": "2026-10-01T16:00:00+03:00"
+  },
+  {
+    "id": 17,
+    "vacancy_id": 2,
+    "candidate_id": 60,
+    "vacancy_title": "Senior Android-разработчик",
+    "company_id": 1,
+    "company_name": "Северный код",
+    "cover_letter": "Добрый день! Стек совпадает с моим опытом, буду рад созвониться.",
+    "status": "rejected",
+    "created_at": "2026-09-30T14:00:00+03:00",
+    "updated_at": "2026-09-30T17:00:00+03:00"
+  },
+  {
+    "id": 18,
+    "vacancy_id": 3,
+    "candidate_id": 52,
+    "vacancy_title": "Frontend-разработчик (React)",
+    "company_id": 1,
+    "company_name": "Северный код",
+    "cover_letter": "Здравствуйте! Давно слежу за продуктом, хочу в команду. Удобно созвониться в будни после 17:00.",
+    "status": "viewed",
+    "created_at": "2026-10-05T15:00:00+03:00",
+    "updated_at": "2026-10-05T18:00:00+03:00"
+  },
+  {
+    "id": 19,
+    "vacancy_id": 3,
+    "candidate_id": 71,
+    "vacancy_title": "Frontend-разработчик (React)",
+    "company_id": 1,
+    "company_name": "Северный код",
+    "cover_letter": "Добрый день! Подхожу по грейду и стеку, тест на платформе пройден. Готов к тестовому заданию.",
+    "status": "invited",
+    "created_at": "2026-10-04T16:00:00+03:00",
+    "updated_at": "2026-10-04T19:00:00+03:00",
+    "contact_method": {
+      "type": "email",
+      "value": "recruiter@example.com"
+    },
+    "invite_message": "Здравствуйте! Понравился ваш профиль — давайте созвонимся на 30 минут, напишите на почту удобное время."
+  },
+  {
+    "id": 20,
+    "vacancy_id": 4,
+    "candidate_id": 51,
+    "vacancy_title": "ML-инженер",
+    "company_id": 2,
+    "company_name": "Лаборатория данных «Вектор»",
+    "cover_letter": "Здравствуйте! Интересна вакансия, готов обсудить детали.",
+    "status": "new",
+    "created_at": "2026-10-03T17:00:00+03:00",
+    "updated_at": "2026-10-03T17:00:00+03:00"
+  },
+  {
+    "id": 21,
+    "vacancy_id": 4,
+    "candidate_id": 81,
+    "vacancy_title": "ML-инженер",
+    "company_id": 2,
+    "company_name": "Лаборатория данных «Вектор»",
+    "cover_letter": "Добрый день! Стек совпадает с моим опытом, буду рад созвониться.",
+    "status": "viewed",
+    "created_at": "2026-10-02T09:00:00+03:00",
+    "updated_at": "2026-10-02T12:00:00+03:00"
+  },
+  {
+    "id": 22,
+    "vacancy_id": 7,
+    "candidate_id": 141,
+    "vacancy_title": "DevOps-инженер",
+    "company_id": 3,
+    "company_name": "Облачные системы «Тайга»",
+    "cover_letter": "Здравствуйте! Давно слежу за продуктом, хочу в команду. Удобно созвониться в будни после 17:00.",
+    "status": "new",
+    "created_at": "2026-10-01T10:00:00+03:00",
+    "updated_at": "2026-10-01T10:00:00+03:00"
   }
 ]

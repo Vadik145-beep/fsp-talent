@@ -57,12 +57,13 @@ def test_search_results_are_anonymous(client: TestClient) -> None:
 
 def test_hidden_candidates_not_in_search(client: TestClient) -> None:
     # 37 — отозвал согласие на публикацию, 38 — пауза поиска, 39/40 — без теста
-    ids = {
-        c["id"]
-        for c in client.get("/api/candidates", params={"page_size": 100}, headers=RECRUITER).json()[
-            "items"
-        ]
-    }
+    ids: set[int] = set()
+    for page in (1, 2, 3):
+        body = client.get(
+            "/api/candidates", params={"page_size": 100, "page": page}, headers=RECRUITER
+        ).json()
+        ids |= {c["id"] for c in body["items"]}
+    assert len(ids) == body["total"]
     assert not ids & {37, 38, 39, 40}
     assert client.get("/api/candidates/37", headers=RECRUITER).status_code == 404
 

@@ -21,21 +21,22 @@ describe('моки соискателя: приглашения', () => {
     expect((await call('POST', '/invitations/2/accept')).status).toBe(409)
   })
 
+  // №21 — приглашение демо-соискателю со сроком до 20.11.2026 (не истекает на дату проверки)
   it('отклонение сохраняет причину и комментарий', async () => {
-    const res = await call<S['Invitation']>('POST', '/invitations/4/decline', {
+    const res = await call<S['Invitation']>('POST', '/invitations/21/decline', {
       body: { reason: 'salary_too_low', comment: 'Жду от 250 000' },
     })
     expect(res.status).toBe(200)
     expect(res.data.decline_reason_label).toBe('Мала зарплата')
-    expect(invitation(4).status).toBe('declined')
-    expect(invitation(4).decline_reason).toBe('salary_too_low')
-    expect(invitation(4).decline_comment).toBe('Жду от 250 000')
+    expect(invitation(21).status).toBe('declined')
+    expect(invitation(21).decline_reason).toBe('salary_too_low')
+    expect(invitation(21).decline_comment).toBe('Жду от 250 000')
   })
 
   it('без причины или «другое» без комментария — 422', async () => {
-    expect((await call('POST', '/invitations/4/decline', { body: {} })).status).toBe(422)
-    expect((await call('POST', '/invitations/4/decline', { body: { reason: 'other' } })).status).toBe(422)
-    expect(invitation(4).status).toBe('viewed')
+    expect((await call('POST', '/invitations/21/decline', { body: {} })).status).toBe(422)
+    expect((await call('POST', '/invitations/21/decline', { body: { reason: 'other' } })).status).toBe(422)
+    expect(invitation(21).status).toBe('sent')
   })
 
   it('открытие карточки переводит «отправлено» в «просмотрено»', async () => {
@@ -147,16 +148,16 @@ describe('моки соискателя: отклик и задание', () => 
 
   it('задачи недели: три от разных компаний, ответ на одну снимает остальные', async () => {
     const inbox = await call<S['TaskInbox']>('GET', '/tasks/inbox')
-    // задачу «Северного кода» в своей категории демо-кандидат уже решал — остаются две компании
-    expect(inbox.data.offers).toHaveLength(2)
-    expect(new Set(inbox.data.offers.map((o) => o.company_name)).size).toBe(2)
+    // в демо-данных у кандидата три задачи недели от трёх компаний
+    expect(inbox.data.offers).toHaveLength(3)
+    expect(new Set(inbox.data.offers.map((o) => o.company_name)).size).toBe(3)
     const [chosen, ...rest] = inbox.data.offers
     const res = await call<S['TaskSubmission']>('POST', `/tasks/submissions/${chosen.id}/answer`, {
       body: { answer_kind: 'approach', answer_text: 'Кэш с TTL и инвалидация по событию' },
     })
     expect(res.status).toBe(200)
     expect(res.data.status).toBe('submitted')
-    expect(rest.map((o) => db.data.task_submissions.find((s) => s.id === o.id)?.status)).toEqual(['skipped'])
+    expect(rest.map((o) => db.data.task_submissions.find((s) => s.id === o.id)?.status)).toEqual(['skipped', 'skipped'])
     const after = await call<S['TaskInbox']>('GET', '/tasks/inbox')
     expect(after.data.offers).toHaveLength(0)
     expect(after.data.answered_this_week).toBe(true)
