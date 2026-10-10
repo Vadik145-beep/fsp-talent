@@ -67,12 +67,12 @@ export function PublicationPrompt({ className, preview = true }: { className?: s
 
   return (
     <Card className={cn('border-warning/40', className)} data-testid="publication-off">
-      <div className={cn('grid items-start gap-5', preview && 'lg:grid-cols-[minmax(0,1fr)_20rem]')}>
+      <div className={cn('grid grid-cols-1 items-start gap-5', preview && 'lg:grid-cols-[minmax(0,1fr)_20rem]')}>
         <div className="flex gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-warning-soft text-warning">
+          <span className="hidden size-10 shrink-0 items-center justify-center rounded-lg bg-warning-soft text-warning sm:flex">
             <EyeOff className="size-5" aria-hidden />
           </span>
-          <div className="grid gap-2">
+          <div className="grid min-w-0 gap-2">
             <h2 className="text-lg font-bold text-ink">Профиль скрыт от работодателей</h2>
             <p className="text-[15px] text-ink">
               Вас нет в поиске: не дано согласие на публикацию профиля. Работодатель увидит только обезличенную карточку — без

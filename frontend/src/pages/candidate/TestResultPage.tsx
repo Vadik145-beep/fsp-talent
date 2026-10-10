@@ -86,7 +86,7 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
   const showClaim = hasClaim(claim) && (!claim.specialization || claim.specialization.value === r.specialization)
 
   return (
-    <div className="grid gap-5">
+    <div className="grid grid-cols-1 gap-5">
       {/* Категория */}
       <Card padding="lg" className={r.passed ? 'border-success/30' : 'border-warning/30'}>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
