@@ -35,6 +35,7 @@ ORDER = [
     "api_endpoints.md",
     "07_libraries.md",
     "08_deployment.md",
+    "09_llm.md",
 ]
 REPO_URL = "https://github.com/Vadik145-beep/fsp-talent/blob/main/"
 MERMAID = re.compile(r"```mermaid\n(.*?)```", re.S)
