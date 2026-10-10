@@ -3491,9 +3491,10 @@ export interface components {
             type: components["schemas"]["ContactMethodType"];
             /**
              * Value
+             * @description Кандидату — только после принятия, до этого null
              * @example @hr_severny_kod
              */
-            value: string;
+            value?: string | null;
         };
         /** ContactMethodIn */
         ContactMethodIn: {
@@ -4061,8 +4062,17 @@ export interface components {
             /** Salary To */
             salary_to: number;
             contact_method: components["schemas"]["ContactMethod"];
-            /** Task Text */
+            /**
+             * Task Text
+             * @description Кандидату — только после принятия, до этого null
+             */
             task_text?: string | null;
+            /**
+             * Has Task Text
+             * @description Есть ли вопрос к созвону
+             * @default false
+             */
+            has_task_text: boolean;
             status: components["schemas"]["InvitationStatus"];
             decline_reason?: components["schemas"]["DeclineReason"] | null;
             /** Decline Comment */
@@ -4209,8 +4219,17 @@ export interface components {
             /** Salary To */
             salary_to: number;
             contact_method: components["schemas"]["ContactMethod"];
-            /** Task Text */
+            /**
+             * Task Text
+             * @description Кандидату — только после принятия, до этого null
+             */
             task_text?: string | null;
+            /**
+             * Has Task Text
+             * @description Есть ли вопрос к созвону
+             * @default false
+             */
+            has_task_text: boolean;
             status: components["schemas"]["InvitationStatus"];
             decline_reason?: components["schemas"]["DeclineReason"] | null;
             /** Decline Comment */

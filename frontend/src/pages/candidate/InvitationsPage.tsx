@@ -110,7 +110,7 @@ function InvitationRow({ inv }: { inv: Invitation }) {
           <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-muted">
             <span>{inv.category_label}</span>
             <span>Связь: {CONTACT_TYPE_LABELS[inv.contact_method.type]}</span>
-            {inv.task_text && (
+            {inv.has_task_text && (
               <span className="inline-flex items-center gap-1">
                 <MessagesSquare className="size-3.5" aria-hidden /> Есть вопрос к созвону
               </span>

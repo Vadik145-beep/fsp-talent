@@ -26,7 +26,10 @@ type CandidateRow = S['CandidateProfile'] & {
   _fsp_synced_at?: string | null
   _fsp_backup?: { fsp_id: string; fsp_score: number | null; fsp_badges: S['FspBadge'][] } | null
 }
-type InvitationRow = Omit<S['Invitation'], 'candidate' | 'candidate_contacts' | 'recruiter_contacts' | 'decline_reason_label'>
+type InvitationRow = Omit<
+  S['Invitation'],
+  'candidate' | 'candidate_contacts' | 'recruiter_contacts' | 'decline_reason_label' | 'has_task_text'
+>
 type EventRow = S['InvitationEvent']
 type VacancyRow = S['Vacancy']
 type ApplicationRow = Omit<S['Application'], 'candidate' | 'candidate_contacts'>
@@ -422,12 +425,17 @@ function declineLabel(reason: S['DeclineReason'] | null | undefined) {
 
 function invitationView(inv: InvitationRow): S['Invitation'] {
   const recruiter = T.recruiters().find((r) => r.id === inv.recruiter_id)
+  const accepted = inv.status === 'accepted'
   return {
     ...inv,
+    // как на бэкенде: контакт рекрутера и вопрос к созвону — после принятия
+    contact_method: { type: inv.contact_method.type, value: accepted ? inv.contact_method.value : null },
+    task_text: accepted ? inv.task_text : null,
+    has_task_text: Boolean(inv.task_text),
     candidate: null,
     candidate_contacts: null,
     recruiter_contacts:
-      inv.status === 'accepted' && recruiter
+      accepted && recruiter
         ? {
             full_name: recruiter.full_name,
             position: recruiter.position,

@@ -3,7 +3,9 @@
 Одна схема `Invitation` для обеих сторон; поля заполняются по роли:
 - `candidate` (обезличенная карточка) — только рекрутеру;
 - `candidate_contacts` — рекрутеру и только при статусе `accepted`;
-- `recruiter_contacts` — кандидату и только при статусе `accepted`.
+- `recruiter_contacts` — кандидату и только при статусе `accepted`;
+- `contact_method.value` и `task_text` — кандидату только при статусе `accepted`
+  (до этого `null`; что вопрос к созвону есть — видно по `has_task_text`).
 """
 
 from datetime import datetime
@@ -25,7 +27,12 @@ from app.companies.schemas import Quota, RecruiterContacts
 
 class ContactMethod(OutModel):
     type: ContactMethodType
-    value: str = Field(max_length=200, examples=["@hr_severny_kod"])
+    value: str | None = Field(
+        default=None,
+        max_length=200,
+        examples=["@hr_severny_kod"],
+        description="Кандидату — только после принятия, до этого null",
+    )
 
 
 class ContactMethodIn(ApiModel):
@@ -87,7 +94,10 @@ class InvitationRecord(OutModel):
     salary_from: int
     salary_to: int
     contact_method: ContactMethod
-    task_text: str | None = None
+    task_text: str | None = Field(
+        default=None, description="Кандидату — только после принятия, до этого null"
+    )
+    has_task_text: bool = Field(default=False, description="Есть ли вопрос к созвону")
     status: InvitationStatus
     decline_reason: DeclineReason | None = None
     decline_comment: str | None = None

@@ -134,7 +134,7 @@ function InvitationView({ inv }: { inv: InvitationDetail }) {
           </div>
         </Card>
 
-        {inv.task_text && (
+        {inv.has_task_text && (
           <Card>
             <CardHeader
               title={
@@ -142,9 +142,19 @@ function InvitationView({ inv }: { inv: InvitationDetail }) {
                   <MessagesSquare className="size-5 text-fsp-plum" aria-hidden /> Вопрос к созвону
                 </span>
               }
-              description="Подумайте заранее — рекрутер обсудит это с вами на созвоне."
+              description={
+                inv.task_text
+                  ? 'Подумайте заранее — рекрутер обсудит это с вами на созвоне.'
+                  : 'Рекрутер подготовил вопрос, который обсудит с вами на созвоне.'
+              }
             />
-            <p className="rounded-md bg-surface-muted p-3 text-[15px] text-ink">{inv.task_text}</p>
+            {inv.task_text ? (
+              <p className="rounded-md bg-surface-muted p-3 text-[15px] text-ink">{inv.task_text}</p>
+            ) : (
+              <p className="inline-flex items-center gap-1 text-sm text-muted">
+                <Lock className="size-3.5" aria-hidden /> Откроется после принятия
+              </p>
+            )}
           </Card>
         )}
 

@@ -62,7 +62,7 @@ interface CandidateRow {
 
 type InvitationRow = Omit<
   S['Invitation'],
-  'candidate' | 'candidate_contacts' | 'recruiter_contacts' | 'decline_reason_label'
+  'candidate' | 'candidate_contacts' | 'recruiter_contacts' | 'decline_reason_label' | 'has_task_text'
 >
 type NeedRow = S['Need']
 type VacancyRow = S['Vacancy']
@@ -277,6 +277,7 @@ function enrichInvitation(inv: InvitationRow): S['Invitation'] {
   const cand = t.candidates().find((c) => c.id === inv.candidate_id)
   return {
     ...inv,
+    has_task_text: Boolean(inv.task_text),
     candidate: cand ? toCandidateCard(cand) : null,
     candidate_contacts: cand && inv.status === 'accepted' ? candidateContacts(cand) : null,
     recruiter_contacts: null,

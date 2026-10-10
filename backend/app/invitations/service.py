@@ -127,6 +127,7 @@ class InvitationService:
             "salary_to": inv.salary_to,
             "contact_method": {"type": inv.contact_type, "value": inv.contact_value},
             "task_text": inv.task_text,
+            "has_task_text": bool(inv.task_text),
             "status": inv.status,
             "decline_reason": reason,
             "decline_reason_label": DECLINE_LABELS.get(DeclineReason(reason)) if reason else None,
@@ -159,6 +160,10 @@ class InvitationService:
             for d in data:
                 if d["status"] == S.accepted:
                     d["recruiter_contacts"] = contacts.get(d["recruiter_id"])
+                else:
+                    # как и контакты: телефон рекрутера и вопрос к созвону — после принятия
+                    d["contact_method"]["value"] = None
+                    d["task_text"] = None
         return data
 
     async def _view(self, invitation_id: int, role: Role) -> dict[str, Any]:

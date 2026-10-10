@@ -114,16 +114,17 @@ def test_full_flow_visibility_before_and_after_accept(
     assert not PRIVATE_KEYS & set(detail["candidate"])
     assert detail["status"] == "sent", "открытие рекрутером не меняет статус"
 
-    # кандидат видит условия до общения, но не контакты рекрутера
+    # кандидат видит условия и способ связи до общения, но не сами контакты рекрутера
     mine = client.get(f"/api/invitations/{created['id']}", headers=CANDIDATE).json()
     assert mine["status"] == "viewed" and mine["viewed_at"]
     assert mine["salary_from"] == 200000 and mine["salary_to"] == 300000
-    assert mine["contact_method"] == {"type": "telegram", "value": "@hr_example"}
+    assert mine["contact_method"] == {"type": "telegram", "value": None}
     assert mine["recruiter_contacts"] is None and mine["candidate"] is None
 
     accepted = client.post(f"/api/invitations/{created['id']}/accept", headers=CANDIDATE).json()
     assert accepted["status"] == "accepted" and accepted["responded_at"]
     assert accepted["recruiter_contacts"]["email"] == "recruiter@example.com"
+    assert accepted["contact_method"] == {"type": "telegram", "value": "@hr_example"}
 
     after = client.get(f"/api/invitations/{created['id']}", headers=RECRUITER).json()
     assert after["candidate_contacts"]["full_name"] == private_values(1)[0]
@@ -161,6 +162,44 @@ def test_candidate_sees_recruiter_contacts_only_after_accept(client: TestClient)
     assert new["recruiter_contacts"] is None
     for inv in listed:
         assert (inv["recruiter_contacts"] is not None) == (inv["status"] == "accepted")
+
+
+def test_contact_value_and_task_text_hidden_from_candidate_until_accept(
+    client: TestClient,
+) -> None:
+    created = client.post(
+        "/api/invitations", json=body(1, task_text="Как ускорить доставку?"), headers=RECRUITER
+    ).json()
+    assert created["contact_method"]["value"] == "@hr_example"
+    assert created["task_text"] == "Как ускорить доставку?" and created["has_task_text"]
+    url = f"/api/invitations/{created['id']}"
+    for before in (
+        client.get(url, headers=CANDIDATE).json(),
+        next(
+            i
+            for i in client.get("/api/invitations", headers=CANDIDATE).json()
+            if i["id"] == created["id"]
+        ),
+    ):
+        assert before["contact_method"] == {"type": "telegram", "value": None}
+        assert before["task_text"] is None and before["has_task_text"] is True
+        assert "@hr_example" not in json.dumps(before, ensure_ascii=False)
+    accepted = client.post(f"{url}/accept", headers=CANDIDATE).json()
+    assert accepted["contact_method"]["value"] == "@hr_example"
+    assert accepted["task_text"] == "Как ускорить доставку?"
+
+
+def test_task_text_stays_hidden_after_decline(client: TestClient) -> None:
+    created = client.post(
+        "/api/invitations", json=body(1, task_text="Вопрос"), headers=RECRUITER
+    ).json()
+    url = f"/api/invitations/{created['id']}"
+    declined = client.post(f"{url}/decline", json={"reason": "salary_too_low"}, headers=CANDIDATE)
+    assert declined.status_code == 200, declined.text
+    assert declined.json()["task_text"] is None
+    assert declined.json()["contact_method"]["value"] is None
+    recruiter_view = client.get(url, headers=RECRUITER).json()
+    assert recruiter_view["task_text"] == "Вопрос"
 
 
 # ---------- создание: вилка, ожидания, квота, повтор ----------
