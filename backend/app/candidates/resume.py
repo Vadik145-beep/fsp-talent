@@ -1,7 +1,8 @@
 """Разбор PDF-резюме в предзаполненную форму профиля (T3.2).
 
 pdfplumber → текст (страницы в две колонки режем по колонкам) → правила по полям
-(+ LLM при наличии ключа) → поля с уверенностью. Кандидат подтверждает форму сам.
+(+ LLM дозаполняет пустые поля, если подключена) → поля с уверенностью.
+Кандидат подтверждает форму сам.
 """
 
 from __future__ import annotations
@@ -17,7 +18,7 @@ from typing import Any, Literal
 
 import pdfplumber
 from fastapi import UploadFile
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, create_model
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.concurrency import run_in_threadpool
 
@@ -489,6 +490,11 @@ def parse_resume_text(text: str, today: date | None = None) -> ResumeParse:
 
 
 # ---------------------------------------------------------------- LLM
+#
+# Правила — основной разбор (на образцах 100%). Модель зовётся, только если правила оставили
+# поля пустыми, и только дозаполняет их с низкой уверенностью: найденное правилами не меняется.
+# В запрос уходит начало текста резюме и схема только с недостающими полями — так короче ответ
+# (модель на 2 ядрах печатает ~10 токенов в секунду).
 
 
 class LlmResume(BaseModel):
@@ -505,49 +511,128 @@ class LlmResume(BaseModel):
 
 
 RESUME_SYSTEM_PROMPT = (
-    "Ты разбираешь текст резюме IT-специалиста. Верни только JSON: full_name (ФИО как в "
-    "резюме), city, specialization (backend|frontend|mobile|data_ml|qa|devops|null), grade "
-    "(intern|junior|middle|senior|null — только если указан), stack (названия технологий), "
-    "experience_years (суммарный стаж работы в годах числом), roles (роли в команде), "
-    "soft_skills. Не выдумывай: чего нет — null или пустой список."
+    "Ты разбираешь текст резюме IT-специалиста. Верни только JSON с запрошенными полями: "
+    "full_name (ФИО как в резюме), city, specialization (backend|frontend|mobile|data_ml|qa|"
+    "devops|null), grade (intern|junior|middle|senior|null — только если указан), stack "
+    "(названия технологий), experience_years (суммарный стаж работы в годах числом), roles "
+    "(роли в команде), soft_skills. Не выдумывай: чего нет — null или пустой список."
 )
+# поле ответа модели → поле разбора
+LLM_TO_FIELD = {
+    "full_name": "full_name",
+    "city": "city",
+    "specialization": "specialization",
+    "grade": "grade",
+    "stack": "stack",
+    "experience_years": "experience_years",
+    "roles": "roles_in_team",
+    "soft_skills": "soft_skills",
+}
+LLM_CONFIDENCE = 0.5  # дозаполнено нейросетью — кандидат проверит в форме
+RESUME_LLM_MAX_CHARS = 3000
+RESUME_LLM_MAX_TOKENS = 300
 
 
-def merge_llm(rules: ResumeParse, answer: LlmResume) -> ResumeParse:
+def missing_fields(rules: ResumeParse) -> list[str]:
+    """Поля ответа модели, которые правила не нашли (стаж — если не нашли ни одного признака)."""
+    missing = []
+    for name, key in LLM_TO_FIELD.items():
+        f = rules.fields.get(key, {})
+        empty = f.get("value") in (None, "", [])
+        if key == "experience_years":
+            empty = f.get("confidence", 0) <= 0.3
+        if empty:
+            missing.append(name)
+    return missing
+
+
+def request_schema(fields: list[str]) -> type[BaseModel]:
+    """Схема ответа только с недостающими полями (по ней llama.cpp строит грамматику)."""
+    defs: dict[str, Any] = {
+        name: (LlmResume.model_fields[name].annotation, LlmResume.model_fields[name])
+        for name in fields
+    }
+    return create_model("LlmResumePart", **defs)
+
+
+def merge_llm(rules: ResumeParse, answer: BaseModel) -> ResumeParse:
+    """Ответ модели дозаполняет только пустые поля разбора правилами."""
     f = dict(rules.fields)
-    conf = 0.85
-    if answer.full_name:
-        f["full_name"] = _field(answer.full_name, conf)
-    if answer.city:
-        f["city"] = _field(answer.city, conf)
-    if answer.specialization:
-        f["specialization"] = _field(answer.specialization, conf)
-    if answer.grade:
-        f["grade"] = _field(answer.grade, conf)
-    if answer.experience_years is not None:
-        f["experience_years"] = {"value": answer.experience_years, "confidence": conf}
-    if answer.roles:
-        f["roles_in_team"] = _field(answer.roles, conf)
-    if answer.soft_skills:
-        f["soft_skills"] = _field(answer.soft_skills, conf)
-    stack = list(f["stack"]["value"] or [])
     unmatched = list(rules.unmatched_skills)
-    for name in answer.stack:
-        code = normalize_skill(name)
-        if code and is_catalog(code):
-            if code not in stack:
-                stack.append(code)
-        elif code and label(code) not in unmatched:
-            unmatched.append(label(code))
-    f["stack"] = _field(stack, max(conf, f["stack"]["confidence"]))
+    filled = False
+    missing = set(missing_fields(rules))
+    for name, value in answer.model_dump().items():
+        if name not in missing or value in (None, "", []):
+            continue
+        key = LLM_TO_FIELD[name]
+        if name == "stack":
+            stack: list[str] = []
+            for raw in value:
+                code = normalize_skill(raw)
+                if code and is_catalog(code):
+                    if code not in stack:
+                        stack.append(code)
+                elif code and label(code) not in unmatched:
+                    unmatched.append(label(code))
+            if not stack:
+                continue
+            value = stack
+        if name == "experience_years":
+            f[key] = {"value": value, "confidence": LLM_CONFIDENCE}
+        else:
+            f[key] = _field(value, LLM_CONFIDENCE)
+        filled = True
+    if not filled:
+        return rules
     return ResumeParse(f, unmatched, "llm", rules.warnings, rules.two_column_pages)
+
+
+def _llm_request(rules: ResumeParse, text: str | None) -> tuple[type[BaseModel], str] | None:
+    if not text or not llm.llm_enabled():
+        return None
+    fields = missing_fields(rules)
+    if not fields:
+        return None
+    return request_schema(fields), text[:RESUME_LLM_MAX_CHARS]
+
+
+def fill_with_llm(rules: ResumeParse, text: str | None) -> ResumeParse:
+    """Синхронно (скрипт валидации)."""
+    req = _llm_request(rules, text)
+    if req is None:
+        return rules
+    schema, user = req
+    answer = llm.complete_json(
+        RESUME_SYSTEM_PROMPT,
+        user,
+        schema,
+        timeout=get_nlp_settings().llm_resume_timeout_sec,
+        max_tokens=RESUME_LLM_MAX_TOKENS,
+    )
+    return merge_llm(rules, answer) if answer else rules
+
+
+async def fill_with_llm_async(rules: ResumeParse, text: str | None) -> ResumeParse:
+    """Для обработчика загрузки: не блокирует цикл событий; при ошибке — разбор правилами."""
+    req = _llm_request(rules, text)
+    if req is None:
+        return rules
+    schema, user = req
+    answer = await llm.acomplete_json(
+        RESUME_SYSTEM_PROMPT,
+        user,
+        schema,
+        timeout=get_nlp_settings().llm_resume_timeout_sec,
+        max_tokens=RESUME_LLM_MAX_TOKENS,
+    )
+    return merge_llm(rules, answer) if answer else rules
 
 
 # ---------------------------------------------------------------- точка входа
 
 
-def parse_resume_pdf(data: bytes, today: date | None = None) -> ResumeParse:
-    """PDF (байты) → разбор. Нечитаемый или пустой PDF → пустые поля и предупреждение."""
+def parse_resume_rules(data: bytes, today: date | None = None) -> tuple[ResumeParse, str | None]:
+    """PDF → разбор правилами и текст для LLM (None — текста нет, звать модель незачем)."""
     settings = get_nlp_settings()
     try:
         pdf = extract_pdf_text(data, settings.resume_max_pages)
@@ -555,21 +640,23 @@ def parse_resume_pdf(data: bytes, today: date | None = None) -> ResumeParse:
         log.info("PDF не читается: %s", exc)
         empty = parse_resume_text("", today)
         empty.warnings.append("Не удалось прочитать PDF — заполните форму вручную")
-        return empty
+        return empty, None
     result = parse_resume_text(pdf.text, today)
     result.two_column_pages = pdf.two_column_pages
     if len(re.sub(r"\s", "", pdf.text)) < 50:
         result.warnings.append(
             "В PDF почти нет текста (скан или картинка) — заполните форму вручную"
         )
-        return result
+        return result, None
     if pdf.pages > settings.resume_max_pages:
         result.warnings.append(f"Разобраны первые {settings.resume_max_pages} страниц")
-    if llm.llm_enabled():
-        answer = llm.complete_json(RESUME_SYSTEM_PROMPT, pdf.text[:12000], LlmResume)
-        if answer:
-            return merge_llm(result, answer)
-    return result
+    return result, pdf.text
+
+
+def parse_resume_pdf(data: bytes, today: date | None = None) -> ResumeParse:
+    """PDF (байты) → разбор. Нечитаемый или пустой PDF → пустые поля и предупреждение."""
+    result, text = parse_resume_rules(data, today)
+    return fill_with_llm(result, text)
 
 
 class ResumeService:
@@ -594,7 +681,8 @@ class ResumeService:
             raise AppError(
                 415, "unsupported_file", "Нужен PDF", {"content_type": file.content_type}
             )
-        parsed = await run_in_threadpool(parse_resume_pdf, data)
+        rules, text = await run_in_threadpool(parse_resume_rules, data)
+        parsed = await fill_with_llm_async(rules, text)
         filename = (file.filename or "resume.pdf")[:255]
         storage_path = ""
         if settings.resume_storage_dir:

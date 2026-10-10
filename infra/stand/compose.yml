@@ -1,4 +1,4 @@
-# Полный стенд на одном сервере (2 vCPU / 4 ГБ): docker compose -f infra/stand/compose.yml --env-file infra/stand/.env up -d
+# Полный стенд на одном сервере (2 vCPU / 4 ГБ, вместе с локальной LLM): docker compose -f infra/stand/compose.yml --env-file infra/stand/.env up -d
 # Фронт собирается отдельно (deploy.sh) в infra/stand/site и раздаётся Caddy.
 name: fsp-stand
 
@@ -60,12 +60,49 @@ services:
       ADMIN_EMAIL: admin@example.com
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       FSP_WEBHOOK_SECRET: ${FSP_WEBHOOK_SECRET}
-      LLM_BASE_URL: ${LLM_BASE_URL:-}
-      LLM_API_KEY: ${LLM_API_KEY:-}
-      LLM_MODEL: ${LLM_MODEL:-}
+      # своя открытая модель в контейнере llm (данные не уходят с сервера); не поднята — правила
+      LLM_BASE_URL: ${LLM_BASE_URL:-http://llm:8080/v1}
+      LLM_API_KEY: ${LLM_API_KEY:-local}
+      LLM_MODEL: ${LLM_MODEL:-qwen2.5-1.5b-instruct}
+      LLM_JSON_SCHEMA: ${LLM_JSON_SCHEMA:-true}
+      LLM_DISPLAY_NAME: ${LLM_DISPLAY_NAME:-Qwen2.5-1.5B}
+      LLM_LOCAL: ${LLM_LOCAL:-true}
+      LLM_DISABLED: ${LLM_DISABLED:-false}
     depends_on:
       postgres: {condition: service_healthy}
     mem_limit: 768m
+
+  # Открытая LLM Qwen2.5-1.5B-Instruct (Apache 2.0) в llama.cpp. Файл модели (~1,1 ГБ) заранее
+  # лежит на сервере в /opt/fsp-talent/models (переменная LLM_MODELS_DIR), скачать — curl с
+  # Hugging Face, см. docs/solution/08_deployment.md. Бэкенд модель не ждёт: пока она не поднялась, всё работает на правилах.
+  llm:
+    image: ghcr.io/ggml-org/llama.cpp:server-b11541
+    restart: unless-stopped
+    command:
+      - -m
+      - /models/qwen2.5-1.5b-instruct-q4_k_m.gguf
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8080"
+      - --alias
+      - qwen2.5-1.5b-instruct
+      - -c
+      - "4096"
+      - --threads
+      - "2"
+      - -np
+      - "1"
+      - --no-webui
+    volumes:
+      - ${LLM_MODELS_DIR:-/opt/fsp-talent/models}:/models:ro
+    healthcheck:
+      <<: *hc
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+      start_period: 2m
+    mem_limit: 1800m
+    # под нагрузкой процессор отдаётся сначала бэкенду и базе
+    cpu_shares: 512
 
   keycloak:
     image: quay.io/keycloak/keycloak:25.0

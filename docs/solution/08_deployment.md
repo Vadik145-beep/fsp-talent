@@ -12,10 +12,11 @@
 | Память для Docker | 4 ГБ минимум, 8 ГБ комфортно (лимиты dev-стека в сумме ≈ 3,3 ГБ) |
 | Диск | ≈ 5 ГБ под образы |
 | git | любой |
-| Свободные порты | 18000, 15173, 15432, 18025, 11025, 18180, 18100 |
+| Свободные порты | 18000, 15173, 15432, 18025, 11025, 18180, 18100 (+ 18090 с профилем `llm`) |
 
-Интернет нужен только при первой сборке (образы, pip, npm). Внешние API и ключи не нужны:
-LLM необязателен, реестр ФСП и Keycloak — свои контейнеры.
+Интернет нужен только при первой сборке (образы, pip, npm) и для разовой загрузки файла
+модели ≈ 1,1 ГБ. Внешние API и ключи не нужны: LLM — своя открытая модель
+(раздел 9), реестр ФСП и Keycloak — свои контейнеры.
 
 ## 8.2. Локальный запуск полного стека
 
@@ -89,6 +90,7 @@ curl http://localhost:18100/health
 | Задача | Команда |
 |---|---|
 | Только бэкенд и БД (без фронта и Keycloak) | `docker compose up -d --build postgres backend mailpit fsp-registry-mock` |
+| Локальная LLM (как на стенде) | `docker compose --profile llm up -d llm` и в `.env` строки из блока LLM в `.env.example`; затем `docker compose up -d backend` |
 | Только прототип интерфейса на моках, без бэкенда | `cd frontend && npm ci && npm run dev` → http://localhost:15173 (`VITE_USE_MOCKS` не задан = моки) |
 
 ### Остановка
@@ -114,7 +116,10 @@ docker compose down -v     # остановить и удалить данные
 | `PUBLIC_FRONTEND_URL` | `http://localhost:15173` | адрес фронта для ссылок в письмах и redirect ФСП ID |
 | `KEYCLOAK_PUBLIC_URL` | `http://localhost:18180` | адрес Keycloak, который видит браузер |
 | `KEYCLOAK_ADMIN` / `KEYCLOAK_ADMIN_PASSWORD` | `admin` / `admin` | админка Keycloak |
-| `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL` | пусто | OpenAI-совместимый endpoint (`/chat/completions`); пусто — всё на правилах |
+| `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL` | пусто (на стенде `http://llm:8080/v1`, `local`, `qwen2.5-1.5b-instruct`) | OpenAI-совместимый endpoint (`/chat/completions`); пусто — всё на правилах |
+| `LLM_JSON_SCHEMA` | `false` (на стенде `true`) | передавать JSON-схему ответа — llama.cpp строит по ней грамматику |
+| `LLM_DISPLAY_NAME`, `LLM_LOCAL` | пусто, `false` (на стенде `Qwen2.5-1.5B`, `true`) | подпись модели в админке и признак «работает на нашем сервере» |
+| `LLM_DISABLED` | `false` | `true` — модель не вызывается вовсе |
 
 Задаются в compose и обычно не меняются: `DATABASE_URL`, `SMTP_HOST` / `SMTP_PORT` (Mailpit),
 `KEYCLOAK_INTERNAL_URL`, `KEYCLOAK_REALM=fsp`, `KEYCLOAK_CLIENT_ID=fsp-talent`,
@@ -141,6 +146,8 @@ docker compose down -v     # остановить и удалить данные
 | `TESTING_CAT_SE_STOP` / `TESTING_CAT_MAX_ITEMS` / `TESTING_CAT_MIN_ITEMS` | `0.30` / `20` / `6` | правило остановки теста |
 | `TESTING_LEAK_SCAN_EVERY` | `50` | детектор утечек после каждой N-й сессии |
 | `RESUME_MAX_BYTES` / `RESUME_MAX_PAGES` | 5 МБ / `10` | ограничения PDF-резюме |
+| `LLM_DRAFT_TIMEOUT_SEC` / `LLM_NEED_TIMEOUT_SEC` / `LLM_RESUME_TIMEOUT_SEC` | `90` / `25` / `40` | таймауты вызова модели: черновик задачи, разбор потребности, дозаполнение резюме; по таймауту — правила |
+| `LLM_MAX_DRAFTS` | `2` | сколько черновиков задач на одну вакансию пишет модель (остальные — из словаря тем) |
 | `TASKS_FRESHNESS_ANSWER_BONUS` / `TASKS_FRESHNESS_GRADE_BASE` / `TASKS_FRESHNESS_GRADE_PER_POINT` | `0.08` / `0.04` / `0.03` | прибавки свежести профиля за ответ и за оценку 0–3 |
 | `TASKS_FRESHNESS_HALF_LIFE_DAYS` / `TASKS_MAX_ASSIGN_PER_RUN` | `30` / `50` | полураспад свежести; сколько кандидатов получают задание за проход |
 | `INTEGRATIONS_WEBHOOK_MAX_ATTEMPTS` / `INTEGRATIONS_WEBHOOK_TIMEOUT_SEC` | `5` / `5` | попытки доставки вебхука ATS и таймаут запроса |
@@ -152,8 +159,8 @@ docker compose down -v     # остановить и удалить данные
 ## 8.4. Стенд на сервере (один сервер, Caddy + HTTPS)
 
 Так развёрнут https://159-194-200-243.sslip.io. Файлы — `infra/stand/`: `compose.yml`
-(Caddy, backend, PostgreSQL, Keycloak, мок реестра), `Caddyfile`, `.env.example`,
-`deploy.sh`. Сервер: 2 vCPU / 4 ГБ, Ubuntu с Docker, открыты порты 80 и 443. Домен —
+(Caddy, backend, PostgreSQL, Keycloak, мок реестра, локальная LLM `llm`), `Caddyfile`, `.env.example`,
+`deploy.sh`; скрипт скачивания модели — `infra/llm/start.sh`. Сервер: 2 vCPU / 4 ГБ, Ubuntu с Docker, открыты порты 80 и 443. Домен —
 бесплатный `<ip-через-дефисы>.sslip.io`, сертификат Let's Encrypt Caddy получает сам.
 
 Один адрес обслуживает всё:
@@ -183,6 +190,27 @@ chmod 600 .env
 `docker compose --env-file .env up -d --build` → `python -m app.testing.sync_bank`. Повторный
 запуск — обновление стенда до свежего `main`. Скрипт рассчитан на путь `/opt/fsp-talent/app`
 (переменная `APP` в начале файла).
+
+**Локальная LLM на стенде.** Контейнер `llm` (образ `ghcr.io/ggml-org/llama.cpp:server-b11541`)
+берёт модель из папки сервера `/opt/fsp-talent/models` (переменная `LLM_MODELS_DIR`), смонтированной
+только для чтения. Файл кладётся один раз:
+
+```bash
+mkdir -p /opt/fsp-talent/models && cd /opt/fsp-talent/models
+curl -fL -o qwen2.5-1.5b-instruct-q4_k_m.gguf https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_k_m.gguf
+echo "6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e  qwen2.5-1.5b-instruct-q4_k_m.gguf" | sha256sum -c -
+```
+
+Сервер llama.cpp: контекст 4096, 2 потока, один запрос за раз,
+лимит памяти 1,8 ГБ, приоритет процессора ниже, чем у бэкенда и базы. Порт наружу не открыт.
+Бэкенд модель не ждёт: пока она загружается или если контейнер остановлен, всё работает на
+правилах. Переменные `LLM_*` у бэкенда заданы в `compose.yml` по умолчанию, в `.env` их можно
+не писать; выключить — `LLM_DISABLED=true` или `docker compose stop llm`. Подробно — раздел 9.
+
+```bash
+docker compose --env-file .env logs -f llm     # загрузка модели
+docker compose --env-file .env exec llm curl -s localhost:8080/health   # {"status":"ok"}
+```
 
 Отличия стенда от dev-стека: `APP_ENV=prod` (secure-cookie), `DEMO_AUTH_ENABLED=false`
 (только JWT), `SEED_ON_STARTUP=true` (демо-данные загружаются сами), фронт — собранная
@@ -267,3 +295,5 @@ C="docker compose -f /opt/fsp-talent/app/infra/stand/compose.yml --env-file /opt
 | После перезагрузки страницы на сервере без HTTPS сессия теряется | при `APP_ENV=prod` refresh-cookie только для HTTPS; локально используйте `APP_ENV=dev` или стенд с Caddy |
 | Фронт на другом адресе получает ошибку CORS | добавьте адрес в `CORS_ORIGINS` (JSON-список) |
 | Не хватает памяти на маленьком сервере | лимиты заданы `mem_limit` в compose; на 4 ГБ включите swap 2 ГБ |
+| Черновики задач и разбор помечены «по словарю» / `parser: rules`, хотя LLM включена | модель не поднялась (нет файла в `/opt/fsp-talent/models`?) или ещё загружается: `docker compose logs llm`; после `{"status":"ok"}` на `/health` новые запросы пойдут в модель |
+| `llm` перезапускается с `failed to load model` | файла модели нет или он битый: скачайте заново и сверьте SHA-256 (команды выше) |

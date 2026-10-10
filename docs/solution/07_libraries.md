@@ -4,7 +4,7 @@
 
 Снято 07.10.2026 с локального dev-стека: версии Python-пакетов — из установленных в контейнерах, версии npm — из `package-lock.json`, образы — из compose-файлов и Dockerfile. Лицензия проекта — MIT (`LICENSE`).
 
-**Лицензии.** Все компоненты — открытые: MIT, BSD, Apache-2.0, ISC, PSF и аналогичные разрешительные. MPL-2.0 (certifi — корневые сертификаты; lightningcss и caniuse-lite — только при сборке CSS) — слабый копилефт на уровне файла, на наш код не распространяется; шрифты Inter и JetBrains Mono — SIL OFL-1.1. Проприетарных и закрытых компонентов нет. Внешний LLM-провайдер необязателен и подключается только через переменные окружения.
+**Лицензии.** Все компоненты — открытые: MIT, BSD, Apache-2.0, ISC, PSF и аналогичные разрешительные. MPL-2.0 (certifi — корневые сертификаты; lightningcss и caniuse-lite — только при сборке CSS) — слабый копилефт на уровне файла, на наш код не распространяется; шрифты Inter и JetBrains Mono — SIL OFL-1.1. Проприетарных и закрытых компонентов нет. LLM — открытая модель Qwen2.5-1.5B-Instruct (Apache-2.0, GGUF Q4_K_M) в llama.cpp (MIT) на нашем же сервере; внешний LLM-провайдер не нужен.
 
 ## Платформа
 
@@ -126,6 +126,7 @@ Python 3.12.15 (в образе). Прямых зависимостей: 3, вс
 |---|---|---|---|---|
 | `axllent/mailpit:latest` | 1.31.4 | MIT | почта в разработке и на демо-стенде | docker-compose.yml, infra/stand/compose.yml |
 | `caddy:2-alpine` | образ не скачан локально | Apache-2.0 | HTTPS (Let's Encrypt), обратный прокси и статика фронта на стенде | infra/stand/compose.yml |
+| `ghcr.io/ggml-org/llama.cpp:server-b11541` | b11541 | MIT | локальная LLM: сервер llama.cpp с моделью Qwen2.5-1.5B-Instruct (Apache-2.0) | docker-compose.yml, infra/stand/compose.yml |
 | `node:22-alpine` | 22.23.3 (по образу `fsp-talent-frontend`) | MIT | dev-сервер фронта и сборка статики | frontend/Dockerfile, infra/stand/deploy.sh |
 | `postgres:16-alpine` | 16.15 | PostgreSQL License | СУБД | docker-compose.yml, infra/stand/compose.yml |
 | `python:3.12-slim` | 3.12.15 (по образу `fsp-talent-backend`) | PSF-2.0 | база образов backend и мока реестра | backend/Dockerfile, services/fsp-registry-mock/Dockerfile |

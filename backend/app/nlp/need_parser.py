@@ -1,19 +1,21 @@
 """Разбор свободного текста потребности работодателя в поля формы (T6.1).
 
-Единая точка: эндпоинт `/api/matching/needs/parse` (модуль matching) вызывает только `parse_need`.
-Правила работают всегда; если задан ключ LLM — она уточняет поля, ответ проверяется pydantic,
-при любой ошибке остаётся разбор правилами.
+Единая точка: эндпоинт `/api/matching/needs/parse` (модуль matching) вызывает `parse_need_async`.
+Правила работают всегда и идут первыми. LLM зовётся, только если правила не нашли ключевые
+поля (специализацию, грейд или стек), с коротким таймаутом; её ответ проверяется pydantic и
+только дозаполняет то, чего нет у правил. При любой ошибке остаётся разбор правилами.
 """
 
 from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, create_model
 
 from app.nlp import llm
+from app.nlp.settings import get_nlp_settings
 from app.nlp.skills_lexicon import SkillMention, find_skills, is_catalog, label, normalize_skill
 from app.nlp.text_rules import (
     GRADE_LABELS,
@@ -175,7 +177,8 @@ class LlmNeed(BaseModel):
 
 
 NEED_SYSTEM_PROMPT = (
-    "Ты разбираешь запрос работодателя на IT-специалиста. Верни только JSON с полями: "
+    "Ты разбираешь запрос работодателя на IT-специалиста. Верни только JSON с запрошенными "
+    "полями из списка: "
     "specialization (backend|frontend|mobile|data_ml|qa|devops|null), "
     "grade (intern|junior|middle|senior|null; «лид» = senior, «джун+» = junior), "
     "skills_required и skills_desired (списки названий технологий; «желательно/плюсом» — "
@@ -186,6 +189,12 @@ NEED_SYSTEM_PROMPT = (
 )
 
 
+SkillName = Annotated[str, Field(min_length=1, max_length=40)]
+# Короткий запрос и ответ: модель на 2 ядрах, рекрутер ждёт
+NEED_MAX_CHARS = 2000
+NEED_MAX_TOKENS = 120
+
+
 def _mention(name: str) -> SkillMention | None:
     code = normalize_skill(name)
     if code is None:
@@ -194,36 +203,119 @@ def _mention(name: str) -> SkillMention | None:
 
 
 def merge_llm(rules: NeedParse, answer: LlmNeed) -> NeedParse:
-    """Поля LLM поверх правил; технологии — только узнанные справочником синонимов."""
-    req = [m for m in (_mention(n) for n in answer.skills_required) if m]
-    des = [m for m in (_mention(n) for n in answer.skills_desired) if m]
-    req_codes = {m.code for m in req}
-    des = [m for m in des if m.code not in req_codes]
-    salary_from, salary_to = answer.salary_from, answer.salary_to
-    if salary_from and salary_to and salary_from > salary_to:
-        salary_from, salary_to = rules.salary_from, rules.salary_to
+    """Поля LLM дозаполняют разбор правил: найденное правилами не меняется.
+
+    Технологии — только узнанные справочником синонимов; к найденным правилами добавляются.
+    """
+    req = list(rules.required)
+    des = list(rules.desired)
+    seen = {m.code for m in (*req, *des)}
+    for names, target in ((answer.skills_required, req), (answer.skills_desired, des)):
+        for m in (_mention(n) for n in names):
+            if m and m.code not in seen:
+                target.append(m)
+                seen.add(m.code)
+    salary_from, salary_to = rules.salary_from, rules.salary_to
+    if salary_from is None and salary_to is None:
+        salary_from, salary_to = answer.salary_from, answer.salary_to
+        if salary_from and salary_to and salary_from > salary_to:
+            salary_from, salary_to = None, None
     return NeedParse(
-        specialization=answer.specialization or rules.specialization,
-        grade=answer.grade or rules.grade,
-        required=req or rules.required,
-        desired=des if (req or des) else rules.desired,
-        work_format=answer.work_format or rules.work_format,
-        city=answer.city or rules.city,
-        salary_from=salary_from if salary_from is not None else rules.salary_from,
-        salary_to=salary_to if salary_to is not None else rules.salary_to,
-        domains=[answer.team_description] if answer.team_description else rules.domains,
+        specialization=rules.specialization or answer.specialization,
+        grade=rules.grade or answer.grade,
+        required=req,
+        desired=des,
+        work_format=rules.work_format or answer.work_format,
+        city=rules.city or answer.city,
+        salary_from=salary_from,
+        salary_to=salary_to,
+        domains=rules.domains or ([answer.team_description] if answer.team_description else []),
         parser="llm",
     )
 
 
+def missing_key_fields(rules: NeedParse) -> list[str]:
+    """Ключевые поля, которых правила не нашли: специализация, грейд, стек из справочника."""
+    missing = [k for k in ("specialization", "grade") if getattr(rules, k) is None]
+    if not any(s.in_catalog for s in rules.required):
+        missing.append("skills_required")
+    return missing
+
+
+def needs_llm(rules: NeedParse) -> bool:
+    return bool(missing_key_fields(rules))
+
+
+def _request_schema(fields: list[str]) -> type[BaseModel]:
+    """Спрашиваем у модели только недостающие поля: ответ короче, выдумать остальное нечем."""
+    defs: dict[str, Any] = {
+        name: (LlmNeed.model_fields[name].annotation, LlmNeed.model_fields[name]) for name in fields
+    }
+    if "skills_required" in defs:
+        # короткий список: иначе маленькая модель повторяет технологии до лимита токенов
+        defs["skills_required"] = (list[SkillName], Field(default_factory=list, max_length=8))
+    return create_model("LlmNeedPart", **defs)
+
+
+def _grounded(name: str, text: str) -> bool:
+    """Технология есть в тексте (по началу слова) — маленькая модель иногда добавляет лишнее."""
+    head = name.strip().lower()[:5]
+    return bool(head) and head in text.lower()
+
+
+_EXPERIENCE = re.compile(r"опыт|стаж|\d+\s*\+?\s*(?:лет|года?|year)", re.IGNORECASE)
+
+
+def _to_need(part: BaseModel, text: str) -> LlmNeed:
+    """Ответ модели → только то, на что есть опора в тексте."""
+    answer = LlmNeed.model_validate(part.model_dump())
+    answer.skills_required = [s for s in answer.skills_required if _grounded(s, text)]
+    answer.skills_desired = [s for s in answer.skills_desired if _grounded(s, text)]
+    # грейда словами в тексте нет (иначе нашли бы правила): модель может вывести его только
+    # из требований к опыту, а без них — угадывает; такой грейд не берём
+    if not _EXPERIENCE.search(text):
+        answer.grade = None
+    return answer
+
+
 def parse_detailed(text: str) -> NeedParse:
+    """Синхронный разбор (отчёт о точности, скрипты)."""
     rules = parse_rules(text)
-    if not llm.llm_enabled():
+    missing = missing_key_fields(rules)
+    if not (missing and llm.llm_enabled()):
         return rules
-    answer = llm.complete_json(NEED_SYSTEM_PROMPT, text, LlmNeed)
-    return merge_llm(rules, answer) if answer else rules
+    part = llm.complete_json(
+        NEED_SYSTEM_PROMPT,
+        text[:NEED_MAX_CHARS],
+        _request_schema(missing),
+        timeout=get_nlp_settings().llm_need_timeout_sec,
+        max_tokens=NEED_MAX_TOKENS,
+    )
+    return merge_llm(rules, _to_need(part, text)) if part else rules
+
+
+async def parse_detailed_async(text: str) -> NeedParse:
+    """Разбор для API: обычный случай — только правила, мгновенно; LLM — если правила не
+    справились и модель не занята другим запросом (иначе рекрутер ждал бы очередь)."""
+    rules = parse_rules(text)
+    missing = missing_key_fields(rules)
+    if not (missing and llm.llm_enabled()) or llm.llm_busy():
+        return rules
+    part = await llm.acomplete_json(
+        NEED_SYSTEM_PROMPT,
+        text[:NEED_MAX_CHARS],
+        _request_schema(missing),
+        timeout=get_nlp_settings().llm_need_timeout_sec,
+        max_tokens=NEED_MAX_TOKENS,
+    )
+    return merge_llm(rules, _to_need(part, text)) if part else rules
 
 
 def parse_need(text: str) -> dict[str, Any]:
     """Текст → черновик потребности (формат ответа NeedParseResult из контракта)."""
     return parse_detailed(text).to_result()
+
+
+async def parse_need_async(text: str) -> dict[str, Any]:
+    """То же для обработчика API (не блокирует цикл событий)."""
+    return (await parse_detailed_async(text)).to_result()

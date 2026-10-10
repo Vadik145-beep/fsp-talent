@@ -98,6 +98,10 @@ IMAGE_INFO = {
     "caddy": ("Apache-2.0", "HTTPS (Let's Encrypt), обратный прокси и статика фронта на стенде"),
     "python": ("PSF-2.0", "база образов backend и мока реестра"),
     "node": ("MIT", "dev-сервер фронта и сборка статики"),
+    "ghcr.io/ggml-org/llama.cpp": (
+        "MIT",
+        "локальная LLM: сервер llama.cpp с моделью Qwen2.5-1.5B-Instruct (Apache-2.0)",
+    ),
 }
 VERSION_KEYS = (
     "org.opencontainers.image.version",
@@ -345,7 +349,8 @@ def main(argv: list[str] | None = None) -> int:
         "разрешительные. MPL-2.0 (certifi — корневые сертификаты; lightningcss и caniuse-lite — "
         "только при сборке CSS) — слабый копилефт на уровне файла, на наш код не распространяется; "
         "шрифты Inter и JetBrains Mono — SIL OFL-1.1. Проприетарных и закрытых компонентов нет. "
-        "Внешний LLM-провайдер необязателен и подключается только через переменные окружения.",
+        "LLM — открытая модель Qwen2.5-1.5B-Instruct (Apache-2.0, GGUF Q4_K_M) в llama.cpp (MIT) "
+        "на нашем же сервере; внешний LLM-провайдер не нужен.",
         "",
         "## Платформа",
         "",

@@ -19,7 +19,7 @@ from app.matching.schemas import (
     RecommendedCategory,
 )
 from app.matching.service import NeedService
-from app.nlp.need_parser import parse_need
+from app.nlp.need_parser import parse_need_async
 
 router = APIRouter(prefix="/matching", tags=["matching"])
 
@@ -38,11 +38,15 @@ def _company(user: CurrentUser) -> int:
     "/needs/parse",
     response_model=NeedParseResult,
     summary="Разобрать свободный текст потребности в поля",
-    description="Правила без LLM; с ключом LLM — точнее (трек 3c).",
+    description=(
+        "Сначала правила (обычный ответ — сразу). Если правила не нашли специализацию, грейд "
+        "или стек и подключена LLM — она дозаполняет поля (`parser: llm`); при недоступной "
+        "модели ответ по правилам (`parser: rules`)."
+    ),
     responses=error_responses(*AUTH, 422),
 )
 async def parse_need_text(body: NeedParseRequest, user: RecruiterUser) -> Any:
-    return parse_need(body.text)
+    return await parse_need_async(body.text)
 
 
 @router.get(

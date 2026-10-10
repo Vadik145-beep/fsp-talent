@@ -447,7 +447,7 @@ export interface paths {
         put?: never;
         /**
          * Загрузить PDF-резюме и получить предзаполнение
-         * @description Разбор PDF (pdfplumber; страницы в две колонки режутся по колонкам) правилами, при наличии ключа — уточнение LLM. Поля формы профиля с уверенностью 0..1: `full_name`, `email`, `phone` (+7XXXXXXXXXX), `city`, `specialization`, `grade`, `stack` (коды справочника), `experience_years`, `roles_in_team`, `soft_skills`, `work_formats`, `links`, `about`; не найдено — `value: null, confidence: 0`. `unmatched_skills` — технологии, которых нет в справочнике. `warnings` — что не удалось прочитать (скан без текста, битый файл): тогда поля пустые, форму заполняют вручную.
+         * @description Разбор PDF (pdfplumber; страницы в две колонки режутся по колонкам) правилами, если подключена LLM — она дозаполняет только пустые поля (уверенность 0,5). Поля формы профиля с уверенностью 0..1: `full_name`, `email`, `phone` (+7XXXXXXXXXX), `city`, `specialization`, `grade`, `stack` (коды справочника), `experience_years`, `roles_in_team`, `soft_skills`, `work_formats`, `links`, `about`; не найдено — `value: null, confidence: 0`. `unmatched_skills` — технологии, которых нет в справочнике. `warnings` — что не удалось прочитать (скан без текста, битый файл): тогда поля пустые, форму заполняют вручную.
          */
         post: operations["upload_resume_api_candidates_me_resume_post"];
         delete?: never;
@@ -1039,7 +1039,7 @@ export interface paths {
         put?: never;
         /**
          * Разобрать свободный текст потребности в поля
-         * @description Правила без LLM; с ключом LLM — точнее (трек 3c).
+         * @description Сначала правила (обычный ответ — сразу). Если правила не нашли специализацию, грейд или стек и подключена LLM — она дозаполняет поля (`parser: llm`); при недоступной модели ответ по правилам (`parser: rules`).
          */
         post: operations["parse_need_text_api_matching_needs_parse_post"];
         delete?: never;
@@ -4555,6 +4555,32 @@ export interface components {
              * @default false
              */
             reused: boolean;
+            /**
+             * Options
+             * @description Варианты ответа (если есть)
+             */
+            options?: string[];
+            /**
+             * Answer
+             * @description Правильный вариант
+             */
+            answer?: string | null;
+            /**
+             * Explanation
+             * @description Почему ответ правильный
+             */
+            explanation?: string | null;
+            /**
+             * Model
+             * @description Какая нейросеть написала черновик
+             */
+            model?: string | null;
+            /**
+             * Model Local
+             * @description Нейросеть работает на нашем сервере (данные не уходят)
+             * @default false
+             */
+            model_local: boolean;
         };
         /**
          * ItemFormat

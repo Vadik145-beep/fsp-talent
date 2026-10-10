@@ -1,6 +1,6 @@
 # fsp-talent — dev-стек. Запуск: docker compose up --build
 # Порты на хосте: backend 18000, frontend 15173, postgres 15432, mailpit 18025/11025,
-# keycloak 18180, fsp-registry-mock 18100.
+# keycloak 18180, fsp-registry-mock 18100, llm 18090 (профиль llm).
 # Только бэкенд: docker compose up backend postgres mailpit
 name: fsp-talent
 
@@ -49,6 +49,10 @@ services:
       LLM_BASE_URL: ${LLM_BASE_URL:-}
       LLM_API_KEY: ${LLM_API_KEY:-}
       LLM_MODEL: ${LLM_MODEL:-}
+      LLM_JSON_SCHEMA: ${LLM_JSON_SCHEMA:-false}
+      LLM_DISPLAY_NAME: ${LLM_DISPLAY_NAME:-}
+      LLM_LOCAL: ${LLM_LOCAL:-false}
+      LLM_DISABLED: ${LLM_DISABLED:-false}
     # dev: горячая перезагрузка кода и фикстур
     command: ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/backend/app"]
     volumes:
@@ -137,6 +141,25 @@ services:
       start_period: 10s
     mem_limit: 192m
 
+  # Локальная открытая LLM (как на стенде) — только по профилю: docker compose --profile llm up -d llm
+  # и в .env: LLM_BASE_URL=http://llm:8080/v1 LLM_API_KEY=local LLM_MODEL=qwen2.5-1.5b-instruct
+  # LLM_JSON_SCHEMA=true LLM_DISPLAY_NAME=Qwen2.5-1.5B LLM_LOCAL=true. Без профиля всё как раньше.
+  llm:
+    image: ghcr.io/ggml-org/llama.cpp:server-b11541
+    profiles: ["llm"]
+    entrypoint: ["/bin/sh", "/opt/llm/start.sh"]
+    volumes:
+      - ./infra/llm/start.sh:/opt/llm/start.sh:ro
+      - llm_models:/models
+    ports:
+      - "18090:8080"
+    healthcheck:
+      <<: *hc
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+      start_period: 15m
+    mem_limit: 1800m
+
 volumes:
   pgdata:
   frontend_node_modules:
+  llm_models:

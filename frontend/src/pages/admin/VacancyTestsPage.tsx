@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowRight, CheckCircle2, FileText, Lightbulb, ListChecks, Sparkles, Tags, Wand2 } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Circle, Cpu, FileText, Lightbulb, ListChecks, Sparkles, Tags, Wand2 } from 'lucide-react'
 import { api } from '@/shared/api'
 import { GRADE_LABELS, SPECIALIZATION_LABELS, SPECIALIZATION_OPTIONS } from '@/shared/config/dictionaries'
 import { formatDateTime } from '@/shared/lib/format'
@@ -102,6 +102,11 @@ export default function AdminVacancyTestsPage() {
             Сформировать тест
           </Button>
         </div>
+        {build.isPending && (
+          <p className="mt-3 text-sm text-muted" role="status">
+            Ищем темы и шаблоны. Для тем, которых нет в банке, нейросеть пишет черновики задач — это может занять до минуты.
+          </p>
+        )}
       </Card>
 
       {shownResult ? <VacancyTestView result={shownResult} /> : null}
@@ -165,7 +170,7 @@ function VacancyTestView({ result }: { result: VacancyTestResult }) {
     <Card>
       <CardHeader
         title={result.vacancy_title}
-        description={`${SPECIALIZATION_LABELS[result.specialization]} · ${GRADE_LABELS[result.grade]} · разбор ${result.parser === 'llm' ? 'через LLM' : 'по словарю тем (без LLM)'}`}
+        description={`${SPECIALIZATION_LABELS[result.specialization]} · ${GRADE_LABELS[result.grade]} · темы по словарю, ${result.parser === 'llm' ? 'черновики новых задач написала нейросеть' : 'черновики — заготовки словаря (без нейросети)'}`}
       />
       <div className="flex flex-col gap-7">
         <Step n={1} icon={<Tags />} title="Темы, найденные в тексте">
@@ -245,6 +250,12 @@ function VacancyTestView({ result }: { result: VacancyTestResult }) {
   )
 }
 
+/** Подпись черновика от нейросети: какая модель и где работает (данные с сервера не уходят). */
+function llmLabel(draft: Pick<ItemDraft, 'model' | 'model_local'>): string {
+  const where = draft.model_local ? 'локально на сервере' : 'внешний сервис'
+  return `Написано нейросетью ${draft.model ?? 'LLM'} (${where})`
+}
+
 /**
  * Черновик шаблона. Если бэкенд прислал item_id (трек 3c) — берём шаблон по id;
  * иначе ищем его в банке по теме и названию.
@@ -274,11 +285,37 @@ function DraftCard({ draft }: { draft: ItemDraft }) {
         <span className="text-[13px] font-medium text-muted">{draft.label}</span>
         <ItemStatusBadge status={status} />
       </div>
+      {draft.origin === 'llm' && (
+        <Badge tone="violet" icon={<Cpu aria-hidden />} className="mb-2 self-start whitespace-normal">
+          {llmLabel(draft)}
+        </Badge>
+      )}
       <p className="font-semibold text-ink">{draft.title}</p>
       <p className="mt-1 text-sm text-ink">{draft.prompt}</p>
+      {draft.options && draft.options.length > 0 && (
+        <ul className="mt-2 flex flex-col gap-1" aria-label="Варианты ответа">
+          {draft.options.map((o) => {
+            const right = o === draft.answer
+            return (
+              <li key={o} className={`flex items-start gap-2 rounded-xs px-2 py-1 text-sm ${right ? 'bg-success-soft text-success' : 'text-ink'}`}>
+                {right ? <CheckCircle2 className="mt-0.5 size-4 shrink-0" aria-hidden /> : <Circle className="mt-0.5 size-4 shrink-0 text-subtle" aria-hidden />}
+                <span>
+                  {o}
+                  {right && <span className="sr-only"> — правильный ответ</span>}
+                </span>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+      {draft.explanation && (
+        <p className="mt-2 text-[13px] text-muted">
+          <b className="font-semibold text-ink">Почему так:</b> {draft.explanation}
+        </p>
+      )}
       <p className="mt-1 text-[13px] text-muted">
         Формат: {ITEM_FORMAT_LABELS[draft.format]}
-        {draft.origin ? ` · ${draft.origin === 'llm' ? 'составлен LLM' : 'заготовка словаря тем'}` : ''}
+        {draft.origin === 'vocabulary' ? ' · заготовка словаря тем' : ''}
         {draft.reused ? ' · черновик по этой теме и грейду уже был — новый не создавали' : ''}
       </p>
       <div className="mt-3 flex flex-wrap items-center gap-2">
