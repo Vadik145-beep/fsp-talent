@@ -10,7 +10,7 @@ import { useGradeStatus, useStartTest, type GradeStatus, type S, type TestSessio
 import { QueryView } from './components/QueryView'
 import { GradeConfirmedBadge, UnconfirmedGrade } from './components/GradeStatus'
 import { ThetaScale } from './components/ThetaScale'
-import { GRADE_EVENT_LABELS, TEST_KIND_LABELS, formatTheta } from './labels'
+import { GRADE_EVENT_LABELS, TEST_KIND_LABELS, formatTheta, ruThetaText } from './labels'
 
 export default function GradePage() {
   const q = useGradeStatus()
@@ -81,7 +81,7 @@ function GradeHistory({ g }: { g: GradeStatus }) {
                   <Icon className="size-3.5" aria-hidden />
                 </span>
                 <p className="text-sm font-semibold text-ink">{GRADE_EVENT_LABELS[h.event]}</p>
-                {h.comment && <p className="text-[15px] text-ink">{h.comment}</p>}
+                {h.comment && <p className="text-[15px] text-ink">{ruThetaText(h.comment)}</p>}
                 <p className="text-[13px] text-muted">{formatDate(h.at)}</p>
               </li>
             )
@@ -114,7 +114,7 @@ function GradeView({ g }: { g: GradeStatus }) {
         <GradeHistory g={g} />
         <div>
           <h2 className="mb-3 text-lg font-semibold">Тесты</h2>
-          <Table columns={testColumns} rows={g.tests} rowKey={(s) => s.id} empty={<EmptyState compact title="Тестов пока не было" />} caption="Мои тесты" />
+          <Table mobileCards columns={testColumns} rows={g.tests} rowKey={(s) => s.id} empty={<EmptyState compact title="Тестов пока не было" />} caption="Мои тесты" />
         </div>
       </div>
     )
@@ -194,7 +194,7 @@ function GradeView({ g }: { g: GradeStatus }) {
 
       <div>
         <h2 className="mb-3 text-lg font-semibold">Тесты</h2>
-        <Table columns={testColumns} rows={g.tests} rowKey={(s) => s.id} empty={<EmptyState compact title="Тестов пока не было" />} caption="Мои тесты" />
+        <Table mobileCards columns={testColumns} rows={g.tests} rowKey={(s) => s.id} empty={<EmptyState compact title="Тестов пока не было" />} caption="Мои тесты" />
       </div>
 
       <Modal

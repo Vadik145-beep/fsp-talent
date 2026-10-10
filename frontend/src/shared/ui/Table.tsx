@@ -1,6 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react'
 import { cn } from '@/shared/lib/cn'
+import { useMediaQuery } from '@/shared/lib/useMediaQuery'
 import { Skeleton } from './States'
 
 export type SortDirection = 'asc' | 'desc'
@@ -38,6 +39,11 @@ export interface TableProps<T> {
   empty?: ReactNode
   caption?: string
   className?: string
+  /**
+   * На узком экране (до 640 px) показывать строки карточками: первая колонка — заголовок,
+   * остальные — «подпись: значение». Колонки с hideOnMobile в карточке тоже видны.
+   */
+  mobileCards?: boolean
 }
 
 function readValue<T>(row: T, col: TableColumn<T>): string | number | null | undefined {
@@ -59,7 +65,9 @@ export function Table<T>({
   empty,
   caption,
   className,
+  mobileCards,
 }: TableProps<T>) {
+  const narrow = useMediaQuery('(max-width: 639px)')
   const [innerSort, setInnerSort] = useState<SortState | null>(defaultSort ?? null)
   const isControlled = controlledSort !== undefined
   const sort = isControlled ? controlledSort : innerSort
@@ -91,6 +99,66 @@ export function Table<T>({
 
   const alignClass = (a?: 'left' | 'right' | 'center') =>
     a === 'right' ? 'text-right' : a === 'center' ? 'text-center' : 'text-left'
+
+  const cell = (row: T, col: TableColumn<T>) =>
+    col.render ? col.render(row) : String((row as Record<string, unknown>)[col.key] ?? '—')
+
+  if (mobileCards && narrow) {
+    const [head, ...rest] = columns
+    return (
+      <div className={cn('rounded-lg border border-line bg-surface', className)} data-testid="table-cards">
+        {caption && <p className="sr-only">{caption}</p>}
+        {loading ? (
+          <div className="grid gap-3 p-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-16 w-full" />
+            ))}
+          </div>
+        ) : sortedRows.length === 0 ? (
+          (empty ?? <p className="px-4 py-8 text-center text-muted">Нет данных</p>)
+        ) : (
+          <ul className="divide-y divide-line">
+            {sortedRows.map((row) => (
+              <li
+                key={rowKey(row)}
+                onClick={onRowClick ? () => onRowClick(row) : undefined}
+                onKeyDown={
+                  onRowClick
+                    ? (e) => {
+                        if (e.key === 'Enter') onRowClick(row)
+                      }
+                    : undefined
+                }
+                tabIndex={onRowClick ? 0 : undefined}
+                className={cn(
+                  'grid gap-2 px-4 py-3 text-sm text-ink',
+                  onRowClick && 'cursor-pointer transition-colors hover:bg-primary-soft focus-visible:bg-primary-soft',
+                )}
+              >
+                {head && <div className="min-w-0 font-semibold">{cell(row, head)}</div>}
+                {rest.length > 0 && (
+                  <dl className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-1.5">
+                    {rest.map((col) =>
+                      col.header ? (
+                        <div key={col.key} className="contents">
+                          <dt className="text-[13px] text-muted">{col.header}</dt>
+                          <dd className="min-w-0">{cell(row, col)}</dd>
+                        </div>
+                      ) : (
+                        <dd key={col.key} className="col-span-2 min-w-0">
+                          {cell(row, col)}
+                        </dd>
+                      ),
+                    )}
+                  </dl>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className={cn('overflow-x-auto rounded-lg border border-line bg-surface', className)}>
@@ -186,9 +254,8 @@ export function Table<T>({
                       col.className,
                     )}
                   >
-                    {col.render
-                      ? col.render(row)
-                      : String((row as Record<string, unknown>)[col.key] ?? '—')}
+                    {cell(row, col)}
+
                   </td>
                 ))}
               </tr>

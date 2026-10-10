@@ -54,6 +54,23 @@ export function InviteModal(props: InviteModalProps) {
 
 type FieldErrors = Partial<Record<'description' | 'salary_from' | 'salary_to' | 'contact_method' | 'task_text', string>>
 
+interface InviteValues {
+  description: string
+  salaryFrom: number | null
+  salaryTo: number | null
+  contact: string
+}
+
+function validateInvite(v: InviteValues): FieldErrors {
+  const next: FieldErrors = {}
+  if (v.description.trim().length < 10) next.description = 'Опишите предложение (от 10 символов)'
+  if (!v.salaryFrom) next.salary_from = 'Укажите сумму «от»'
+  if (!v.salaryTo) next.salary_to = 'Укажите сумму «до»'
+  if (v.salaryFrom && v.salaryTo && v.salaryFrom > v.salaryTo) next.salary_from = '«От» не может быть больше «до»'
+  if (v.contact.trim().length < 2) next.contact_method = 'Укажите контакт для связи'
+  return next
+}
+
 function InviteModalInner({ onClose, candidate, need, onSent }: InviteModalProps) {
   const { toast } = useToast()
   const qc = useQueryClient()
@@ -78,6 +95,7 @@ function InviteModalInner({ onClose, candidate, need, onSent }: InviteModalProps
   const [withTask, setWithTask] = useState(false)
   const [taskText, setTaskText] = useState('')
   const [errors, setErrors] = useState<FieldErrors>({})
+  const [submitted, setSubmitted] = useState(false)
   const [banner, setBanner] = useState<{ code: string; message: string } | null>(null)
 
   const contactDefault = useMemo(() => {
@@ -88,6 +106,30 @@ function InviteModalInner({ onClose, candidate, need, onSent }: InviteModalProps
     return ''
   }, [me, contactType])
   const contact = contactValue ?? contactDefault
+
+  /**
+   * Поле изменилось: его ошибка снимается сразу. После первой попытки отправить форму
+   * проверка идёт на лету — в том числе пара «от»/«до».
+   */
+  function revalidate(field: keyof FieldErrors, patch: Partial<InviteValues>) {
+    const values: InviteValues = { description: descriptionValue, salaryFrom, salaryTo, contact, ...patch }
+    const salary = field === 'salary_from' || field === 'salary_to'
+    if (salary && banner?.code === 'salary_below_expectations') setBanner(null)
+    setErrors((prev) => {
+      const next = { ...prev }
+      delete next[field]
+      // пара «от/до»: ошибка живёт на «от», поэтому при правке любой границы пересчитываем её
+      if (salary && next.salary_from === '«От» не может быть больше «до»') delete next.salary_from
+      if (!submitted) return next
+      const fresh = validateInvite(values)
+      if (fresh[field]) next[field] = fresh[field]
+      if (salary) {
+        if (fresh.salary_from) next.salary_from = fresh.salary_from
+        else delete next.salary_from
+      }
+      return next
+    })
+  }
 
   // Рыночная подсказка обновляется при вводе вилки (с задержкой).
   const hintParams = useDebounced({ category: candidate.category ?? '', salary_from: salaryFrom, salary_to: salaryTo }, 350)
@@ -145,12 +187,8 @@ function InviteModalInner({ onClose, candidate, need, onSent }: InviteModalProps
 
   function submit(e: FormEvent) {
     e.preventDefault()
-    const next: FieldErrors = {}
-    if (descriptionValue.trim().length < 10) next.description = 'Опишите предложение (от 10 символов)'
-    if (!salaryFrom) next.salary_from = 'Укажите сумму «от»'
-    if (!salaryTo) next.salary_to = 'Укажите сумму «до»'
-    if (salaryFrom && salaryTo && salaryFrom > salaryTo) next.salary_from = '«От» не может быть больше «до»'
-    if (contact.trim().length < 2) next.contact_method = 'Укажите контакт для связи'
+    const next = validateInvite({ description: descriptionValue, salaryFrom, salaryTo, contact })
+    setSubmitted(true)
     setErrors(next)
     setBanner(null)
     if (Object.keys(next).length) return
@@ -228,6 +266,7 @@ function InviteModalInner({ onClose, candidate, need, onSent }: InviteModalProps
           onChange={(e) => {
             setDescTouched(true)
             setDescription(e.target.value)
+            revalidate('description', { description: e.target.value })
           }}
           error={errors.description}
         />
@@ -237,8 +276,26 @@ function InviteModalInner({ onClose, candidate, need, onSent }: InviteModalProps
             Зарплата в месяц, ₽<span className="ml-0.5 text-primary" aria-hidden>*</span>
           </legend>
           <div className="grid grid-cols-2 gap-3">
-            <MoneyInput label="От" value={salaryFrom} onChange={setSalaryFrom} error={errors.salary_from} placeholder="200 000" />
-            <MoneyInput label="До" value={salaryTo} onChange={setSalaryTo} error={errors.salary_to} placeholder="280 000" />
+            <MoneyInput
+              label="От"
+              value={salaryFrom}
+              onChange={(v) => {
+                setSalaryFrom(v)
+                revalidate('salary_from', { salaryFrom: v })
+              }}
+              error={errors.salary_from}
+              placeholder="200 000"
+            />
+            <MoneyInput
+              label="До"
+              value={salaryTo}
+              onChange={(v) => {
+                setSalaryTo(v)
+                revalidate('salary_to', { salaryTo: v })
+              }}
+              error={errors.salary_to}
+              placeholder="280 000"
+            />
           </div>
           <MarketHintBox
             loading={hint.isPending && Boolean(hintParams.category)}
@@ -249,6 +306,8 @@ function InviteModalInner({ onClose, candidate, need, onSent }: InviteModalProps
                 ? () => {
                     setSalaryFrom(h.median_accepted_from)
                     setSalaryTo(h.median_accepted_to)
+                    revalidate('salary_from', { salaryFrom: h.median_accepted_from, salaryTo: h.median_accepted_to })
+                    revalidate('salary_to', { salaryFrom: h.median_accepted_from, salaryTo: h.median_accepted_to })
                   }
                 : undefined
             }
@@ -263,13 +322,17 @@ function InviteModalInner({ onClose, candidate, need, onSent }: InviteModalProps
             onChange={(e) => {
               setContactType(e.target.value as ContactMethodType)
               setContactValue(null)
+              setErrors((prev) => ({ ...prev, contact_method: undefined }))
             }}
           />
           <Input
             label="Контакт"
             required
             value={contact}
-            onChange={(e) => setContactValue(e.target.value)}
+            onChange={(e) => {
+              setContactValue(e.target.value)
+              revalidate('contact_method', { contact: e.target.value })
+            }}
             error={errors.contact_method}
             hint="Кандидат увидит его после принятия приглашения"
           />
@@ -299,8 +362,12 @@ function InviteModalInner({ onClose, candidate, need, onSent }: InviteModalProps
               maxLength={2000}
               placeholder="Например: как бы вы ускорили API, который отвечает 2 секунды?"
               value={taskText}
-              onChange={(e) => setTaskText(e.target.value)}
+              onChange={(e) => {
+                setTaskText(e.target.value)
+                revalidate('task_text', {})
+              }}
               error={errors.task_text}
+
             />
           )}
         </div>

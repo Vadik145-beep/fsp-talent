@@ -79,7 +79,7 @@ export default function RecruiterDashboardPage() {
                         <li key={n.id}>
                           <Link to={`/recruiter/needs/${n.id}`} className="flex items-center justify-between gap-3 py-3 hover:text-fsp-plum">
                             <span className="min-w-0">
-                              <span className="block truncate font-semibold">{n.title}</span>
+                              <span className="block font-semibold break-words">{n.title}</span>
                               <span className="block text-[13px] text-muted">{categoryLabel(n.category)}</span>
                             </span>
                             <span className="flex shrink-0 items-center gap-2 text-sm font-semibold text-fsp-plum">
@@ -118,7 +118,7 @@ export default function RecruiterDashboardPage() {
                         <li key={a.id}>
                           <Link to={`/recruiter/vacancies/${a.vacancy_id}`} className="flex items-center justify-between gap-3 py-2.5 text-sm hover:text-fsp-plum">
                             <span className="min-w-0">
-                              <span className="block truncate font-medium">{a.vacancy_title}</span>
+                              <span className="block font-medium break-words">{a.vacancy_title}</span>
                               <span className="block text-[13px] text-muted">{a.candidate_pseudonym}</span>
                             </span>
                             <span className="shrink-0 text-[13px] text-muted">{formatDate(a.created_at)}</span>

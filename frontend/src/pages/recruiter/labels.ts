@@ -26,6 +26,14 @@ export const APPLICATION_STATUS_LABELS: Record<ApplicationStatus, string> = {
   rejected: 'Отказ',
 }
 
+/** Допустимые переходы статуса отклика — как на бэкенде (APPLICATION_TRANSITIONS); назад нельзя, иначе 409. */
+export const APPLICATION_TRANSITIONS: Record<ApplicationStatus, ApplicationStatus[]> = {
+  new: ['viewed', 'invited', 'rejected'],
+  viewed: ['invited', 'rejected'],
+  invited: ['rejected'],
+  rejected: ['invited'],
+}
+
 export const APPLICATION_STATUS_TONE: Record<ApplicationStatus, Tone> = {
   new: 'accent',
   viewed: 'info',

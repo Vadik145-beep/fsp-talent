@@ -10,7 +10,9 @@ import { QueryView } from './components/QueryView'
 import { ResumeUpload } from './components/ResumeUpload'
 import { downloadProfilePdf } from './components/downloadPdf'
 import { GradeConfirmedBadge, UnconfirmedGrade } from './components/GradeStatus'
-import { applyParsedResume, formFromProfile, toUpdate, type ParsedConfidence, type ProfileFormState } from './components/profileFormModel'
+import { applyParsedResume, formFromProfile, toUpdate, type ParsedConfidence, type ProfileFormState, type ResumeClaim } from './components/profileFormModel'
+import { ResumeClaimNote } from './components/ResumeClaim'
+import { hasClaim, writeResumeClaim } from './components/resumeClaimStore'
 
 export default function ProfilePage() {
   const q = useProfile()
@@ -51,12 +53,23 @@ function ProfileEditor({ profile }: { profile: CandidateProfile }) {
   const [form, setForm] = useState<ProfileFormState>(() => formFromProfile(profile))
   const [confidence, setConfidence] = useState<ParsedConfidence>({})
   const [uploadOpen, setUploadOpen] = useState(false)
+  const [claim, setClaim] = useState<ResumeClaim | null>(null)
 
   const save = useMutation({
-    mutationFn: () => api.put<CandidateProfile>('/candidates/me/profile', toUpdate(form)),
+    mutationFn: async () => {
+      const updated = await api.put<CandidateProfile>('/candidates/me/profile', toUpdate(form))
+      // Специализация и грейд из резюме — только заявка (статус «не подтверждён»); подтверждённый грейд не трогаем.
+      if (claim?.specialization && claim.grade && profile.grade_status !== 'confirmed') {
+        await api
+          .put('/candidates/me/declared-grade', { specialization: claim.specialization.value, grade: claim.grade.value })
+          .catch(() => undefined)
+      }
+      return updated
+    },
     onSuccess: (updated) => {
       client.setQueryData(qk.profile, updated)
       void invalidateCandidate(client)
+      if (hasClaim(claim)) writeResumeClaim(claim)
       setConfidence({})
       toast({ tone: 'success', title: 'Профиль сохранён' })
     },
@@ -67,6 +80,7 @@ function ProfileEditor({ profile }: { profile: CandidateProfile }) {
     const applied = applyParsedResume(form, result)
     setForm(applied.form)
     setConfidence(applied.confidence)
+    setClaim(hasClaim(applied.claim) ? applied.claim : null)
     setUploadOpen(false)
     toast({
       tone: 'info',
@@ -97,7 +111,9 @@ function ProfileEditor({ profile }: { profile: CandidateProfile }) {
             <ResumeUpload onParsed={onParsed} />
           </Card>
         ) : null}
+        {claim && <ResumeClaimNote claim={claim} onboarding={false} />}
         <ProfileForm
+
           value={form}
           onChange={setForm}
           onSubmit={() => save.mutate()}

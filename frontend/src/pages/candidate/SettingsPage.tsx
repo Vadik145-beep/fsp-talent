@@ -148,7 +148,7 @@ function SettingsView({ s }: { s: CandidateSettings }) {
                 label="Публикация профиля работодателям"
                 description={
                   s.publication_consent
-                    ? `Обезличенный профиль виден в поиске${pub?.granted_at ? ` · дано ${formatDate(pub.granted_at)}` : ''}.`
+                    ? `Обезличенный профиль виден в поиске${pub?.granted_at ? ` · дано ${formatDate(pub.granted_at)}` : '.'}`
                     : 'Без этого согласия вас нет в поиске — только отклики на вакансии.'
                 }
                 checked={s.publication_consent}

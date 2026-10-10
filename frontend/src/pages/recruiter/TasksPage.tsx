@@ -146,7 +146,7 @@ function SubmissionCard({ sub }: { sub: TaskSubmission }) {
         <p className={cn('rounded-md bg-surface-muted p-3 text-sm whitespace-pre-wrap', sub.answer_kind === 'code' && 'font-mono text-[13px]')}>{sub.answer_text}</p>
       ) : (
         <p className="text-sm text-muted">
-          {sub.status === 'expired' ? 'Кандидат не ответил в срок.' : `Ждём ответ до ${formatDate(sub.due_at)}.`}
+          {sub.status === 'expired' ? 'Кандидат не ответил в срок.' : `Ждём ответ до ${formatDate(sub.due_at)}`}
         </p>
       )}
       {sub.status === 'graded' && !editing && (

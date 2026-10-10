@@ -48,7 +48,13 @@ MUTED = colors.HexColor("#5B5C66")
 FRAME_PAD = 6  # pt, внутренний отступ Frame в SimpleDocTemplate
 MAX_ACHIEVEMENTS = 5
 
-LEVEL_LABELS = {"strong": "сильная сторона", "ok": "на уровне грейда", "weak": "зона роста"}
+
+def _ru_num(value: float) -> str:
+    """0.42 → «0,42», -1.98 → «-1,98» (десятичная запятая, как во всём интерфейсе)."""
+    return f"{value:.2f}".replace(".", ",")
+
+
+LEVEL_LABELS = {"strong": "сильная сторона", "ok": "в пределах уровня", "weak": "зона роста"}
 FORMAT_LABELS = {"office": "офис", "hybrid": "гибрид", "remote": "удалённо"}
 DISCIPLINE_LABELS = {
     "product": "продуктовое программирование",
@@ -248,7 +254,7 @@ def build_profile_pdf(data: ProfileData) -> bytes:
         cat = f"{SPEC_LABELS.get(spec, spec)} · {GRADE_LABELS.get(grade, grade)}"
         theta = cand.get("theta")
         extra = (
-            f"  <font name='FspSans' size='9' color='#5B5C66'>θ = {theta:.2f}</font>"
+            f"  <font name='FspSans' size='9' color='#5B5C66'>θ = {_ru_num(theta)}</font>"
             if (theta is not None)
             else ""
         )

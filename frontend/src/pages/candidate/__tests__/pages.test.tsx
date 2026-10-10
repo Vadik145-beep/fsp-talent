@@ -46,7 +46,7 @@ describe('экраны соискателя', () => {
     setApiRole('candidate', 26)
     expect(await screen.findByText('ФСП ID не привязан', {}, T)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Привязать ФСП ID' })).toBeInTheDocument()
-    expect(screen.getByText(/не снижает позицию в выдаче/)).toBeInTheDocument()
+    expect(screen.getByText(/штрафа в выдаче нет/)).toBeInTheDocument()
   }, 20_000)
 
   it('кандидат без ФСП: главная и настройки открываются без ошибок', async () => {

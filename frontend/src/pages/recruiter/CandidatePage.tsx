@@ -25,7 +25,7 @@ import { StackTags, ThetaInfo } from './components/CandidateBits'
 import { InviteModal } from './components/InviteModal'
 import { QueryState } from './components/QueryState'
 
-const LEVEL_TITLE: Record<S['TopicLevel'], string> = { strong: 'Сильные темы', ok: 'На уровне грейда', weak: 'Зоны роста' }
+const LEVEL_TITLE: Record<S['TopicLevel'], string> = { strong: 'Сильные темы', ok: 'В пределах уровня', weak: 'Зоны роста' }
 const LEVEL_TONE = { strong: 'success', ok: 'violet', weak: 'warning' } as const
 
 /** Обезличенный профиль: до принятия приглашения — без ФИО и контактов. */
@@ -156,9 +156,9 @@ export default function RecruiterCandidatePage() {
               <h4 className="mb-2 text-sm font-semibold">История тестов</h4>
               <ul className="flex flex-col gap-1 text-sm">
                 {p.test_history!.map((h) => (
-                  <li key={h.date} className="flex justify-between gap-3">
-                    <span>{categoryLabel(h.category)}</span>
-                    <span className="text-muted tabular-nums">
+                  <li key={h.date} className="flex flex-wrap justify-between gap-x-3 gap-y-0.5">
+                    <span className="whitespace-nowrap">{categoryLabel(h.category)}</span>
+                    <span className="whitespace-nowrap text-muted tabular-nums">
                       θ {h.theta.toFixed(2).replace('.', ',')} · {formatDate(h.date)}
                     </span>
                   </li>
