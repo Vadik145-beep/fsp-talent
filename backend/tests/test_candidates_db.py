@@ -232,12 +232,7 @@ def test_bank_has_fsp_means_shown_achievements(client: TestClient) -> None:
     не выдаёт скрытое участие."""
 
     def bank(has_fsp: str) -> dict[int, dict[str, Any]]:
-        body = client.get(
-            "/api/candidates",
-            params={"has_fsp": has_fsp, "page_size": 100},
-            headers=RECRUITER,
-        ).json()
-        assert body["total"] == len(body["items"])
+        body = _bank_all(client, has_fsp=has_fsp)
         return {c["id"]: c for c in body["items"]}
 
     yes, no = bank("true"), bank("false")
@@ -340,10 +335,22 @@ def _bank(client: TestClient, **params: Any) -> dict[str, Any]:
     return body
 
 
+def _bank_all(client: TestClient, **params: Any) -> dict[str, Any]:
+    """Весь банк по всем страницам (в демо-базе кандидатов больше, чем page_size)."""
+    first = _bank(client, **params)
+    items = list(first["items"])
+    page = 2
+    while len(items) < first["total"]:
+        items += _bank(client, page=page, **params)["items"]
+        page += 1
+    assert len(items) == first["total"]
+    return {**first, "items": items}
+
+
 def test_bank_ranked_by_need(client: TestClient) -> None:
-    plain = _bank(client)
+    plain = _bank_all(client)
     assert all(c["match_score"] is None and c["match_reasons"] == [] for c in plain["items"])
-    ranked = _bank(client, need_id=1)  # потребность 1 компании 1: Backend · Middle
+    ranked = _bank_all(client, need_id=1)  # потребность 1 компании 1: Backend · Middle
     assert ranked["total"] == plain["total"]  # потребность ранжирует, а не фильтрует
     scores = [c["match_score"] for c in ranked["items"]]
     assert scores == sorted(scores, reverse=True)  # по умолчанию — по соответствию

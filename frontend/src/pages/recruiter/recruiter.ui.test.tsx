@@ -48,6 +48,8 @@ describe('экраны рекрутера', () => {
     await user.click(await screen.findByRole('button', { name: 'Пригласить' }, WAIT))
     const dialog = await screen.findByRole('dialog', {}, WAIT)
     await within(dialog).findByTestId('quota-meter', {}, WAIT)
+    // контакт рекрутера подставляется из списка рекрутеров компании — ждём, пока он придёт
+    await waitFor(() => expect(within(dialog).getByLabelText(/^Контакт/)).not.toHaveValue(''), WAIT)
     const from = within(dialog).getByLabelText('От')
     const to = within(dialog).getByLabelText('До')
     await user.type(from, '180000')
