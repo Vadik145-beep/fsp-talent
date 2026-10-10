@@ -2066,6 +2066,9 @@ def build_invitations() -> None:
             else None
         )
         expires = created + timedelta(days=7)
+        if status in ("sent", "viewed"):
+            # активные приглашения демо не должны истекать до конца проверки
+            expires = created.replace(month=12, day=30)
         withdrawn = created + timedelta(days=2) if status == "withdrawn" else None
         contact_type = rng.choice(["telegram", "email", "phone"])
         contact_value = {"telegram": rec["telegram"], "email": rec["email"], "phone": rec["phone"]}[

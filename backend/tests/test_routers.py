@@ -2,9 +2,11 @@
 
 import io
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.common import fixtures
+from app.fsp.oidc import KeycloakClient
 from tests.conftest import ADMIN, CANDIDATE, CANDIDATE_NO_FSP, RECRUITER, as_role
 from tests.test_candidates_db import without_grade_status
 
@@ -23,7 +25,12 @@ def test_auth_login_and_me(client: TestClient) -> None:
     assert bad.status_code == 401 and bad.json()["code"] == "invalid_credentials"
 
 
-def test_auth_register_and_verify(client: TestClient) -> None:
+def test_auth_register_and_verify(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    # в CI Keycloak не поднят: проверку доступности подменяем, адрес строится без сети
+    async def available(self: KeycloakClient) -> None:
+        return None
+
+    monkeypatch.setattr(KeycloakClient, "check_available", available)
     body = {
         "email": "new.user@example.com",
         "password": "S3cure-pass",
