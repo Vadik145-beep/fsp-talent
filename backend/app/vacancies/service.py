@@ -480,7 +480,7 @@ class VacancyService:
                     text=(
                         f"Здравствуйте!\n\n{name} ({category}) откликнулся на вакансию "
                         f"«{vacancy.title}».{letter}\n\n"
-                        f"Контакты: {contacts}.\n\nОтклики: {link}\n— fsp-talent"
+                        f"Контакты: {contacts}.\n\nОтклики: {link}\n— ФСП · Таланты"
                     ),
                 )
             )
@@ -498,7 +498,7 @@ class VacancyService:
                 text=(
                     f"Здравствуйте!\n\nВаш отклик на вакансию «{vacancy.title}» "
                     f"в компании «{company}»: {CANDIDATE_STATUS_TEXT[status]}.\n\n"
-                    f"Мои отклики: {link}\n— fsp-talent"
+                    f"Мои отклики: {link}\n— ФСП · Таланты"
                 ),
             )
         )

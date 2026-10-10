@@ -132,7 +132,10 @@ docker compose down -v     # остановить и удалить данные
 | `CORS_ORIGINS` | `["http://localhost:15173","http://127.0.0.1:15173"]` | разрешённые origin фронта (JSON-список) |
 | `ACCESS_TOKEN_TTL_MIN` / `REFRESH_TOKEN_TTL_DAYS` | `15` / `30` | срок жизни токенов |
 | `LOGIN_MAX_ATTEMPTS` / `LOGIN_WINDOW_MIN` | `5` / `15` | лимит неудачных входов |
-| `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_STARTTLS`, `SMTP_FROM` | пусто / `false` / `noreply@fsp-talent.example.com` | настоящий SMTP вместо Mailpit |
+| `SMTP_HOST` / `SMTP_PORT` | `mailpit` / `1025` | SMTP-сервер; на стенде обязательны (`smtp.yandex.ru` / `465`) |
+| `SMTP_USER`, `SMTP_PASSWORD` | пусто | логин и пароль приложения почтового ящика |
+| `SMTP_SSL` / `SMTP_STARTTLS` | `false` / `false` | SMTPS (порт 465) или STARTTLS (порт 587); на стенде `SMTP_SSL=true` |
+| `SMTP_FROM` / `SMTP_FROM_NAME` | пусто (= `SMTP_USER`) / `ФСП · Таланты` | адрес и имя отправителя; Яндекс и Mail.ru принимают только адрес самого ящика |
 | `FSP_WEBHOOK_SECRET` | `dev-fsp-webhook-secret` | секрет HMAC вебхука реестра; пусто — вебхук выключен |
 | `FSP_REGISTRY_TOKEN` | пусто | сервисный токен для реестра |
 | `TESTING_CAT_SE_STOP` / `TESTING_CAT_MAX_ITEMS` / `TESTING_CAT_MIN_ITEMS` | `0.30` / `20` / `6` | правило остановки теста |
@@ -149,7 +152,7 @@ docker compose down -v     # остановить и удалить данные
 ## 8.4. Стенд на сервере (один сервер, Caddy + HTTPS)
 
 Так развёрнут https://159-194-200-243.sslip.io. Файлы — `infra/stand/`: `compose.yml`
-(Caddy, backend, PostgreSQL, Keycloak, мок реестра, Mailpit), `Caddyfile`, `.env.example`,
+(Caddy, backend, PostgreSQL, Keycloak, мок реестра), `Caddyfile`, `.env.example`,
 `deploy.sh`. Сервер: 2 vCPU / 4 ГБ, Ubuntu с Docker, открыты порты 80 и 443. Домен —
 бесплатный `<ip-через-дефисы>.sslip.io`, сертификат Let's Encrypt Caddy получает сам.
 
@@ -160,7 +163,6 @@ docker compose down -v     # остановить и удалить данные
 | `/` | статика фронта (`infra/stand/site`, собранная с `VITE_USE_MOCKS=false`) |
 | `/api/*` | backend |
 | `/kc/*` | Keycloak (`KC_HTTP_RELATIVE_PATH=/kc`) |
-| `/mail*` | Mailpit — демо-почта для писем подтверждения |
 
 Первый запуск:
 
@@ -170,7 +172,8 @@ cd /opt/fsp-talent/app/infra/stand
 cp .env.example .env
 # в .env: STAND_HOST=<ваш-ip-через-дефисы>.sslip.io и случайные секреты:
 #   POSTGRES_PASSWORD, JWT_SECRET (32+ символа), KEYCLOAK_ADMIN_PASSWORD, FSP_WEBHOOK_SECRET
-#   (например: openssl rand -hex 24); ADMIN_PASSWORD — пароль администратора
+#   (например: openssl rand -hex 24); ADMIN_PASSWORD — пароль администратора;
+#   SMTP_USER / SMTP_PASSWORD — почтовый ящик и пароль приложения (без них стенд не стартует)
 chmod 600 .env
 ./deploy.sh
 ```
@@ -183,7 +186,8 @@ chmod 600 .env
 
 Отличия стенда от dev-стека: `APP_ENV=prod` (secure-cookie), `DEMO_AUTH_ENABLED=false`
 (только JWT), `SEED_ON_STARTUP=true` (демо-данные загружаются сами), фронт — собранная
-статика, а не Vite; наружу открыт только Caddy.
+статика, а не Vite; наружу открыт только Caddy; письма уходят настоящей почтой через
+SMTP-ящик из `.env` (Mailpit на стенде нет).
 
 Проверка стенда:
 

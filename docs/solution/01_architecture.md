@@ -39,19 +39,19 @@ flowchart LR
         P[("PostgreSQL 16")]
         K["Keycloak 25<br/>ФСП ID, realm fsp"]
         R["fsp-registry-mock<br/>реестр достижений ФСП"]
-        M["Mailpit<br/>SMTP и веб-почта"]
+        M["Mailpit<br/>почта в dev-стеке"]
     end
     L["LLM API<br/>OpenAI-совместимый<br/>(необязательно)"]
 
     U -->|"HTTPS /"| C
     C -->|"/api/*"| B
     C -->|"/kc/*"| K
-    C -->|"/mail/*"| M
     B --> P
     B -->|"OIDC: token, JWKS"| K
     B -->|"HTTP: участник, достижения"| R
     R -.->|"вебхук X-FSP-Signature"| B
-    B -->|SMTP| M
+    B -->|"SMTP (dev)"| M
+    B -->|"SMTPS (стенд)"| E["Почтовый сервер<br/>smtp.yandex.ru"]
     B -.->|"если задан ключ"| L
     U -.->|"вход через ФСП ID<br/>(редирект)"| K
 ```
@@ -63,11 +63,11 @@ flowchart LR
 | `postgres` | postgres:16-alpine | хранение всех данных | 15432 |
 | `keycloak` | quay.io/keycloak/keycloak:25.0 | ФСП ID: вход и привязка профиля (OIDC + PKCE) | 18180 |
 | `fsp-registry-mock` | собственный (python:3.12-slim) | наш вариант API реестра достижений ФСП | 18100 |
-| `mailpit` | axllent/mailpit | письма подтверждения почты, приглашений, сброса пароля | 18025 (UI), 11025 (SMTP) |
+| `mailpit` (только dev) | axllent/mailpit | ловит письма подтверждения почты, приглашений, сброса пароля; на стенде вместо него настоящий SMTP-ящик | 18025 (UI), 11025 (SMTP) |
 | `caddy` (только стенд) | caddy:2-alpine | HTTPS по Let's Encrypt, один адрес для всего | 80, 443 |
 
-Суммарный лимит памяти в `infra/stand/compose.yml` — около 2,4 ГБ (сервер 2 vCPU / 4 ГБ):
-backend 768 МБ, Keycloak 900 МБ, PostgreSQL 384 МБ, мок 192 МБ, Mailpit 128 МБ.
+Суммарный лимит памяти в `infra/stand/compose.yml` — около 2,3 ГБ (сервер 2 vCPU / 4 ГБ):
+backend 768 МБ, Keycloak 900 МБ, PostgreSQL 384 МБ, мок 192 МБ.
 
 Без внешних сервисов система работает полностью: LLM необязателен (разбор текстов идёт
 на правилах и словарях), реестр ФСП и Keycloak — свои контейнеры. Если Keycloak или реестр

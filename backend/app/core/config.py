@@ -52,8 +52,10 @@ class Settings(BaseSettings):
     smtp_user: str = ""
     smtp_password: str = ""
     smtp_starttls: bool = False
+    smtp_ssl: bool = False  # SMTPS (порт 465); для 587 — smtp_starttls
     smtp_timeout_sec: float = 10
-    smtp_from: str = "noreply@fsp-talent.example.com"
+    smtp_from: str = ""  # пусто — адрес из smtp_user (Яндекс и Mail.ru требуют совпадения)
+    smtp_from_name: str = "ФСП · Таланты"
     public_frontend_url: str = "http://localhost:15173"
 
     keycloak_public_url: str = "http://localhost:18180"

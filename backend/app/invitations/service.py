@@ -430,7 +430,7 @@ class InvitationService:
                     f"Приглашение действует до {as_msk(inv.expires_at):%d.%m.%Y}. "
                     f"Принять или отклонить: {link}\n\n"
                     "Ваши контакты компания увидит, только если вы примете приглашение.\n"
-                    "— fsp-talent"
+                    "— ФСП · Таланты"
                 ),
             )
         )
@@ -449,7 +449,7 @@ class InvitationService:
                 f"Контакты: {cand.get('full_name', '')}, {cand.get('email', '')}"
                 f"{', ' + cand['phone'] if cand.get('phone') else ''}"
                 f"{', ' + cand['telegram'] if cand.get('telegram') else ''}.\n\n"
-                f"Приглашения: {link}\n— fsp-talent"
+                f"Приглашения: {link}\n— ФСП · Таланты"
             )
         else:
             reason = (
@@ -461,7 +461,7 @@ class InvitationService:
             subject = f"{who} отклонил приглашение"
             body = (
                 f"{who} отклонил ваше приглашение.\nПричина: {reason}.{comment}\n\n"
-                f"Приглашения: {link}\n— fsp-talent"
+                f"Приглашения: {link}\n— ФСП · Таланты"
             )
         self.outbox.append(Mail(to=to, subject=subject, text=body))
 

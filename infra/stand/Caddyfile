@@ -1,4 +1,4 @@
-# Стенд fsp-talent: один адрес — фронт, API, вход через ФСП ID (Keycloak) и демо-почта.
+# Стенд fsp-talent: один адрес — фронт, API, вход через ФСП ID (Keycloak).
 {$STAND_HOST} {
 	encode gzip
 
@@ -8,10 +8,6 @@
 	# Keycloak работает с относительным путём /kc (KC_HTTP_RELATIVE_PATH)
 	handle /kc/* {
 		reverse_proxy keycloak:8080
-	}
-	# Демо-почта (Mailpit): сюда приходят письма подтверждения регистрации
-	handle /mail* {
-		reverse_proxy mailpit:8025
 	}
 	handle {
 		root * /srv/site

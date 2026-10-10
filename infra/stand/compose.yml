@@ -49,8 +49,14 @@ services:
       KEYCLOAK_PUBLIC_URL: https://${STAND_HOST}/kc
       KEYCLOAK_INTERNAL_URL: http://keycloak:8080/kc
       FSP_REGISTRY_URL: http://fsp-registry-mock:8000
-      SMTP_HOST: mailpit
-      SMTP_PORT: "1025"
+      # настоящая почта: SMTP-ящик из .env (Яндекс: smtp.yandex.ru, 465, SMTP_SSL=true)
+      SMTP_HOST: ${SMTP_HOST:?задайте SMTP_HOST в .env}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_SSL: ${SMTP_SSL:-true}
+      SMTP_STARTTLS: ${SMTP_STARTTLS:-false}
+      SMTP_USER: ${SMTP_USER:?задайте SMTP_USER в .env}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:?задайте SMTP_PASSWORD в .env}
+      SMTP_FROM: ${SMTP_FROM:-}
       ADMIN_EMAIL: admin@example.com
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       FSP_WEBHOOK_SECRET: ${FSP_WEBHOOK_SECRET}
@@ -83,13 +89,6 @@ services:
     build: ../../services/fsp-registry-mock
     restart: unless-stopped
     mem_limit: 192m
-
-  mailpit:
-    image: axllent/mailpit:latest
-    restart: unless-stopped
-    environment:
-      MP_WEBROOT: /mail
-    mem_limit: 128m
 
 volumes:
   pgdata:

@@ -44,13 +44,36 @@ def test_smtp_failure_does_not_raise(monkeypatch: pytest.MonkeyPatch) -> None:
     assert asyncio.run(email_module.send_email_async("a@example.com", "s", "t")) is False
 
 
-def test_build_message_has_text_and_html() -> None:
+def test_build_message_has_text_and_html(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(get_settings(), "smtp_from", "")
+    monkeypatch.setattr(get_settings(), "smtp_user", "fsp.talent@yandex.ru")
     message = email_module.build_message("a@example.com", "Тема", "текст", "<p>html</p>")
-    assert message["To"] == "a@example.com" and message["From"] == get_settings().smtp_from
+    assert message["To"] == "a@example.com"
+    # адрес отправителя = логин SMTP (Яндекс и Mail.ru иначе не примут), имя — название сайта
+    assert message["From"].addresses[0].addr_spec == "fsp.talent@yandex.ru"
+    assert message["From"].addresses[0].display_name == "ФСП · Таланты"
+    assert message["Date"] and message["Message-ID"].endswith("@yandex.ru>")
     assert {part.get_content_type() for part in message.iter_parts()} == {
         "text/plain",
         "text/html",
     }
+
+
+def test_html_built_from_text_when_not_given() -> None:
+    text = (
+        "Здравствуйте!\n\nПринять: https://stand.example/candidate/invitations/7.\n— ФСП · Таланты"
+    )
+    message = email_module.build_message("a@example.com", "Тема", text)
+    html = message.get_body(("html",)).get_content()
+    assert '<a href="https://stand.example/candidate/invitations/7"' in html  # точка не в ссылке
+    assert "ФСП · Таланты" in html and "#402FFF" in html
+    assert "— ФСП · Таланты" not in html  # подпись заменена шапкой и подвалом
+    assert message.get_body(("plain",)).get_content().strip() == text
+
+
+def test_html_escapes_user_text() -> None:
+    html = email_module.text_to_html("<script>alert(1)</script>")
+    assert "<script>" not in html and "&lt;script&gt;" in html
 
 
 @pytest.mark.skipif(not _mailpit_available(), reason="Mailpit недоступен")
