@@ -2651,13 +2651,13 @@ export interface components {
          * @description Запись журнала действий (запись `audit_log.json`).
          * @example {
          *       "action": "grade_changed",
-         *       "at": "2026-08-17T12:00:00+03:00",
+         *       "at": "2026-08-07T15:00:00+03:00",
          *       "details": {
-         *         "grade_to": "junior"
+         *         "grade_to": "middle"
          *       },
          *       "id": 1,
-         *       "summary": "Присвоена категория QA · Junior",
-         *       "target_id": 25,
+         *       "summary": "Присвоена категория Mobile · Middle",
+         *       "target_id": 225,
          *       "target_type": "candidate"
          *     }
          */
@@ -3566,7 +3566,7 @@ export interface components {
          * @description Согласие пользователя: версия текста и даты хранятся [ТЗ 3.5].
          * @example {
          *       "granted": true,
-         *       "granted_at": "2026-09-05T18:00:00+03:00",
+         *       "granted_at": "2026-10-01T16:00:00+03:00",
          *       "id": 1,
          *       "type": "processing",
          *       "user_id": 1,
@@ -5244,7 +5244,7 @@ export interface components {
          * Need
          * @description Потребность работодателя.
          * @example {
-         *       "candidates_count": 3,
+         *       "candidates_count": 18,
          *       "category": "backend:middle",
          *       "category_label": "Backend · Middle",
          *       "company_id": 1,
@@ -6079,7 +6079,7 @@ export interface components {
          *       "recruiter_id": 1,
          *       "statement": "Сервис справочников отвечает 2 секунды. Как ускорить ответы без потери актуальности данных?",
          *       "status": "active",
-         *       "submissions_count": 6,
+         *       "submissions_count": 9,
          *       "title": "Кэш для медленного API"
          *     }
          */
@@ -7127,7 +7127,7 @@ export interface components {
          * Vacancy
          * @description Вакансия (таблица `vacancies`; фикстура `vacancies.json`).
          * @example {
-         *       "applications_count": 3,
+         *       "applications_count": 6,
          *       "category": "backend:middle",
          *       "category_label": "Backend · Middle",
          *       "city": "Москва",
