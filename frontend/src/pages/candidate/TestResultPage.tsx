@@ -1,7 +1,7 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowRight, CircleCheck, Info, PartyPopper, TrendingDown, TrendingUp, TriangleAlert } from 'lucide-react'
+import { ArrowRight, CircleCheck, FileText, Info, PartyPopper, TrendingDown, TrendingUp, TriangleAlert } from 'lucide-react'
 import { api, getErrorMessage, isApiError } from '@/shared/api'
 import { GRADE_LABELS, GRADES, type Grade } from '@/shared/config/dictionaries'
 import { formatDate, formatDateTime } from '@/shared/lib/format'
@@ -10,6 +10,7 @@ import { qk, useStartTest, type TestResult } from './api'
 import { QueryView } from './components/QueryView'
 import { ThetaScale } from './components/ThetaScale'
 import { ONBOARDING_STEPS, writeOnboarding } from './components/onboardingSteps'
+import { claimLabel, hasClaim, readResumeClaim } from './components/ResumeClaim'
 import { TOPIC_LEVEL, formatTheta } from './labels'
 
 const linkBtn =
@@ -75,6 +76,9 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
         ? (rec.target_grade ?? GRADES[GRADES.indexOf(r.target_grade) + 1] ?? null)
         : null
   const canStartNow = recGrade && !rec.available_at
+  // «По резюме заявлен Senior → тест подтвердил Middle»: резюме только заявка, категорию даёт тест.
+  const [claim] = useState(readResumeClaim)
+  const showClaim = hasClaim(claim) && (!claim.specialization || claim.specialization.value === r.specialization)
 
   return (
     <div className="grid gap-5">
@@ -92,6 +96,18 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
             <p className="mt-2 text-sm text-muted">
               Решено задач: {r.items_answered} · {formatDateTime(r.finished_at)}
             </p>
+            {showClaim && (
+              <p className="mt-3 flex items-start gap-2 text-[15px] text-ink" data-testid="resume-vs-test">
+                <FileText className="mt-0.5 size-4 shrink-0 text-fsp-plum" aria-hidden />
+                <span>
+                  По резюме заявлен {claimLabel(claim)}
+                  <ArrowRight className="mx-1 inline size-4 align-[-2px] text-subtle" aria-hidden />
+                  {r.passed ? `тест подтвердил ${GRADE_LABELS[r.target_grade]}` : `по тесту ${GRADE_LABELS[r.result_grade]}`}.{' '}
+                  <span className="text-muted">Категорию определяет тест, а не резюме.</span>
+                </span>
+              </p>
+            )}
+
           </div>
           {r.passed ? (
             <Badge tone="success" icon={<CircleCheck />} className="self-start px-3 py-1 text-sm">

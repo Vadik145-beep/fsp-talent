@@ -1,4 +1,5 @@
-import type { CandidateProfile, CandidateProfileUpdate, S, WorkFormat } from '../api'
+import { GRADES, SPECIALIZATIONS } from '@/shared/config/dictionaries'
+import type { CandidateProfile, CandidateProfileUpdate, GradeCode, S, SpecializationCode, WorkFormat } from '../api'
 
 /** Состояние формы профиля (строки для числовых полей — чтобы можно было стереть значение). */
 export interface ProfileFormState {
@@ -57,13 +58,26 @@ const isWorkFormat = (v: string): v is WorkFormat => (WORK_FORMAT_CODES as reado
 const asString = (v: unknown) => (typeof v === 'string' ? v : typeof v === 'number' ? String(v) : '')
 const asList = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [])
 
-/** Подставить распознанные из PDF поля в форму. Возвращает форму и уверенность по полям. */
+/**
+ * Специализация и грейд, заявленные в резюме. Это не категория: категорию присваивает только тест,
+ * а резюме лишь предзаполняет выбор в онбординге.
+ */
+export interface ResumeClaim {
+  specialization?: { value: SpecializationCode; confidence: number }
+  grade?: { value: GradeCode; confidence: number }
+}
+
+const isSpecialization = (v: string): v is SpecializationCode => (SPECIALIZATIONS as readonly string[]).includes(v)
+const isGrade = (v: string): v is GradeCode => (GRADES as readonly string[]).includes(v)
+
+/** Подставить распознанные из PDF поля в форму. Возвращает форму, уверенность по полям и заявленную категорию. */
 export function applyParsedResume(
   base: ProfileFormState,
   parsed: S['ResumeParseResponse'],
-): { form: ProfileFormState; confidence: ParsedConfidence } {
+): { form: ProfileFormState; confidence: ParsedConfidence; claim: ResumeClaim } {
   const form = { ...base }
   const confidence: ParsedConfidence = {}
+  const claim: ResumeClaim = {}
   for (const [key, field] of Object.entries(parsed.fields)) {
     const v = field.value
     // Не найдено в резюме: value null, confidence 0 — поле формы не трогаем.
@@ -102,11 +116,21 @@ export function applyParsedResume(
           .map((url) => ({ type: guessLinkType(url), url }))
         confidence.links = field.confidence
         break
+      case 'specialization': {
+        const code = asString(v).trim().toLowerCase()
+        if (isSpecialization(code)) claim.specialization = { value: code, confidence: field.confidence }
+        break
+      }
+      case 'grade': {
+        const code = asString(v).trim().toLowerCase()
+        if (isGrade(code)) claim.grade = { value: code, confidence: field.confidence }
+        break
+      }
       default:
         break
     }
   }
-  return { form, confidence }
+  return { form, confidence, claim }
 }
 
 const URL_RE = /^https?:\/\/\S+\.\S+/i

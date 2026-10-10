@@ -69,6 +69,17 @@ describe('подстановка разобранного PDF в форму пр
     expect(toUpdate(form).work_formats).toEqual(['hybrid'])
   })
 
+  it('специализация и грейд из PDF не теряются: возвращаются как заявка, форму не меняют', () => {
+    const { claim, form } = applyParsedResume(
+      base,
+      parsed({ specialization: { value: 'frontend', confidence: 0.92 }, grade: { value: 'Senior', confidence: 0.85 } }),
+    )
+    expect(claim).toEqual({ specialization: { value: 'frontend', confidence: 0.92 }, grade: { value: 'senior', confidence: 0.85 } })
+    expect(form).toEqual(base)
+    expect(applyParsedResume(base, parsed({ grade: { value: 'guru', confidence: 0.9 } })).claim).toEqual({})
+    expect(applyParsedResume(base, parsed({ grade: { value: null, confidence: 0 } })).claim).toEqual({})
+  })
+
   it('формат одной строкой и мусорные коды тоже разбираются', () => {
     expect(applyParsedResume(base, parsed({ work_formats: { value: 'Remote', confidence: 0.8 } })).form.work_formats).toEqual(['remote'])
     const junk = applyParsedResume(base, parsed({ work_formats: { value: ['space'], confidence: 0.8 } }))

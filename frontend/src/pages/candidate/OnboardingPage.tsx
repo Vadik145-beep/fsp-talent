@@ -19,7 +19,8 @@ import { ProfileForm } from './components/ProfileForm'
 import { QueryView } from './components/QueryView'
 import { ResumeUpload } from './components/ResumeUpload'
 import { ONBOARDING_STEPS, readOnboarding, writeOnboarding, type OnboardingProgress } from './components/onboardingSteps'
-import { applyParsedResume, formFromProfile, toUpdate, type ParsedConfidence, type ProfileFormState } from './components/profileFormModel'
+import { applyParsedResume, formFromProfile, toUpdate, type ParsedConfidence, type ProfileFormState, type ResumeClaim } from './components/profileFormModel'
+import { ResumeClaimNote, hasClaim, writeResumeClaim } from './components/ResumeClaim'
 import { ITEM_FORMAT_LABELS } from './labels'
 
 /** Мастер: 1 профиль → 2 опрос → 3 грейд → 4 тест (отдельный экран) → 5 результат. */
@@ -39,25 +40,29 @@ export default function OnboardingPage() {
 
   return (
     <>
-      <PageHeader title="Знакомство" description="Четыре коротких шага — и у вас будет категория, по которой вас найдут работодатели." />
+      <PageHeader title="Знакомство" description="Пять коротких шагов — и у вас будет категория, по которой вас найдут работодатели." />
       <Card className="mb-6" padding="sm">
         <Stepper steps={ONBOARDING_STEPS} current={progress.step} onStepClick={(i) => setProgress({ step: i })} />
       </Card>
-      {progress.step === 0 && <StepProfile onDone={() => setProgress({ step: 1 })} />}
+      {progress.step === 0 && (
+        <StepProfile onDone={(claim) => setProgress({ step: 1, ...(claim ? { resume: claim, specialization: null, grade: null } : {}) })} />
+      )}
       {progress.step === 1 && (
         <StepSurvey
           initial={progress.survey ?? null}
           initialSpec={progress.specialization ?? null}
+          resume={progress.resume ?? null}
           onBack={() => setProgress({ step: 0 })}
           onDone={(survey, specialization) =>
-            setProgress({ step: 2, survey, specialization, grade: progress.grade ?? survey.suggested_grade })
+            setProgress({ step: 2, survey, specialization, grade: progress.grade ?? progress.resume?.grade?.value ?? survey.suggested_grade })
           }
         />
       )}
       {progress.step === 2 && (
         <StepGrade
           suggested={progress.survey?.suggested_grade ?? null}
-          initial={progress.grade ?? progress.survey?.suggested_grade ?? 'junior'}
+          resume={progress.resume ?? null}
+          initial={progress.grade ?? progress.resume?.grade?.value ?? progress.survey?.suggested_grade ?? 'junior'}
           specialization={progress.specialization ?? 'backend'}
           onBack={() => setProgress({ step: 1 })}
           onDone={(grade) => setProgress({ step: 3, grade })}
@@ -91,7 +96,7 @@ function StepActions({ onBack, children }: { onBack?: () => void; children: Reac
 }
 
 // --- Шаг 1. Профиль -----------------------------------------------------------------------
-function StepProfile({ onDone }: { onDone: () => void }) {
+function StepProfile({ onDone }: { onDone: (claim: ResumeClaim | null) => void }) {
   const q = useProfile()
   const [mode, setMode] = useState<'choose' | 'manual' | 'pdf'>('choose')
   return (
@@ -145,17 +150,39 @@ function ChoiceCard({ icon, title, text, badge, onClick }: { icon: ReactNode; ti
   )
 }
 
-function ProfileStepForm({ profile, pdf, onBack, onDone }: { profile: CandidateProfile; pdf: boolean; onBack: () => void; onDone: () => void }) {
+function ProfileStepForm({
+  profile,
+  pdf,
+  onBack,
+  onDone,
+}: {
+  profile: CandidateProfile
+  pdf: boolean
+  onBack: () => void
+  onDone: (claim: ResumeClaim | null) => void
+}) {
   const client = useQueryClient()
   const [form, setForm] = useState<ProfileFormState>(() => formFromProfile(profile))
   const [confidence, setConfidence] = useState<ParsedConfidence>({})
   const [parsed, setParsed] = useState<S['ResumeParseResponse'] | null>(null)
+  const [claim, setClaim] = useState<ResumeClaim | null>(null)
   const save = useMutation({
-    mutationFn: () => api.put<CandidateProfile>('/candidates/me/profile', toUpdate(form)),
+    mutationFn: async () => {
+      const updated = await api.put<CandidateProfile>('/candidates/me/profile', toUpdate(form))
+      // В резюме есть и специализация, и грейд — запоминаем их как заявленный грейд (статус «не подтверждён»).
+      // Официальный грейд это не меняет: его присваивает только тест.
+      if (claim?.specialization && claim.grade && profile.grade_status !== 'confirmed') {
+        await api
+          .put('/candidates/me/declared-grade', { specialization: claim.specialization.value, grade: claim.grade.value })
+          .catch(() => undefined)
+      }
+      return updated
+    },
     onSuccess: (updated) => {
       client.setQueryData(qk.profile, updated)
       void invalidateCandidate(client)
-      onDone()
+      if (hasClaim(claim)) writeResumeClaim(claim)
+      onDone(hasClaim(claim) ? claim : null)
     },
   })
   const serverErrors =
@@ -172,6 +199,7 @@ function ProfileStepForm({ profile, pdf, onBack, onDone }: { profile: CandidateP
             const applied = applyParsedResume(form, result)
             setForm(applied.form)
             setConfidence(applied.confidence)
+            setClaim(applied.claim)
             setParsed(result)
           }}
         />
@@ -194,6 +222,7 @@ function ProfileStepForm({ profile, pdf, onBack, onDone }: { profile: CandidateP
           </span>
         </div>
       )}
+      {claim && <ResumeClaimNote claim={claim} className="mb-4" />}
       {save.isError && !serverErrors && (
         <p className="mb-4 rounded-md bg-danger-soft px-3 py-2 text-sm text-danger" role="alert">
           {getErrorMessage(save.error)}
@@ -224,11 +253,13 @@ type Answers = Record<string, { option_ids: string[]; text: string }>
 function StepSurvey({
   initial,
   initialSpec,
+  resume,
   onBack,
   onDone,
 }: {
   initial: S['SurveyResult'] | null
   initialSpec: Specialization | null
+  resume: ResumeClaim | null
   onBack: () => void
   onDone: (survey: S['SurveyResult'], spec: Specialization) => void
 }) {
@@ -236,7 +267,8 @@ function StepSurvey({
   const [answers, setAnswers] = useState<Answers>({})
   const [missing, setMissing] = useState<string[]>([])
   const [result, setResult] = useState<S['SurveyResult'] | null>(initial)
-  const [spec, setSpec] = useState<Specialization | null>(initialSpec ?? initial?.recommended_specialization ?? null)
+  const resumeSpec = resume?.specialization?.value ?? null
+  const [spec, setSpec] = useState<Specialization | null>(initialSpec ?? (initial ? (resumeSpec ?? initial.recommended_specialization) : null))
   const topics = useQuery({
     queryKey: ['candidate', 'catalog', 'topics'],
     queryFn: () => api.get<S['Topic'][]>('/catalog/topics'),
@@ -255,7 +287,8 @@ function StepSurvey({
       }),
     onSuccess: (res) => {
       setResult(res)
-      setSpec(res.recommended_specialization)
+      // Предзаполняем специализацией из резюме (если есть), рекомендация опроса — рядом.
+      setSpec(resumeSpec ?? res.recommended_specialization)
       window.scrollTo(0, 0)
     },
   })
@@ -295,12 +328,25 @@ function StepSurvey({
           )}
         </Card>
         <Card>
-          <CardHeader title="Подтвердите специализацию" description="Можно выбрать другую — опрос только подсказывает." />
+          <CardHeader
+            title="Подтвердите специализацию"
+            description={
+              resumeSpec
+                ? 'Выбрали специализацию из резюме. Можно выбрать другую — тест будет по выбранной.'
+                : 'Можно выбрать другую — опрос только подсказывает.'
+            }
+          />
+          {resumeSpec && resumeSpec !== result.recommended_specialization && (
+            <p className="mb-3 text-sm text-muted">
+              В резюме — {SPECIALIZATION_LABELS[resumeSpec]}, по ответам опроса ближе {SPECIALIZATION_LABELS[result.recommended_specialization]}.
+            </p>
+          )}
           <div className="flex flex-wrap gap-2">
             {SPECIALIZATIONS.map((s) => (
               <Tag key={s} selected={spec === s} onClick={() => setSpec(s)}>
                 {SPECIALIZATION_LABELS[s]}
                 {s === result.recommended_specialization ? ' · рекомендуем' : ''}
+                {s === resumeSpec ? ' · из резюме' : ''}
               </Tag>
             ))}
           </div>
@@ -321,6 +367,7 @@ function StepSurvey({
         const answeredRequired = required.filter((q) => isAnswered(answers[q.id])).length
         return (
           <div className="grid gap-4">
+            {resume && <ResumeClaimNote claim={resume} />}
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="text-xl font-bold">Опрос по специализации</h2>
               <p className="text-sm text-muted">
@@ -468,18 +515,21 @@ const GRADE_DESCRIPTIONS: Record<Grade, string> = {
 
 function StepGrade({
   suggested,
+  resume,
   initial,
   specialization,
   onBack,
   onDone,
 }: {
   suggested: Grade | null
+  resume: ResumeClaim | null
   initial: Grade
   specialization: Specialization
   onBack: () => void
   onDone: (grade: Grade) => void
 }) {
   const [grade, setGrade] = useState<Grade>(initial)
+  const resumeGrade = resume?.grade?.value ?? null
   const client = useQueryClient()
   const { toast } = useToast()
   // Заявленный грейд сохраняется сразу: до теста статус «грейд не подтверждён» (FTT.4)
@@ -510,6 +560,7 @@ function StepGrade({
               <span className="inline-flex flex-wrap items-center gap-2">
                 {GRADE_LABELS[g]}
                 {g === suggested && <Badge tone="accent">По опросу</Badge>}
+                {g === resumeGrade && <Badge tone="violet">Из резюме</Badge>}
               </span>
             ),
             description: GRADE_DESCRIPTIONS[g],
@@ -521,6 +572,13 @@ function StepGrade({
           <Info className="mt-0.5 size-5 shrink-0 text-fsp-plum" aria-hidden />
           <div className="grid gap-1.5 text-[15px] text-ink">
             <p className="font-semibold">Как присваивается категория</p>
+            {resumeGrade && (
+              <p>
+                По резюме заявлен {GRADE_LABELS[resumeGrade]}. Категорию определяет тест, а не резюме: если тест покажет другой
+                уровень, в профиле будет он.
+              </p>
+            )}
+
             <p>
               Подтвердите уровень — получите категорию «{SPECIALIZATION_LABELS[specialization]} · {GRADE_LABELS[grade]}».
             </p>
