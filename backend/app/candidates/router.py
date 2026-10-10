@@ -87,7 +87,8 @@ async def update_my_profile(
     summary="Загрузить PDF-резюме и получить предзаполнение",
     description=(
         "Разбор PDF (pdfplumber; страницы в две колонки режутся по колонкам) правилами, "
-        "при наличии ключа — уточнение LLM. Поля формы профиля с уверенностью 0..1: "
+        "если подключена LLM — она дозаполняет только пустые поля (уверенность 0,5). "
+        "Поля формы профиля с уверенностью 0..1: "
         "`full_name`, `email`, `phone` (+7XXXXXXXXXX), `city`, `specialization`, `grade`, "
         "`stack` (коды справочника), `experience_years`, `roles_in_team`, `soft_skills`, "
         "`work_formats`, `links`, `about`; не найдено — `value: null, confidence: 0`. "
