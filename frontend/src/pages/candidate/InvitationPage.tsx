@@ -351,10 +351,15 @@ function DeclineModal({
   )
 }
 
+// как на бэкенде: ReportCreate.text — от 5 до 3000 символов
+const REPORT_TEXT_MIN = 5
+const REPORT_TEXT_MAX = 3000
+
 function ReportModal({ open, onClose, inv }: { open: boolean; onClose: () => void; inv: InvitationDetail }) {
   const { toast } = useToast()
   const [reason, setReason] = useState<S['ReportReason']>('fake_vacancy')
   const [text, setText] = useState('')
+  const tooShort = text.trim().length < REPORT_TEXT_MIN
   const report = useMutation({
     mutationFn: () => api.post<S['Report']>('/reports', { company_id: inv.company_id, invitation_id: inv.id, reason, text: text.trim() }),
     onSuccess: () => {
@@ -374,7 +379,7 @@ function ReportModal({ open, onClose, inv }: { open: boolean; onClose: () => voi
           <Button variant="ghost" onClick={onClose}>
             Отмена
           </Button>
-          <Button variant="danger" onClick={() => report.mutate()} loading={report.isPending} disabled={!text.trim()}>
+          <Button variant="danger" onClick={() => report.mutate()} loading={report.isPending} disabled={tooShort}>
             Отправить
           </Button>
         </>
@@ -387,7 +392,18 @@ function ReportModal({ open, onClose, inv }: { open: boolean; onClose: () => voi
           onChange={(e) => setReason(e.target.value as S['ReportReason'])}
           options={(Object.keys(REPORT_REASON_LABELS) as S['ReportReason'][]).map((r) => ({ value: r, label: REPORT_REASON_LABELS[r] }))}
         />
-        <Textarea label="Подробности" rows={3} value={text} onChange={(e) => setText(e.target.value)} error={report.isError ? getErrorMessage(report.error) : undefined} />
+        <Textarea
+          label="Подробности"
+          rows={3}
+          maxLength={REPORT_TEXT_MAX}
+          value={text}
+          onChange={(e) => {
+            setText(e.target.value)
+            if (report.isError) report.reset()
+          }}
+          hint={tooShort ? `Опишите, что произошло, — минимум ${REPORT_TEXT_MIN} символов` : undefined}
+          error={report.isError ? getErrorMessage(report.error) : undefined}
+        />
       </div>
     </Modal>
   )
