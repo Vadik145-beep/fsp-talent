@@ -10,7 +10,7 @@ import { useGradeStatus, useStartTest, type GradeStatus, type S, type TestSessio
 import { QueryView } from './components/QueryView'
 import { GradeConfirmedBadge, UnconfirmedGrade } from './components/GradeStatus'
 import { ThetaScale } from './components/ThetaScale'
-import { GRADE_EVENT_LABELS, TEST_KIND_LABELS, formatTheta } from './labels'
+import { GRADE_EVENT_LABELS, TEST_KIND_LABELS, formatTheta, ruThetaText } from './labels'
 
 export default function GradePage() {
   const q = useGradeStatus()
@@ -81,7 +81,7 @@ function GradeHistory({ g }: { g: GradeStatus }) {
                   <Icon className="size-3.5" aria-hidden />
                 </span>
                 <p className="text-sm font-semibold text-ink">{GRADE_EVENT_LABELS[h.event]}</p>
-                {h.comment && <p className="text-[15px] text-ink">{h.comment}</p>}
+                {h.comment && <p className="text-[15px] text-ink">{ruThetaText(h.comment)}</p>}
                 <p className="text-[13px] text-muted">{formatDate(h.at)}</p>
               </li>
             )

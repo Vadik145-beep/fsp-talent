@@ -118,3 +118,8 @@ export function formatTheta(value: number, digits = 2): string {
   const s = Math.abs(value).toFixed(digits).replace('.', ',')
   return value < 0 ? `−${s}` : s
 }
+
+/** В текстах событий с бэкенда «θ = 0.42» / «θ = -1.98» → «θ = 0,42» / «θ = −1,98». */
+export function ruThetaText(text: string): string {
+  return text.replace(/θ\s*=\s*(-?)(\d+)\.(\d+)/g, (_, minus: string, int: string, frac: string) => `θ = ${minus ? '−' : ''}${int},${frac}`)
+}

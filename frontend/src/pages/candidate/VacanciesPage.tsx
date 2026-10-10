@@ -9,6 +9,7 @@ import { Badge, Button, Card, Drawer, EmptyState, FilterBar, Input, Modal, PageH
 import { qk, useSkillLabel, type Application, type Vacancy } from './api'
 import { QueryView } from './components/QueryView'
 import { WORK_FORMAT_LABELS, WORK_FORMAT_OPTIONS } from './labels'
+import { humanizeSkillCodes } from '@/shared/lib/skillText'
 
 const FILTER_KEYS = ['q', 'specialization', 'grade', 'work_format', 'salary_min'] as const
 
@@ -208,7 +209,7 @@ export default function VacanciesPage() {
                 {opened.city ? ` · ${opened.city}` : ''}
               </p>
             </div>
-            <p className="text-[15px] leading-relaxed whitespace-pre-line text-ink">{opened.description}</p>
+            <p className="text-[15px] leading-relaxed whitespace-pre-line text-ink">{humanizeSkillCodes(opened.description, skillLabel)}</p>
             {opened.team_description?.trim() && (
               <div>
                 <p className="mb-1 text-sm font-medium text-ink">Чем занимается команда</p>

@@ -17,5 +17,7 @@ export function thetaLevel(theta: number): string {
 
 export function thetaSummary(theta: number | null | undefined): string {
   if (theta == null) return 'Тест не пройден'
-  return `Сильнее, чем ${Math.round(thetaPercentile(theta) * 100)} % прошедших тест`
+  // «Сильнее, чем 100 %» звучит странно и не бывает: держим 1–99 %.
+  const pct = Math.min(99, Math.max(1, Math.round(thetaPercentile(theta) * 100)))
+  return `Сильнее, чем ${pct} % прошедших тест`
 }

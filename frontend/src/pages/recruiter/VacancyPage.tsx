@@ -4,8 +4,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { EyeOff, Inbox, Pencil, Upload } from 'lucide-react'
 import { api, getErrorMessage } from '@/shared/api'
 import { formatDate } from '@/shared/lib/format'
+import { humanizeSkillCodes } from '@/shared/lib/skillText'
 import { Badge, Button, Card, CardHeader, EmptyState, PageHeader, SalaryRange, Skeleton, SkeletonCard, useToast } from '@/shared/ui'
-import { refreshRecruiter, rk, upsertInList, type Application, type Vacancy } from './api'
+import { refreshRecruiter, rk, upsertInList, useSkills, type Application, type Vacancy } from './api'
 import { VACANCY_STATUS, WORK_FORMAT_LABELS } from './labels'
 import { ApplicationItem } from './components/ApplicationItem'
 import { StackTags } from './components/CandidateBits'
@@ -18,6 +19,7 @@ export default function RecruiterVacancyPage() {
   const qc = useQueryClient()
   const { toast } = useToast()
   const [editOpen, setEditOpen] = useState(false)
+  const skills = useSkills()
   const vacancy = useQuery({ queryKey: rk.vacancy(id), queryFn: () => api.get<Vacancy>(`/vacancies/${id}`) })
   const apps = useQuery({
     queryKey: rk.vacancyApplications(id),
@@ -107,7 +109,7 @@ export default function RecruiterVacancyPage() {
               <StackTags stack={v.skills_desired ?? []} />
             </div>
           )}
-          <p className="mt-4 text-sm whitespace-pre-line">{v.description}</p>
+          <p className="mt-4 text-sm whitespace-pre-line">{humanizeSkillCodes(v.description, skills.label)}</p>
           {v.team_description?.trim() && (
             <div className="mt-4">
               <p className="mb-1 text-xs text-muted">Чем занимается команда</p>
