@@ -153,7 +153,8 @@ class CandidateDb:
             record = await self._record(p, user, category_label, stacks[p.id], fsp.get(p.id))
             if p.grade:
                 at = confirmed.get((p.id, p.specialization or ""))
-                record["grade_confirmed_at"] = as_msk(at) if at else record["last_test_at"]
+                # только дата пройденного теста: последняя попытка могла быть неудачной
+                record["grade_confirmed_at"] = as_msk(at) if at else None
             result[p.id] = record
         return result
 
