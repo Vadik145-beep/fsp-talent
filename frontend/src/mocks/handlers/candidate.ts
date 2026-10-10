@@ -111,6 +111,7 @@ const T = {
   items: () => db.data.items as unknown as ItemRow[],
   audit: () => db.data.audit_log as unknown as Array<Record<string, unknown>>,
   reports: () => db.data.reports as unknown as S['Report'][],
+  tasks: () => db.data.regular_tasks as unknown as S['RegularTask'][],
 }
 
 const DEMO_CANDIDATE_USER_ID = 1
@@ -403,6 +404,58 @@ function fspStatus(c: CandidateRow): S['FspStatus'] {
       ? null
       : 'В реестре ФСП пока нет ваших соревнований. Это не снижает позицию в выдаче — просто нет бонуса за достижения.',
   }
+}
+
+// --- Задачи недели ----------------------------------------------------------------------
+const OFFERS_PER_WEEK = 3
+
+function weekStart(now: Date) {
+  const d = new Date(now)
+  d.setHours(0, 0, 0, 0)
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7))
+  return d.getTime()
+}
+
+/** Упрощённая недельная раздача: до трёх задач от разных компаний, без повтора решённых. */
+function taskOffers(c: CandidateRow) {
+  const mine = T.submissions().filter((s) => s.candidate_id === c.id)
+  for (const s of mine) {
+    if (s.status === 'assigned' && !isFuture(s.due_at)) s.status = 'expired'
+  }
+  const answered = mine.some((s) => s.submitted_at && new Date(s.submitted_at).getTime() >= weekStart(new Date()))
+  const offers = mine.filter((s) => s.status === 'assigned')
+  if (!answered && c.category && offers.length < OFFERS_PER_WEEK) {
+    const solved = new Set(mine.filter((s) => s.status === 'submitted' || s.status === 'graded').map((s) => s.task_id))
+    const tasks = T.tasks()
+    const busy = new Set(offers.map((s) => tasks.find((t) => t.id === s.task_id)?.company_id))
+    for (const task of tasks) {
+      if (offers.length >= OFFERS_PER_WEEK) break
+      if (task.category !== c.category || task.status !== 'active' || busy.has(task.company_id) || solved.has(task.id)) continue
+      const now = db.now()
+      const sub: SubmissionRow = {
+        id: db.nextId('task_submissions'),
+        task_id: task.id,
+        candidate_id: c.id,
+        task_title: task.title,
+        statement: task.statement,
+        company_name: task.company_name,
+        status: 'assigned',
+        assigned_at: now,
+        due_at: addDays(now, task.deadline_days),
+        answer_kind: null,
+        answer_text: null,
+        submitted_at: null,
+        score: null,
+        grader_comment: null,
+        graded_at: null,
+      }
+      T.submissions().push(sub)
+      offers.push(sub)
+      busy.add(task.company_id)
+    }
+    db.save()
+  }
+  return { offers: offers.sort((a, b) => a.due_at.localeCompare(b.due_at) || a.id - b.id), answered, mine }
 }
 
 // --- Приглашения ------------------------------------------------------------------------
@@ -915,7 +968,7 @@ export const candidateHandlers: HttpHandler[] = [
       (c) => {
         expireOverdue()
         const invitations = latest(T.invitations().filter((i) => i.candidate_id === c.id), (i) => i.created_at)
-        const active = latest(T.submissions().filter((s) => s.candidate_id === c.id && s.status === 'assigned'), (s) => s.assigned_at)[0]
+        const offers = taskOffers(c).offers.map((s) => ({ submission_id: s.id, title: s.task_title, company_name: s.company_name, due_at: s.due_at }))
         const hints: string[] = []
         if (!c.fsp_id) hints.push('Привяжите ФСП ID — достижения появятся в профиле с отметкой «подтверждено ФСП»')
         if (!c.links?.length) hints.push('Добавьте ссылку на GitHub — профиль станет полнее')
@@ -946,7 +999,8 @@ export const candidateHandlers: HttpHandler[] = [
             status: i.status,
             created_at: i.created_at,
           })),
-          active_task: active ? { submission_id: active.id, title: active.task_title, due_at: active.due_at } : null,
+          active_task: offers[0] ?? null,
+          task_offers: offers,
           profile_completeness: completeness(c),
           fsp_linked: !!c.fsp_id,
           hints,
@@ -964,6 +1018,7 @@ export const candidateHandlers: HttpHandler[] = [
         new_invitations_count: 0,
         recent_invitations: [],
         active_task: null,
+        task_offers: [],
         profile_completeness: 20,
         fsp_linked: false,
         hints: ['Пройдите тест, чтобы получить категорию и попасть в выдачу работодателям'],
@@ -1612,19 +1667,19 @@ export const candidateHandlers: HttpHandler[] = [
     '/api/tasks/inbox',
     candidateGet(
       (c) => {
-        const mine = latest(T.submissions().filter((s) => s.candidate_id === c.id), (s) => s.assigned_at)
-        for (const s of mine) {
-          if (s.status === 'assigned' && !isFuture(s.due_at)) s.status = 'expired'
-        }
-        const active = mine.find((s) => s.status === 'assigned') ?? null
+        const { offers, answered, mine } = taskOffers(c)
         const inbox: S['TaskInbox'] = {
-          active,
-          history: mine.filter((s) => s !== active),
+          offers,
+          history: latest(
+            mine.filter((s) => s.status === 'submitted' || s.status === 'graded'),
+            (s) => s.assigned_at,
+          ),
+          answered_this_week: answered,
           freshness: c.freshness,
         }
         return inbox
       },
-      (c) => ({ active: null, history: [], freshness: c.freshness }),
+      (c) => ({ offers: [], history: [], answered_this_week: false, freshness: c.freshness }),
     ),
   ),
 
@@ -1647,6 +1702,10 @@ export const candidateHandlers: HttpHandler[] = [
       sub.answer_text = body.answer_text.trim()
       sub.status = 'submitted'
       sub.submitted_at = db.now()
+      // Выбрал эту задачу — остальные задачи недели снимаются.
+      for (const other of T.submissions()) {
+        if (other.candidate_id === c.id && other.status === 'assigned' && other.id !== sub.id) other.status = 'skipped'
+      }
       // Свежесть профиля растёт после ответа на задание (T9.3).
       c.freshness = round2(Math.min(1, c.freshness + 0.08))
       db.save()

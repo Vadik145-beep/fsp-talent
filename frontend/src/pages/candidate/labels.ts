@@ -40,6 +40,7 @@ export const SUBMISSION_STATUS: Record<S['SubmissionStatus'], { label: string; t
   submitted: { label: 'На проверке', tone: 'info' },
   graded: { label: 'Оценено', tone: 'success' },
   expired: { label: 'Срок истёк', tone: 'neutral' },
+  skipped: { label: 'Выбрана другая', tone: 'neutral' },
 }
 
 export const ANSWER_KIND_LABELS: Record<S['AnswerKind'], string> = {

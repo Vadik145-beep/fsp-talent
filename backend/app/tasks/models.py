@@ -32,15 +32,19 @@ class RegularTask(TimestampMixin, Base):
 
 
 class TaskSubmission(Base):
-    """Выданное кандидату задание и его ответ (assigned → submitted → graded | expired)."""
+    """Задание, предложенное кандидату, и его ответ.
+
+    assigned → submitted → graded; assigned → skipped (выбрал другое) | expired (срок вышел).
+    """
 
     __tablename__ = "task_submissions"
     __table_args__ = (
         CheckConstraint("score IS NULL OR score BETWEEN 0 AND 3", name="score"),
-        # у кандидата не больше одного активного задания (миграция 0006_5b)
+        # одно и то же задание не предлагается кандидату дважды одновременно (миграция 0010)
         Index(
-            "uq_task_submissions_one_assigned",
+            "uq_task_submissions_offer",
             "candidate_id",
+            "task_id",
             unique=True,
             postgresql_where=text("status = 'assigned'"),
         ),

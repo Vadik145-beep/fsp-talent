@@ -145,13 +145,21 @@ describe('моки соискателя: отклик и задание', () => 
     expect(list.data.find((v) => v.id === 3)?.my_application_id).toBe(res.data.id)
   })
 
-  it('ответ на задание переводит его в «на проверке»', async () => {
-    const res = await call<S['TaskSubmission']>('POST', '/tasks/submissions/3/answer', {
+  it('задачи недели: три от разных компаний, ответ на одну снимает остальные', async () => {
+    const inbox = await call<S['TaskInbox']>('GET', '/tasks/inbox')
+    // задачу «Северного кода» в своей категории демо-кандидат уже решал — остаются две компании
+    expect(inbox.data.offers).toHaveLength(2)
+    expect(new Set(inbox.data.offers.map((o) => o.company_name)).size).toBe(2)
+    const [chosen, ...rest] = inbox.data.offers
+    const res = await call<S['TaskSubmission']>('POST', `/tasks/submissions/${chosen.id}/answer`, {
       body: { answer_kind: 'approach', answer_text: 'Кэш с TTL и инвалидация по событию' },
     })
     expect(res.status).toBe(200)
     expect(res.data.status).toBe('submitted')
-    expect(db.data.task_submissions.find((s) => s.id === 3)?.status).toBe('submitted')
+    expect(rest.map((o) => db.data.task_submissions.find((s) => s.id === o.id)?.status)).toEqual(['skipped'])
+    const after = await call<S['TaskInbox']>('GET', '/tasks/inbox')
+    expect(after.data.offers).toHaveLength(0)
+    expect(after.data.answered_this_week).toBe(true)
   })
 })
 

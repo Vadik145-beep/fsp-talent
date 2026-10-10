@@ -14,7 +14,7 @@ from sqlalchemy.sql.elements import ColumnElement
 
 from app.candidates.fsp_score import achievements_for, fsp_badges, fsp_score
 from app.candidates.models import CandidateProfile, candidate_skills
-from app.catalog.clock import as_msk
+from app.catalog.clock import as_msk, now_msk
 from app.catalog.models import Category
 from app.common import fixtures
 from app.common.enums import grade_status_code
@@ -330,23 +330,28 @@ class CandidateDb:
         )
         return bool(await self.session.scalar(select(accepted | applied)))
 
-    async def active_task(self, candidate_id: int) -> Record | None:
-        row = (
-            await self.session.execute(
-                select(TaskSubmission, RegularTask.title)
-                .join(RegularTask, RegularTask.id == TaskSubmission.task_id)
-                .where(
-                    TaskSubmission.candidate_id == candidate_id,
-                    TaskSubmission.status == "assigned",
-                )
-                .order_by(TaskSubmission.id)
-                .limit(1)
+    async def task_offers(self, candidate_id: int) -> list[Record]:
+        """Задачи недели на выбор (без ответа, срок не вышел), ближайший срок — первым."""
+        rows = await self.session.execute(
+            select(TaskSubmission, RegularTask.title, Company.name)
+            .join(RegularTask, RegularTask.id == TaskSubmission.task_id)
+            .join(Company, Company.id == RegularTask.company_id)
+            .where(
+                TaskSubmission.candidate_id == candidate_id,
+                TaskSubmission.status == "assigned",
+                TaskSubmission.due_at > now_msk(),
             )
-        ).first()
-        if row is None:
-            return None
-        sub, title = row
-        return {"submission_id": sub.id, "title": title, "due_at": as_msk(sub.due_at)}
+            .order_by(TaskSubmission.due_at, TaskSubmission.id)
+        )
+        return [
+            {
+                "submission_id": sub.id,
+                "title": title,
+                "company_name": company,
+                "due_at": as_msk(sub.due_at),
+            }
+            for sub, title, company in rows.all()
+        ]
 
     async def test_sessions(self, candidate_id: int) -> list[TestSession]:
         rows = await self.session.scalars(

@@ -169,6 +169,7 @@ class CandidateProfileService:
             hints.append(
                 "Дайте согласие на публикацию профиля — без него работодатели вас не видят"
             )
+        offers = await self.db.task_offers(candidate_id)
         return {
             "full_name": cand["full_name"],
             "category": cand.get("category"),
@@ -182,7 +183,8 @@ class CandidateProfileService:
             "onboarding_completed": bool(cand.get("grade")),
             "new_invitations_count": len(new),
             "recent_invitations": invitations[:3],
-            "active_task": await self.db.active_task(candidate_id),
+            "active_task": offers[0] if offers else None,
+            "task_offers": offers,
             "profile_completeness": cand["profile_completeness"],
             "fsp_linked": bool(cand.get("fsp_id")),
             "hints": hints,

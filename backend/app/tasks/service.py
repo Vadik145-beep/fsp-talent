@@ -1,19 +1,27 @@
 """Регулярные задания на БД (E9): создание, раздача, ответ, оценка 0–3, свежесть профиля.
 
-Жизненный цикл выданного задания: assigned → submitted → graded, или assigned → expired
-(срок вышел без ответа). У кандидата не больше одного активного (assigned) задания.
+Задачи недели на выбор. Кандидату предлагается до трёх задач (`TASKS_OFFERS_PER_WEEK`)
+от разных компаний его категории; он выбирает одну и отвечает, остальные снимаются.
+Жизненный цикл предложения: assigned → submitted → graded; assigned → skipped (выбрал другую)
+или assigned → expired (срок вышел без ответа).
 
-Раздача: задание получают кандидаты его категории без активного задания, которым это задание
-ещё не выдавали (не заблокированы, поиск не на паузе). Раздача идёт сразу при создании задания
-и при вызове `distribute_all` — его зовёт планировщик раз в N дней (`python -m app.tasks`).
+Какие компании попадают в тройку: сначала те, у кого открыта потребность на эту категорию
+(среди них — чью задачу кандидату дольше всего не показывали), остальные места — случайно.
+Решённые задачи повторно не предлагаются; невыбранные могут прийти снова.
+
+Один ответ в неделю: кто уже ответил с понедельника, новых задач до следующей недели
+не получает. Раздача дополняет предложения до трёх — сразу при создании задания и при
+вызове `distribute_all` (планировщик по понедельникам, `python -m app.tasks distribute`).
 
 Свежесть профиля (0..1, поле `candidate_profiles.freshness`, входит в ранжирование подборки):
 +0,08 за отправленный ответ, +0,04 + 0,03 × балл за первую оценку; без активности падает вдвое
 за 30 дней (`decay_freshness`, зовёт планировщик раз в сутки). Числа — в `TASKS_*`.
 """
 
+import random
+from collections import defaultdict
 from collections.abc import Sequence
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from sqlalchemy import Float, Numeric, case, cast, func, select, update
@@ -25,12 +33,13 @@ from app.candidates.repository import CandidateDb
 from app.candidates.service import to_card
 from app.catalog.clock import as_msk, now_msk
 from app.catalog.models import Category
-from app.common.enums import SubmissionStatus, TaskStatus
+from app.common.enums import NeedStatus, SubmissionStatus, TaskStatus
 from app.common.fixtures import Record
 from app.companies.antifraud import active_company_ids, ensure_company_active
 from app.companies.models import Company
 from app.core.errors import AppError, not_found
 from app.core.security import CurrentUser
+from app.matching.models import Need
 from app.tasks.models import RegularTask, TaskSubmission
 from app.tasks.schemas import RegularTaskCreate, SubmissionAnswer, SubmissionGrade
 from app.tasks.settings import get_task_settings
@@ -39,11 +48,26 @@ from app.users.models import User
 S = SubmissionStatus
 DECAY_ACTION = "freshness_decayed"
 # порядок ответов в кабинете рекрутера: сначала ждущие оценки
-RECRUITER_ORDER = {S.submitted: 0, S.graded: 1, S.assigned: 2, S.expired: 3}
+RECRUITER_ORDER = {S.submitted: 0, S.graded: 1, S.assigned: 2, S.expired: 3, S.skipped: 4}
+SOLVED = (S.submitted.value, S.graded.value)
+NEVER = datetime.min.replace(tzinfo=UTC)  # «ещё не показывали»
 
 
 def _clamp(value: float) -> float:
     return round(min(1.0, max(0.0, value)), 3)
+
+
+def week_start(now: datetime) -> datetime:
+    """Начало текущей недели (понедельник 00:00 МСК) — граница «один ответ в неделю»."""
+    msk = as_msk(now)
+    assert msk is not None
+    return (msk - timedelta(days=msk.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
+
+
+def due_at(now: datetime, days: int) -> datetime:
+    """Срок ответа — с точностью до часа вниз: недельная раздача в 03:30 уже видит
+    прошлонедельные предложения просроченными (срок 03:00) и выдаёт новые."""
+    return (now + timedelta(days=days)).replace(minute=0, second=0, microsecond=0)
 
 
 def task_record(task: RegularTask, company_name: str, category_label: str, count: int) -> Record:
@@ -93,6 +117,7 @@ class TaskService:
     async def _task_rows(self, *where: Any) -> list[Record]:
         counts = (
             select(TaskSubmission.task_id, func.count().label("n"))
+            .where(TaskSubmission.status != S.skipped.value)
             .group_by(TaskSubmission.task_id)
             .subquery()
         )
@@ -139,9 +164,20 @@ class TaskService:
         subs = [
             r for _, r in await self._submission_rows(TaskSubmission.candidate_id == candidate_id)
         ]
-        active = next((s for s in subs if s["status"] == S.assigned.value), None)
-        history = [s for s in subs if s is not active]
-        return {"active": active, "history": history, "freshness": profile.freshness or 0.0}
+        offers = sorted(
+            (s for s in subs if s["status"] == S.assigned.value),
+            key=lambda s: (s["due_at"], s["id"]),
+        )
+        # история — только ответы: невыбранные и пропущенные задачи кандидату не важны
+        history = [s for s in subs if s["status"] in SOLVED]
+        start = week_start(now_msk())
+        answered = any(s["submitted_at"] and s["submitted_at"] >= start for s in subs)
+        return {
+            "offers": offers,
+            "history": history,
+            "answered_this_week": answered,
+            "freshness": profile.freshness or 0.0,
+        }
 
     async def answer(
         self, submission_id: int, candidate_id: int, body: SubmissionAnswer
@@ -167,6 +203,16 @@ class TaskService:
         sub.answer_kind = str(body.answer_kind)
         sub.answer_text = body.answer_text.strip()
         sub.submitted_at = now
+        # выбрал эту задачу — остальные предложения недели снимаются
+        await self.session.execute(
+            update(TaskSubmission)
+            .where(
+                TaskSubmission.candidate_id == candidate_id,
+                TaskSubmission.status == S.assigned.value,
+                TaskSubmission.id != sub.id,
+            )
+            .values(status=S.skipped.value)
+        )
         profile = await self._profile(candidate_id)
         profile.freshness = _clamp((profile.freshness or 0) + self.settings.freshness_answer_bonus)
         await self.session.commit()
@@ -203,7 +249,7 @@ class TaskService:
         )
         self.session.add(task)
         await self.session.flush()
-        await self.distribute_task(task)
+        await self.distribute_category(task.category)
         await self.session.commit()
         return (await self._task_rows(RegularTask.id == task.id))[0]
 
@@ -217,7 +263,12 @@ class TaskService:
         await self._own_task(task_id, company_id)
         if await self.expire_overdue(task_id=task_id):
             await self.session.commit()
-        subs = [r for _, r in await self._submission_rows(TaskSubmission.task_id == task_id)]
+        subs = [
+            r
+            for _, r in await self._submission_rows(
+                TaskSubmission.task_id == task_id, TaskSubmission.status != S.skipped.value
+            )
+        ]
         subs.sort(key=lambda s: RECRUITER_ORDER[S(s["status"])])  # устойчиво: внутри — свежие
         return await self._with_cards(subs)
 
@@ -227,9 +278,9 @@ class TaskService:
         await ensure_company_active(self.session, user.company_id)
         if task.status != TaskStatus.active:
             raise AppError(409, "invalid_transition", "Задание в архиве — раздавать нельзя")
-        assigned = await self.distribute_task(task)
+        offered = await self.distribute_category(task.category)
         await self.session.commit()
-        return {"assigned": assigned}
+        return {"assigned": offered.get(task.id, 0)}
 
     async def grade(
         self, submission_id: int, body: SubmissionGrade, user: CurrentUser
@@ -262,62 +313,144 @@ class TaskService:
 
     # ---------- раздача, сроки, свежесть (планировщик) ----------
 
-    async def distribute_task(self, task: RegularTask, now: datetime | None = None) -> int:
-        """Выдать задание кандидатам его категории без активного задания. Без коммита."""
-        now = now or now_msk()
-        busy = select(TaskSubmission.candidate_id).where(TaskSubmission.status == S.assigned.value)
-        had = select(TaskSubmission.candidate_id).where(TaskSubmission.task_id == task.id)
-        last_assigned = (
-            select(func.max(TaskSubmission.assigned_at))
-            .where(TaskSubmission.candidate_id == CandidateProfile.id)
-            .correlate(CandidateProfile)
-            .scalar_subquery()
-        )
-        ids = (
-            await self.session.scalars(
-                select(CandidateProfile.id)
-                .join(User, User.id == CandidateProfile.user_id)
-                .where(
-                    CandidateProfile.category == task.category,
-                    CandidateProfile.job_search_paused.is_(False),
-                    User.blocked.is_(False),
-                    CandidateProfile.id.not_in(busy),
-                    CandidateProfile.id.not_in(had),
-                )
-                # дольше всех без заданий — первыми
-                .order_by(last_assigned.asc().nulls_first(), CandidateProfile.id)
-                .limit(self.settings.max_assign_per_run)
-            )
-        ).all()
-        due = now + timedelta(days=task.deadline_days)
-        for cid in ids:
-            self.session.add(
-                TaskSubmission(
-                    task_id=task.id,
-                    candidate_id=cid,
-                    status=S.assigned.value,
-                    assigned_at=now,
-                    due_at=due,
-                )
-            )
-        await self.session.flush()
-        return len(ids)
+    async def distribute_category(
+        self, category: str, now: datetime | None = None
+    ) -> dict[int, int]:
+        """Дополнить задачи недели кандидатов категории до трёх от разных компаний.
 
-    async def distribute_all(self, now: datetime | None = None) -> int:
-        """Раздать все активные задания незаблокированных компаний (старые — первыми)."""
+        Возвращает {id задания: скольким кандидатам его предложили}. Без коммита.
+        """
+        now = now or now_msk()
         tasks = (
             await self.session.scalars(
                 select(RegularTask)
                 .where(
+                    RegularTask.category == category,
                     RegularTask.status == TaskStatus.active.value,
                     RegularTask.company_id.in_(active_company_ids()),
                 )
                 .order_by(RegularTask.created_at, RegularTask.id)
             )
         ).all()
+        if not tasks:
+            return {}
+        candidate_ids = (
+            await self.session.scalars(
+                select(CandidateProfile.id)
+                .join(User, User.id == CandidateProfile.user_id)
+                .where(
+                    CandidateProfile.category == category,
+                    CandidateProfile.job_search_paused.is_(False),
+                    User.blocked.is_(False),
+                )
+                .order_by(CandidateProfile.id)
+            )
+        ).all()
+        if not candidate_ids:
+            return {}
+        history: dict[int, list[TaskSubmission]] = defaultdict(list)
+        for sub in await self.session.scalars(
+            select(TaskSubmission).where(TaskSubmission.candidate_id.in_(list(candidate_ids)))
+        ):
+            history[sub.candidate_id].append(sub)
+        hiring = set(
+            (
+                await self.session.scalars(
+                    select(Need.company_id).where(
+                        Need.category == category, Need.status == NeedStatus.active.value
+                    )
+                )
+            ).all()
+        )
+        company_of = {t.id: t.company_id for t in tasks}
+        start = week_start(now)
+        offered: dict[int, int] = defaultdict(int)
+        for cid in candidate_ids:
+            subs = history[cid]
+            if any(s.submitted_at and s.submitted_at >= start for s in subs):
+                continue  # на этой неделе уже ответил
+            active = [s for s in subs if s.status == S.assigned.value]
+            free = self.settings.offers_per_week - len(active)
+            if free <= 0:
+                continue
+            for task in self._pick_offers(cid, tasks, subs, active, hiring, company_of, now)[:free]:
+                self.session.add(
+                    TaskSubmission(
+                        task_id=task.id,
+                        candidate_id=cid,
+                        status=S.assigned.value,
+                        assigned_at=now,
+                        due_at=due_at(now, task.deadline_days),
+                    )
+                )
+                offered[task.id] += 1
+        await self.session.flush()
+        return dict(offered)
+
+    @staticmethod
+    def _pick_offers(
+        candidate_id: int,
+        tasks: Sequence[RegularTask],
+        subs: Sequence[TaskSubmission],
+        active: Sequence[TaskSubmission],
+        hiring: set[int],
+        company_of: dict[int, int],
+        now: datetime,
+    ) -> list[RegularTask]:
+        """Задачи-кандидаты в порядке очереди: по одной от каждой компании, которой ещё нет
+        среди предложенных; сначала нанимающие (кого дольше не показывали), потом случайно."""
+        busy_companies = {company_of[s.task_id] for s in active if s.task_id in company_of}
+        busy_tasks = {s.task_id for s in active}
+        solved = {s.task_id for s in subs if s.status in SOLVED}
+        shown: dict[int, datetime] = {}
+        for s in subs:
+            shown[s.task_id] = max(shown.get(s.task_id, NEVER), s.assigned_at)
+        by_company: dict[int, list[RegularTask]] = defaultdict(list)
+        for t in tasks:
+            if t.company_id in busy_companies or t.id in busy_tasks or t.id in solved:
+                continue
+            by_company[t.company_id].append(t)
+        # от компании — задача, которую кандидату дольше всего не показывали (потом — старая)
+        best = {
+            company: min(group, key=lambda t: (shown.get(t.id, NEVER), t.created_at, t.id))
+            for company, group in by_company.items()
+        }
+        last_shown = {
+            company: max(shown.get(t.id, NEVER) for t in group)
+            for company, group in by_company.items()
+        }
+        # случайность воспроизводима: тот же кандидат в тот же день — тот же порядок
+        rng = random.Random(f"{candidate_id}:{as_msk(now).date().isoformat()}")  # type: ignore[union-attr]
+        luck = {company: rng.random() for company in sorted(by_company)}
+        order = sorted(
+            by_company,
+            key=lambda c: (
+                c not in hiring,
+                last_shown[c] if c in hiring else NEVER,
+                luck[c],
+            ),
+        )
+        return [best[c] for c in order]
+
+    async def distribute_all(self, now: datetime | None = None) -> int:
+        """Недельная раздача: снять просроченные предложения и дополнить задачи недели
+        во всех категориях, где есть активные задания незаблокированных компаний."""
+        now = now or now_msk()
+        await self.expire_overdue(now)
+        categories = (
+            await self.session.scalars(
+                select(RegularTask.category)
+                .where(
+                    RegularTask.status == TaskStatus.active.value,
+                    RegularTask.company_id.in_(active_company_ids()),
+                )
+                .distinct()
+                .order_by(RegularTask.category)
+            )
+        ).all()
         total = 0
-        for task in tasks:
-            total += await self.distribute_task(task, now)
+        for category in categories:
+            total += sum((await self.distribute_category(category, now)).values())
         return total
 
     async def expire_overdue(

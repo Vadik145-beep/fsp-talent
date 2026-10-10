@@ -362,6 +362,7 @@ class DashboardInvitation(OutModel):
 class DashboardTask(OutModel):
     submission_id: int
     title: str
+    company_name: str | None = None
     due_at: datetime
 
 
@@ -381,6 +382,7 @@ class CandidateDashboard(OutModel):
                     "new_invitations_count": 2,
                     "recent_invitations": [],
                     "active_task": None,
+                    "task_offers": [],
                     "profile_completeness": 85,
                     "fsp_linked": True,
                     "hints": ["Добавьте ссылку на GitHub — профиль станет полнее"],
@@ -403,7 +405,10 @@ class CandidateDashboard(OutModel):
     onboarding_completed: bool
     new_invitations_count: int
     recent_invitations: list[DashboardInvitation]
-    active_task: DashboardTask | None
+    active_task: DashboardTask | None = Field(description="Задача недели с ближайшим сроком")
+    task_offers: list[DashboardTask] = Field(
+        description="Задачи недели на выбор (до трёх, от разных компаний)"
+    )
     profile_completeness: int
     fsp_linked: bool
     hints: list[str]

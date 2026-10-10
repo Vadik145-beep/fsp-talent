@@ -15,7 +15,7 @@ from app.common import fixtures
 from app.core.config import get_settings
 from app.seed.testkit import reseed_sync, sql_sync
 from app.tasks.jobs import run_job
-from app.tasks.service import TaskService
+from app.tasks.service import TaskService, due_at, week_start
 from tests.conftest import ADMIN, CANDIDATE, RECRUITER, RECRUITER_C2, as_role
 
 TASK = {
@@ -53,9 +53,14 @@ def freshness(cid: int) -> float:
 @pytest.fixture(autouse=True)
 def _fresh_db() -> Iterator[None]:
     reseed_sync()
-    # сроки фикстур — реальные даты; сдвигаем активные задания в будущее, чтобы тесты не старели
+    # сроки фикстур — реальные даты; сдвигаем активные задания в будущее, а ответы — в прошлые
+    # недели, чтобы тесты не зависели от дня недели и не старели
     sql_sync(
         "UPDATE task_submissions SET due_at = now() + interval '5 days' WHERE status = 'assigned'"
+    )
+    sql_sync(
+        "UPDATE task_submissions SET submitted_at = now() - interval '14 days' "
+        "WHERE submitted_at IS NOT NULL"
     )
     yield
 
@@ -67,15 +72,48 @@ def _restore_db() -> Iterator[None]:
 
 
 def eligible(category: str) -> set[int]:
+    """Кандидаты категории, которым раздача может предложить задачу."""
     rows = sql_sync(
         """
         SELECT cp.id FROM candidate_profiles cp JOIN users u ON u.id = cp.user_id
         WHERE cp.category = :c AND NOT cp.job_search_paused AND NOT u.blocked
-          AND cp.id NOT IN (SELECT candidate_id FROM task_submissions WHERE status = 'assigned')
         """,
         {"c": category},
     )
     return {r[0] for r in rows}
+
+
+def offers_of(cid: int) -> list[tuple[int, int]]:
+    """(id задания, id компании) активных предложений кандидата."""
+    rows = sql_sync(
+        "SELECT s.task_id, t.company_id FROM task_submissions s "
+        "JOIN regular_tasks t ON t.id = s.task_id "
+        "WHERE s.candidate_id = :c AND s.status = 'assigned' ORDER BY s.task_id",
+        {"c": cid},
+    )
+    return [(r[0], r[1]) for r in rows]
+
+
+def distribute(client: TestClient) -> int:
+    res = client.post("/api/tasks/jobs/run", params={"job": "distribute"}, headers=ADMIN)
+    assert res.status_code == 200, res.text
+    return int(res.json()["assigned"])
+
+
+def clear_offers(cid: int) -> None:
+    sql_sync(
+        "UPDATE task_submissions SET status = 'expired' "
+        "WHERE candidate_id = :c AND status = 'assigned'",
+        {"c": cid},
+    )
+
+
+def recruiter_of(task_id: int) -> dict[str, str]:
+    company = sql_sync("SELECT company_id FROM regular_tasks WHERE id = :t", {"t": task_id})[0][0]
+    user = sql_sync(
+        "SELECT user_id FROM recruiters WHERE company_id = :c ORDER BY id LIMIT 1", {"c": company}
+    )[0][0]
+    return {1: RECRUITER, 2: RECRUITER_C2}.get(company) or as_role("recruiter", int(user))
 
 
 def test_inbox_from_db(client: TestClient) -> None:
@@ -83,10 +121,13 @@ def test_inbox_from_db(client: TestClient) -> None:
     assert inbox.status_code == 200
     body = inbox.json()
     mine = [s for s in fixtures.load("task_submissions") if s["candidate_id"] == 1]
-    assert body["active"]["id"] == next(s["id"] for s in mine if s["status"] == "assigned")
-    assert {s["id"] for s in body["history"]} == {s["id"] for s in mine} - {body["active"]["id"]}
+    assert [o["id"] for o in body["offers"]] == [s["id"] for s in mine if s["status"] == "assigned"]
+    assert {s["id"] for s in body["history"]} == {
+        s["id"] for s in mine if s["status"] in ("submitted", "graded")
+    }
+    assert body["answered_this_week"] is False
     assert body["freshness"] == fixtures.by_id("candidates", 1)["freshness"]  # type: ignore[index]
-    assert body["active"]["company_name"] == "Северный код"
+    assert body["offers"][0]["company_name"] == "Северный код"
 
 
 def test_new_candidate_without_fixtures_has_empty_inbox(client: TestClient) -> None:
@@ -101,12 +142,19 @@ def test_new_candidate_without_fixtures_has_empty_inbox(client: TestClient) -> N
     uid = sql_sync("SELECT id FROM users WHERE email = :e", {"e": body["email"]})[0][0]
     inbox = client.get("/api/tasks/inbox", headers=as_role("candidate", uid))
     assert inbox.status_code == 200, inbox.text
-    assert inbox.json() == {"active": None, "history": [], "freshness": 0.0}
+    assert inbox.json() == {
+        "offers": [],
+        "history": [],
+        "answered_this_week": False,
+        "freshness": 0.0,
+    }
 
 
 def test_create_distribute_answer_grade(client: TestClient) -> None:
+    # категория без задач других компаний — новое задание получают все кандидаты категории
+    sql_sync("DELETE FROM regular_tasks WHERE category = 'backend:junior'")
     expected = eligible("backend:junior")
-    assert expected, "в фикстурах должны быть свободные Backend · Junior"
+    assert expected, "в фикстурах должны быть Backend · Junior"
     created = client.post("/api/tasks", json=TASK, headers=RECRUITER)
     assert created.status_code == 201, created.text
     task = created.json()
@@ -120,7 +168,7 @@ def test_create_distribute_answer_grade(client: TestClient) -> None:
     cid = min(expected)
     headers = candidate(cid)
     inbox = client.get("/api/tasks/inbox", headers=headers).json()
-    active = inbox["active"]
+    active = inbox["offers"][0]
     assert active["task_id"] == task["id"] and active["status"] == "assigned"
     assert active["statement"] == TASK["statement"]
     assert active["due_at"] > active["assigned_at"]
@@ -186,7 +234,119 @@ def test_create_distribute_answer_grade(client: TestClient) -> None:
     )
     assert bad.status_code == 422
     history = client.get("/api/tasks/inbox", headers=headers).json()
-    assert history["active"] is None and history["history"][0]["score"] == 1
+    assert history["offers"] == [] and history["history"][0]["score"] == 1
+    assert history["answered_this_week"] is True
+
+
+def test_three_offers_from_different_companies(client: TestClient) -> None:
+    clear_offers(1)
+    solved = {
+        s["task_id"]
+        for s in fixtures.load("task_submissions")
+        if s["candidate_id"] == 1 and s["status"] in ("submitted", "graded")
+    }
+    assert distribute(client) > 0
+    offers = offers_of(1)
+    # единственное задание «Северного кода» в Backend · Middle кандидат уже решил — не повторяем
+    assert {c for _, c in offers} == {2, 3}
+    assert not {t for t, _ in offers} & solved
+    # новое задание компании 1 дополняет тройку сразу при создании
+    created = client.post(
+        "/api/tasks", json={**TASK, "category": "backend:middle"}, headers=RECRUITER
+    )
+    assert created.status_code == 201, created.text
+    offers = offers_of(1)
+    assert len(offers) == 3 and {c for _, c in offers} == {1, 2, 3}
+    assert created.json()["id"] in {t for t, _ in offers}
+    # повторная раздача ничего не добавляет — тройка полная
+    before = offers_of(1)
+    distribute(client)
+    assert offers_of(1) == before
+    inbox = client.get("/api/tasks/inbox", headers=CANDIDATE).json()
+    assert len(inbox["offers"]) == 3
+    dashboard = client.get("/api/candidates/me/dashboard", headers=CANDIDATE).json()
+    assert len(dashboard["task_offers"]) == 3
+    assert dashboard["active_task"] == dashboard["task_offers"][0]
+
+
+def test_hiring_company_first(client: TestClient) -> None:
+    # Backend · Middle ищет только «Северный код» (потребность активна) — при одном месте
+    # в тройке кандидат получает его задачу, а не случайную
+    hiring = {
+        n["company_id"]
+        for n in fixtures.load("needs")
+        if n["category"] == "backend:middle" and n["status"] == "active"
+    }
+    assert hiring == {1}
+    clear_offers(1)
+    sql_sync(
+        "INSERT INTO regular_tasks (company_id, recruiter_id, title, statement, category, "
+        "deadline_days, status) VALUES (1, 1, 'Новое', 'Задание нанимающей компании', "
+        "'backend:middle', 7, 'active')"
+    )
+
+    async def one_slot(session: AsyncSession) -> dict[int, int]:
+        service = TaskService(session)
+        service.settings = service.settings.model_copy(update={"offers_per_week": 1})
+        result = await service.distribute_category("backend:middle")
+        await session.commit()
+        return result
+
+    run_db(one_slot)
+    assert [c for _, c in offers_of(1)] == [1]
+
+
+def test_answer_one_skips_others_and_weekly_limit(client: TestClient) -> None:
+    clear_offers(1)
+    client.post("/api/tasks", json={**TASK, "category": "backend:middle"}, headers=RECRUITER)
+    inbox = client.get("/api/tasks/inbox", headers=CANDIDATE).json()
+    assert len(inbox["offers"]) == 3
+    chosen, *rest = inbox["offers"]
+    res = client.post(
+        f"/api/tasks/submissions/{chosen['id']}/answer",
+        json={"answer_kind": "text", "answer_text": "Выбрал эту"},
+        headers=CANDIDATE,
+    )
+    assert res.status_code == 200, res.text
+    statuses = sql_sync(
+        "SELECT status FROM task_submissions WHERE id = ANY(:ids)",
+        {"ids": [o["id"] for o in rest]},
+    )
+    assert {r[0] for r in statuses} == {"skipped"}
+    after = client.get("/api/tasks/inbox", headers=CANDIDATE).json()
+    assert after["offers"] == [] and after["answered_this_week"] is True
+    history_ids = {s["id"] for s in after["history"]}
+    assert chosen["id"] in history_ids and not history_ids & {o["id"] for o in rest}
+    # снятые задачи рекрутер не видит в ответах
+    for o in rest:
+        own = client.get(
+            f"/api/tasks/{o['task_id']}/submissions", headers=recruiter_of(o["task_id"])
+        )
+        assert own.status_code == 200, own.text
+        assert o["id"] not in {s["id"] for s in own.json()}
+    # на этой неделе новых задач нет — ни по расписанию, ни при новом задании
+    distribute(client)
+    client.post("/api/tasks", json={**TASK, "category": "backend:middle"}, headers=RECRUITER_C2)
+    assert offers_of(1) == []
+    # неделя прошла — решённая задача не возвращается, невыбранные могут прийти снова
+    sql_sync(
+        "UPDATE task_submissions SET submitted_at = submitted_at - interval '8 days' "
+        "WHERE candidate_id = 1 AND submitted_at IS NOT NULL"
+    )
+    distribute(client)
+    offers = offers_of(1)
+    assert len(offers) >= 2 and chosen["task_id"] not in {t for t, _ in offers}
+    assert len({c for _, c in offers}) == len(offers)  # по одной задаче от компании
+
+
+def test_offer_deadline_and_week_helpers() -> None:
+    at = now_msk().replace(year=2026, month=10, day=12, hour=3, minute=30, second=7)  # пн
+    assert due_at(at, 7) == at.replace(day=19, hour=3, minute=0, second=0, microsecond=0)
+    assert due_at(at, 7) < at + timedelta(days=7)  # раздача через неделю видит его просроченным
+    assert week_start(at) == at.replace(hour=0, minute=0, second=0, microsecond=0)
+    sunday = at.replace(day=18, hour=23)
+    assert week_start(sunday) == week_start(at)
+    assert week_start(sunday + timedelta(hours=1)) == week_start(at) + timedelta(days=7)
 
 
 def test_grade_only_submitted(client: TestClient) -> None:
@@ -211,14 +371,14 @@ def test_expired_submission(client: TestClient) -> None:
     assert late.status_code == 409 and late.json()["code"] == "submission_expired"
     assert sql_sync("SELECT status FROM task_submissions WHERE id = 3")[0][0] == "expired"
     inbox = client.get("/api/tasks/inbox", headers=CANDIDATE).json()
-    assert inbox["active"] is None and any(s["id"] == 3 for s in inbox["history"])
+    assert inbox["offers"] == [] and all(s["id"] != 3 for s in inbox["history"])
 
 
 def test_inbox_expires_overdue(client: TestClient) -> None:
     sql_sync("UPDATE task_submissions SET due_at = now() - interval '1 hour' WHERE id = 3")
     inbox = client.get("/api/tasks/inbox", headers=CANDIDATE).json()
-    assert inbox["active"] is None
-    assert next(s for s in inbox["history"] if s["id"] == 3)["status"] == "expired"
+    assert inbox["offers"] == []
+    assert sql_sync("SELECT status FROM task_submissions WHERE id = 3")[0][0] == "expired"
 
 
 def test_validation_and_roles(client: TestClient) -> None:
@@ -233,51 +393,12 @@ def test_validation_and_roles(client: TestClient) -> None:
     assert client.post("/api/tasks/jobs/run", headers=RECRUITER).status_code == 403
 
 
-def test_one_active_task_per_candidate(client: TestClient) -> None:
-    # кандидат с активным заданием новое не получает, после ответа — получает при раздаче
-    task = client.post("/api/tasks", json={**TASK, "category": "backend:middle"}, headers=RECRUITER)
-    subs = sql_sync(
-        "SELECT candidate_id FROM task_submissions WHERE task_id = :t", {"t": task.json()["id"]}
-    )
-    assert 1 not in {r[0] for r in subs}  # у демо-кандидата уже есть активное задание №3
-    client.post(
-        "/api/tasks/submissions/3/answer",
-        json={"answer_kind": "text", "answer_text": "Готово"},
-        headers=CANDIDATE,
-    )
-    again = client.post(f"/api/tasks/{task.json()['id']}/distribute", headers=RECRUITER)
-    assert again.status_code == 200 and again.json()["assigned"] == 1
-    inbox = client.get("/api/tasks/inbox", headers=CANDIDATE).json()
-    assert inbox["active"]["task_id"] == task.json()["id"]
-    # повторно то же задание не выдаётся
-    assert client.post(f"/api/tasks/{task.json()['id']}/distribute", headers=RECRUITER).json() == {
-        "assigned": 0
-    }
-    assert (
-        client.post(f"/api/tasks/{task.json()['id']}/distribute", headers=RECRUITER_C2).status_code
-        == 404
-    )
-
-
-def test_scheduler_distributes_and_skips_blocked(client: TestClient) -> None:
-    # освободили кандидата 1 — планировщик выдаёт ему задание его категории
-    sql_sync("UPDATE task_submissions SET status = 'submitted' WHERE id = 3")
-    for company_id, recruiter_id in ((3, 6), (2, 4)):
-        sql_sync(
-            "INSERT INTO regular_tasks (company_id, recruiter_id, title, statement, category, "
-            "deadline_days, status) VALUES (:c, :r, 'Новое', 'Задание для планировщика', "
-            "'backend:middle', 7, 'active')",
-            {"c": company_id, "r": recruiter_id},
-        )
+def test_scheduler_skips_blocked_company(client: TestClient) -> None:
+    clear_offers(1)
     sql_sync("UPDATE companies SET blocked = true WHERE id = 3")
-    result = client.post("/api/tasks/jobs/run", params={"job": "distribute"}, headers=ADMIN)
-    assert result.status_code == 200, result.text
-    assert result.json()["assigned"] >= 1
-    rows = sql_sync(
-        "SELECT t.company_id FROM task_submissions s JOIN regular_tasks t ON t.id = s.task_id "
-        "WHERE s.candidate_id = 1 AND s.status = 'assigned'"
-    )
-    assert rows == [(2,)]  # задание заблокированной компании 3 не раздаётся
+    assert distribute(client) >= 1
+    companies = {c for _, c in offers_of(1)}
+    assert companies and 3 not in companies  # задания заблокированной компании не раздаются
 
 
 def test_company_blocked_cannot_create_task(client: TestClient) -> None:
