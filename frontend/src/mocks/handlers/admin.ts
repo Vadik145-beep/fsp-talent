@@ -543,7 +543,7 @@ export function buildVacancyTest(text: string, specialization?: SpecCode | null)
   for (const d of detected.filter((x) => !x.covered)) {
     const existing = items.find((i) => i.topic === d.topic && (i.status === 'draft' || i.status === 'pilot'))
     if (existing) {
-      drafts.push({ item_id: existing.id, origin: 'vocabulary', reused: true, topic: d.topic, label: d.label, title: existing.title, format: existing.format, prompt: existing.preview_variants[0]?.prompt ?? existing.description, status: existing.status })
+      drafts.push({ item_id: existing.id, origin: 'vocabulary', reused: true, model_local: false, topic: d.topic, label: d.label, title: existing.title, format: existing.format, prompt: existing.preview_variants[0]?.prompt ?? existing.description, status: existing.status })
       continue
     }
     const tpl = DRAFT_TEMPLATES[d.topic] ?? genericDraft(d.label)
@@ -572,7 +572,7 @@ export function buildVacancyTest(text: string, specialization?: SpecCode | null)
       created_at: db.now(),
       preview_variants: makeVariants(id, tpl, d.topic, d.label),
     })
-    drafts.push({ item_id: id, origin: 'vocabulary', reused: false, topic: d.topic, label: d.label, title: tpl.title, format: tpl.format, prompt: tpl.prompt, status: 'draft' })
+    drafts.push({ item_id: id, origin: 'vocabulary', reused: false, model_local: false, topic: d.topic, label: d.label, title: tpl.title, format: tpl.format, prompt: tpl.prompt, status: 'draft' })
   }
 
   const explanation = [
