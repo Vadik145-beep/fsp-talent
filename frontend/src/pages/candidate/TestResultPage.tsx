@@ -6,11 +6,11 @@ import { api, getErrorMessage, isApiError } from '@/shared/api'
 import { GRADE_LABELS, GRADES, type Grade } from '@/shared/config/dictionaries'
 import { formatDate, formatDateTime } from '@/shared/lib/format'
 import { Badge, Button, Card, CardHeader, EmptyState, PageHeader, ProgressBar, Stepper, useToast } from '@/shared/ui'
-import { qk, useStartTest, type TestResult } from './api'
+import { qk, useGradeStatus, useStartTest, type GradeStatus, type TestResult } from './api'
 import { QueryView } from './components/QueryView'
 import { ThetaScale } from './components/ThetaScale'
 import { ONBOARDING_STEPS, writeOnboarding } from './components/onboardingSteps'
-import { claimLabel, hasClaim, readResumeClaim } from './components/ResumeClaim'
+import { claimLabel, hasClaim, readResumeClaim } from './components/resumeClaimStore'
 import { PublicationPrompt } from './components/PublicationPrompt'
 import { TOPIC_LEVEL, formatTheta } from './labels'
 
@@ -77,6 +77,10 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
         ? (rec.target_grade ?? GRADES[GRADES.indexOf(r.target_grade) + 1] ?? null)
         : null
   const canStartNow = recGrade && !rec.available_at
+  const grade = useGradeStatus()
+  const failNote = r.passed ? null : failedNote(r, grade.data, recGrade, rec.available_at ?? null)
+  // Ни одного верного ответа: подписи «в пределах уровня» и «ровный результат» тут вводят в заблуждение.
+  const allZero = r.topic_scores.length > 0 && r.topic_scores.every((t) => t.score <= 0)
   // «По резюме заявлен Senior → тест подтвердил Middle»: резюме только заявка, категорию даёт тест.
   const [claim] = useState(readResumeClaim)
   const showClaim = hasClaim(claim) && (!claim.specialization || claim.specialization.value === r.specialization)
@@ -120,10 +124,9 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
             </Badge>
           )}
         </div>
-        {!r.passed && (
-          <p className="mt-4 rounded-md bg-warning-soft px-3 py-2 text-sm text-warning">
-            Категория не меняется принудительно: прежний грейд (если был) остаётся. Чтобы получить категорию, пройдите тест
-            на грейд ниже.
+        {failNote && (
+          <p className="mt-4 rounded-md bg-warning-soft px-3 py-2 text-sm text-warning" data-testid="fail-note">
+            {failNote}
           </p>
         )}
       </Card>
@@ -162,20 +165,40 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
       <Card>
         <CardHeader title="Разбор по темам" description="Правильные ответы не показываем — так задачи не утекают и тест остаётся честным." />
         <div className="grid gap-4">
-          {r.topic_scores.map((t) => (
-            <div key={t.topic}>
-              <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-                <span className="text-sm font-medium text-ink">{t.label}</span>
-                <Badge tone={TOPIC_LEVEL[t.level].tone}>{TOPIC_LEVEL[t.level].label}</Badge>
+          {r.topic_scores.map((t) => {
+            const none = t.score <= 0
+            return (
+              <div key={t.topic}>
+                <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-sm font-medium text-ink">{t.label}</span>
+                  <Badge tone={none ? 'warning' : TOPIC_LEVEL[t.level].tone}>{none ? 'Нет верных ответов' : TOPIC_LEVEL[t.level].label}</Badge>
+                </div>
+                <ProgressBar value={Math.round(t.score * 100)} tone={none ? 'warning' : TOPIC_LEVEL[t.level].bar} showValue={false} size="sm" />
               </div>
-              <ProgressBar value={Math.round(t.score * 100)} tone={TOPIC_LEVEL[t.level].bar} showValue={false} size="sm" />
-            </div>
-          ))}
+            )
+          })}
         </div>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <TopicList title="Сильные стороны" icon={<TrendingUp className="size-4 text-success" aria-hidden />} items={r.strong_topics} empty="Явно сильных тем нет — ровный результат" />
-          <TopicList title="Что подтянуть" icon={<TrendingDown className="size-4 text-warning" aria-hidden />} items={r.weak_topics} empty="Слабых тем не нашли" />
-        </div>
+        {allZero ? (
+          <p className="mt-6 rounded-md border border-line p-4 text-[15px] text-ink" data-testid="topics-all-zero">
+            Верных ответов не было ни в одной теме, поэтому сильные и слабые стороны по этому тесту не определить.
+            {recGrade ? ` Начните с теста на ${GRADE_LABELS[recGrade]} — задачи там проще.` : ''}
+          </p>
+        ) : (
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <TopicList
+              title="Сильные стороны"
+              icon={<TrendingUp className="size-4 text-success" aria-hidden />}
+              items={r.strong_topics}
+              empty="Ни одна тема не выделяется в лучшую сторону — результат по темам ровный"
+            />
+            <TopicList
+              title="Что подтянуть"
+              icon={<TrendingDown className="size-4 text-warning" aria-hidden />}
+              items={r.weak_topics}
+              empty="Ни одна тема не проседает — результат по темам ровный"
+            />
+          </div>
+        )}
       </Card>
 
       {/* Что дальше */}
@@ -187,7 +210,7 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
             <p className="mt-1 text-[15px] text-ink">{rec.message}</p>
             {rec.available_at && recGrade && (
               <p className="mt-1 text-sm text-muted">
-                Тест на {GRADE_LABELS[recGrade]} станет доступен {formatDate(rec.available_at)}.
+                Тест на {GRADE_LABELS[recGrade]} станет доступен {formatDate(rec.available_at)}
               </p>
             )}
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
@@ -224,7 +247,31 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
   )
 }
 
-function TopicList({ title, icon, items, empty }: { title: string; icon: ReactNode; items: string[]; empty: string }) {
+/** Тест не подтвердил грейд: что с категорией и когда можно повторить. */
+function failedNote(r: TestResult, g: GradeStatus | undefined, recGrade: Grade | null, recAvailableAt: string | null): string {
+  if (g?.grade && g.category_label && g.grade_status === 'confirmed') {
+    const cur = GRADES.indexOf(g.grade)
+    const target = GRADES.indexOf(r.target_grade)
+    const at = target > cur ? g.higher_available_at : target < cur ? g.lower_available_at : null
+    const retry = at ?? addDays(r.finished_at, g.retry_cooldown_days ?? 30)
+    return `Ваш грейд ${GRADE_LABELS[g.grade]} и категория «${g.category_label}» сохраняются. Повторить тест на ${GRADE_LABELS[r.target_grade]} можно с ${formatDate(retry)}`
+  }
+  if (recGrade) {
+    return recAvailableAt
+      ? `Категории пока нет. Чтобы её получить, пройдите тест на ${GRADE_LABELS[recGrade]} — он станет доступен ${formatDate(recAvailableAt)}`
+      : `Категории пока нет. Чтобы её получить, пройдите тест на ${GRADE_LABELS[recGrade]} — кнопка ниже.`
+  }
+  return `Категории пока нет. Повторить тест на ${GRADE_LABELS[r.target_grade]} можно с ${formatDate(addDays(r.finished_at, g?.retry_cooldown_days ?? 30))}`
+}
+
+function addDays(iso: string, days: number): string {
+  const d = new Date(iso)
+  d.setDate(d.getDate() + days)
+  return d.toISOString()
+}
+
+function TopicList(
+{ title, icon, items, empty }: { title: string; icon: ReactNode; items: string[]; empty: string }) {
   return (
     <div className="rounded-md border border-line p-4">
       <p className="flex items-center gap-2 text-sm font-semibold text-ink">

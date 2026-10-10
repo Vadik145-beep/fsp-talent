@@ -20,7 +20,8 @@ import { QueryView } from './components/QueryView'
 import { ResumeUpload } from './components/ResumeUpload'
 import { ONBOARDING_STEPS, readOnboarding, writeOnboarding, type OnboardingProgress } from './components/onboardingSteps'
 import { applyParsedResume, formFromProfile, toUpdate, type ParsedConfidence, type ProfileFormState, type ResumeClaim } from './components/profileFormModel'
-import { ResumeClaimNote, hasClaim, writeResumeClaim } from './components/ResumeClaim'
+import { ResumeClaimNote } from './components/ResumeClaim'
+import { hasClaim, writeResumeClaim } from './components/resumeClaimStore'
 import { ITEM_FORMAT_LABELS } from './labels'
 
 /** Мастер: 1 профиль → 2 опрос → 3 грейд → 4 тест (отдельный экран) → 5 результат. */
@@ -654,7 +655,7 @@ function StepTest({
       {conflict && (
         <div className="rounded-lg border border-warning/30 bg-warning-soft px-4 py-3 text-sm text-warning" role="alert">
           {conflict.message}
-          {cooldownAt && ` Станет доступно ${formatDate(cooldownAt)}.`}
+          {cooldownAt && ` Станет доступно ${formatDate(cooldownAt)}`}
           {runningId ? (
             <Button className="ml-3" size="sm" variant="secondary" onClick={() => navigate(`/candidate/test/${runningId}?onboarding=1`)}>
               Продолжить начатый тест

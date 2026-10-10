@@ -25,7 +25,7 @@ import { StackTags, ThetaInfo } from './components/CandidateBits'
 import { InviteModal } from './components/InviteModal'
 import { QueryState } from './components/QueryState'
 
-const LEVEL_TITLE: Record<S['TopicLevel'], string> = { strong: 'Сильные темы', ok: 'На уровне грейда', weak: 'Зоны роста' }
+const LEVEL_TITLE: Record<S['TopicLevel'], string> = { strong: 'Сильные темы', ok: 'В пределах уровня', weak: 'Зоны роста' }
 const LEVEL_TONE = { strong: 'success', ok: 'violet', weak: 'warning' } as const
 
 /** Обезличенный профиль: до принятия приглашения — без ФИО и контактов. */

@@ -75,7 +75,8 @@ export const GRADE_EVENT_LABELS: Record<S['GradeEventType'], string> = {
 
 export const TOPIC_LEVEL: Record<S['TopicLevel'], { label: string; tone: Tone; bar: 'success' | 'violet' | 'warning' }> = {
   strong: { label: 'Сильная сторона', tone: 'success', bar: 'success' },
-  ok: { label: 'На уровне грейда', tone: 'violet', bar: 'violet' },
+  // Уровень темы считается относительно итоговой θ самого кандидата, а не грейда.
+  ok: { label: 'В пределах уровня', tone: 'violet', bar: 'violet' },
   weak: { label: 'Стоит подтянуть', tone: 'warning', bar: 'warning' },
 }
 
