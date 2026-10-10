@@ -95,32 +95,30 @@ export default function RecruiterCandidatesPage() {
         activeCount={activeCount}
         onReset={() => update((p) => FILTER_KEYS.forEach((k) => p.delete(k)))}
         actions={
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-            <Select
-              label="Под потребность"
-              containerClassName="sm:w-72"
-              value={need ? String(need.id) : NO_NEED}
-              options={needOptions}
-              disabled={needs.isPending}
-              data-testid="bank-need"
-              onChange={(e) =>
-                update((p) => {
-                  p.set('need', e.target.value)
-                  // у новой потребности своя сортировка по умолчанию
-                  if (p.get('sort') === 'match' || e.target.value === NO_NEED) p.delete('sort')
-                })
-              }
-            />
-            <Select
-              label="Сортировка"
-              containerClassName="sm:w-56"
-              value={params.sort}
-              options={need ? [MATCH_SORT, ...SORT_OPTIONS] : SORT_OPTIONS}
-              onChange={(e) => update((p) => p.set('sort', e.target.value))}
-            />
-          </div>
+          <Select
+            label="Сортировка"
+            containerClassName="w-full sm:w-56"
+            value={params.sort}
+            options={need ? [MATCH_SORT, ...SORT_OPTIONS] : SORT_OPTIONS}
+            onChange={(e) => update((p) => p.set('sort', e.target.value))}
+          />
         }
       >
+        <Select
+          label="Под потребность"
+          containerClassName="sm:w-72"
+          value={need ? String(need.id) : NO_NEED}
+          options={needOptions}
+          disabled={needs.isPending}
+          data-testid="bank-need"
+          onChange={(e) =>
+            update((p) => {
+              p.set('need', e.target.value)
+              // у новой потребности своя сортировка по умолчанию
+              if (p.get('sort') === 'match' || e.target.value === NO_NEED) p.delete('sort')
+            })
+          }
+        />
         <Select
           label="Специализация"
           containerClassName="sm:w-44"
@@ -204,8 +202,9 @@ export default function RecruiterCandidatesPage() {
               {d.items.map((c) => (
                 <li key={c.id} className="min-w-0">
                   <Card className="flex h-full flex-col gap-3" padding="sm" data-testid="bank-card">
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <Link to={`/recruiter/candidates/${c.id}`} className="min-w-0 hover:opacity-80">
+                    {/* с процентом соответствия — без переноса: псевдоним сжимается, процент справа */}
+                    <div className={cn('flex items-start justify-between gap-2', c.match_score == null && 'flex-wrap')}>
+                      <Link to={`/recruiter/candidates/${c.id}`} className="flex min-w-0 hover:opacity-80">
                         <Pseudonym
                           code={pseudonymCodeOf(c.pseudonym)}
                           subtitle={[c.category_label, c.city, c.experience_years != null ? yearsText(c.experience_years) : null].filter(Boolean).join(' · ')}
@@ -220,7 +219,11 @@ export default function RecruiterCandidatesPage() {
                         <FspBadges candidate={c} compact />
                       )}
                     </div>
-                    {c.match_score != null && <FspBadges candidate={c} compact />}
+                    {c.match_score != null && (
+                      <div className="flex">
+                        <FspBadges candidate={c} compact />
+                      </div>
+                    )}
                     <ThetaInfo theta={c.theta} />
                     {(c.match_reasons ?? []).length > 0 && (
                       <ul className="flex flex-col gap-1.5" aria-label="Почему подходит" data-testid="bank-reasons">
