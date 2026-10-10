@@ -26,10 +26,13 @@ def test_data_is_plausible():
     raw = json.loads(DATA.read_text(encoding="utf-8"))
     assert raw["meta"]["synthetic"] is True
     people = raw["participants"]
-    assert [p["fsp_id"] for p in people] == [f"FSP-{n:06d}" for n in range(1, 41)]
-    assert len({p["full_name"] for p in people}) == 40
+    ids = [*range(1, 41), *range(101, 181)]
+    assert [p["fsp_id"] for p in people] == [f"FSP-{n:06d}" for n in ids]
+    assert len({p["full_name"] for p in people}) == 120
     counts = [len(p["achievements"]) for p in people]
-    assert all(c >= 1 for c in counts[:30]) and all(c == 0 for c in counts[30:])
+    # 001–030 и 101–180 — с историей, 031–040 — без
+    assert all(c >= 1 for c in counts[:30] + counts[40:])
+    assert all(c == 0 for c in counts[30:40])
     for p in people:
         for a in p["achievements"]:
             assert a["date"] > p["registered_at"]

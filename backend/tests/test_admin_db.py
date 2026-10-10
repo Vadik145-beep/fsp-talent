@@ -1,6 +1,7 @@
 """Админка на БД: пользователи (поиск, блокировка, роль), компании, журнал действий."""
 
 from collections.abc import Iterator
+from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
@@ -8,6 +9,21 @@ from fastapi.testclient import TestClient
 from app.common import fixtures
 from app.seed.testkit import reseed_sync, sql_sync
 from tests.conftest import ADMIN, RECRUITER, as_role
+
+
+def bank_page_ids(
+    client: TestClient, headers: dict[str, str] = RECRUITER, **params: Any
+) -> set[int]:
+    """id всех кандидатов банка по фильтру (с листанием: в демо-базе больше 100 кандидатов)."""
+    ids: set[int] = set()
+    page = 1
+    while True:
+        query = {"page_size": 100, "page": page, **params}
+        body = client.get("/api/candidates", params=query, headers=headers).json()
+        ids |= {c["id"] for c in body["items"]}
+        if page * 100 >= body["total"]:
+            return ids
+        page += 1
 
 
 @pytest.fixture(autouse=True, scope="module")
@@ -40,14 +56,12 @@ def test_users_search_and_filters(client: TestClient) -> None:
 
 
 def test_block_and_unblock_user(client: TestClient, fresh_db: None) -> None:
-    bank = client.get("/api/candidates", params={"page_size": 100}, headers=RECRUITER).json()
-    assert 2 in {c["id"] for c in bank["items"]}
+    assert 2 in bank_page_ids(client)
     response = client.patch("/api/admin/users/2", json={"blocked": True}, headers=ADMIN)
     assert response.status_code == 200 and response.json()["blocked"] is True
     assert sql_sync("SELECT blocked FROM users WHERE id = 2")[0][0] is True
     # заблокированный кандидат пропадает из выдачи
-    bank = client.get("/api/candidates", params={"page_size": 100}, headers=RECRUITER).json()
-    assert 2 not in {c["id"] for c in bank["items"]}
+    assert 2 not in bank_page_ids(client)
     journal = client.get("/api/admin/users/2/audit", headers=ADMIN).json()
     assert journal[0]["action"] == "user_blocked" and journal[0]["actor_user_id"] == 48
     client.patch("/api/admin/users/2", json={"blocked": False}, headers=ADMIN)

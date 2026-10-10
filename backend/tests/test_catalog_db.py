@@ -23,7 +23,8 @@ def fresh_db() -> None:
 
 
 def _audit_actions() -> list[str]:
-    return [r[0] for r in sql_sync("SELECT action FROM audit_log WHERE id > 51 ORDER BY id")]
+    seeded = len(fixtures.load("audit_log"))
+    return [r[0] for r in sql_sync(f"SELECT action FROM audit_log WHERE id > {seeded} ORDER BY id")]
 
 
 def test_public_lists_from_db(client: TestClient) -> None:
@@ -160,8 +161,10 @@ def test_settings_update_and_effect(client: TestClient, fresh_db: None) -> None:
     # квота сразу видна рекрутеру
     dashboard = client.get("/api/companies/my/dashboard", headers=RECRUITER).json()
     assert dashboard["quota"]["limit"] == 25
+    seeded = len(fixtures.load("audit_log"))
     audit = sql_sync(
-        "SELECT summary, details FROM audit_log WHERE action = 'settings_updated' AND id > 51"
+        "SELECT summary, details FROM audit_log "
+        f"WHERE action = 'settings_updated' AND id > {seeded}"
     )
     assert audit and audit[0][1] == {"invitation_quota": [20, 25]}
     assert "20 → 25" in audit[0][0]

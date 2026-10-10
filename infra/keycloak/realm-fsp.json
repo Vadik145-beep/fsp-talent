@@ -164,6 +164,150 @@
       "realmRoles": [
         "default-roles-fsp"
       ]
+    },
+    {
+      "username": "fsp.free01",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Кирилл",
+      "lastName": "Ершов",
+      "email": "kirill.ershov.free01@example.com",
+      "attributes": {
+        "fsp_id": [
+          "FSP-000022"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Fsp-demo-2026",
+          "temporary": false
+        }
+      ],
+      "requiredActions": [],
+      "realmRoles": [
+        "default-roles-fsp"
+      ]
+    },
+    {
+      "username": "fsp.free02",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Егор",
+      "lastName": "Баранов",
+      "email": "egor.baranov.free02@example.com",
+      "attributes": {
+        "fsp_id": [
+          "FSP-000026"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Fsp-demo-2026",
+          "temporary": false
+        }
+      ],
+      "requiredActions": [],
+      "realmRoles": [
+        "default-roles-fsp"
+      ]
+    },
+    {
+      "username": "fsp.free03",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Максим",
+      "lastName": "Гарипов",
+      "email": "maksim.garipov.free03@example.com",
+      "attributes": {
+        "fsp_id": [
+          "FSP-000029"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Fsp-demo-2026",
+          "temporary": false
+        }
+      ],
+      "requiredActions": [],
+      "realmRoles": [
+        "default-roles-fsp"
+      ]
+    },
+    {
+      "username": "fsp.free04",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Павел",
+      "lastName": "Филиппов",
+      "email": "pavel.filippov.free04@example.com",
+      "attributes": {
+        "fsp_id": [
+          "FSP-000024"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Fsp-demo-2026",
+          "temporary": false
+        }
+      ],
+      "requiredActions": [],
+      "realmRoles": [
+        "default-roles-fsp"
+      ]
+    },
+    {
+      "username": "fsp.free05",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Михаил",
+      "lastName": "Латыпов",
+      "email": "mikhail.latypov.free05@example.com",
+      "attributes": {
+        "fsp_id": [
+          "FSP-000030"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Fsp-demo-2026",
+          "temporary": false
+        }
+      ],
+      "requiredActions": [],
+      "realmRoles": [
+        "default-roles-fsp"
+      ]
+    },
+    {
+      "username": "fsp.free.nohistory",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Максим",
+      "lastName": "Зайцев",
+      "email": "maksim.zaytsev.free-nohistory@example.com",
+      "attributes": {
+        "fsp_id": [
+          "FSP-000036"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Fsp-demo-2026",
+          "temporary": false
+        }
+      ],
+      "requiredActions": [],
+      "realmRoles": [
+        "default-roles-fsp"
+      ]
     }
   ],
   "clients": [

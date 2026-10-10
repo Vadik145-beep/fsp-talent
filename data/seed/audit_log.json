@@ -1,6 +1,474 @@
 [
   {
     "id": 1,
+    "at": "2026-08-07T15:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 225,
+    "summary": "Присвоена категория Mobile · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 2,
+    "at": "2026-08-07T21:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 131,
+    "summary": "Присвоена категория Backend · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 3,
+    "at": "2026-08-07T21:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 248,
+    "summary": "Присвоена категория Data Science / ML · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 4,
+    "at": "2026-08-08T21:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 98,
+    "summary": "Присвоена категория Frontend · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 5,
+    "at": "2026-08-09T17:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 242,
+    "summary": "Присвоена категория QA · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 6,
+    "at": "2026-08-09T21:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 251,
+    "summary": "Присвоена категория DevOps · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 7,
+    "at": "2026-08-10T12:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 73,
+    "summary": "Присвоена категория DevOps · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 8,
+    "at": "2026-08-10T13:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 53,
+    "summary": "Присвоена категория Mobile · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 9,
+    "at": "2026-08-10T14:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 194,
+    "summary": "Присвоена категория DevOps · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 10,
+    "at": "2026-08-10T14:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 226,
+    "summary": "Присвоена категория Backend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 11,
+    "at": "2026-08-10T20:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 126,
+    "summary": "Присвоена категория Data Science / ML · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 12,
+    "at": "2026-08-11T11:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 176,
+    "summary": "Присвоена категория Backend · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 13,
+    "at": "2026-08-11T13:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 125,
+    "summary": "Присвоена категория Data Science / ML · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 14,
+    "at": "2026-08-11T17:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 139,
+    "summary": "Присвоена категория Backend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 15,
+    "at": "2026-08-11T19:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 119,
+    "summary": "Присвоена категория Mobile · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 16,
+    "at": "2026-08-11T19:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 183,
+    "summary": "Присвоена категория Data Science / ML · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 17,
+    "at": "2026-08-12T10:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 169,
+    "summary": "Присвоена категория Frontend · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 18,
+    "at": "2026-08-12T12:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 146,
+    "summary": "Присвоена категория Data Science / ML · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 19,
+    "at": "2026-08-12T12:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 149,
+    "summary": "Присвоена категория Frontend · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 20,
+    "at": "2026-08-12T15:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 88,
+    "summary": "Присвоена категория Backend · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 21,
+    "at": "2026-08-12T16:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 114,
+    "summary": "Присвоена категория Backend · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 22,
+    "at": "2026-08-12T17:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 57,
+    "summary": "Присвоена категория QA · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 23,
+    "at": "2026-08-12T18:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 138,
+    "summary": "Присвоена категория Data Science / ML · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 24,
+    "at": "2026-08-13T15:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 206,
+    "summary": "Присвоена категория Backend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 25,
+    "at": "2026-08-14T13:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 167,
+    "summary": "Присвоена категория Mobile · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 26,
+    "at": "2026-08-14T17:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 196,
+    "summary": "Присвоена категория Data Science / ML · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 27,
+    "at": "2026-08-14T18:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 204,
+    "summary": "Присвоена категория Backend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 28,
+    "at": "2026-08-14T20:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 132,
+    "summary": "Присвоена категория DevOps · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 29,
+    "at": "2026-08-14T21:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 117,
+    "summary": "Присвоена категория Frontend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 30,
+    "at": "2026-08-15T15:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 253,
+    "summary": "Присвоена категория Frontend · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 31,
+    "at": "2026-08-15T17:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 184,
+    "summary": "Присвоена категория Backend · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 32,
+    "at": "2026-08-16T10:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 60,
+    "summary": "Присвоена категория Mobile · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 33,
+    "at": "2026-08-16T13:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 59,
+    "summary": "Присвоена категория Backend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 34,
+    "at": "2026-08-16T14:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 97,
+    "summary": "Присвоена категория Data Science / ML · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 35,
+    "at": "2026-08-16T19:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 151,
+    "summary": "Присвоена категория Frontend · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 36,
+    "at": "2026-08-17T11:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 162,
+    "summary": "Присвоена категория Frontend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 37,
     "at": "2026-08-17T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -13,7 +481,137 @@
     }
   },
   {
-    "id": 2,
+    "id": 38,
+    "at": "2026-08-17T12:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 67,
+    "summary": "Присвоена категория Backend · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 39,
+    "at": "2026-08-17T12:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 237,
+    "summary": "Присвоена категория Frontend · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 40,
+    "at": "2026-08-17T13:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 86,
+    "summary": "Присвоена категория Mobile · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 41,
+    "at": "2026-08-17T15:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 77,
+    "summary": "Присвоена категория Mobile · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 42,
+    "at": "2026-08-18T13:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 224,
+    "summary": "Присвоена категория Backend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 43,
+    "at": "2026-08-18T17:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 255,
+    "summary": "Присвоена категория Frontend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 44,
+    "at": "2026-08-18T18:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 220,
+    "summary": "Присвоена категория QA · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 45,
+    "at": "2026-08-18T19:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 233,
+    "summary": "Присвоена категория Frontend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 46,
+    "at": "2026-08-19T11:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 99,
+    "summary": "Присвоена категория QA · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 47,
+    "at": "2026-08-19T11:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 148,
+    "summary": "Присвоена категория Backend · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 48,
     "at": "2026-08-19T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -26,7 +624,7 @@
     }
   },
   {
-    "id": 3,
+    "id": 49,
     "at": "2026-08-19T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -39,7 +637,72 @@
     }
   },
   {
-    "id": 4,
+    "id": 50,
+    "at": "2026-08-19T13:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 212,
+    "summary": "Присвоена категория DevOps · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 51,
+    "at": "2026-08-19T15:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 54,
+    "summary": "Присвоена категория DevOps · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 52,
+    "at": "2026-08-19T18:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 137,
+    "summary": "Присвоена категория Backend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 53,
+    "at": "2026-08-19T18:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 222,
+    "summary": "Присвоена категория Data Science / ML · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 54,
+    "at": "2026-08-19T19:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 66,
+    "summary": "Присвоена категория QA · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 55,
     "at": "2026-08-20T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -52,7 +715,72 @@
     }
   },
   {
-    "id": 5,
+    "id": 56,
+    "at": "2026-08-20T14:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 195,
+    "summary": "Присвоена категория QA · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 57,
+    "at": "2026-08-20T16:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 100,
+    "summary": "Присвоена категория DevOps · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 58,
+    "at": "2026-08-20T17:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 130,
+    "summary": "Присвоена категория Data Science / ML · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 59,
+    "at": "2026-08-20T17:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 144,
+    "summary": "Присвоена категория DevOps · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 60,
+    "at": "2026-08-20T19:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 105,
+    "summary": "Присвоена категория Frontend · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 61,
     "at": "2026-08-21T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -65,7 +793,7 @@
     }
   },
   {
-    "id": 6,
+    "id": 62,
     "at": "2026-08-21T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -78,7 +806,85 @@
     }
   },
   {
-    "id": 7,
+    "id": 63,
+    "at": "2026-08-21T12:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 120,
+    "summary": "Присвоена категория DevOps · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 64,
+    "at": "2026-08-21T12:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 158,
+    "summary": "Присвоена категория Frontend · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 65,
+    "at": "2026-08-21T14:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 112,
+    "summary": "Присвоена категория Data Science / ML · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 66,
+    "at": "2026-08-21T15:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 84,
+    "summary": "Присвоена категория Data Science / ML · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 67,
+    "at": "2026-08-21T16:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 106,
+    "summary": "Присвоена категория Backend · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 68,
+    "at": "2026-08-21T21:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 154,
+    "summary": "Присвоена категория Frontend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 69,
     "at": "2026-08-22T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -91,7 +897,150 @@
     }
   },
   {
-    "id": 8,
+    "id": 70,
+    "at": "2026-08-22T12:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 145,
+    "summary": "Присвоена категория Frontend · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 71,
+    "at": "2026-08-22T12:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 185,
+    "summary": "Присвоена категория DevOps · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 72,
+    "at": "2026-08-22T15:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 190,
+    "summary": "Присвоена категория Data Science / ML · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 73,
+    "at": "2026-08-22T16:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 111,
+    "summary": "Присвоена категория QA · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 74,
+    "at": "2026-08-22T20:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 81,
+    "summary": "Присвоена категория Data Science / ML · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 75,
+    "at": "2026-08-23T12:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 141,
+    "summary": "Присвоена категория DevOps · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 76,
+    "at": "2026-08-24T10:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 92,
+    "summary": "Присвоена категория Backend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 77,
+    "at": "2026-08-24T11:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 246,
+    "summary": "Присвоена категория Data Science / ML · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 78,
+    "at": "2026-08-24T16:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 164,
+    "summary": "Присвоена категория Backend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 79,
+    "at": "2026-08-24T20:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 182,
+    "summary": "Присвоена категория Mobile · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 80,
+    "at": "2026-08-25T10:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 219,
+    "summary": "Присвоена категория Backend · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 81,
     "at": "2026-08-25T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -104,7 +1053,7 @@
     }
   },
   {
-    "id": 9,
+    "id": 82,
     "at": "2026-08-25T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -117,7 +1066,59 @@
     }
   },
   {
-    "id": 10,
+    "id": 83,
+    "at": "2026-08-25T12:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 115,
+    "summary": "Присвоена категория DevOps · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 84,
+    "at": "2026-08-25T14:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 181,
+    "summary": "Присвоена категория QA · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 85,
+    "at": "2026-08-25T18:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 250,
+    "summary": "Присвоена категория Frontend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 86,
+    "at": "2026-08-25T20:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 82,
+    "summary": "Присвоена категория Backend · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 87,
     "at": "2026-08-26T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -130,7 +1131,7 @@
     }
   },
   {
-    "id": 11,
+    "id": 88,
     "at": "2026-08-26T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -143,7 +1144,59 @@
     }
   },
   {
-    "id": 12,
+    "id": 89,
+    "at": "2026-08-26T20:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 161,
+    "summary": "Присвоена категория Data Science / ML · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 90,
+    "at": "2026-08-27T12:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 75,
+    "summary": "Присвоена категория DevOps · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 91,
+    "at": "2026-08-27T13:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 217,
+    "summary": "Присвоена категория DevOps · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 92,
+    "at": "2026-08-27T17:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 74,
+    "summary": "Присвоена категория Data Science / ML · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 93,
     "at": "2026-08-28T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -156,7 +1209,111 @@
     }
   },
   {
-    "id": 13,
+    "id": 94,
+    "at": "2026-08-28T17:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 52,
+    "summary": "Присвоена категория Frontend · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 95,
+    "at": "2026-08-28T21:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 108,
+    "summary": "Присвоена категория Frontend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 96,
+    "at": "2026-08-29T11:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 64,
+    "summary": "Присвоена категория Backend · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 97,
+    "at": "2026-08-29T11:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 201,
+    "summary": "Присвоена категория Mobile · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 98,
+    "at": "2026-08-29T19:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 78,
+    "summary": "Присвоена категория DevOps · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 99,
+    "at": "2026-08-29T20:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 94,
+    "summary": "Присвоена категория QA · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 100,
+    "at": "2026-08-29T21:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 80,
+    "summary": "Присвоена категория Backend · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 101,
+    "at": "2026-08-30T10:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 221,
+    "summary": "Присвоена категория Frontend · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 102,
     "at": "2026-08-30T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -169,7 +1326,59 @@
     }
   },
   {
-    "id": 14,
+    "id": 103,
+    "at": "2026-08-30T18:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 234,
+    "summary": "Присвоена категория Data Science / ML · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 104,
+    "at": "2026-08-30T21:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 140,
+    "summary": "Присвоена категория Data Science / ML · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 105,
+    "at": "2026-08-30T21:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 228,
+    "summary": "Присвоена категория QA · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 106,
+    "at": "2026-08-31T11:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 244,
+    "summary": "Присвоена категория Backend · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 107,
     "at": "2026-08-31T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -182,7 +1391,72 @@
     }
   },
   {
-    "id": 15,
+    "id": 108,
+    "at": "2026-08-31T13:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 159,
+    "summary": "Присвоена категория Backend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 109,
+    "at": "2026-08-31T16:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 142,
+    "summary": "Присвоена категория Data Science / ML · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 110,
+    "at": "2026-08-31T18:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 175,
+    "summary": "Присвоена категория Mobile · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 111,
+    "at": "2026-08-31T19:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 116,
+    "summary": "Присвоена категория Frontend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 112,
+    "at": "2026-08-31T19:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 172,
+    "summary": "Присвоена категория DevOps · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 113,
     "at": "2026-09-01T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -195,7 +1469,46 @@
     }
   },
   {
-    "id": 16,
+    "id": 114,
+    "at": "2026-09-01T13:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 102,
+    "summary": "Присвоена категория Mobile · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 115,
+    "at": "2026-09-01T17:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 50,
+    "summary": "Присвоена категория Data Science / ML · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 116,
+    "at": "2026-09-01T21:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 258,
+    "summary": "Присвоена категория Frontend · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 117,
     "at": "2026-09-02T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -208,7 +1521,7 @@
     }
   },
   {
-    "id": 17,
+    "id": 118,
     "at": "2026-09-02T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -221,7 +1534,46 @@
     }
   },
   {
-    "id": 18,
+    "id": 119,
+    "at": "2026-09-02T14:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 129,
+    "summary": "Присвоена категория Frontend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 120,
+    "at": "2026-09-02T16:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 156,
+    "summary": "Присвоена категория QA · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 121,
+    "at": "2026-09-03T12:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 188,
+    "summary": "Присвоена категория DevOps · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 122,
     "at": "2026-09-04T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -234,7 +1586,7 @@
     }
   },
   {
-    "id": 19,
+    "id": 123,
     "at": "2026-09-04T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -247,7 +1599,33 @@
     }
   },
   {
-    "id": 20,
+    "id": 124,
+    "at": "2026-09-04T20:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 93,
+    "summary": "Присвоена категория DevOps · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 125,
+    "at": "2026-09-05T10:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 152,
+    "summary": "Присвоена категория Data Science / ML · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 126,
     "at": "2026-09-05T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -260,7 +1638,46 @@
     }
   },
   {
-    "id": 21,
+    "id": 127,
+    "at": "2026-09-05T15:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 192,
+    "summary": "Присвоена категория Mobile · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 128,
+    "at": "2026-09-05T17:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 121,
+    "summary": "Присвоена категория QA · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 129,
+    "at": "2026-09-05T20:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 68,
+    "summary": "Присвоена категория Backend · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 130,
     "at": "2026-09-06T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -273,7 +1690,228 @@
     }
   },
   {
-    "id": 22,
+    "id": 131,
+    "at": "2026-09-06T16:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 160,
+    "summary": "Присвоена категория Frontend · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 132,
+    "at": "2026-09-06T17:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 83,
+    "summary": "Присвоена категория Backend · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 133,
+    "at": "2026-09-06T18:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 103,
+    "summary": "Присвоена категория Mobile · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 134,
+    "at": "2026-09-06T21:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 180,
+    "summary": "Присвоена категория DevOps · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 135,
+    "at": "2026-09-07T12:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 174,
+    "summary": "Присвоена категория Data Science / ML · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 136,
+    "at": "2026-09-07T21:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 107,
+    "summary": "Присвоена категория Data Science / ML · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 137,
+    "at": "2026-09-08T10:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 231,
+    "summary": "Присвоена категория QA · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 138,
+    "at": "2026-09-08T13:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 238,
+    "summary": "Присвоена категория Mobile · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 139,
+    "at": "2026-09-08T14:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 128,
+    "summary": "Присвоена категория QA · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 140,
+    "at": "2026-09-08T16:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 165,
+    "summary": "Присвоена категория Frontend · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 141,
+    "at": "2026-09-09T14:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 136,
+    "summary": "Присвоена категория Data Science / ML · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 142,
+    "at": "2026-09-09T16:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 179,
+    "summary": "Присвоена категория Backend · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 143,
+    "at": "2026-09-09T19:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 110,
+    "summary": "Присвоена категория Data Science / ML · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 144,
+    "at": "2026-09-09T19:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 123,
+    "summary": "Присвоена категория QA · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 145,
+    "at": "2026-09-09T21:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 193,
+    "summary": "Присвоена категория Backend · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 146,
+    "at": "2026-09-10T10:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 223,
+    "summary": "Присвоена категория Data Science / ML · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 147,
+    "at": "2026-09-10T10:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 236,
+    "summary": "Присвоена категория Data Science / ML · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 148,
     "at": "2026-09-10T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -286,7 +1924,33 @@
     }
   },
   {
-    "id": 23,
+    "id": 149,
+    "at": "2026-09-10T14:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 202,
+    "summary": "Присвоена категория Frontend · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 150,
+    "at": "2026-09-10T15:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 89,
+    "summary": "Присвоена категория Data Science / ML · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 151,
     "at": "2026-09-10T15:30:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -299,7 +1963,59 @@
     }
   },
   {
-    "id": 24,
+    "id": 152,
+    "at": "2026-09-10T17:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 143,
+    "summary": "Присвоена категория Backend · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 153,
+    "at": "2026-09-10T20:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 147,
+    "summary": "Присвоена категория Data Science / ML · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 154,
+    "at": "2026-09-11T14:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 155,
+    "summary": "Присвоена категория DevOps · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 155,
+    "at": "2026-09-11T15:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 240,
+    "summary": "Присвоена категория Backend · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 156,
     "at": "2026-09-12T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -312,7 +2028,7 @@
     }
   },
   {
-    "id": 25,
+    "id": 157,
     "at": "2026-09-12T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -325,7 +2041,20 @@
     }
   },
   {
-    "id": 26,
+    "id": 158,
+    "at": "2026-09-12T13:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 91,
+    "summary": "Присвоена категория Data Science / ML · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 159,
     "at": "2026-09-13T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -338,7 +2067,85 @@
     }
   },
   {
-    "id": 27,
+    "id": 160,
+    "at": "2026-09-13T17:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 51,
+    "summary": "Присвоена категория Data Science / ML · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 161,
+    "at": "2026-09-13T19:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 227,
+    "summary": "Присвоена категория Mobile · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 162,
+    "at": "2026-09-13T19:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 243,
+    "summary": "Присвоена категория QA · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 163,
+    "at": "2026-09-14T11:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 104,
+    "summary": "Присвоена категория Mobile · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 164,
+    "at": "2026-09-14T12:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 235,
+    "summary": "Присвоена категория Frontend · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 165,
+    "at": "2026-09-14T12:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 239,
+    "summary": "Присвоена категория Frontend · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 166,
     "at": "2026-09-15T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -351,7 +2158,33 @@
     }
   },
   {
-    "id": 28,
+    "id": 167,
+    "at": "2026-09-16T10:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 213,
+    "summary": "Присвоена категория Frontend · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 168,
+    "at": "2026-09-16T11:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 199,
+    "summary": "Присвоена категория Backend · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 169,
     "at": "2026-09-16T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -364,7 +2197,46 @@
     }
   },
   {
-    "id": 29,
+    "id": 170,
+    "at": "2026-09-16T12:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 260,
+    "summary": "Присвоена категория Frontend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 171,
+    "at": "2026-09-16T14:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 229,
+    "summary": "Присвоена категория QA · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 172,
+    "at": "2026-09-16T20:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 256,
+    "summary": "Присвоена категория Frontend · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 173,
     "at": "2026-09-17T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -377,7 +2249,111 @@
     }
   },
   {
-    "id": 30,
+    "id": 174,
+    "at": "2026-09-17T12:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 163,
+    "summary": "Присвоена категория Backend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 175,
+    "at": "2026-09-17T13:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 197,
+    "summary": "Присвоена категория Backend · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 176,
+    "at": "2026-09-17T14:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 257,
+    "summary": "Присвоена категория Backend · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 177,
+    "at": "2026-09-17T16:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 245,
+    "summary": "Присвоена категория Backend · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 178,
+    "at": "2026-09-17T21:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 62,
+    "summary": "Присвоена категория DevOps · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 179,
+    "at": "2026-09-18T10:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 210,
+    "summary": "Присвоена категория Data Science / ML · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 180,
+    "at": "2026-09-18T18:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 76,
+    "summary": "Присвоена категория QA · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 181,
+    "at": "2026-09-18T20:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 209,
+    "summary": "Присвоена категория QA · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 182,
     "at": "2026-09-19T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -390,7 +2366,98 @@
     }
   },
   {
-    "id": 31,
+    "id": 183,
+    "at": "2026-09-19T12:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 90,
+    "summary": "Присвоена категория Frontend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 184,
+    "at": "2026-09-19T15:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 166,
+    "summary": "Присвоена категория QA · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 185,
+    "at": "2026-09-19T16:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 79,
+    "summary": "Присвоена категория QA · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 186,
+    "at": "2026-09-19T16:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 134,
+    "summary": "Присвоена категория Backend · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 187,
+    "at": "2026-09-19T19:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 249,
+    "summary": "Присвоена категория Mobile · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 188,
+    "at": "2026-09-19T19:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 252,
+    "summary": "Присвоена категория Data Science / ML · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 189,
+    "at": "2026-09-20T14:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 215,
+    "summary": "Присвоена категория Mobile · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 190,
     "at": "2026-09-21T00:00:00+03:00",
     "actor_user_id": 41,
     "actor_role": "recruiter",
@@ -404,7 +2471,7 @@
     }
   },
   {
-    "id": 32,
+    "id": 191,
     "at": "2026-09-21T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -417,7 +2484,98 @@
     }
   },
   {
-    "id": 33,
+    "id": 192,
+    "at": "2026-09-21T15:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 133,
+    "summary": "Присвоена категория Backend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 193,
+    "at": "2026-09-21T16:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 186,
+    "summary": "Присвоена категория Backend · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 194,
+    "at": "2026-09-21T17:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 177,
+    "summary": "Присвоена категория Data Science / ML · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 195,
+    "at": "2026-09-22T10:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 187,
+    "summary": "Присвоена категория QA · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 196,
+    "at": "2026-09-22T10:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 218,
+    "summary": "Присвоена категория Mobile · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 197,
+    "at": "2026-09-22T16:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 207,
+    "summary": "Присвоена категория Frontend · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 198,
+    "at": "2026-09-22T19:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 157,
+    "summary": "Присвоена категория Backend · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 199,
     "at": "2026-09-23T03:00:00+03:00",
     "actor_user_id": 42,
     "actor_role": "recruiter",
@@ -431,7 +2589,60 @@
     }
   },
   {
-    "id": 34,
+    "id": 200,
+    "at": "2026-09-23T10:05:00+03:00",
+    "actor_user_id": 46,
+    "actor_role": "recruiter",
+    "action": "contacts_revealed",
+    "target_type": "invitation",
+    "target_id": 22,
+    "summary": "Раскрыты контакты: Кандидат #61E3 ↔ Облачные системы «Тайга»",
+    "details": {
+      "candidate_id": 26,
+      "company_id": 3
+    }
+  },
+  {
+    "id": 201,
+    "at": "2026-09-23T11:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 200,
+    "summary": "Присвоена категория Backend · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 202,
+    "at": "2026-09-23T19:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 71,
+    "summary": "Присвоена категория Frontend · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 203,
+    "at": "2026-09-23T19:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 122,
+    "summary": "Присвоена категория Mobile · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 204,
     "at": "2026-09-24T06:00:00+03:00",
     "actor_user_id": 45,
     "actor_role": "recruiter",
@@ -445,7 +2656,7 @@
     }
   },
   {
-    "id": 35,
+    "id": 205,
     "at": "2026-09-24T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -458,7 +2669,59 @@
     }
   },
   {
-    "id": 36,
+    "id": 206,
+    "at": "2026-09-24T15:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 247,
+    "summary": "Присвоена категория Data Science / ML · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 207,
+    "at": "2026-09-25T14:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 63,
+    "summary": "Присвоена категория Frontend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 208,
+    "at": "2026-09-25T14:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 211,
+    "summary": "Присвоена категория DevOps · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 209,
+    "at": "2026-09-25T15:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 127,
+    "summary": "Присвоена категория Backend · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 210,
     "at": "2026-09-26T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -471,7 +2734,7 @@
     }
   },
   {
-    "id": 37,
+    "id": 211,
     "at": "2026-09-26T12:00:00+03:00",
     "actor_user_id": 48,
     "actor_role": "admin",
@@ -487,7 +2750,20 @@
     }
   },
   {
-    "id": 38,
+    "id": 212,
+    "at": "2026-09-26T15:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 170,
+    "summary": "Присвоена категория Mobile · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 213,
     "at": "2026-09-26T17:00:00+03:00",
     "actor_user_id": 44,
     "actor_role": "recruiter",
@@ -501,7 +2777,33 @@
     }
   },
   {
-    "id": 39,
+    "id": 214,
+    "at": "2026-09-26T18:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 203,
+    "summary": "Присвоена категория QA · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 215,
+    "at": "2026-09-27T11:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 113,
+    "summary": "Присвоена категория Mobile · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 216,
     "at": "2026-09-27T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -514,7 +2816,46 @@
     }
   },
   {
-    "id": 40,
+    "id": 217,
+    "at": "2026-09-27T12:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 69,
+    "summary": "Присвоена категория Frontend · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 218,
+    "at": "2026-09-27T14:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 171,
+    "summary": "Присвоена категория DevOps · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 219,
+    "at": "2026-09-27T17:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 85,
+    "summary": "Присвоена категория Backend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 220,
     "at": "2026-09-28T06:00:00+03:00",
     "actor_user_id": 41,
     "actor_role": "recruiter",
@@ -528,7 +2869,20 @@
     }
   },
   {
-    "id": 41,
+    "id": 221,
+    "at": "2026-09-28T11:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 56,
+    "summary": "Присвоена категория Backend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 222,
     "at": "2026-09-28T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -541,7 +2895,7 @@
     }
   },
   {
-    "id": 42,
+    "id": 223,
     "at": "2026-09-28T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -554,7 +2908,150 @@
     }
   },
   {
-    "id": 43,
+    "id": 224,
+    "at": "2026-09-28T16:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 254,
+    "summary": "Присвоена категория Frontend · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 225,
+    "at": "2026-09-28T18:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 216,
+    "summary": "Присвоена категория QA · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 226,
+    "at": "2026-09-28T19:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 135,
+    "summary": "Присвоена категория Data Science / ML · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 227,
+    "at": "2026-09-28T20:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 198,
+    "summary": "Присвоена категория QA · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 228,
+    "at": "2026-09-28T21:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 95,
+    "summary": "Присвоена категория Mobile · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 229,
+    "at": "2026-09-29T15:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 150,
+    "summary": "Присвоена категория Data Science / ML · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 230,
+    "at": "2026-09-29T15:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 168,
+    "summary": "Присвоена категория Mobile · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 231,
+    "at": "2026-09-29T17:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 70,
+    "summary": "Присвоена категория Frontend · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 232,
+    "at": "2026-09-29T18:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 232,
+    "summary": "Присвоена категория QA · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 233,
+    "at": "2026-09-29T18:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 241,
+    "summary": "Присвоена категория Backend · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 234,
+    "at": "2026-09-30T10:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 61,
+    "summary": "Присвоена категория Backend · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 235,
     "at": "2026-09-30T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -567,7 +3064,85 @@
     }
   },
   {
-    "id": 44,
+    "id": 236,
+    "at": "2026-09-30T13:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 58,
+    "summary": "Присвоена категория Data Science / ML · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 237,
+    "at": "2026-09-30T16:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 118,
+    "summary": "Присвоена категория DevOps · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 238,
+    "at": "2026-09-30T17:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 178,
+    "summary": "Присвоена категория Mobile · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 239,
+    "at": "2026-09-30T20:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 173,
+    "summary": "Присвоена категория DevOps · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 240,
+    "at": "2026-09-30T20:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 214,
+    "summary": "Присвоена категория Data Science / ML · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 241,
+    "at": "2026-09-30T21:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 208,
+    "summary": "Присвоена категория Frontend · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 242,
     "at": "2026-10-01T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -580,7 +3155,111 @@
     }
   },
   {
-    "id": 45,
+    "id": 243,
+    "at": "2026-10-01T12:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 259,
+    "summary": "Присвоена категория DevOps · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 244,
+    "at": "2026-10-01T13:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 230,
+    "summary": "Присвоена категория Backend · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 245,
+    "at": "2026-10-01T15:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 72,
+    "summary": "Присвоена категория Frontend · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 246,
+    "at": "2026-10-01T15:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 101,
+    "summary": "Присвоена категория Backend · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 247,
+    "at": "2026-10-01T16:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 96,
+    "summary": "Присвоена категория Frontend · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 248,
+    "at": "2026-10-01T19:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 65,
+    "summary": "Присвоена категория DevOps · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 249,
+    "at": "2026-10-01T19:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 109,
+    "summary": "Присвоена категория QA · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 250,
+    "at": "2026-10-02T10:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 189,
+    "summary": "Присвоена категория QA · Стажёр",
+    "details": {
+      "grade_to": "intern"
+    }
+  },
+  {
+    "id": 251,
     "at": "2026-10-02T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -593,7 +3272,7 @@
     }
   },
   {
-    "id": 46,
+    "id": 252,
     "at": "2026-10-02T12:00:00+03:00",
     "actor_user_id": 48,
     "actor_role": "admin",
@@ -606,7 +3285,85 @@
     }
   },
   {
-    "id": 47,
+    "id": 253,
+    "at": "2026-10-02T13:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 153,
+    "summary": "Присвоена категория Frontend · Senior",
+    "details": {
+      "grade_to": "senior"
+    }
+  },
+  {
+    "id": 254,
+    "at": "2026-10-02T13:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 191,
+    "summary": "Присвоена категория Data Science / ML · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 255,
+    "at": "2026-10-02T15:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 124,
+    "summary": "Присвоена категория Frontend · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 256,
+    "at": "2026-10-02T19:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 87,
+    "summary": "Присвоена категория Frontend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 257,
+    "at": "2026-10-02T20:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 55,
+    "summary": "Присвоена категория Mobile · Junior",
+    "details": {
+      "grade_to": "junior"
+    }
+  },
+  {
+    "id": 258,
+    "at": "2026-10-02T20:00:00+03:00",
+    "actor_user_id": null,
+    "actor_role": null,
+    "action": "grade_changed",
+    "target_type": "candidate",
+    "target_id": 205,
+    "summary": "Присвоена категория Backend · Middle",
+    "details": {
+      "grade_to": "middle"
+    }
+  },
+  {
+    "id": 259,
     "at": "2026-10-03T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -619,7 +3376,7 @@
     }
   },
   {
-    "id": 48,
+    "id": 260,
     "at": "2026-10-04T12:00:00+03:00",
     "actor_user_id": null,
     "actor_role": null,
@@ -632,7 +3389,7 @@
     }
   },
   {
-    "id": 49,
+    "id": 261,
     "at": "2026-10-04T12:00:00+03:00",
     "actor_user_id": 37,
     "actor_role": "candidate",
@@ -645,7 +3402,7 @@
     }
   },
   {
-    "id": 50,
+    "id": 262,
     "at": "2026-10-05T12:00:00+03:00",
     "actor_user_id": 48,
     "actor_role": "admin",
@@ -656,7 +3413,7 @@
     "details": {}
   },
   {
-    "id": 51,
+    "id": 263,
     "at": "2026-10-06T12:00:00+03:00",
     "actor_user_id": 48,
     "actor_role": "admin",

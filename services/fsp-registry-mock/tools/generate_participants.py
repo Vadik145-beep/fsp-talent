@@ -485,6 +485,30 @@ COUNTS = [7, 5, 4, 6, 3, 2, 1, 8, 3, 2, 1, 4, 5, 2, 1, 3, 6, 2, 1, 1, 2, 4, 3, 1
 # «Сила» участника 0..1 — влияет на места. Первые пять — демо-пользователи Keycloak.
 STRENGTH = [0.95, 0.7, 0.5, 0.8, 0.3]
 
+# Дополнительный блок участников с историей для демо-банка кандидатов платформы:
+# FSP-000101…FSP-000180. Номера 041…100 свободны (по ним мок отвечает 404).
+# Свой генератор случайных чисел — первые 40 участников от этого блока не зависят.
+EXTRA_IDS = range(101, 181)
+EXTRA_PRIMARY = [
+    "product",
+    "algorithmic",
+    "product",
+    "security",
+    "algorithmic",
+    "robotics",
+    "product",
+    "uav",
+    "algorithmic",
+    "product",
+    "security",
+    "robotics",
+    "product",
+    "uav",
+    "algorithmic",
+    "security",
+]
+EXTRA_COUNTS = [1, 2, 3, 1, 4, 2, 5, 2, 3, 1, 6, 2, 3, 4, 1, 2, 3, 5, 2, 1]
+
 
 def result_for(rng: random.Random, strength: float, level: str, total: int) -> dict:
     """Результат участника в соревновании: место, диплом или участие."""
@@ -555,6 +579,78 @@ def make_name(rng: random.Random) -> dict:
     }
 
 
+def make_achievements(
+    rng: random.Random,
+    n: int,
+    competitions: list[dict],
+    primary: str,
+    count: int,
+    strength: float,
+) -> list[dict]:
+    """Достижения участника: ~75 % — в основной дисциплине, остальные — в других."""
+    own = [c for c in competitions if c["discipline"] == primary]
+    other = [c for c in competitions if c["discipline"] != primary]
+    chosen: list[dict] = []
+    pool_own, pool_other = own[:], other[:]
+    while len(chosen) < count and (pool_own or pool_other):
+        pool = pool_own if (pool_own and (rng.random() < 0.75 or not pool_other)) else pool_other
+        chosen.append(pool.pop(rng.randrange(len(pool))))
+    chosen.sort(key=lambda c: c["date"])
+    # Роль в команде у человека обычно постоянная, капитанит чаще сильный участник.
+    captain_rate = 0.1 + 0.4 * strength
+    roles = {d: rng.choice(r) for d, r in ROLES.items()}
+    achievements = []
+    for i, comp in enumerate(chosen, start=1):
+        res = result_for(rng, strength, comp["level"], comp["participants_total"])
+        points = round(LEVEL_BASE[comp["level"]] * result_multiplier(res))
+        team = None
+        if comp["participation"] == "team":
+            team = {
+                "name": f"{rng.choice(TEAM_ADJ)} {rng.choice(TEAM_NOUN)}",
+                "size": comp["team_size"],
+                "role": roles[comp["discipline"]],
+                "is_captain": rng.random() < captain_rate,
+            }
+        achievements.append(
+            {
+                "id": f"ACH-{n:06d}-{i:02d}",
+                "competition": {
+                    k: comp[k]
+                    for k in (
+                        "id",
+                        "title",
+                        "organizer",
+                        "region",
+                        "participants_total",
+                        "protocol_url",
+                    )
+                },
+                "discipline": DISC[comp["discipline"]],
+                "level": LEV[comp["level"]],
+                "date": comp["date"],
+                "result": res,
+                "participation": comp["participation"],
+                "team": team,
+                "rating_points": points,
+                "verified": True,
+            }
+        )
+    return achievements
+
+
+def participant(
+    fsp_id: str, name: dict, region: str, registered: date, achievements: list[dict]
+) -> dict:
+    return {
+        "fsp_id": fsp_id,
+        **name,
+        "region": region,
+        "registered_at": registered.isoformat(),
+        "profile_url": f"{PROFILE_BASE}/{fsp_id}",
+        "achievements": achievements,
+    }
+
+
 def build() -> dict:
     rng = random.Random(SEED)
     competitions = []
@@ -591,71 +687,35 @@ def build() -> dict:
             primary = PRIMARY_CYCLE[(n - 1) % len(PRIMARY_CYCLE)]
             count = COUNTS[n - 1]
             strength = STRENGTH[n - 1] if n <= len(STRENGTH) else rng.random()
-            own = [c for c in competitions if c["discipline"] == primary]
-            other = [c for c in competitions if c["discipline"] != primary]
-            chosen: list[dict] = []
-            pool_own, pool_other = own[:], other[:]
-            while len(chosen) < count and (pool_own or pool_other):
-                pool = (
-                    pool_own
-                    if (pool_own and (rng.random() < 0.75 or not pool_other))
-                    else pool_other
-                )
-                chosen.append(pool.pop(rng.randrange(len(pool))))
-            chosen.sort(key=lambda c: c["date"])
-            # Роль в команде у человека обычно постоянная, капитанит чаще сильный участник.
-            captain_rate = 0.1 + 0.4 * strength
-            roles = {d: rng.choice(r) for d, r in ROLES.items()}
-            for i, comp in enumerate(chosen, start=1):
-                res = result_for(rng, strength, comp["level"], comp["participants_total"])
-                points = round(LEVEL_BASE[comp["level"]] * result_multiplier(res))
-                team = None
-                if comp["participation"] == "team":
-                    team = {
-                        "name": f"{rng.choice(TEAM_ADJ)} {rng.choice(TEAM_NOUN)}",
-                        "size": comp["team_size"],
-                        "role": roles[comp["discipline"]],
-                        "is_captain": rng.random() < captain_rate,
-                    }
-                achievements.append(
-                    {
-                        "id": f"ACH-{n:06d}-{i:02d}",
-                        "competition": {
-                            k: comp[k]
-                            for k in (
-                                "id",
-                                "title",
-                                "organizer",
-                                "region",
-                                "participants_total",
-                                "protocol_url",
-                            )
-                        },
-                        "discipline": DISC[comp["discipline"]],
-                        "level": LEV[comp["level"]],
-                        "date": comp["date"],
-                        "result": res,
-                        "participation": comp["participation"],
-                        "team": team,
-                        "rating_points": points,
-                        "verified": True,
-                    }
-                )
+            achievements = make_achievements(rng, n, competitions, primary, count, strength)
             first = date.fromisoformat(achievements[0]["date"])
             registered = first - timedelta(days=rng.randint(20, 400))
         else:
             # Без истории: зарегистрировались недавно и ещё не участвовали.
             registered = date(2026, 1, 10) + timedelta(days=rng.randint(0, 250))
-        participants.append(
-            {
-                "fsp_id": fsp_id,
-                **name,
-                "region": region,
-                "registered_at": registered.isoformat(),
-                "profile_url": f"{PROFILE_BASE}/{fsp_id}",
-                "achievements": achievements,
-            }
-        )
+        participants.append(participant(fsp_id, name, region, registered, achievements))
+
+    # Блок FSP-000101…180: все с историей. Имя и фамилия не повторяются ни с кем в реестре —
+    # на платформе кандидат с ФСП ID получает ФИО из реестра.
+    xrng = random.Random(SEED + 101)
+    used_pairs = {(p["first_name"], p["last_name"]) for p in participants}
+    for k, n in enumerate(EXTRA_IDS):
+        fsp_id = f"FSP-{n:06d}"
+        while True:
+            name = make_name(xrng)
+            pair = (name["first_name"], name["last_name"])
+            if name["full_name"] not in used_names and pair not in used_pairs:
+                used_names.add(name["full_name"])
+                used_pairs.add(pair)
+                break
+        region = xrng.choice(REGIONS)
+        primary = EXTRA_PRIMARY[k % len(EXTRA_PRIMARY)]
+        count = EXTRA_COUNTS[k % len(EXTRA_COUNTS)]
+        strength = round(xrng.uniform(0.15, 0.9), 2)
+        achievements = make_achievements(xrng, n, competitions, primary, count, strength)
+        first = date.fromisoformat(achievements[0]["date"])
+        registered = first - timedelta(days=xrng.randint(20, 400))
+        participants.append(participant(fsp_id, name, region, registered, achievements))
     return {
         "meta": {
             "synthetic": True,

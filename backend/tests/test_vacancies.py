@@ -300,8 +300,8 @@ def test_applications_count_from_db(client: TestClient) -> None:
         for v in client.get("/api/vacancies", headers=RECRUITER).json()
     }
     seed = Counter(a["vacancy_id"] for a in fixtures.load("applications"))
-    assert own == {vid: seed[vid] for vid in (1, 2, 3)} == {1: 3, 2: 1, 3: 2}
+    assert own == {vid: seed[vid] for vid in (1, 2, 3)} == {1: 6, 2: 3, 3: 4}
     client.post("/api/vacancies/2/applications", json={}, headers=CANDIDATE)
-    assert client.get("/api/vacancies/2", headers=RECRUITER).json()["applications_count"] == 2
+    assert client.get("/api/vacancies/2", headers=RECRUITER).json()["applications_count"] == 4
     feed = {v["id"]: v for v in client.get("/api/vacancies", headers=CANDIDATE).json()}
-    assert feed[2]["applications_count"] == 2 and feed[2]["my_application_id"]
+    assert feed[2]["applications_count"] == 4 and feed[2]["my_application_id"]

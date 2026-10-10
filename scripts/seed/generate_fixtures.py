@@ -27,6 +27,7 @@ MSK = timezone(timedelta(hours=3))
 NOW = datetime(2026, 10, 6, 12, 0, tzinfo=MSK)
 OUT_DIR = Path(__file__).resolve().parents[2] / "data" / "seed"
 CONSENT_VERSION = "2026-10-01"
+CONSENT_DATE = datetime(2026, 10, 1, 9, 0, tzinfo=MSK)  # дата этой версии текста согласия
 
 rng = random.Random(SEED)
 J = dict[str, Any]
@@ -720,10 +721,11 @@ def make_achievements(fsp: str, spec: str, grade: str) -> list[J]:
     return result
 
 
-def topic_scores(spec: str, theta: float) -> list[J]:
+def topic_scores(spec: str, theta: float, r: random.Random | None = None) -> list[J]:
+    r = r or rng
     scores = []
     for topic in SPEC_TOPICS[spec]:
-        p = 1 / (1 + math.exp(-(theta + rng.uniform(-0.9, 0.9))))
+        p = 1 / (1 + math.exp(-(theta + r.uniform(-0.9, 0.9))))
         score = round(min(0.98, max(0.05, p)), 2)
         level = "strong" if score >= 0.7 else "weak" if score < 0.4 else "ok"
         scores.append({"topic": topic, "label": TOPIC_LABEL[topic], "score": score, "level": level})
@@ -1556,9 +1558,17 @@ def add_history(
 
 
 def session_record(
-    cand: J, kind: str, target: str, start: datetime, theta: float, passed: bool, result_grade: str
+    cand: J,
+    kind: str,
+    target: str,
+    start: datetime,
+    theta: float,
+    passed: bool,
+    result_grade: str,
+    r: random.Random | None = None,
 ) -> J:
-    se = round(rng.uniform(0.27, 0.34), 2)
+    r = r or rng
+    se = round(r.uniform(0.27, 0.34), 2)
     rec = {
         "id": len(TEST_SESSIONS) + 1,
         "candidate_id": cand["id"],
@@ -1567,8 +1577,8 @@ def session_record(
         "kind": kind,
         "status": "finished",
         "started_at": iso(start),
-        "finished_at": iso(start + timedelta(minutes=rng.randint(18, 35))),
-        "items_answered": rng.randint(11, 15),
+        "finished_at": iso(start + timedelta(minutes=r.randint(18, 35))),
+        "items_answered": r.randint(11, 15),
         "max_items": 15,
         "theta": theta,
         "se": se,
@@ -1579,7 +1589,7 @@ def session_record(
         "passed": passed,
         "topic_scores": cand["topic_scores"]
         if passed
-        else topic_scores(cand["specialization"], theta),
+        else topic_scores(cand["specialization"], theta, r),
     }
     TEST_SESSIONS.append(rec)
     return rec
@@ -1587,84 +1597,93 @@ def session_record(
 
 def build_tests() -> None:
     for cand in CANDIDATES:
-        spec, grade = cand["specialization"], cand["grade"]
-        created = datetime.fromisoformat(cand["created_at"])
+        add_tests(cand, rng)
+    add_unfinished_test()
+
+
+def add_tests(cand: J, r: random.Random) -> None:
+    """Опрос, тест (иногда сначала неудачная попытка на грейд выше) и история грейда."""
+    spec, grade = cand["specialization"], cand["grade"]
+    created = datetime.fromisoformat(cand["created_at"])
+    add_history(
+        cand["id"],
+        created + timedelta(hours=1),
+        "survey",
+        spec,
+        None,
+        None,
+        None,
+        f"Опрос рекомендовал специализацию {SPEC_LABEL[spec]}",
+    )
+    if grade is None:
+        return
+    last_test = datetime.fromisoformat(cand["last_test_at"])
+    gi = GRADE_IDS.index(grade)
+    # иногда сначала неудачная попытка на грейд выше
+    if gi < 3 and r.random() < 0.3:
+        failed_at = last_test - timedelta(days=r.randint(1, 3))
+        higher = GRADE_IDS[gi + 1]
+        s = session_record(
+            cand, "placement", higher, failed_at, round(cand["theta"] - 0.1, 2), False, grade, r
+        )
         add_history(
             cand["id"],
-            created + timedelta(hours=1),
-            "survey",
+            failed_at,
+            "test_failed",
             spec,
             None,
-            None,
-            None,
-            f"Опрос рекомендовал специализацию {SPEC_LABEL[spec]}",
+            higher,
+            s["id"],
+            f"Заявленный грейд {GRADE_LABEL[higher]} не подтверждён",
         )
-        if grade is None:
-            continue
-        last_test = datetime.fromisoformat(cand["last_test_at"])
-        gi = GRADE_IDS.index(grade)
-        # иногда сначала неудачная попытка на грейд выше
-        if gi < 3 and rng.random() < 0.3:
-            failed_at = last_test - timedelta(days=rng.randint(1, 3))
-            higher = GRADE_IDS[gi + 1]
-            s = session_record(
-                cand, "placement", higher, failed_at, round(cand["theta"] - 0.1, 2), False, grade
-            )
-            add_history(
-                cand["id"],
-                failed_at,
-                "test_failed",
-                spec,
-                None,
-                higher,
-                s["id"],
-                f"Заявленный грейд {GRADE_LABEL[higher]} не подтверждён",
-            )
-            add_history(
-                cand["id"],
-                failed_at,
-                "offer_lower",
-                spec,
-                higher,
-                grade,
-                s["id"],
-                f"Предложено пройти тест на {GRADE_LABEL[grade]}",
-            )
-            kind = "lower"
-        else:
-            kind = "placement"
-        s = session_record(cand, kind, grade, last_test, cand["theta"], True, grade)
+        add_history(
+            cand["id"],
+            failed_at,
+            "offer_lower",
+            spec,
+            higher,
+            grade,
+            s["id"],
+            f"Предложено пройти тест на {GRADE_LABEL[grade]}",
+        )
+        kind = "lower"
+    else:
+        kind = "placement"
+    s = session_record(cand, kind, grade, last_test, cand["theta"], True, grade, r)
+    add_history(
+        cand["id"],
+        last_test,
+        "test_passed",
+        spec,
+        None,
+        grade,
+        s["id"],
+        f"Подтверждён грейд {GRADE_LABEL[grade]}, θ = {cand['theta']}",
+    )
+    add_history(
+        cand["id"],
+        last_test,
+        "grade_changed",
+        spec,
+        None,
+        grade,
+        s["id"],
+        f"Присвоена категория {cat_label(spec, grade)}",
+    )
+    if gi < 3 and cand["theta"] - THETA_CENTER[grade] > 0.25:
         add_history(
             cand["id"],
             last_test,
-            "test_passed",
+            "offer_higher",
             spec,
-            None,
             grade,
+            GRADE_IDS[gi + 1],
             s["id"],
-            f"Подтверждён грейд {GRADE_LABEL[grade]}, θ = {cand['theta']}",
+            "Уверенный результат: можно попробовать грейд выше после окончания кулдауна",
         )
-        add_history(
-            cand["id"],
-            last_test,
-            "grade_changed",
-            spec,
-            None,
-            grade,
-            s["id"],
-            f"Присвоена категория {cat_label(spec, grade)}",
-        )
-        if gi < 3 and cand["theta"] - THETA_CENTER[grade] > 0.25:
-            add_history(
-                cand["id"],
-                last_test,
-                "offer_higher",
-                spec,
-                grade,
-                GRADE_IDS[gi + 1],
-                s["id"],
-                "Уверенный результат: можно попробовать грейд выше после окончания кулдауна",
-            )
+
+
+def add_unfinished_test() -> None:
     # незавершённый тест у кандидата 39 (онбординг)
     cand = CANDIDATES[38]
     TEST_SESSIONS.append(
@@ -1689,6 +1708,371 @@ def build_tests() -> None:
             "topic_scores": [],
         }
     )
+
+
+# ---------------------------------------------------------------- демо-банк кандидатов
+#
+# Кандидаты 1–40 — «сюжетные» (демо-учётки, жалобы, отклики, тесты движка ссылаются на них).
+# К ним добавлен банк из кандидатов с id от 50: у всех грейд подтверждён тестом и дано
+# согласие на публикацию, чтобы в каждой категории подборка была не пустой. Свой генератор
+# случайных чисел — данные кандидатов 1–40 и всё остальное от банка не зависят.
+
+EXTRA_FIRST_ID = 50
+xrng = random.Random(SEED + 500)
+
+# Сколько кандидатов в выдаче должно быть в категории вместе с кандидатами 1–40
+CATEGORY_TARGET: dict[str, dict[str, int]] = {
+    "backend": {"intern": 9, "junior": 15, "middle": 18, "senior": 14},
+    "frontend": {"intern": 8, "junior": 14, "middle": 15, "senior": 12},
+    "data_ml": {"intern": 8, "junior": 13, "middle": 14, "senior": 12},
+    "mobile": {"intern": 6, "junior": 8, "middle": 9, "senior": 7},
+    "qa": {"intern": 6, "junior": 9, "middle": 10, "senior": 7},
+    "devops": {"intern": 6, "junior": 8, "middle": 10, "senior": 8},
+}
+# Участники реестра FSP-000101…180 (все с историей) — по одному на кандидата банка
+EXTRA_FSP_IDS = [f"FSP-{n:06d}" for n in range(101, 181)]
+
+# Стек: (ядро, дополнительные технологии, вес шаблона)
+STACK_TEMPLATES: dict[str, list[tuple[list[str], list[str], int]]] = {
+    "backend": [
+        (
+            ["python", "fastapi", "postgresql"],
+            ["redis", "docker", "kafka", "sql", "pytest", "rabbitmq", "kubernetes"],
+            3,
+        ),
+        (["python", "django", "postgresql"], ["redis", "docker", "rabbitmq", "sql", "nginx"], 2),
+        (
+            ["go", "postgresql", "docker"],
+            ["grpc", "kafka", "redis", "kubernetes", "clickhouse", "linux"],
+            2,
+        ),
+        (
+            ["java", "spring", "postgresql"],
+            ["kafka", "docker", "kubernetes", "redis", "mysql", "rabbitmq"],
+            2,
+        ),
+        (["kotlin", "spring", "postgresql"], ["kafka", "docker", "redis", "grpc"], 1),
+        (["csharp", "postgresql", "docker"], ["rabbitmq", "redis", "sql", "kubernetes"], 1),
+        (["php", "mysql", "redis"], ["nginx", "docker", "rabbitmq", "linux"], 1),
+        (
+            ["nodejs", "typescript", "postgresql"],
+            ["mongodb", "redis", "docker", "graphql", "kafka"],
+            1,
+        ),
+    ],
+    "frontend": [
+        (
+            ["javascript", "typescript", "react"],
+            ["redux", "nextjs", "vite", "jest", "html_css", "tailwind", "playwright", "graphql"],
+            4,
+        ),
+        (["typescript", "vue", "html_css"], ["vite", "jest", "tailwind", "webpack", "cypress"], 2),
+        (["typescript", "angular", "html_css"], ["webpack", "jest", "cypress"], 1),
+        (["javascript", "react", "html_css"], ["redux", "webpack", "jest", "nodejs"], 2),
+        (
+            ["typescript", "react", "nextjs"],
+            ["nodejs", "graphql", "tailwind", "playwright", "vite"],
+            2,
+        ),
+    ],
+    "mobile": [
+        (["kotlin", "android_sdk", "jetpack_compose"], ["java", "flutter"], 3),
+        (["swift", "ios_sdk", "swiftui"], ["kotlin", "flutter"], 3),
+        (["flutter", "dart"], ["kotlin", "swift", "android_sdk"], 2),
+        (["react_native", "typescript"], ["javascript", "redux"], 1),
+        (["kotlin", "java", "android_sdk"], ["jetpack_compose"], 1),
+    ],
+    "data_ml": [
+        (
+            ["python", "pandas", "scikit_learn", "sql"],
+            ["numpy", "jupyter", "postgresql", "mlflow", "airflow", "clickhouse"],
+            4,
+        ),
+        (["python", "pytorch", "numpy"], ["pandas", "mlflow", "jupyter", "sql", "docker"], 3),
+        (["python", "sql", "spark"], ["airflow", "clickhouse", "kafka", "pandas", "postgresql"], 2),
+        (["python", "tensorflow", "pandas"], ["numpy", "jupyter", "sql"], 1),
+    ],
+    "qa": [
+        (["python", "pytest", "playwright"], ["allure", "postman", "sql", "selenium", "jmeter"], 3),
+        (["java", "selenium", "testrail"], ["allure", "postman", "sql", "jmeter"], 2),
+        (["postman", "sql", "testrail"], ["javascript", "jmeter", "selenium"], 2),
+        (["javascript", "cypress", "jest"], ["playwright", "postman", "allure"], 1),
+    ],
+    "devops": [
+        (
+            ["docker", "kubernetes", "terraform"],
+            ["helm", "prometheus", "grafana", "gitlab_ci", "aws", "ansible", "linux"],
+            3,
+        ),
+        (
+            ["linux", "bash", "ansible"],
+            ["docker", "nginx", "gitlab_ci", "prometheus", "grafana"],
+            2,
+        ),
+        (
+            ["docker", "gitlab_ci", "linux"],
+            ["kubernetes", "helm", "github_actions", "prometheus", "terraform", "bash"],
+            2,
+        ),
+        (
+            ["kubernetes", "helm", "prometheus"],
+            ["grafana", "terraform", "go", "aws", "github_actions"],
+            2,
+        ),
+    ],
+}
+STACK_SIZE = {"intern": (3, 4), "junior": (4, 5), "middle": (5, 7), "senior": (6, 8)}
+SPEC_SALARY_K = {
+    "backend": 1.0,
+    "frontend": 0.95,
+    "mobile": 1.0,
+    "data_ml": 1.05,
+    "qa": 0.85,
+    "devops": 1.05,
+}
+CITY_WEIGHTS = [30, 15, 8, 7, 8, 6, 4, 5, 6, 3]
+WORK_FORMAT_CHOICES: list[tuple[list[str], int]] = [
+    (["remote"], 4),
+    (["hybrid", "remote"], 5),
+    (["hybrid", "office"], 2),
+    (["office"], 1),
+    (["hybrid"], 2),
+    (["hybrid", "office", "remote"], 3),
+]
+ABOUT_EXTRA = {
+    "backend": [
+        "Пишу серверную часть: API, работа с базами, очереди. Люблю понятный код и тесты.",
+        "Проектирую API и схемы данных, оптимизирую медленные запросы, настраиваю фоновые задачи.",
+        "Интересны нагруженные сервисы: кэширование, очереди, наблюдаемость.",
+    ],
+    "frontend": [
+        "Делаю интерфейсы, которые удобно использовать. Слежу за производительностью.",
+        "Собираю сложные формы, таблицы и дашборды, пишу компонентные тесты.",
+        "Люблю аккуратный UI и доступность: клавиатура, контраст, скринридеры.",
+    ],
+    "mobile": [
+        "Разрабатываю мобильные приложения от прототипа до публикации в сторах.",
+        "Делаю нативные экраны, офлайн-режим и push-уведомления, слежу за размером сборки.",
+        "Интересна производительность на слабых устройствах и стабильность релизов.",
+    ],
+    "data_ml": [
+        "Работаю с данными: от SQL-выгрузок до обучения и вывода моделей в прод.",
+        "Строю модели прогноза и классификации, считаю метрики и объясняю результат бизнесу.",
+        "Готовлю данные и признаки, ставлю эксперименты, довожу модели до сервиса.",
+    ],
+    "qa": [
+        "Тестирую веб и API, пишу автотесты, выстраиваю процессы качества.",
+        "Составляю тест-планы и чек-листы, автоматизирую регресс, разбираю логи.",
+        "Ищу ошибки на стыке сервисов: API, очереди, интеграции.",
+    ],
+    "devops": [
+        "Настраиваю CI/CD, контейнеры и мониторинг, чтобы релизы были скучными.",
+        "Описываю инфраструктуру кодом, поднимаю кластеры и слежу за их стоимостью.",
+        "Отвечаю за наблюдаемость: метрики, логи, алерты по делу.",
+    ],
+}
+ABOUT_GRADE = {
+    "intern": "Учусь на старших курсах, ищу первую стажировку.",
+    "junior": "Есть первый коммерческий опыт, хочу расти в сильной команде.",
+    "middle": "Самостоятельно веду задачи от постановки до продакшена.",
+    "senior": "Отвечаю за архитектуру, ревьюю код и помогаю расти коллегам.",
+}
+ROLE_POOL = {
+    "intern": ["Разработчик"],
+    "junior": ["Разработчик", "Ревьюер кода"],
+    "middle": ["Разработчик", "Ревьюер кода", "Ментор"],
+    "senior": ["Тимлид", "Архитектор", "Ментор", "Ревьюер кода"],
+}
+# Ожидаемое число достижений ФСП по грейду — для выбора участника реестра
+FSP_COUNT_BY_GRADE = {"intern": 1, "junior": 2, "middle": 3, "senior": 5}
+FSP_DISCIPLINE_FOR_SPEC = {
+    "backend": {"product", "algorithmic", "cybersecurity"},
+    "frontend": {"product", "algorithmic"},
+    "mobile": {"product", "uas"},
+    "data_ml": {"product", "algorithmic", "robotics"},
+    "qa": {"product", "cybersecurity"},
+    "devops": {"cybersecurity", "product", "uas"},
+}
+
+
+def unique_pseudonym(candidate_id: int, taken: set[str]) -> str:
+    """Псевдоним из pseudonym(), а при совпадении (всего 4 hex-знака) — с солью."""
+    value, salt = pseudonym(candidate_id), 0
+    while value in taken:
+        salt += 1
+        digest = hashlib.sha1(f"fsp-talent-candidate-{candidate_id}-{salt}".encode()).hexdigest()
+        value = f"Кандидат #{digest[:4].upper()}"
+    taken.add(value)
+    return value
+
+
+def extra_stack(r: random.Random, spec: str, grade: str) -> list[str]:
+    templates = STACK_TEMPLATES[spec]
+    core, optional, _ = r.choices(templates, weights=[t[2] for t in templates])[0]
+    lo, hi = STACK_SIZE[grade]
+    size = r.randint(lo, hi)
+    extra = r.sample(optional, k=max(0, min(len(optional), size - len(core))))
+    return core + extra
+
+
+def extra_roles(r: random.Random, spec: str, grade: str) -> list[str]:
+    pool = ROLE_POOL[grade][:]
+    if spec == "qa":
+        pool = ["Тестировщик" if x == "Разработчик" else x for x in pool]
+    if spec == "data_ml" and r.random() < 0.5:
+        pool = ["Аналитик" if x == "Разработчик" else x for x in pool]
+    k = 1 if grade == "intern" else r.randint(1, 2)
+    return r.sample(pool, k=min(k, len(pool)))
+
+
+def registry_primary(fsp: str) -> str:
+    """Основная дисциплина участника реестра (в кодах платформы)."""
+    codes = [
+        DISCIPLINE_FROM_REGISTRY[a["discipline"]["code"]] for a in FSP_REGISTRY[fsp]["achievements"]
+    ]
+    return max(sorted(set(codes)), key=codes.count)
+
+
+def build_extra_candidates() -> None:
+    """Банк кандидатов: дополнить каждую категорию до CATEGORY_TARGET."""
+    r = xrng
+    known = {k["id"] for k in SKILLS}
+    for templates in STACK_TEMPLATES.values():
+        for core, optional, _ in templates:
+            assert set(core + optional) <= known, set(core + optional) - known
+    blocked = {u["id"] for u in USERS if u["blocked"]}
+    have: dict[str, int] = {}
+    for c in CANDIDATES:
+        if eligible(c) and c["user_id"] not in blocked:
+            have[c["category"]] = have.get(c["category"], 0) + 1
+    slots = [
+        (spec, grade)
+        for spec, grades in CATEGORY_TARGET.items()
+        for grade, target in grades.items()
+        for _ in range(target - have.get(cat_id(spec, grade), 0))
+    ]
+    r.shuffle(slots)
+    # ~40 % банка вместе с кандидатами 1–20 — с историей ФСП: участники FSP-000101…180
+    with_fsp = set(r.sample(range(len(slots)), k=len(EXTRA_FSP_IDS)))
+    free_fsp = EXTRA_FSP_IDS[:]
+    used_names = {u["full_name"] for u in USERS}
+    used_names |= {f"{p['first_name']} {p['last_name']}" for p in FSP_REGISTRY.values()}
+    taken_pseudonyms = {c["pseudonym"] for c in CANDIDATES}
+
+    for k, (spec, grade) in enumerate(slots):
+        i = EXTRA_FIRST_ID + k
+        fsp = None
+        if k in with_fsp:
+            allowed = FSP_DISCIPLINE_FOR_SPEC[spec]
+            want = FSP_COUNT_BY_GRADE[grade]
+            fsp = min(
+                free_fsp,
+                key=lambda f: (
+                    registry_primary(f) not in allowed,
+                    abs(len(FSP_REGISTRY[f]["achievements"]) - want),
+                    f,
+                ),
+            )
+            free_fsp.remove(fsp)
+            first, surname = FSP_REGISTRY[fsp]["first_name"], FSP_REGISTRY[fsp]["last_name"]
+            full = f"{first} {surname}"
+        else:
+            while True:
+                if r.random() < 0.35:
+                    first, surname = r.choice(FEMALE_FIRST), female_surname(r.choice(SURNAMES))
+                else:
+                    first, surname = r.choice(MALE_FIRST), r.choice(SURNAMES)
+                full = f"{first} {surname}"
+                if full not in used_names:
+                    break
+        used_names.add(full)
+        email = f"{translit(first)[0]}.{translit(surname)}.{i}@example.com"
+        last_test = days_ago(r.randint(4, 60), hour=r.randint(10, 21))
+        created = last_test - timedelta(days=r.randint(1, 40), hours=r.randint(1, 6))
+        USERS.append(
+            {
+                "id": i,
+                "email": email,
+                "role": "candidate",
+                "full_name": full,
+                "email_verified": True,
+                "blocked": False,
+                "created_at": iso(created),
+                "last_login_at": iso(days_ago(r.uniform(0, 12), hour=r.randint(8, 22))),
+            }
+        )
+        theta = round(THETA_CENTER[grade] + r.uniform(-0.35, 0.35), 2)
+        stack = extra_stack(r, spec, grade)
+        lo, hi = SALARY_RANGE[grade]
+        exp_lo, exp_hi = EXPERIENCE[grade]
+        achs = registry_achievements(fsp) if fsp else []
+        links = []
+        if r.random() < 0.6:
+            links.append(
+                {"type": "github", "url": f"https://github.com/example-{translit(first)}{i}"}
+            )
+        if r.random() < 0.2:
+            links.append({"type": "portfolio", "url": f"https://portfolio.example.com/{i}"})
+        privacy = {
+            "show_city": r.random() < 0.85,
+            "show_experience": r.random() < 0.9,
+            "show_links": r.random() < 0.4,
+            "show_fsp_achievements": r.random() < 0.9,
+        }
+        formats = r.choices(
+            [f for f, _ in WORK_FORMAT_CHOICES], weights=[w for _, w in WORK_FORMAT_CHOICES]
+        )[0]
+        candidate = {
+            "id": i,
+            "user_id": i,
+            "pseudonym": unique_pseudonym(i, taken_pseudonyms),
+            "full_name": full,
+            "email": email,
+            "phone": f"+7 901 {i:03d}-{r.randint(10, 99)}-{r.randint(10, 99)}",
+            "telegram": f"@example_{translit(first)}{i}" if r.random() < 0.8 else None,
+            "city": r.choices(CITIES, weights=CITY_WEIGHTS)[0],
+            "work_formats": sorted(formats),
+            "specialization": spec,
+            "grade": grade,
+            "category": cat_id(spec, grade),
+            "category_label": cat_label(spec, grade),
+            "theta": theta,
+            "theta_se": round(r.uniform(0.25, 0.34), 2),
+            "topic_scores": topic_scores(spec, theta, r),
+            "stack": stack,
+            "roles_in_team": extra_roles(r, spec, grade),
+            "experience_years": round(r.uniform(exp_lo, exp_hi) * 2) / 2,
+            "soft_skills": r.sample(SOFT_SKILLS, k=r.randint(2, 4)),
+            "about": f"{r.choice(ABOUT_EXTRA[spec])} {ABOUT_GRADE[grade]}",
+            "links": links,
+            "min_salary": round_to(r.uniform(lo, hi) * SPEC_SALARY_K[spec]),
+            "fsp_id": fsp,
+            "fsp_score": fsp_score(achs),
+            "fsp_badges": badges_for(achs),
+            "privacy": privacy,
+            "job_search_paused": False,
+            "publication_consent": True,
+            "freshness": round(r.uniform(0.15, 0.9), 2),
+            "profile_completeness": 0,
+            "last_test_at": iso(last_test),
+            "grade_changed_at": iso(last_test),
+            "created_at": iso(created),
+        }
+        filled = [
+            candidate["phone"],
+            candidate["telegram"],
+            candidate["city"],
+            candidate["grade"],
+            candidate["links"],
+            candidate["fsp_id"],
+            candidate["about"],
+            candidate["min_salary"],
+            len(stack) >= 4,
+            candidate["soft_skills"],
+        ]
+        candidate["profile_completeness"] = round(100 * sum(bool(x) for x in filled) / 10)
+        CANDIDATES.append(candidate)
+        add_tests(candidate, r)
 
 
 # ---------------------------------------------------------------- потребности, вакансии
@@ -1788,6 +2172,23 @@ NEED_DEFS = [
         250_000,
         "closed",
         15,
+    ),
+    (
+        1,
+        1,
+        "Frontend-разработчик в личный кабинет банка",
+        "Ищем мидла на React и TypeScript в личный кабинет мобильного банка, удалёнка, 180–250к",
+        "frontend",
+        "middle",
+        ["react", "typescript"],
+        ["redux", "jest"],
+        "Личный кабинет и платежи физлиц, команда 5 человек",
+        "remote",
+        None,
+        180_000,
+        250_000,
+        "active",
+        2,
     ),
 ]
 NEEDS: list[J] = []
@@ -2189,6 +2590,233 @@ def build_invitations() -> None:
         vac["applications_count"] += 1
 
 
+# Демо-учётки: жюри смотрит стенд после сдачи, поэтому у candidate@ и candidate.nofsp@
+# по два приглашения «отправлено» со сроком до 20.11.2026 (обычный срок — 7 дней).
+DEMO_INVITE_EXPIRES = datetime(2026, 11, 20, 18, 0, tzinfo=MSK)
+
+
+def add_invitation(
+    cid: int,
+    rid: int,
+    status: str,
+    created: datetime,
+    salary: tuple[int, int],
+    contact_type: str,
+    description: str,
+    *,
+    task_text: str | None = None,
+    viewed: datetime | None = None,
+    responded: datetime | None = None,
+    reason: str | None = None,
+    comment: str | None = None,
+    expires: datetime | None = None,
+) -> J:
+    """Приглашение без случайных чисел (для демо-учёток) + события и запись журнала."""
+    rec = next(r for r in RECRUITERS if r["id"] == rid)
+    cand = next(c for c in CANDIDATES if c["id"] == cid)
+    company = rec["company_id"]
+    inv_id = len(INVITATIONS) + 1
+    expires = expires or created + timedelta(days=7)
+    inv = {
+        "id": inv_id,
+        "candidate_id": cid,
+        "recruiter_id": rid,
+        "company_id": company,
+        "company_name": COMPANY_NAME[company],
+        "recruiter_name": rec["full_name"],
+        "need_id": next(
+            (
+                n["id"]
+                for n in NEEDS
+                if n["company_id"] == company and n["category"] == cand["category"]
+            ),
+            None,
+        ),
+        "vacancy_id": next(
+            (
+                v["id"]
+                for v in VACANCIES
+                if v["company_id"] == company
+                and v["category"] == cand["category"]
+                and v["status"] == "published"
+            ),
+            None,
+        ),
+        "category": cand["category"],
+        "category_label": cand["category_label"],
+        "description": description,
+        "salary_from": salary[0],
+        "salary_to": salary[1],
+        "contact_method": {"type": contact_type, "value": rec[contact_type]},
+        "task_text": task_text,
+        "status": status,
+        "decline_reason": reason,
+        "decline_comment": comment,
+        "created_at": iso(created),
+        "viewed_at": iso(viewed) if viewed else None,
+        "responded_at": iso(responded) if responded else None,
+        "expires_at": iso(expires),
+        "withdrawn_at": None,
+    }
+    INVITATIONS.append(inv)
+    event(inv_id, "created", created, "recruiter")
+    if viewed:
+        event(inv_id, "viewed", viewed, "candidate")
+    if status == "accepted" and responded:
+        event(inv_id, "accepted", responded, "candidate")
+        event(inv_id, "contacts_revealed", responded, None)
+        audit(
+            responded,
+            rec["user_id"],
+            "recruiter",
+            "contacts_revealed",
+            "invitation",
+            inv_id,
+            f"Раскрыты контакты: {cand['pseudonym']} ↔ {COMPANY_NAME[company]}",
+            {"candidate_id": cid, "company_id": company},
+        )
+    if status == "declined" and responded:
+        event(inv_id, "declined", responded, "candidate")
+    return inv
+
+
+def msk(month: int, day: int, hour: int, minute: int = 0) -> datetime:
+    return datetime(2026, month, day, hour, minute, tzinfo=MSK)
+
+
+def build_demo_invitations() -> None:
+    """У demo-соискателей — по два приглашения «ждёт ответа» от разных компаний и история."""
+    # candidate@ (Backend · Middle): приглашение №2 от «Вектора» — ждёт ответа до 20.11
+    inv = next(i for i in INVITATIONS if i["id"] == 2)
+    assert inv["candidate_id"] == 1 and inv["status"] == "sent" and inv["company_id"] == 2
+    inv["expires_at"] = iso(DEMO_INVITE_EXPIRES)
+    inv["description"] = (
+        "Ищем backend-разработчика в команду прогноза спроса: сервисы на Python и FastAPI, "
+        "выгрузки из ClickHouse, API для витрин данных магазинов. Команда 5 человек, "
+        "гибрид в Санкт-Петербурге или удалённо."
+    )
+    add_invitation(
+        1,
+        7,
+        "sent",
+        msk(10, 6, 9, 40),
+        (200_000, 250_000),
+        "telegram",
+        "B2B-платформа учёта для логистики: нужен backend-разработчик на Python в команду "
+        "интеграций с перевозчиками — приём статусов доставки, очереди, PostgreSQL. "
+        "Удалённо, гибкий график.",
+        task_text="Опишите, как бы вы принимали статусы доставки от 20 перевозчиков "
+        "с разными API (до 10 предложений).",
+        expires=DEMO_INVITE_EXPIRES,
+    )
+    # candidate.nofsp@ (Frontend · Junior): история + два ожидающих ответа
+    cand = next(c for c in CANDIDATES if c["id"] == 26)
+    base = cand["min_salary"] or 100_000
+
+    def pay(lo: float, hi: float) -> tuple[int, int]:
+        return round_to(base * lo), round_to(base * hi)
+
+    add_invitation(
+        26,
+        6,
+        "accepted",
+        msk(9, 22, 11),
+        pay(1.0, 1.25),
+        "email",
+        "Облачные системы «Тайга» приглашают на позицию Frontend · Junior: экраны учёта "
+        "грузов на React. Расскажем о задачах на созвоне.",
+        viewed=msk(9, 22, 15, 10),
+        responded=msk(9, 23, 10, 5),
+    )
+    add_invitation(
+        26,
+        4,
+        "declined",
+        msk(9, 29, 14),
+        pay(1.0, 1.2),
+        "phone",
+        "Лаборатория данных «Вектор»: внутренний портал аналитиков на Angular.",
+        viewed=msk(9, 29, 20, 30),
+        responded=msk(9, 30, 9, 15),
+        reason="wrong_stack",
+        comment="Ищу позицию на React, а здесь Angular",
+    )
+    add_invitation(
+        26,
+        3,
+        "sent",
+        msk(10, 5, 15, 20),
+        pay(1.05, 1.4),
+        "email",
+        "Северный код: интерфейсы мобильного банка на React и TypeScript — формы платежей, "
+        "история операций. Наставник на первые три месяца, гибрид в Москве или удалённо.",
+        expires=DEMO_INVITE_EXPIRES,
+    )
+    add_invitation(
+        26,
+        5,
+        "sent",
+        msk(10, 6, 10, 15),
+        pay(1.0, 1.3),
+        "telegram",
+        "Лаборатория данных «Вектор»: дашборды для сетей магазинов на React — графики, "
+        "фильтры, выгрузки. Удалённо, команда из 4 фронтендеров.",
+        task_text="Как бы вы показали на графике продажи 300 магазинов за год, чтобы он "
+        "не тормозил? (до 10 предложений)",
+        expires=DEMO_INVITE_EXPIRES,
+    )
+
+
+COVER_LETTERS = [
+    "Здравствуйте! Интересна вакансия, готов обсудить детали.",
+    "Добрый день! Стек совпадает с моим опытом, буду рад созвониться.",
+    "Здравствуйте! Давно слежу за продуктом, хочу в команду. Удобно созвониться в будни после 17:00.",
+    "Добрый день! Подхожу по грейду и стеку, тест на платформе пройден. Готов к тестовому заданию.",
+]
+
+
+def build_extra_applications() -> None:
+    """Отклики кандидатов банка на опубликованные вакансии — в разных статусах."""
+    plan = [
+        # (вакансия, статусы откликов по порядку кандидатов категории)
+        (1, ["viewed", "new", "viewed"]),
+        (2, ["viewed", "rejected"]),
+        (3, ["viewed", "invited"]),
+        (4, ["new", "viewed"]),
+        (7, ["new"]),
+    ]
+    k = 0
+    for vid, statuses in plan:
+        vac = next(v for v in VACANCIES if v["id"] == vid)
+        pool = [
+            c for c in CANDIDATES if c["id"] >= EXTRA_FIRST_ID and c["category"] == vac["category"]
+        ]
+        for cand, status in zip(pool, statuses, strict=False):
+            k += 1
+            created = days_ago(1 + k % 6, hour=9 + k % 9)
+            app = {
+                "id": len(APPLICATIONS) + 1,
+                "vacancy_id": vid,
+                "candidate_id": cand["id"],
+                "vacancy_title": vac["title"],
+                "company_id": vac["company_id"],
+                "company_name": vac["company_name"],
+                "cover_letter": COVER_LETTERS[k % len(COVER_LETTERS)],
+                "status": status,
+                "created_at": iso(created),
+                "updated_at": iso(created + timedelta(hours=3) if status != "new" else created),
+            }
+            if status == "invited":
+                rec = next(r for r in RECRUITERS if r["company_id"] == vac["company_id"])
+                app["contact_method"] = {"type": "email", "value": rec["email"]}
+                app["invite_message"] = (
+                    "Здравствуйте! Понравился ваш профиль — давайте созвонимся на 30 минут, "
+                    "напишите на почту удобное время."
+                )
+            APPLICATIONS.append(app)
+            vac["applications_count"] += 1
+
+
 # ---------------------------------------------------------------- задания, жалобы, журнал
 
 TASK_DEFS = [
@@ -2267,7 +2895,7 @@ def build_tasks() -> None:
     }
     sid = 0
     for cand in CANDIDATES:
-        if not cand["category"]:
+        if not cand["category"] or cand["id"] > N_CANDIDATES:
             continue
         tasks = [t for t in REGULAR_TASKS if t["category"].split(":")[0] == cand["specialization"]]
         if not tasks:
@@ -2285,7 +2913,7 @@ def build_tasks() -> None:
             )
             kind = rng.choice(["text", "code", "approach"])
             submitted = (
-                assigned + timedelta(days=rng.randint(1, 4))
+                min(assigned + timedelta(days=rng.randint(1, 4)), NOW - timedelta(hours=2))
                 if status in ("graded", "submitted")
                 else None
             )
@@ -2310,7 +2938,7 @@ def build_tasks() -> None:
                         2: "Хороший разбор",
                         3: "Отлично, с учётом крайних случаев",
                     }.get(score or 0),
-                    "graded_at": iso(submitted + timedelta(days=1))
+                    "graded_at": iso(min(submitted + timedelta(days=1), NOW - timedelta(hours=1)))
                     if score is not None and submitted
                     else None,
                 }
@@ -2440,6 +3068,192 @@ def build_week_tasks() -> None:
             next_id += 1
 
 
+def build_company_tasks() -> None:
+    """Ещё по задаче от «Северного кода» в категориях демо-соискателей: их прошлые задачи
+    этой компании уже решены, а решённые повторно не предлагаются."""
+    next_id = max(t["id"] for t in REGULAR_TASKS) + 1
+    for spec, grade in (("backend", "middle"), ("frontend", "junior")):
+        title, statement = TASK_TEMPLATES[(spec, 1)]
+        REGULAR_TASKS.append(
+            {
+                "id": next_id,
+                "company_id": 1,
+                "company_name": COMPANY_NAME[1],
+                "recruiter_id": 1,
+                "title": title,
+                "statement": statement,
+                "category": cat_id(spec, grade),
+                "category_label": cat_label(spec, grade),
+                "deadline_days": 7,
+                "status": "active",
+                "submissions_count": 0,
+                "created_at": iso(days_ago(8)),
+            }
+        )
+        next_id += 1
+
+
+# Задачи недели демо-соискателей: раздача понедельника 05.10, срок до 16.11.2026 —
+# жюри смотрит стенд после сдачи (обычный срок ответа — 7 дней).
+DEMO_WEEK_START = datetime(2026, 10, 5, 3, 30, tzinfo=MSK)
+DEMO_TASK_DUE = datetime(2026, 11, 16, 3, 0, tzinfo=MSK)
+
+
+def submission(
+    task: J,
+    cand_id: int,
+    status: str,
+    assigned: datetime,
+    due: datetime,
+    *,
+    kind: str | None = None,
+    answer: str | None = None,
+    submitted: datetime | None = None,
+    score: int | None = None,
+    comment: str | None = None,
+    graded: datetime | None = None,
+) -> J:
+    sub = {
+        "id": len(SUBMISSIONS) + 1,
+        "task_id": task["id"],
+        "candidate_id": cand_id,
+        "task_title": task["title"],
+        "statement": task["statement"],
+        "company_name": task["company_name"],
+        "status": status,
+        "assigned_at": iso(assigned),
+        "due_at": iso(due),
+        "answer_kind": kind,
+        "answer_text": answer,
+        "submitted_at": iso(submitted) if submitted else None,
+        "score": score,
+        "grader_comment": comment,
+        "graded_at": iso(graded) if graded else None,
+    }
+    SUBMISSIONS.append(sub)
+    if status != "skipped":
+        task["submissions_count"] += 1
+    return sub
+
+
+def week_task(company: int, category: str, title: str | None = None) -> J:
+    return next(
+        t
+        for t in REGULAR_TASKS
+        if t["company_id"] == company
+        and t["category"] == category
+        and (title is None or t["title"] == title)
+    )
+
+
+def retarget(sub: J, task: J) -> None:
+    old = next(t for t in REGULAR_TASKS if t["id"] == sub["task_id"])
+    old["submissions_count"] -= 1
+    task["submissions_count"] += 1
+    sub.update(
+        task_id=task["id"],
+        task_title=task["title"],
+        statement=task["statement"],
+        company_name=task["company_name"],
+    )
+
+
+def build_demo_tasks() -> None:
+    """По три задачи недели на выбор (от трёх компаний) у обоих демо-соискателей."""
+    week = timedelta(days=7) - timedelta(minutes=30)
+    prev_week = DEMO_WEEK_START - timedelta(days=7)
+    # candidate@: две оценённые задачи в истории, прошлонедельное предложение истекло
+    subs = [s for s in SUBMISSIONS if s["candidate_id"] == 1]
+    assert [s["status"] for s in subs] == ["graded", "graded", "assigned"], subs
+    expired = subs[2]
+    retarget(expired, week_task(3, "backend:middle"))
+    expired.update(status="expired", assigned_at=iso(prev_week), due_at=iso(prev_week + week))
+    for company, title in ((1, "Очередь платежей без потерь"), (2, None), (3, None)):
+        submission(
+            week_task(company, "backend:middle", title),
+            1,
+            "assigned",
+            DEMO_WEEK_START,
+            DEMO_TASK_DUE,
+        )
+    # candidate.nofsp@: ответ прошлой недели оценён, на этой неделе — три задачи на выбор
+    subs = [s for s in SUBMISSIONS if s["candidate_id"] == 26]
+    assert [s["status"] for s in subs] == ["submitted"], subs
+    subs[0].update(
+        status="graded",
+        assigned_at=iso(prev_week),
+        due_at=iso(prev_week + week),
+        answer_kind="text",
+        answer_text="Сначала посмотрю в React DevTools Profiler, что перерисовывается при вводе. "
+        "Состояние каждого поля опущу в само поле или перейду на неуправляемые поля "
+        "(react-hook-form), тяжёлые вычисления — в useMemo, валидацию — по blur.",
+        submitted_at=iso(msk(10, 1, 19, 20)),
+        score=2,
+        grader_comment="Хороший разбор",
+        graded_at=iso(msk(10, 2, 11, 0)),
+    )
+    for company, title in ((1, "Двойная отправка оплаты"), (2, None), (3, None)):
+        submission(
+            week_task(company, "frontend:junior", title),
+            26,
+            "assigned",
+            DEMO_WEEK_START,
+            DEMO_TASK_DUE,
+        )
+
+
+EXTRA_ANSWERS = {
+    "text": "Сначала замерил бы, где теряется время, и только потом менял решение. "
+    "Предложил бы два варианта и сравнил их по рискам.",
+    "code": "def handle(event):\n    if seen(event.id):\n        return\n    process(event)\n"
+    "    mark_seen(event.id)",
+    "approach": "Разбил бы задачу на шаги: воспроизвести, найти узкое место, исправить, "
+    "добавить проверку в мониторинг, чтобы не повторилось.",
+}
+
+
+def build_extra_submissions() -> None:
+    """История задач недели у кандидатов банка: ответы прошлых недель (без активных)."""
+    r = random.Random(SEED + 600)
+    week = timedelta(days=7) - timedelta(minutes=30)
+    for cand in CANDIDATES:
+        if cand["id"] < EXTRA_FIRST_ID:
+            continue
+        tasks = sorted(
+            (t for t in REGULAR_TASKS if t["category"] == cand["category"]), key=lambda t: t["id"]
+        )
+        n = r.choice([0, 0, 1, 1, 2])
+        for k in range(n):
+            task = tasks[(cand["id"] + k) % len(tasks)]
+            assigned = DEMO_WEEK_START - timedelta(days=7 * (k + 1))
+            status = r.choice(["graded", "graded", "submitted", "expired"])
+            if status == "expired":
+                submission(task, cand["id"], status, assigned, assigned + week)
+                continue
+            submitted = assigned + timedelta(days=r.randint(0, 5), hours=r.randint(6, 18))
+            kind = r.choice(["text", "code", "approach"])
+            score = r.randint(1, 3) if status == "graded" else None
+            submission(
+                task,
+                cand["id"],
+                status,
+                assigned,
+                assigned + week,
+                kind=kind,
+                answer=EXTRA_ANSWERS[kind],
+                submitted=submitted,
+                score=score,
+                comment={
+                    1: "Направление верное, мало деталей",
+                    2: "Хороший разбор",
+                    3: "Отлично, с учётом крайних случаев",
+                }.get(score or 0),
+                graded=min(submitted + timedelta(days=1), NOW - timedelta(hours=1))
+                if score
+                else None,
+            )
+
+
 REPORTS: list[J] = []
 CONSENTS: list[J] = []
 
@@ -2503,8 +3317,12 @@ def build_misc() -> None:
                 else None,
             }
         )
+    cand_of_user = {c["user_id"]: c for c in CANDIDATES}
     for u in USERS:
+        # Текст согласия версии 2026-10-01: кто зарегистрировался раньше, принял новую версию
+        # при входе 1–3 октября (дата согласия не раньше даты версии).
         created = datetime.fromisoformat(u["created_at"])
+        accepted = max(created, CONSENT_DATE + timedelta(hours=(u["id"] * 7) % 60))
         CONSENTS.append(
             {
                 "id": 0,
@@ -2512,12 +3330,12 @@ def build_misc() -> None:
                 "type": "processing",
                 "version": CONSENT_VERSION,
                 "granted": True,
-                "granted_at": iso(created),
+                "granted_at": iso(accepted),
                 "revoked_at": None,
             }
         )
         if u["role"] == "candidate":
-            cand = CANDIDATES[u["id"] - 1]
+            cand = cand_of_user[u["id"]]
             granted = cand["publication_consent"]
             CONSENTS.append(
                 {
@@ -2526,7 +3344,7 @@ def build_misc() -> None:
                     "type": "publication",
                     "version": CONSENT_VERSION,
                     "granted": granted,
-                    "granted_at": iso(created) if granted or u["id"] == 37 else None,
+                    "granted_at": iso(accepted) if granted or u["id"] == 37 else None,
                     "revoked_at": iso(days_ago(2)) if not granted else None,
                 }
             )
@@ -3108,7 +3926,7 @@ DEMO_ACCOUNTS = [
         "password": "demo1234",
         "user_id": 1,
         "is_default": True,
-        "description": "Соискатель с ФСП ID: Backend · Middle, есть приглашения и задание",
+        "description": "Соискатель с ФСП ID: Backend · Middle, есть приглашения и задания",
     },
     {
         "id": 2,
@@ -3117,7 +3935,7 @@ DEMO_ACCOUNTS = [
         "password": "demo1234",
         "user_id": 26,
         "is_default": False,
-        "description": "Соискатель без истории ФСП: Frontend · Junior",
+        "description": "Соискатель без истории ФСП: Frontend · Junior, есть приглашения и задания",
     },
     {
         "id": 3,
@@ -3154,10 +3972,16 @@ def main() -> None:
     build_people()
     build_items()
     build_tests()
+    build_extra_candidates()
     build_needs_and_vacancies()
     build_invitations()
+    build_demo_invitations()
+    build_extra_applications()
     build_tasks()
     build_week_tasks()
+    build_company_tasks()
+    build_demo_tasks()
+    build_extra_submissions()
     build_misc()
     build_validation()
     build_vacancy_tests()

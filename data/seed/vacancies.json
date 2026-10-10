@@ -22,7 +22,7 @@
     "category": "backend:middle",
     "category_label": "Backend · Middle",
     "status": "published",
-    "applications_count": 3,
+    "applications_count": 6,
     "created_at": "2026-09-18T12:00:00+03:00",
     "published_at": "2026-09-18T14:00:00+03:00",
     "my_application_id": null
@@ -49,7 +49,7 @@
     "category": "mobile:senior",
     "category_label": "Mobile · Senior",
     "status": "published",
-    "applications_count": 1,
+    "applications_count": 3,
     "created_at": "2026-09-26T12:00:00+03:00",
     "published_at": "2026-09-26T14:00:00+03:00",
     "my_application_id": null
@@ -76,7 +76,7 @@
     "category": "frontend:junior",
     "category_label": "Frontend · Junior",
     "status": "published",
-    "applications_count": 2,
+    "applications_count": 4,
     "created_at": "2026-09-26T12:00:00+03:00",
     "published_at": "2026-09-26T14:00:00+03:00",
     "my_application_id": null
@@ -105,7 +105,7 @@
     "category": "data_ml:middle",
     "category_label": "Data Science / ML · Middle",
     "status": "published",
-    "applications_count": 3,
+    "applications_count": 5,
     "created_at": "2026-09-13T12:00:00+03:00",
     "published_at": "2026-09-13T14:00:00+03:00",
     "my_application_id": null
@@ -187,7 +187,7 @@
     "category": "devops:middle",
     "category_label": "DevOps · Middle",
     "status": "published",
-    "applications_count": 2,
+    "applications_count": 3,
     "created_at": "2026-09-17T12:00:00+03:00",
     "published_at": "2026-09-17T14:00:00+03:00",
     "my_application_id": null

@@ -10,6 +10,7 @@
 
 - `FSP-000001`…`FSP-000030` — с достижениями (от 1 до 8 у каждого);
 - `FSP-000031`…`FSP-000040` — без истории: `has_history: false`, `items: []`;
+- `FSP-000101`…`FSP-000180` — с достижениями (от 1 до 6), привязаны к кандидатам демо-банка платформы;
 - любой другой ID формата `FSP-NNNNNN` — 404, неверный формат — 422.
 
 Файл `data/participants.json` собирает детерминированный генератор (seed фиксирован):
@@ -24,7 +25,7 @@ python services/fsp-registry-mock/tools/generate_participants.py
 
 | Метод | Ответ |
 |---|---|
-| `GET /health` | `{"status": "ok", "participants": 40, "synthetic": true}` |
+| `GET /health` | `{"status": "ok", "participants": 120, "synthetic": true}` |
 | `GET /participants/{fsp_id}` | профиль + `summary` (число достижений, очки, дисциплины, высший уровень, призы) |
 | `GET /participants/{fsp_id}/achievements?discipline=&level=` | `{fsp_id, has_history, total, items, updated_at}` |
 | `GET /participants?ids=FSP-000001,FSP-000031` | `{items, not_found}`, до 100 ID |

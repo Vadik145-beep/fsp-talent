@@ -477,6 +477,9 @@ def test_market_hint_by_accepted_invitations(client: TestClient) -> None:
 
 
 def test_market_hint_hidden_for_small_sample(client: TestClient) -> None:
+    # в демо-базе в каждой категории не меньше 6 кандидатов — малую выборку делаем сами:
+    # ожидания кандидатов категории неизвестны, принятых приглашений нет
+    sql_sync("UPDATE candidate_profiles SET min_salary = NULL WHERE category = 'qa:middle'")
     hint = client.get(
         "/api/invitations/market-hint",
         params={"category": "qa:middle", "salary_to": 200000},

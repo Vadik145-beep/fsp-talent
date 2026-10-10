@@ -6,7 +6,7 @@
     "password": "demo1234",
     "user_id": 1,
     "is_default": true,
-    "description": "Соискатель с ФСП ID: Backend · Middle, есть приглашения и задание"
+    "description": "Соискатель с ФСП ID: Backend · Middle, есть приглашения и задания"
   },
   {
     "id": 2,
@@ -15,7 +15,7 @@
     "password": "demo1234",
     "user_id": 26,
     "is_default": false,
-    "description": "Соискатель без истории ФСП: Frontend · Junior"
+    "description": "Соискатель без истории ФСП: Frontend · Junior, есть приглашения и задания"
   },
   {
     "id": 3,

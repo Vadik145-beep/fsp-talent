@@ -252,7 +252,9 @@ def test_fsp_is_bonus_without_penalty(client: TestClient) -> None:
             assert fsp["value"] == 0 and fsp["contribution"] == 0
             assert not any("ФСП" in r for r in m["reasons"])
         elif fsp["value"] > 0:
-            assert any(r.startswith("Подтверждено ФСП") for r in m["reasons"])
+            # причина ФСП есть, если не вытеснена более весомыми (причин не больше четырёх)
+            has_reason = any(r.startswith("Подтверждено ФСП") for r in m["reasons"])
+            assert has_reason or len(m["reasons"]) == 4
 
 
 def test_fsp_factor_uses_discipline_relevance(client: TestClient) -> None:
