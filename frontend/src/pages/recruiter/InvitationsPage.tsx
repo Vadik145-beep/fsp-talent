@@ -19,7 +19,7 @@ function CandidateCell({ inv }: { inv: Invitation }) {
     return (
       <span className="block min-w-0">
         <span className="block font-semibold">{inv.candidate_contacts.full_name}</span>
-        <span className="block text-[13px] text-muted">{inv.candidate_contacts.email}</span>
+        <span className="block text-[13px] break-all text-muted">{inv.candidate_contacts.email}</span>
       </span>
     )
   }
@@ -158,7 +158,7 @@ export default function RecruiterInvitationsPage() {
             </>
           ) : (
             <div className="-mx-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0" data-testid="invitations-board">
-              <div className="grid w-max grid-cols-[repeat(6,15rem)] gap-3 xl:w-auto xl:min-w-[1080px] xl:grid-cols-6">
+              <div className="grid w-max grid-cols-[repeat(6,15rem)] gap-3">
                 {INVITATION_STATUSES.map((s) => {
                   const items = data.filter((i) => i.status === s)
                   return (
@@ -172,7 +172,7 @@ export default function RecruiterInvitationsPage() {
                           key={i.id}
                           type="button"
                           onClick={() => setOpenId(i.id)}
-                          className="rounded-md border border-line bg-surface p-2.5 text-left text-sm shadow-[var(--shadow-card)] hover:border-fsp-lavender"
+                          className="min-w-0 rounded-md border border-line bg-surface p-2.5 text-left text-sm shadow-[var(--shadow-card)] hover:border-fsp-lavender"
                         >
                           <CandidateCell inv={i} />
                           <span className="mt-1.5 block text-[13px] text-muted">{i.category_label}</span>
