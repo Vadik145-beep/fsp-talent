@@ -6,7 +6,7 @@ import { api, getErrorMessage } from '@/shared/api'
 import { formatDate } from '@/shared/lib/format'
 import { Badge, Card, Select, useToast } from '@/shared/ui'
 import { apiFieldErrors, refreshRecruiter, rk, upsertInList, type Application, type ApplicationStatus } from '../api'
-import { APPLICATION_STATUS_LABELS, APPLICATION_STATUS_TONE, CONTACT_TYPE_LABELS } from '../labels'
+import { APPLICATION_STATUS_LABELS, APPLICATION_STATUS_TONE, APPLICATION_TRANSITIONS, CONTACT_TYPE_LABELS } from '../labels'
 import { ApplicationInviteModal, type ApplicationInviteBody } from './ApplicationInviteModal'
 import { StackTags, ThetaInfo } from './CandidateBits'
 
@@ -65,7 +65,8 @@ export function ApplicationItem({ app, showVacancy }: { app: Application; showVa
             containerClassName="w-40"
             value={app.status}
             disabled={setStatus.isPending}
-            options={(Object.keys(APPLICATION_STATUS_LABELS) as ApplicationStatus[]).map((s) => ({ value: s, label: APPLICATION_STATUS_LABELS[s] }))}
+            // только текущий статус и разрешённые переходы
+            options={[app.status, ...APPLICATION_TRANSITIONS[app.status]].map((s) => ({ value: s, label: APPLICATION_STATUS_LABELS[s] }))}
             onChange={(e) => {
               const status = e.target.value as ApplicationStatus
               if (status === 'invited') {
