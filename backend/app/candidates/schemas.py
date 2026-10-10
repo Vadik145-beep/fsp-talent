@@ -280,11 +280,27 @@ class CandidateCard(OutModel):
     city: str | None = Field(default=None, description="null, если кандидат скрыл")
     experience_years: float | None = Field(default=None, description="null, если скрыт")
     links: list[ProfileLink] | None = Field(default=None, description="null, если скрыты")
-    has_fsp: bool = Field(description="Привязан ли ФСП ID (без самого ID)")
+    has_fsp: bool = Field(
+        description="Есть подтверждённые достижения ФСП и кандидат их не скрыл (без ФСП ID)"
+    )
     fsp_score: float | None = None
     fsp_badges: list[FspBadge] = Field(default_factory=list)
     topic_scores: list[TopicScore] = Field(default_factory=list)
     freshness: float
+
+
+class BankCandidateCard(CandidateCard):
+    """Карточка банка кандидатов. С `need_id` — соответствие потребности, как в подборке."""
+
+    match_score: float | None = Field(
+        default=None,
+        description="Соответствие потребности 0..1 (тот же счёт, что в подборке); "
+        "null — потребность не выбрана",
+    )
+    match_reasons: list[str] = Field(
+        default_factory=list,
+        description="1–3 короткие причины «почему подходит» (те же, что в подборке)",
+    )
 
 
 class TestHistoryPoint(OutModel):

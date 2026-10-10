@@ -217,12 +217,46 @@ def test_bank_filters_and_sort(client: TestClient) -> None:
     assert len(page2.json()["items"]) == 5 and page2.json()["page"] == 2
 
 
+def test_bank_has_fsp_means_shown_achievements(client: TestClient) -> None:
+    """«Есть достижения ФСП» [ТЗ: подтверждённые достижения]: true — есть достижения и они не
+    скрыты; привязка без истории (FSP-000031…35) и скрытые достижения — false, причём карточка
+    не выдаёт скрытое участие."""
+
+    def bank(has_fsp: str) -> dict[int, dict[str, Any]]:
+        body = client.get(
+            "/api/candidates",
+            params={"has_fsp": has_fsp, "page_size": 100},
+            headers=RECRUITER,
+        ).json()
+        assert body["total"] == len(body["items"])
+        return {c["id"]: c for c in body["items"]}
+
+    yes, no = bank("true"), bank("false")
+    assert yes and no and not set(yes) & set(no)
+    shown = {
+        c["id"]
+        for c in fixtures.load("candidates")
+        if c["fsp_id"]
+        and c["fsp_score"] is not None
+        and c["privacy"].get("show_fsp_achievements", True)
+    }
+    assert set(yes) <= shown
+    for card in yes.values():
+        assert card["has_fsp"] is True and card["fsp_badges"] and card["fsp_score"] is not None
+    # 6 — скрыл достижения, 22 — ФСП ID без истории: оба «нет», бейджа участия нет
+    for cid in (6, 22):
+        assert cid in no
+        assert no[cid]["has_fsp"] is False
+        assert no[cid]["fsp_badges"] == [] and no[cid]["fsp_score"] is None
+    assert all(c["has_fsp"] is False for c in no.values())
+    profile = client.get("/api/candidates/6", headers=RECRUITER).json()
+    assert profile["has_fsp"] is False and profile["fsp_badges"] == []
+
+
 def test_dashboard_from_db(client: TestClient) -> None:
     dashboard = client.get("/api/candidates/me/dashboard", headers=CANDIDATE).json()
     unread = [
-        i
-        for i in fixtures.load("invitations")
-        if i["candidate_id"] == 1 and i["status"] == "sent"
+        i for i in fixtures.load("invitations") if i["candidate_id"] == 1 and i["status"] == "sent"
     ]
     assert dashboard["new_invitations_count"] == len(unread)
     assert (
@@ -285,3 +319,61 @@ def test_failed_attempt_retry_cooldown_30_days(client: TestClient, fresh_db: Non
     assert grade["higher"]["code"] == "failed_retry_cooldown"
     assert grade["higher_available_at"].startswith((failed + timedelta(days=30)).date().isoformat())
     assert grade["can_test_lower"] is True  # ниже — другой грейд, повтора нет
+
+
+# ---------- банк кандидатов под потребность [ТЗ: ранжирование по соответствию] ----------
+
+
+def _bank(client: TestClient, **params: Any) -> dict[str, Any]:
+    r = client.get("/api/candidates", params={"page_size": 100, **params}, headers=RECRUITER)
+    assert r.status_code == 200, r.text
+    body: dict[str, Any] = r.json()
+    return body
+
+
+def test_bank_ranked_by_need(client: TestClient) -> None:
+    plain = _bank(client)
+    assert all(c["match_score"] is None and c["match_reasons"] == [] for c in plain["items"])
+    ranked = _bank(client, need_id=1)  # потребность 1 компании 1: Backend · Middle
+    assert ranked["total"] == plain["total"]  # потребность ранжирует, а не фильтрует
+    scores = [c["match_score"] for c in ranked["items"]]
+    assert scores == sorted(scores, reverse=True)  # по умолчанию — по соответствию
+    for card in ranked["items"]:
+        assert 0 <= card["match_score"] <= 1
+        assert 1 <= len(card["match_reasons"]) <= 3
+    # счёт и причины — те же, что в подборке по этой потребности
+    matches = client.get("/api/matching/needs/1/candidates", headers=RECRUITER).json()["items"]
+    by_id = {c["id"]: c for c in ranked["items"]}
+    assert matches
+    for m in matches:
+        card = by_id[m["candidate"]["id"]]
+        assert card["match_score"] == m["score"]
+        assert card["match_reasons"] == m["reasons"][:3]
+    # страницы по соответствию не пересекаются и идут подряд
+    p1 = _bank(client, need_id=1, page_size=5)
+    p2 = _bank(client, need_id=1, page_size=5, page=2)
+    assert [c["id"] for c in p1["items"] + p2["items"]] == [c["id"] for c in ranked["items"]][:10]
+
+
+def test_bank_need_with_filters_and_other_sort(client: TestClient) -> None:
+    both = _bank(client, need_id=1, specialization="backend", has_fsp="true")
+    plain = _bank(client, specialization="backend", has_fsp="true")
+    assert {c["id"] for c in both["items"]} == {c["id"] for c in plain["items"]}
+    assert all(c["specialization"] == "backend" and c["has_fsp"] for c in both["items"])
+    scores = [c["match_score"] for c in both["items"]]
+    assert scores == sorted(scores, reverse=True)
+    by_theta = _bank(client, need_id=1, sort="theta")
+    thetas = [c["theta"] for c in by_theta["items"]]
+    assert thetas == sorted(thetas, reverse=True)
+    assert all(c["match_score"] is not None for c in by_theta["items"])
+
+
+def test_bank_need_access_and_validation(client: TestClient) -> None:
+    foreign = client.get("/api/candidates", params={"need_id": 3}, headers=RECRUITER)
+    assert foreign.status_code == 404  # потребность компании 2
+    missing = client.get("/api/candidates", params={"need_id": 9999}, headers=RECRUITER)
+    assert missing.status_code == 404
+    own = client.get("/api/candidates", params={"need_id": 3}, headers=RECRUITER_C2)
+    assert own.status_code == 200 and own.json()["items"][0]["match_score"] is not None
+    no_need = client.get("/api/candidates", params={"sort": "match"}, headers=RECRUITER)
+    assert no_need.status_code == 422

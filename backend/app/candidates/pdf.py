@@ -253,7 +253,9 @@ def build_profile_pdf(data: ProfileData) -> bytes:
             else ""
         )
         story.append(Paragraph(f"{esc(cat)}{extra}", st["category"]))
-        when = _fmt_date(cand.get("last_test_at"))
+        # дата пройденного теста, давшего грейд (не последней попытки: она могла быть
+        # неудачной); нет даты — пишем без неё
+        when = _fmt_date(cand.get("grade_confirmed_at"))
         story.append(
             Paragraph(
                 "Категория и грейд подтверждены адаптивным тестом платформы"

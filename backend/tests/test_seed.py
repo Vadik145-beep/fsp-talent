@@ -154,3 +154,92 @@ def test_seed_on_startup_flag(monkeypatch: pytest.MonkeyPatch) -> None:
     report = asyncio.run(loader.seed_on_startup())
     assert report is not None and report.inserted == 0
     get_seed_settings.cache_clear()
+
+
+# ---------- повторная загрузка не задваивает данные, заменённые через API ----------
+
+ACH_INSERT = (
+    "INSERT INTO fsp_achievements (fsp_id, external_id, competition, discipline, level, date,"
+    " place, verified, synced_at) VALUES (:f, :ext, 'Кубок реестра', 'product', 'national',"
+    " DATE '2026-05-01', :place, true, now())"
+)
+
+
+def _achievements(fsp_id: str) -> list[tuple[str, int | None]]:
+    rows = sql_sync(
+        "SELECT external_id, place FROM fsp_achievements WHERE fsp_id = :f ORDER BY external_id",
+        {"f": fsp_id},
+    )
+    return [(r[0], r[1]) for r in rows]
+
+
+def _snapshot(candidate_id: int) -> tuple[float | None, list[str]]:
+    score, badges = sql_sync(
+        "SELECT fsp_score, fsp_badges FROM candidate_profiles WHERE id = :id", {"id": candidate_id}
+    )[0]
+    return score, [b["id"] for b in badges]
+
+
+def test_reseed_after_registry_refresh_does_not_duplicate_achievements() -> None:
+    """«Обновить из реестра» заменяет достижения новыми строками (другие id и external_id);
+    рестарт с SEED_ON_STARTUP не должен вернуть рядом сидовые копии (было 14 вместо 7)."""
+    reseed_sync()
+    seed_count = len(_achievements("FSP-000001"))
+    assert seed_count == 7
+    # как FspRepository.replace_achievements: удалить и вставить данные реестра
+    sql_sync("DELETE FROM fsp_achievements WHERE fsp_id = 'FSP-000001'")
+    for n in range(1, seed_count + 1):
+        sql_sync(ACH_INSERT, {"f": "FSP-000001", "ext": f"ACH-000001-{n:02d}", "place": 2})
+    registry = _achievements("FSP-000001")
+    report = seed_sync()
+    assert report.tables["fsp_achievements"][1] == 0
+    assert _achievements("FSP-000001") == registry
+    reseed_sync()
+
+
+def test_reseed_heals_old_duplicates_and_recomputes_snapshot() -> None:
+    """База, уже задвоенная старым загрузчиком: сидовые копии рядом с данными реестра
+    удаляются, ФСП-скор и бейджи кандидата пересчитываются по оставшимся достижениям."""
+    from app.candidates.fsp_score import fsp_badges, fsp_score
+
+    reseed_sync()
+    # кандидат 1 — FSP-000001: к 7 сидовым добавились 2 записи реестра
+    for n in (1, 2):
+        sql_sync(ACH_INSERT, {"f": "FSP-000001", "ext": f"ACH-000001-{n:02d}", "place": 1})
+    assert len(_achievements("FSP-000001")) == 9
+    seed_sync()
+    assert _achievements("FSP-000001") == [("ACH-000001-01", 1), ("ACH-000001-02", 1)]
+    achs = [
+        {"date": d, "level": level, "place": place}
+        for d, level, place in sql_sync(
+            "SELECT date, level, place FROM fsp_achievements WHERE fsp_id = 'FSP-000001'"
+        )
+    ]
+    score, badges = _snapshot(1)
+    assert score == fsp_score(achs)
+    assert badges == [b["id"] for b in fsp_badges(achs)]
+    # у остальных кандидатов ничего не тронуто
+    assert len(_achievements("FSP-000002")) == sum(
+        1 for a in fixtures.load("fsp_achievements") if a["fsp_id"] == "FSP-000002"
+    )
+    reseed_sync()
+
+
+def test_reseed_does_not_bring_back_unlinked_fsp_or_removed_skills() -> None:
+    reseed_sync()
+    # кандидат 2 отвязал ФСП ID (как FspService.unlink) и убрал технологию из стека
+    sql_sync("DELETE FROM fsp_achievements WHERE fsp_id = 'FSP-000002'")
+    sql_sync("DELETE FROM fsp_links WHERE candidate_id = 2")
+    removed = sql_sync(
+        "SELECT skill_code FROM candidate_skills WHERE candidate_id = 2 ORDER BY position LIMIT 1"
+    )[0][0]
+    sql_sync(
+        "DELETE FROM candidate_skills WHERE candidate_id = 2 AND skill_code = :s", {"s": removed}
+    )
+    seed_sync()
+    assert sql_sync("SELECT count(*) FROM fsp_links WHERE candidate_id = 2")[0][0] == 0
+    skills = {
+        r[0] for r in sql_sync("SELECT skill_code FROM candidate_skills WHERE candidate_id = 2")
+    }
+    assert removed not in skills
+    reseed_sync()

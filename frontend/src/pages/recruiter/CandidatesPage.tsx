@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { SearchX, Send, ShieldCheck } from 'lucide-react'
+import { CircleCheck, SearchX, Send, ShieldCheck } from 'lucide-react'
 import { api } from '@/shared/api'
 import { GRADE_OPTIONS, SPECIALIZATION_OPTIONS } from '@/shared/config/dictionaries'
 import { cn } from '@/shared/lib/cn'
 import { plural } from '@/shared/lib/format'
 import { Badge, Button, Card, EmptyState, FilterBar, PageHeader, Pagination, Pseudonym, Select, Tag } from '@/shared/ui'
-import { pseudonymCodeOf, rk, useCategories, type CandidateCard, type S } from './api'
+import { pseudonymCodeOf, rk, useCategories, type CandidateCard, type Need, type S } from './api'
 import { WORK_FORMAT_LABELS, yearsText } from './labels'
 import { FspBadges, StackTags, ThetaInfo } from './components/CandidateBits'
 import { InviteModal } from './components/InviteModal'
@@ -15,6 +15,7 @@ import { QueryState } from './components/QueryState'
 import { SkillInput } from './components/SkillInput'
 
 const PAGE_SIZE = 10
+const MATCH_SORT = { value: 'match', label: 'По соответствию' }
 const SORT_OPTIONS = [
   { value: 'theta', label: 'По результату теста' },
   { value: 'fsp', label: 'По достижениям ФСП' },
@@ -22,12 +23,28 @@ const SORT_OPTIONS = [
   { value: 'recent', label: 'Недавно прошли тест' },
 ]
 const FILTER_KEYS = ['specialization', 'grade', 'category', 'skills', 'has_fsp']
+/** В URL: `need=<id>` — выбранная потребность, `need=none` — без потребности. */
+const NO_NEED = 'none'
+
+/** Последняя активная потребность компании — выбор по умолчанию. */
+function latestActive(needs: Need[]): Need | null {
+  const active = needs.filter((n) => n.status === 'active')
+  active.sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at) || b.id - a.id)
+  return active[0] ?? null
+}
 
 /** Банк кандидатов: поиск по всей базе с фильтрами, сортировкой и страницами (фильтры — в URL). */
 export default function RecruiterCandidatesPage() {
   const [sp, setSp] = useSearchParams()
   const categories = useCategories()
   const [inviteFor, setInviteFor] = useState<CandidateCard | null>(null)
+  const needs = useQuery({ queryKey: rk.needs, queryFn: () => api.get<Need[]>('/matching/needs') })
+  const needList = needs.data ?? []
+  const needParam = sp.get('need')
+  const need =
+    needParam === NO_NEED ? null : needParam ? (needList.find((n) => String(n.id) === needParam) ?? null) : latestActive(needList)
+  const sortParam = sp.get('sort')
+  const sort = need ? sortParam || 'match' : sortParam && sortParam !== 'match' ? sortParam : 'theta'
 
   const params = {
     specialization: sp.get('specialization') || null,
@@ -35,7 +52,8 @@ export default function RecruiterCandidatesPage() {
     category: sp.get('category') || null,
     skills: sp.getAll('skills'),
     has_fsp: sp.get('has_fsp') === 'true' ? true : null,
-    sort: sp.get('sort') || 'theta',
+    need_id: need?.id ?? null,
+    sort,
     page: Number(sp.get('page')) || 1,
     page_size: PAGE_SIZE,
   }
@@ -44,9 +62,15 @@ export default function RecruiterCandidatesPage() {
 
   const bank = useQuery({
     queryKey: rk.bank(params),
-    queryFn: () => api.get<S['Page_CandidateCard_']>('/candidates', { query: params }),
+    queryFn: () => api.get<S['Page_BankCandidateCard_']>('/candidates', { query: params }),
     placeholderData: keepPreviousData,
+    // выбор потребности по умолчанию зависит от списка потребностей — ждём его
+    enabled: !needs.isPending,
   })
+  const needOptions = [
+    { value: NO_NEED, label: 'Без потребности' },
+    ...needList.map((n) => ({ value: String(n.id), label: `${n.title} · ${n.category_label}${n.status === 'active' ? '' : ' (закрыта)'}` })),
+  ]
 
   function update(mut: (p: URLSearchParams) => void, resetPage = true) {
     const next = new URLSearchParams(sp)
@@ -65,7 +89,7 @@ export default function RecruiterCandidatesPage() {
     <>
       <PageHeader
         title="Банк кандидатов"
-        description="Вся база в обезличенном виде. Категория присвоена по тесту, бейдж ФСП — подтверждённые достижения."
+        description="Вся база в обезличенном виде. Категория присвоена по тесту, бейдж ФСП — подтверждённые достижения. Выберите потребность — кандидаты встанут по соответствию ей."
       />
       <FilterBar
         activeCount={activeCount}
@@ -73,13 +97,28 @@ export default function RecruiterCandidatesPage() {
         actions={
           <Select
             label="Сортировка"
-            containerClassName="sm:w-56"
+            containerClassName="w-full sm:w-56"
             value={params.sort}
-            options={SORT_OPTIONS}
+            options={need ? [MATCH_SORT, ...SORT_OPTIONS] : SORT_OPTIONS}
             onChange={(e) => update((p) => p.set('sort', e.target.value))}
           />
         }
       >
+        <Select
+          label="Под потребность"
+          containerClassName="sm:w-72"
+          value={need ? String(need.id) : NO_NEED}
+          options={needOptions}
+          disabled={needs.isPending}
+          data-testid="bank-need"
+          onChange={(e) =>
+            update((p) => {
+              p.set('need', e.target.value)
+              // у новой потребности своя сортировка по умолчанию
+              if (p.get('sort') === 'match' || e.target.value === NO_NEED) p.delete('sort')
+            })
+          }
+        />
         <Select
           label="Специализация"
           containerClassName="sm:w-44"
@@ -157,22 +196,46 @@ export default function RecruiterCandidatesPage() {
           <>
             <p className="mb-3 text-sm" aria-live="polite" data-testid="bank-total">
               Найдено <b>{d.total}</b> {plural(d.total, ['кандидат', 'кандидата', 'кандидатов'])}
+              {need && <> · соответствие потребности «{need.title}»</>}
             </p>
             <ul className={cn('grid grid-cols-1 gap-3 md:grid-cols-2', bank.isPlaceholderData && 'opacity-60')}>
               {d.items.map((c) => (
                 <li key={c.id} className="min-w-0">
                   <Card className="flex h-full flex-col gap-3" padding="sm" data-testid="bank-card">
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <Link to={`/recruiter/candidates/${c.id}`} className="min-w-0 hover:opacity-80">
+                    {/* с процентом соответствия — без переноса: псевдоним сжимается, процент справа */}
+                    <div className={cn('flex items-start justify-between gap-2', c.match_score == null && 'flex-wrap')}>
+                      <Link to={`/recruiter/candidates/${c.id}`} className="flex min-w-0 hover:opacity-80">
                         <Pseudonym
                           code={pseudonymCodeOf(c.pseudonym)}
                           subtitle={[c.category_label, c.city, c.experience_years != null ? yearsText(c.experience_years) : null].filter(Boolean).join(' · ')}
                         />
                       </Link>
-                      <FspBadges candidate={c} compact />
+                      {c.match_score != null ? (
+                        <div className="shrink-0 text-right" data-testid="bank-match">
+                          <div className="text-2xl leading-none font-bold text-fsp-plum tabular-nums">{Math.round(c.match_score * 100)}%</div>
+                          <div className="mt-0.5 text-[11px] leading-tight font-medium text-muted">соответствие</div>
+                        </div>
+                      ) : (
+                        <FspBadges candidate={c} compact />
+                      )}
                     </div>
+                    {c.match_score != null && (
+                      <div className="flex">
+                        <FspBadges candidate={c} compact />
+                      </div>
+                    )}
                     <ThetaInfo theta={c.theta} />
-                    <StackTags stack={c.stack} highlight={params.skills} limit={7} />
+                    {(c.match_reasons ?? []).length > 0 && (
+                      <ul className="flex flex-col gap-1.5" aria-label="Почему подходит" data-testid="bank-reasons">
+                        {(c.match_reasons ?? []).map((r) => (
+                          <li key={r} className="flex gap-2 text-sm text-ink">
+                            <CircleCheck className="mt-0.5 size-4 shrink-0 text-success" aria-hidden />
+                            <span>{r}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    <StackTags stack={c.stack} highlight={need ? [...(need.skills_required ?? []), ...(need.skills_desired ?? []), ...params.skills] : params.skills} limit={7} />
                     <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3">
                       <span className="flex flex-wrap gap-1">
                         {c.work_formats.map((f) => (
@@ -207,7 +270,14 @@ export default function RecruiterCandidatesPage() {
         )}
       </QueryState>
 
-      {inviteFor && <InviteModal open onClose={() => setInviteFor(null)} candidate={inviteFor} />}
+      {inviteFor && (
+        <InviteModal
+          open
+          onClose={() => setInviteFor(null)}
+          candidate={inviteFor}
+          need={need ? { id: need.id, title: need.title, salary_from: need.salary_from, salary_to: need.salary_to } : null}
+        />
+      )}
     </>
   )
 }

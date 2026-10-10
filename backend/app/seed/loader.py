@@ -5,6 +5,14 @@
   после вставки последовательности (sequence) сдвигаются за максимальный id;
 - загрузка идемпотентна: `INSERT … ON CONFLICT DO NOTHING`, повторный запуск ничего не дублирует
   и не перетирает изменения, сделанные через API;
+- коллекции, которые API заменяет целиком (новые строки с новыми id), повторно не догружаются:
+  стек и привязка ФСП — только для кандидатов, которых ещё не было в базе, специализации
+  технологии — только для новых технологий справочника; достижения ФСП —
+  только для ФСП ID, у которых в базе ещё нет ни одного достижения (иначе после «Обновить из
+  реестра» рестарт с SEED_ON_STARTUP добавлял бы сидовые копии: 14 достижений вместо 7,
+  а отвязанный ФСП ID и удалённые из стека технологии возвращались бы);
+- если такие сидовые копии уже попали в базу рядом с данными из реестра, они удаляются, а снимок
+  ФСП-скора и бейджей у затронутых кандидатов пересчитывается по фактическим достижениям;
 - `reset=True` — очистить все таблицы (кроме справочника ролей) и залить заново;
 - пароли демо-учёток (`demo_accounts.json`) хешируются `hash_password`,
   у остальных пользователей пароля нет (вход только после сброса пароля).
@@ -18,7 +26,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
-from typing import Any
+from typing import Any, Self
 
 from sqlalchemy import Integer, Table, text
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -27,6 +35,7 @@ from sqlalchemy.pool import NullPool
 
 import app.models  # noqa: F401  — регистрирует все таблицы в metadata
 from app.auth.passwords import hash_password
+from app.candidates.fsp_score import fsp_badges, fsp_score
 from app.catalog.clock import now_msk, parse_dt
 from app.core.config import get_settings
 from app.core.db import Base
@@ -707,6 +716,99 @@ async def sync_sequences(conn: AsyncConnection) -> None:
         )
 
 
+async def _column_values(conn: AsyncConnection, sql: str) -> set[Any]:
+    return {row[0] for row in (await conn.execute(text(sql))).all()}
+
+
+@dataclass
+class _Existing:
+    """Что уже было в базе до загрузки (без reset): по этому решаем, что не догружать."""
+
+    candidates: set[int] = field(default_factory=set)
+    skills: set[str] = field(default_factory=set)
+    fsp_ids_with_achievements: set[str] = field(default_factory=set)
+
+    @classmethod
+    async def read(cls, conn: AsyncConnection) -> Self:
+        return cls(
+            candidates=await _column_values(conn, "SELECT id FROM candidate_profiles"),
+            skills=await _column_values(conn, "SELECT code FROM skills"),
+            fsp_ids_with_achievements=await _column_values(
+                conn, "SELECT DISTINCT fsp_id FROM fsp_achievements"
+            ),
+        )
+
+    def keep(self, table: str, rows: list[Record]) -> list[Record]:
+        """Строки сида, которые можно вставить, не задвоив данные, изменённые через API."""
+        if table in ("candidate_skills", "fsp_links"):
+            return [r for r in rows if r["candidate_id"] not in self.candidates]
+        if table == "skill_specializations":  # админка заменяет список целиком
+            return [r for r in rows if r["skill_code"] not in self.skills]
+        if table == "fsp_achievements":
+            return [r for r in rows if r["fsp_id"] not in self.fsp_ids_with_achievements]
+        return rows
+
+
+async def _drop_seed_copies_of_achievements(conn: AsyncConnection, rows: list[Record]) -> set[str]:
+    """Удалить сидовые достижения у ФСП ID, где рядом есть данные из реестра (задвоение после
+    «Обновить из реестра» и рестарта со старой версией загрузчика). Вернуть затронутые ФСП ID.
+
+    Сидовая строка — та, что совпадает со строкой фикстуры (id, ФСП ID, external_id), или
+    с external_id, равным её id (так загрузчик заполняет его, когда в фикстуре его нет);
+    у записей из реестра свои external_id (`ACH-…`) и id из последовательности."""
+    seed_rows = {r["id"]: (r["fsp_id"], r["external_id"]) for r in rows}
+    existing = (
+        await conn.execute(text("SELECT id, fsp_id, external_id FROM fsp_achievements"))
+    ).all()
+
+    def from_seed(row_id: int, fsp_id: str, ext: str) -> bool:
+        return seed_rows.get(row_id) == (fsp_id, ext) or ext == str(row_id)
+
+    from_registry = {f for row_id, f, ext in existing if not from_seed(row_id, f, ext)}
+    doomed = {
+        row_id: f for row_id, f, ext in existing if f in from_registry and from_seed(row_id, f, ext)
+    }
+    if not doomed:
+        return set()
+    await conn.execute(
+        text("DELETE FROM fsp_achievements WHERE id = ANY(:ids)"), {"ids": sorted(doomed)}
+    )
+    return set(doomed.values())
+
+
+async def _refresh_fsp_snapshots(conn: AsyncConnection, fsp_ids: set[str]) -> None:
+    """Пересчитать снимок ФСП-скора и бейджей у кандидатов с этими ФСП ID (по данным в БД)."""
+    if not fsp_ids:
+        return
+    links = (
+        await conn.execute(
+            text("SELECT candidate_id, fsp_id FROM fsp_links WHERE fsp_id = ANY(:ids)"),
+            {"ids": sorted(fsp_ids)},
+        )
+    ).all()
+    for candidate_id, fsp_id in links:
+        achs = [
+            {"date": d, "level": level, "place": place}
+            for d, level, place in (
+                await conn.execute(
+                    text("SELECT date, level, place FROM fsp_achievements WHERE fsp_id = :f"),
+                    {"f": fsp_id},
+                )
+            ).all()
+        ]
+        await conn.execute(
+            text(
+                "UPDATE candidate_profiles SET fsp_score = :score, "
+                "fsp_badges = CAST(:badges AS jsonb) WHERE id = :id"
+            ),
+            {
+                "score": fsp_score(achs),
+                "badges": json.dumps(fsp_badges(achs), ensure_ascii=False),
+                "id": candidate_id,
+            },
+        )
+
+
 async def load_seed(
     conn: AsyncConnection, *, reset: bool = False, seed_dir: Path | None = None
 ) -> SeedReport:
@@ -715,9 +817,21 @@ async def load_seed(
     report = SeedReport(reset=reset)
     if reset:
         await reset_tables(conn)
+    existing = _Existing() if reset else await _Existing.read(conn)
+    touched: set[str] = set()
     for table_name, build in STEPS:
         rows = build(ctx)
-        report.tables[table_name] = (len(rows), await _insert(conn, _table(table_name), rows))
+        if table_name == "fsp_achievements" and not reset:
+            touched = await _drop_seed_copies_of_achievements(conn, rows)
+        fresh = existing.keep(table_name, rows)
+        inserted = await _insert(conn, _table(table_name), fresh)
+        if table_name == "fsp_achievements" and existing.candidates:
+            # догрузка в непустую базу: снимок ФСП у кандидатов с этими ФСП ID пересчитываем
+            # по фактическим достижениям (в чистой базе снимок берётся из фикстур)
+            touched |= {r["fsp_id"] for r in fresh}
+        report.tables[table_name] = (len(rows), inserted)
+    if existing.candidates:
+        await _refresh_fsp_snapshots(conn, touched)
     await sync_sequences(conn)
     return report
 

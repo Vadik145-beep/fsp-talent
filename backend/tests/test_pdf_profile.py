@@ -8,7 +8,8 @@ from fastapi.testclient import TestClient
 
 from app.candidates.pdf import ProfileData, build_profile_pdf
 from app.common import fixtures
-from tests.conftest import CANDIDATE, CANDIDATE_NO_FSP, RECRUITER
+from app.seed.testkit import reseed_sync, sql_sync
+from tests.conftest import CANDIDATE, CANDIDATE_NO_FSP, RECRUITER, as_role
 
 
 def _text(content: bytes) -> tuple[str, int, set[str]]:
@@ -44,6 +45,20 @@ def test_profile_pdf_without_fsp(client: TestClient) -> None:
     section = text.split("Достижения ФСП")[-1].split("Сформировано")[0]
     assert "подтверждено ФСП" not in section
     assert pages == 1
+
+
+def test_profile_pdf_grade_date_is_passed_test_not_last_attempt(client: TestClient) -> None:
+    """Кандидат 14: Junior подтверждён тестом 27.09.2026; позже — неудачная попытка
+    (last_test_at сдвигается). В PDF — дата подтверждения, а не неудачной попытки."""
+    sql_sync("UPDATE candidate_profiles SET last_test_at = '2026-10-05 12:00+03' WHERE id = 14")
+    try:
+        resp = client.get("/api/candidates/me/profile.pdf", headers=as_role("candidate", 14))
+        assert resp.status_code == 200
+        text = _text(resp.content)[0].replace("\n", " ")
+        assert "подтверждены адаптивным тестом платформы (27.09.2026)" in text
+        assert "05.10.2026" not in text
+    finally:
+        reseed_sync()
 
 
 def test_profile_pdf_only_for_candidate(client: TestClient) -> None:

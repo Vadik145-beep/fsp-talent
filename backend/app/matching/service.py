@@ -26,6 +26,9 @@ from app.matching.repository import (
 from app.matching.schemas import NeedCreate, NeedUpdate
 from app.matching.scoring import NeedLike, score_candidate, weights_from
 
+# причин на карточке банка кандидатов (в подборке — до четырёх)
+BANK_REASONS = 3
+
 GRADES = [g.value for g in GradeCode]
 # Смежные специализации (как в прототипе рекрутера)
 ADJACENT: dict[str, list[str]] = {
@@ -52,6 +55,17 @@ def _clean_skills(codes: list[str]) -> list[str]:
 def card_view(cand: Record) -> dict[str, Any]:
     """Обезличенная карточка (без ФИО, контактов, минимальной зарплаты, ФСП ID)."""
     return to_card(cand)
+
+
+def need_target(need: dict[str, Any]) -> NeedLike:
+    return NeedLike(
+        skills_required=need["skills_required"],
+        skills_desired=need["skills_desired"],
+        salary_from=need["salary_from"],
+        salary_to=need["salary_to"],
+        work_format=need["work_format"],
+        specialization=need["specialization"],
+    )
 
 
 class NeedService:
@@ -164,6 +178,30 @@ class NeedService:
             if code in labels
         ]
 
+    # ---------- счёт соответствия (подборка и банк кандидатов) ----------
+
+    async def score(
+        self, need: dict[str, Any], ids: list[int]
+    ) -> tuple[dict[int, Record], dict[int, dict[str, Any]]]:
+        """Записи кандидатов и их счёт для потребности — одна формула для подборки и банка.
+
+        Пакетно: профили, стек и ФСП одним проходом (`CandidatePool.records`)."""
+        records = await self.pool.records(ids)
+        weights = weights_from(await self.catalog.settings())
+        skill_names = await skill_labels(self.session)
+        target = need_target(need)
+        scored = {
+            cid: score_candidate(
+                cand,
+                target,
+                weights,
+                lambda code: skill_names.get(code, code),
+                fsp_reason=cand.get("fsp_reason"),
+            )
+            for cid, cand in records.items()
+        }
+        return records, scored
+
     # ---------- подборка (T6.3, T6.4) ----------
 
     async def matches(
@@ -186,34 +224,17 @@ class NeedService:
                 {"fields": {"category": "Неизвестная категория"}},
             )
         ids = await self.pool.searchable_ids(category)
-        records = await self.pool.records(ids)
+        records, scores = await self.score(need, ids)
         statuses = await self.pool.last_invitation_status(company_id, ids)
-        weights = weights_from(await self.catalog.settings())
-        skill_names = await skill_labels(self.session)
-        target = NeedLike(
-            skills_required=need["skills_required"],
-            skills_desired=need["skills_desired"],
-            salary_from=need["salary_from"],
-            salary_to=need["salary_to"],
-            work_format=need["work_format"],
-            specialization=need["specialization"],
-        )
         ranked = []
         for cid in ids:
             cand = records.get(cid)
             if cand is None:
                 continue
-            scored = score_candidate(
-                cand,
-                target,
-                weights,
-                lambda code: skill_names.get(code, code),
-                fsp_reason=cand.get("fsp_reason"),
-            )
             ranked.append(
                 {
                     "candidate": card_view(cand),
-                    **scored,
+                    **scores[cid],
                     "invitation_status": statuses.get(cid),
                 }
             )

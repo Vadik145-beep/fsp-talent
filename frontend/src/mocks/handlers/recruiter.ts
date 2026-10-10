@@ -213,7 +213,8 @@ export function toCandidateCard(c: CandidateRow): S['CandidateCard'] {
     city: c.privacy.show_city ? c.city : null,
     experience_years: c.privacy.show_experience ? c.experience_years : null,
     links: c.privacy.show_links ? c.links : null,
-    has_fsp: Boolean(c.fsp_id),
+    // как на бэкенде: есть достижения ФСП и кандидат их не скрыл
+    has_fsp: Boolean(c.fsp_id && showFsp && c.fsp_score != null),
     fsp_score: c.fsp_id && showFsp ? c.fsp_score : null,
     fsp_badges: c.fsp_id && showFsp ? c.fsp_badges : [],
     topic_scores: c.topic_scores,
@@ -1031,9 +1032,12 @@ export const recruiterHandlers: HttpHandler[] = [
   // --- Банк кандидатов и обезличенный профиль ---
   http.get(
     '/api/candidates',
-    recruiterGet<S['Page_CandidateCard_']>(
-      (_ctx, { request }) => {
+    recruiterGet<S['Page_BankCandidateCard_']>(
+      (ctx, { request }) => {
         const p = new URL(request.url).searchParams
+        const needId = num(p.get('need_id'))
+        const need = needId != null ? findOwnNeed(needId, ctx) : null
+        if (needId != null && !need) return notFound('Потребность не найдена') as never
         const spec = p.get('specialization')
         const grade = p.get('grade')
         const category = p.get('category')
@@ -1041,25 +1045,30 @@ export const recruiterHandlers: HttpHandler[] = [
         const hasFsp = bool(p.get('has_fsp'))
         const format = p.get('work_format')
         const city = p.get('city')
-        const sort = p.get('sort') ?? 'theta'
+        const sort = p.get('sort') ?? (need ? 'match' : 'theta')
         const page = Math.max(1, num(p.get('page')) ?? 1)
         const pageSize = Math.min(100, Math.max(1, num(p.get('page_size')) ?? 20))
-        if (sort && !['theta', 'fsp', 'freshness', 'recent'].includes(sort)) {
+        if (sort && !['match', 'theta', 'fsp', 'freshness', 'recent'].includes(sort)) {
           return validationError({ sort: 'Неизвестная сортировка' }) as never
         }
+        if (sort === 'match' && !need) return validationError({ sort: 'Выберите потребность (need_id)' }) as never
         const rows = t.candidates().filter((c) => {
           if (!isVisible(c)) return false
           if (spec && c.specialization !== spec) return false
           if (grade && c.grade !== grade) return false
           if (category && c.category !== category) return false
           if (skills.length && !skills.every((s) => c.stack.includes(s))) return false
-          if (hasFsp === true && !(c.fsp_id && c.privacy.show_fsp_achievements)) return false
-          if (hasFsp === false && c.fsp_id) return false
+          const fspShown = Boolean(c.fsp_id && c.privacy.show_fsp_achievements !== false && c.fsp_score != null)
+          if (hasFsp === true && !fspShown) return false
+          if (hasFsp === false && fspShown) return false
           if (format && !c.work_formats.includes(format as WorkFormat)) return false
           if (city && (!c.privacy.show_city || c.city !== city)) return false
           return true
         })
+        // под потребность — тот же счёт и причины, что в подборке
+        const matched = new Map(need ? rows.map((c) => [c.id, scoreCandidate(c, need)] as const) : [])
         const key = (c: CandidateRow): number => {
+          if (sort === 'match') return matched.get(c.id)?.score ?? 0
           if (sort === 'fsp') return c.fsp_id && c.privacy.show_fsp_achievements ? (c.fsp_score ?? 0) : -1
           if (sort === 'freshness') return c.freshness
           if (sort === 'recent') return c.last_test_at ? Date.parse(c.last_test_at) : 0
@@ -1067,7 +1076,10 @@ export const recruiterHandlers: HttpHandler[] = [
         }
         rows.sort((a, b) => key(b) - key(a) || a.id - b.id)
         return {
-          items: rows.slice((page - 1) * pageSize, page * pageSize).map(toCandidateCard),
+          items: rows.slice((page - 1) * pageSize, page * pageSize).map((c) => {
+            const m = matched.get(c.id)
+            return { ...toCandidateCard(c), match_score: m?.score ?? null, match_reasons: m ? m.reasons.slice(0, 3) : [] }
+          }),
           total: rows.length,
           page,
           page_size: pageSize,

@@ -145,6 +145,77 @@ def test_exclude_ids_and_bank_exhaustion():
     assert res.stop_reason == "bank_exhausted"
 
 
+def _two_attempts(bank, seed: int, cfg: CATConfig, avoid: bool):
+    """Две сессии одного кандидата; во второй прошлые задачи — в avoid_ids (как в сервисе)."""
+    rng = random.Random(seed)
+    grade = ["intern", "junior", "middle", "senior"][seed % 4]
+    theta = {"intern": -1.5, "junior": -0.5, "middle": 0.5, "senior": 1.5}[grade]
+    theta += rng.gauss(0, 0.5)
+    first = run(CATSession(bank, grade, config=cfg, seed=rng.randrange(2**31)), theta, rng)
+    ids1 = {r.item_id for r in first.records}
+    second = CATSession(
+        bank,
+        grade,
+        config=cfg,
+        seed=rng.randrange(2**31),
+        avoid_ids=ids1 if avoid else (),
+    )
+    res2 = run(second, theta, rng)
+    return ids1, {r.item_id for r in res2.records}, res2
+
+
+def test_retake_prefers_new_templates_on_real_bank():
+    """Пересдача: прошлые задачи — в последнюю очередь. На рабочем банке (32 шаблона на
+    специализацию, тест до 20 задач) доля общих шаблонов двух попыток (Жаккар) без
+    предпочтения ~0,75, с предпочтением — заметно ниже; длина теста не меняется."""
+    from app.testing.engine.bank import BANK_TEMPLATES
+
+    cfg = CATConfig(se_target=0.30, max_items=20, min_items=6, max_exposure_rate=1.0)
+    bank = ItemBank.from_templates(t for t in BANK_TEMPLATES if t.specialization == "backend")
+
+    def jaccard(avoid: bool) -> float:
+        values = []
+        for seed in range(60):
+            a, b, res2 = _two_attempts(bank, seed, cfg, avoid)
+            assert res2.n_scored == cfg.max_items and res2.stop_reason == "max_items"
+            values.append(len(a & b) / len(a | b))
+        return sum(values) / len(values)
+
+    before, after = jaccard(False), jaccard(True)
+    assert before > 0.65
+    assert after < 0.55 and after < before - 0.2
+
+
+def test_avoid_ids_is_soft_small_bank_still_finishes():
+    """Банк меньше длины теста: все задачи «прошлые», тест всё равно доходит до конца."""
+    bank = make_bank(n=12, n_topics=3, n_pilot=0)
+    cfg = CATConfig(se_target=0.01, max_items=10, min_items=6)
+    all_ids = {i.item_id for i in bank.items}
+    s = CATSession(bank, "middle", config=cfg, seed=3, avoid_ids=all_ids)
+    res = run(s, 0.0, random.Random(3))
+    assert res.n_scored == 10 and res.stop_reason == "max_items"
+    # часть «прошлых»: сначала выдаются новые, прошлые — когда новых не хватает
+    half = {f"i{k}" for k in range(6)}
+    s = CATSession(bank, "middle", config=cfg, seed=3, avoid_ids=half)
+    res = run(s, 0.0, random.Random(3))
+    order = [r.item_id for r in res.records]
+    assert res.n_scored == 10 and set(order) - half == all_ids - half
+    # жёсткий exclude_ids, напротив, обрывает тест при нехватке задач
+    s = CATSession(bank, "middle", config=cfg, seed=3, exclude_ids=all_ids - {"i0", "i1"})
+    assert run(s, 0.0, random.Random(3)).stop_reason == "bank_exhausted"
+
+
+def test_avoid_ids_survive_restore():
+    bank = make_bank(n_pilot=0)
+    avoid = {i.item_id for i in bank.items[:60]}
+    s = CATSession(bank, "middle", seed=5, avoid_ids=avoid)
+    item = s.next_item()
+    s.submit(item.item_id, True, 10)
+    raw = json.loads(json.dumps(s.state.to_dict()))
+    restored = CATSession.restore(bank, raw, avoid_ids=avoid)
+    assert restored.next_item() == s.next_item()
+
+
 def test_state_roundtrip_continues_identically():
     bank = make_bank()
     rng = random.Random(4)

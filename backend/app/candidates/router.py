@@ -11,7 +11,7 @@ from app.candidates.pdf import profile_pdf
 from app.candidates.resume import ResumeParseResponse, ResumeService
 from app.candidates.schemas import (
     AnonymousCandidateProfile,
-    CandidateCard,
+    BankCandidateCard,
     CandidateDashboard,
     CandidateProfile,
     CandidateProfileUpdate,
@@ -27,6 +27,7 @@ from app.common.schemas import Page
 from app.core.db import get_session
 from app.core.errors import AppError, error_responses
 from app.core.security import CandidateUser, CurrentUser, RecruiterUser
+from app.matching.service import NeedService
 
 router = APIRouter(prefix="/candidates", tags=["candidates"])
 
@@ -217,14 +218,18 @@ async def declare_grade(body: DeclaredGradeUpdate, user: CandidateUser, session:
 
 @router.get(
     "",
-    response_model=Page[CandidateCard],
+    response_model=Page[BankCandidateCard],
     summary="Банк кандидатов (обезличенно)",
     description=(
         "Поиск по всей базе. В выдаче только кандидаты с грейдом, подтверждённым тестом "
         "(`grade_status = confirmed`; заявленный, но не подтверждённый грейд — не в выдаче), "
-        "согласием на публикацию и без паузы поиска. ФИО и контактов в ответе нет."
+        "согласием на публикацию и без паузы поиска. ФИО и контактов в ответе нет. "
+        "`need_id` — потребность своей компании (чужая → 404): у карточек появляются "
+        "`match_score` и `match_reasons` (та же формула и причины, что в подборке), "
+        "сортировка по умолчанию — `match` (по соответствию). Фильтры работают вместе с ней. "
+        "`sort=match` без `need_id` — 422."
     ),
-    responses=error_responses(*AUTH_ERRORS, 422),
+    responses=error_responses(*AUTH_ERRORS, 404, 422),
 )
 async def search_candidates(
     user: RecruiterUser,
@@ -233,14 +238,42 @@ async def search_candidates(
     grade: GradeCode | None = None,
     category: str | None = Query(default=None, examples=["backend:middle"]),
     skills: Annotated[list[str] | None, Query(description="Все перечисленные навыки")] = None,
-    has_fsp: bool | None = None,
+    has_fsp: Annotated[
+        bool | None,
+        Query(
+            description="true — есть подтверждённые достижения ФСП и кандидат их не скрыл; "
+            "false — остальные"
+        ),
+    ] = None,
     work_format: WorkFormat | None = None,
     city: str | None = None,
-    sort: Annotated[str, Query(pattern="^(theta|fsp|freshness|recent)$")] = "theta",
+    need_id: Annotated[
+        int | None, Query(description="Потребность своей компании: ранжирование под неё")
+    ] = None,
+    sort: Annotated[
+        str | None,
+        Query(
+            pattern="^(match|theta|fsp|freshness|recent)$",
+            description="По умолчанию: `match` с `need_id`, иначе `theta`",
+        ),
+    ] = None,
     page: Annotated[int, Query(ge=1)] = 1,
     page_size: Annotated[int, Query(ge=1, le=100)] = 20,
 ) -> Any:
+    need = None
+    if need_id is not None:
+        if user.company_id is None:
+            raise AppError(404, "not_found", "Компания не найдена")
+        need = await NeedService(session).get_need(need_id, user.company_id)
+    elif sort == "match":
+        raise AppError(
+            422,
+            "validation_error",
+            "Сортировка по соответствию — только с выбранной потребностью",
+            {"fields": {"sort": "Выберите потребность (need_id)"}},
+        )
     return await CandidateProfileService(session).search(
+        need=need,
         specialization=specialization,
         grade=grade,
         category=category,
@@ -248,7 +281,7 @@ async def search_candidates(
         has_fsp=has_fsp,
         work_format=work_format,
         city=city,
-        sort=sort,
+        sort=sort or ("match" if need is not None else "theta"),
         page=page,
         page_size=page_size,
     )
