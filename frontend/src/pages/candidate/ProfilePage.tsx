@@ -11,7 +11,8 @@ import { ResumeUpload } from './components/ResumeUpload'
 import { downloadProfilePdf } from './components/downloadPdf'
 import { GradeConfirmedBadge, UnconfirmedGrade } from './components/GradeStatus'
 import { applyParsedResume, formFromProfile, toUpdate, type ParsedConfidence, type ProfileFormState, type ResumeClaim } from './components/profileFormModel'
-import { ResumeClaimNote, hasClaim, writeResumeClaim } from './components/ResumeClaim'
+import { ResumeClaimNote } from './components/ResumeClaim'
+import { hasClaim, writeResumeClaim } from './components/resumeClaimStore'
 
 export default function ProfilePage() {
   const q = useProfile()

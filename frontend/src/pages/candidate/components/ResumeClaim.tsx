@@ -1,39 +1,13 @@
 import { FileText } from 'lucide-react'
-import { GRADE_LABELS, SPECIALIZATION_LABELS } from '@/shared/config/dictionaries'
-import { readStorage, writeStorage } from '@/shared/lib/storage'
+import { formatPercent } from '@/shared/lib/format'
 import { cn } from '@/shared/lib/cn'
 import type { ResumeClaim } from './profileFormModel'
+import { claimLabel, hasClaim } from './resumeClaimStore'
 
 /**
  * Специализация и грейд «из резюме». Категорию присваивает только тест,
  * поэтому резюме — лишь заявка: «по резюме Senior → тест подтвердил Middle».
  */
-
-const KEY = 'fsp.candidate.resumeClaim'
-
-export function readResumeClaim(): ResumeClaim {
-  try {
-    const raw = readStorage(KEY)
-    return raw ? (JSON.parse(raw) as ResumeClaim) : {}
-  } catch {
-    return {}
-  }
-}
-
-export function writeResumeClaim(claim: ResumeClaim | null): void {
-  writeStorage(KEY, claim && (claim.specialization || claim.grade) ? JSON.stringify(claim) : null)
-}
-
-export const hasClaim = (c: ResumeClaim | null | undefined): c is ResumeClaim => !!c && !!(c.specialization || c.grade)
-
-const percent = (v: number) => `${Math.round(v * 100)} %`
-
-/** Подпись заявленной категории: «Frontend · Senior», «Frontend», «Senior». */
-export function claimLabel(c: ResumeClaim): string {
-  return [c.specialization && SPECIALIZATION_LABELS[c.specialization.value], c.grade && GRADE_LABELS[c.grade.value]]
-    .filter(Boolean)
-    .join(' · ')
-}
 
 /** Плашка «Из резюме: Frontend · Senior — заявлено, подтвердите тестом» с уверенностью распознавания. */
 export function ResumeClaimNote({
@@ -62,7 +36,7 @@ export function ResumeClaimNote({
           <span className="font-semibold">Из резюме: {claimLabel(claim)}</span> — заявлено, подтвердите тестом
         </p>
         <p className="text-[13px] text-muted">
-          Уверенность распознавания: {parts.map((p) => `${p.name} ${percent(p.confidence)}`).join(', ')}.
+          Уверенность распознавания: {parts.map((p) => `${p.name} ${formatPercent(p.confidence)}`).join(', ')}.
           {unsure.length > 0 && (
             <span className="font-medium text-warning"> {unsure.map((p) => p.name).join(' и ')} — неуверенно, проверьте.</span>
           )}{' '}
