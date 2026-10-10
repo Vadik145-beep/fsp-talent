@@ -11,6 +11,7 @@ import { QueryView } from './components/QueryView'
 import { ThetaScale } from './components/ThetaScale'
 import { ONBOARDING_STEPS, writeOnboarding } from './components/onboardingSteps'
 import { claimLabel, hasClaim, readResumeClaim } from './components/ResumeClaim'
+import { PublicationPrompt } from './components/PublicationPrompt'
 import { TOPIC_LEVEL, formatTheta } from './labels'
 
 const linkBtn =
@@ -127,7 +128,11 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
         )}
       </Card>
 
+      {/* Публикация: без явного согласия профиля нет в выдаче (последний шаг онбординга) */}
+      <PublicationPrompt />
+
       {/* Уровень */}
+
       <Card>
         <CardHeader title="Ваш уровень" description="Оценка по модели IRT: чем выше число, тем сложнее задачи вы решаете." />
         <p className="text-2xl font-bold text-ink tabular-nums">

@@ -6,6 +6,7 @@ import { useDashboard } from './api'
 import { QueryView } from './components/QueryView'
 import { FspLinkButton } from './components/FspLinkButton'
 import { GradeConfirmedBadge, TakeTestButton, UnconfirmedGrade } from './components/GradeStatus'
+import { PublicationPrompt } from './components/PublicationPrompt'
 import { formatTheta } from './labels'
 import { PageHeader } from '@/shared/ui'
 
@@ -70,8 +71,11 @@ export default function CandidateDashboardPage() {
               </Card>
             )}
 
+            <PublicationPrompt />
+
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {/* Категория */}
+
               <Card>
                 <CardHeader
                   title={
