@@ -47,10 +47,11 @@ export const RELATION_LABELS: Record<S['CategoryRelation'], string> = {
 }
 
 export const SUBMISSION_STATUS: Record<S['SubmissionStatus'], { label: string; tone: Tone }> = {
-  assigned: { label: 'Ждём ответ', tone: 'neutral' },
+  assigned: { label: 'Предложено', tone: 'neutral' },
   submitted: { label: 'Нужна оценка', tone: 'accent' },
   graded: { label: 'Оценено', tone: 'success' },
   expired: { label: 'Срок истёк', tone: 'warning' },
+  skipped: { label: 'Выбрал другую', tone: 'neutral' },
 }
 
 export const ANSWER_KIND_LABELS: Record<S['AnswerKind'], string> = {

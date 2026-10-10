@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { CalendarClock, ClipboardList, Sparkles } from 'lucide-react'
+import { ArrowLeft, Building2, CalendarClock, ClipboardList, Sparkles } from 'lucide-react'
 import { api, getErrorMessage, isApiError } from '@/shared/api'
 import { formatDate, plural } from '@/shared/lib/format'
 import { cn } from '@/shared/lib/cn'
@@ -15,7 +15,7 @@ export default function TasksPage() {
     <>
       <PageHeader
         title="Задания"
-        description="Раз в неделю — короткая задача от работодателей вашей категории. Ответы держат профиль «свежим» и поднимают вас в подборке."
+        description="Раз в неделю — три задачи от разных компаний вашей категории. Выберите одну и ответьте: ответ держит профиль «свежим» и поднимает вас в подборке."
       />
       <QueryView query={q}>
         {(inbox) => (
@@ -32,14 +32,14 @@ export default function TasksPage() {
                 <ProgressBar className="flex-1" value={Math.round(inbox.freshness * 100)} tone={inbox.freshness >= 0.6 ? 'success' : 'warning'} />
               </div>
             </Card>
-            {inbox.active ? (
-              <ActiveTask task={inbox.active} />
+            {inbox.offers.length ? (
+              <WeekOffers offers={inbox.offers} />
             ) : (
               <Card padding="none">
                 <EmptyState
                   icon={<ClipboardList aria-hidden />}
-                  title="Активного задания нет"
-                  description="Новое придёт в течение недели — мы пришлём уведомление."
+                  title={inbox.answered_this_week ? 'На этой неделе вы уже ответили' : 'Задач пока нет'}
+                  description="Новые задачи придут в понедельник."
                 />
               </Card>
             )}
@@ -66,13 +66,56 @@ export default function TasksPage() {
   )
 }
 
-function ActiveTask({ task }: { task: TaskSubmission }) {
+function daysLeft(due: string, now: number) {
+  return Math.max(0, Math.ceil((new Date(due).getTime() - now) / 86_400_000))
+}
+
+function WeekOffers({ offers }: { offers: TaskSubmission[] }) {
+  const [chosenId, setChosenId] = useState<number | null>(offers.length === 1 ? offers[0].id : null)
+  const [now] = useState(() => Date.now())
+  const chosen = offers.find((o) => o.id === chosenId)
+  if (chosen) return <ActiveTask task={chosen} onBack={offers.length > 1 ? () => setChosenId(null) : undefined} />
+  return (
+    <section aria-labelledby="week-offers">
+      <h2 id="week-offers" className="text-lg font-semibold">
+        Задачи недели
+      </h2>
+      <p className="mt-1 mb-3 text-sm text-muted">
+        Выберите одну и ответьте — остальные уйдут, новые придут в понедельник. Засчитывается один ответ в неделю.
+      </p>
+      <ul className="grid gap-3 md:grid-cols-3">
+        {offers.map((o) => {
+          const left = daysLeft(o.due_at, now)
+          return (
+            <li key={o.id}>
+              <Card className="flex h-full flex-col">
+                <p className="inline-flex items-center gap-1.5 text-sm text-muted">
+                  <Building2 className="size-4 shrink-0" aria-hidden /> {o.company_name}
+                </p>
+                <h3 className="mt-2 font-semibold text-ink">{o.task_title}</h3>
+                <p className="mt-2 line-clamp-4 flex-1 text-sm text-ink">{o.statement}</p>
+                <p className="mt-3 inline-flex items-center gap-1 text-[13px] text-warning">
+                  <CalendarClock className="size-3.5" aria-hidden /> До {formatDate(o.due_at)} · {left} {plural(left, ['день', 'дня', 'дней'])}
+                </p>
+                <Button className="mt-3" variant="secondary" onClick={() => setChosenId(o.id)}>
+                  Выбрать эту
+                </Button>
+              </Card>
+            </li>
+          )
+        })}
+      </ul>
+    </section>
+  )
+}
+
+function ActiveTask({ task, onBack }: { task: TaskSubmission; onBack?: () => void }) {
   const client = useQueryClient()
   const { toast } = useToast()
   const [kind, setKind] = useState<S['AnswerKind']>('approach')
   const [text, setText] = useState('')
   const [now] = useState(() => Date.now())
-  const daysLeft = Math.max(0, Math.ceil((new Date(task.due_at).getTime() - now) / 86_400_000))
+  const left = daysLeft(task.due_at, now)
   const submit = useMutation({
     mutationFn: () => api.post<TaskSubmission>(`/tasks/submissions/${task.id}/answer`, { answer_kind: kind, answer_text: text.trim() }),
     onSuccess: () => {
@@ -85,10 +128,15 @@ function ActiveTask({ task }: { task: TaskSubmission }) {
 
   return (
     <Card padding="lg" className="border-fsp-lavender">
+      {onBack && (
+        <button type="button" onClick={onBack} className="mb-3 inline-flex items-center gap-1 text-sm font-medium text-fsp-plum hover:underline">
+          <ArrowLeft className="size-4" aria-hidden /> Выбрать другую задачу
+        </button>
+      )}
       <div className="flex flex-wrap items-center gap-2">
-        <Badge tone="accent">Задание недели</Badge>
+        <Badge tone="accent">Задача недели</Badge>
         <span className="inline-flex items-center gap-1 text-sm text-warning">
-          <CalendarClock className="size-4" aria-hidden /> До {formatDate(task.due_at)} · {daysLeft} {plural(daysLeft, ['день', 'дня', 'дней'])}
+          <CalendarClock className="size-4" aria-hidden /> До {formatDate(task.due_at)} · {left} {plural(left, ['день', 'дня', 'дней'])}
         </span>
       </div>
       <h2 className="mt-3 text-xl font-bold">{task.task_title}</h2>

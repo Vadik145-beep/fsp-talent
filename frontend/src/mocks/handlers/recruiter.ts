@@ -1448,8 +1448,10 @@ export const recruiterHandlers: HttpHandler[] = [
         created_at: now,
       }
       t.tasks().push(task)
-      // Очередь раздачи: задание сразу получают до 5 кандидатов категории без активного задания.
-      const busy = new Set(t.submissions().filter((s) => s.status === 'assigned').map((s) => s.candidate_id))
+      // Задача сразу попадает в задачи недели до 5 кандидатов категории, у кого их меньше трёх.
+      const offers = new Map<number, number>()
+      for (const s of t.submissions()) if (s.status === 'assigned') offers.set(s.candidate_id, (offers.get(s.candidate_id) ?? 0) + 1)
+      const busy = new Set([...offers].filter(([, n]) => n >= 3).map(([id]) => id))
       for (const c of categoryCandidates(task.category).filter((c) => !busy.has(c.id)).slice(0, 5)) {
         t.submissions().push({
           id: db.nextId('task_submissions'),
@@ -1482,7 +1484,7 @@ export const recruiterHandlers: HttpHandler[] = [
         const order: Record<string, number> = { submitted: 0, graded: 1, assigned: 2, expired: 3 }
         return t
           .submissions()
-          .filter((s) => s.task_id === task.id)
+          .filter((s) => s.task_id === task.id && s.status !== 'skipped')
           .sort((a, b) => order[a.status] - order[b.status] || b.assigned_at.localeCompare(a.assigned_at))
           .map(enrichSubmission)
       },

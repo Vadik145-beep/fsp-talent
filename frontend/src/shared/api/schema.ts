@@ -1446,8 +1446,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Мои задания: активное и история (кандидат)
-         * @description Задания с прошедшим сроком без ответа при открытии становятся «истекло».
+         * Мои задания: задачи недели на выбор и история (кандидат)
+         * @description До трёх задач от разных компаний; кандидат выбирает одну и отвечает. Задачи с прошедшим сроком без ответа при открытии становятся «истекло».
          */
         get: operations["task_inbox_api_tasks_inbox_get"];
         put?: never;
@@ -1469,7 +1469,7 @@ export interface paths {
         put?: never;
         /**
          * Ответить на задание (кандидат)
-         * @description Ответ — текст, код или подход. Свежесть профиля растёт сразу после ответа.
+         * @description Ответ — текст, код или подход. Свежесть профиля растёт сразу после ответа; остальные задачи недели снимаются (статус `skipped`), новые придут в понедельник.
          */
         post: operations["answer_task_api_tasks_submissions__submission_id__answer_post"];
         delete?: never;
@@ -1490,7 +1490,7 @@ export interface paths {
         put?: never;
         /**
          * Создать короткое задание (рекрутер)
-         * @description Задание сразу раздаётся кандидатам категории без активного задания; дальше — планировщиком раз в N дней. `submissions_count` — скольким выдано.
+         * @description Задание сразу попадает в задачи недели кандидатов категории, у кого меньше трёх задач и нет ответа на этой неделе; дальше — планировщиком по понедельникам. `submissions_count` — скольким предложено (без тех, кто выбрал другую задачу).
          */
         post: operations["create_task_api_tasks_post"];
         delete?: never;
@@ -1547,7 +1547,7 @@ export interface paths {
         put?: never;
         /**
          * Раздать задание ещё раз (рекрутер)
-         * @description Выдаёт задание новым кандидатам категории, у которых нет активного задания.
+         * @description Дополняет задачи недели кандидатов категории; `assigned` — скольким предложено именно это задание.
          */
         post: operations["distribute_task_api_tasks__task_id__distribute_post"];
         delete?: never;
@@ -2839,6 +2839,7 @@ export interface components {
          *       "onboarding_completed": true,
          *       "profile_completeness": 85,
          *       "recent_invitations": [],
+         *       "task_offers": [],
          *       "theta": 0.42
          *     }
          */
@@ -2867,7 +2868,13 @@ export interface components {
             new_invitations_count: number;
             /** Recent Invitations */
             recent_invitations: components["schemas"]["DashboardInvitation"][];
+            /** @description Задача недели с ближайшим сроком */
             active_task: components["schemas"]["DashboardTask"] | null;
+            /**
+             * Task Offers
+             * @description Задачи недели на выбор (до трёх, от разных компаний)
+             */
+            task_offers: components["schemas"]["DashboardTask"][];
             /** Profile Completeness */
             profile_completeness: number;
             /** Fsp Linked */
@@ -3567,6 +3574,8 @@ export interface components {
             submission_id: number;
             /** Title */
             title: string;
+            /** Company Name */
+            company_name?: string | null;
             /**
              * Due At
              * Format: date-time
@@ -3653,7 +3662,7 @@ export interface components {
         DistributionResult: {
             /**
              * Assigned
-             * @description Скольким кандидатам выдано задание
+             * @description Скольким кандидатам задание предложено
              */
             assigned: number;
         };
@@ -6357,7 +6366,7 @@ export interface components {
          * SubmissionStatus
          * @enum {string}
          */
-        SubmissionStatus: "assigned" | "submitted" | "graded" | "expired";
+        SubmissionStatus: "assigned" | "submitted" | "graded" | "expired" | "skipped";
         /** SurveyAnswer */
         SurveyAnswer: {
             /** Question Id */
@@ -6511,12 +6520,24 @@ export interface components {
         };
         /**
          * TaskInbox
-         * @description Раздел «Задания» кандидата: активное задание и история.
+         * @description Раздел «Задания» кандидата: задачи недели на выбор и история ответов.
          */
         TaskInbox: {
-            active: components["schemas"]["TaskSubmission"] | null;
-            /** History */
+            /**
+             * Offers
+             * @description Задачи недели на выбор (до трёх, от разных компаний), ближайший срок — первым
+             */
+            offers: components["schemas"]["TaskSubmission"][];
+            /**
+             * History
+             * @description Отправленные и оценённые ответы
+             */
             history: components["schemas"]["TaskSubmission"][];
+            /**
+             * Answered This Week
+             * @description Кандидат уже ответил на этой неделе — новые задачи придут в понедельник
+             */
+            answered_this_week: boolean;
             /** Freshness */
             freshness: number;
         };
@@ -6540,7 +6561,7 @@ export interface components {
             expired: number;
             /**
              * Assigned
-             * @description Сколько заданий выдано
+             * @description Сколько задач предложено кандидатам
              */
             assigned: number;
             /**
@@ -6556,7 +6577,7 @@ export interface components {
         TaskStatus: "active" | "archived";
         /**
          * TaskSubmission
-         * @description Выданное задание и ответ кандидата (запись `task_submissions.json`).
+         * @description Предложенное кандидату задание и его ответ (запись `task_submissions.json`).
          * @example {
          *       "answer_kind": "approach",
          *       "answer_text": "Ключ идемпотентности в заголовке, уникальный индекс в БД, повтор возвращает сохранённый результат.",

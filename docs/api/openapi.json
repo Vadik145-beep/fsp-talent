@@ -11883,8 +11883,8 @@
         "tags": [
           "tasks"
         ],
-        "summary": "Мои задания: активное и история (кандидат)",
-        "description": "Задания с прошедшим сроком без ответа при открытии становятся «истекло».",
+        "summary": "Мои задания: задачи недели на выбор и история (кандидат)",
+        "description": "До трёх задач от разных компаний; кандидат выбирает одну и отвечает. Задачи с прошедшим сроком без ответа при открытии становятся «истекло».",
         "operationId": "task_inbox_api_tasks_inbox_get",
         "security": [
           {
@@ -12019,7 +12019,7 @@
           "tasks"
         ],
         "summary": "Ответить на задание (кандидат)",
-        "description": "Ответ — текст, код или подход. Свежесть профиля растёт сразу после ответа.",
+        "description": "Ответ — текст, код или подход. Свежесть профиля растёт сразу после ответа; остальные задачи недели снимаются (статус `skipped`), новые придут в понедельник.",
         "operationId": "answer_task_api_tasks_submissions__submission_id__answer_post",
         "security": [
           {
@@ -12327,7 +12327,7 @@
           "tasks"
         ],
         "summary": "Создать короткое задание (рекрутер)",
-        "description": "Задание сразу раздаётся кандидатам категории без активного задания; дальше — планировщиком раз в N дней. `submissions_count` — скольким выдано.",
+        "description": "Задание сразу попадает в задачи недели кандидатов категории, у кого меньше трёх задач и нет ответа на этой неделе; дальше — планировщиком по понедельникам. `submissions_count` — скольким предложено (без тех, кто выбрал другую задачу).",
         "operationId": "create_task_api_tasks_post",
         "security": [
           {
@@ -12767,7 +12767,7 @@
           "tasks"
         ],
         "summary": "Раздать задание ещё раз (рекрутер)",
-        "description": "Выдаёт задание новым кандидатам категории, у которых нет активного задания.",
+        "description": "Дополняет задачи недели кандидатов категории; `assigned` — скольким предложено именно это задание.",
         "operationId": "distribute_task_api_tasks__task_id__distribute_post",
         "security": [
           {
@@ -19886,7 +19886,16 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "Задача недели с ближайшим сроком"
+          },
+          "task_offers": {
+            "items": {
+              "$ref": "#/components/schemas/DashboardTask"
+            },
+            "type": "array",
+            "title": "Task Offers",
+            "description": "Задачи недели на выбор (до трёх, от разных компаний)"
           },
           "profile_completeness": {
             "type": "integer",
@@ -19915,6 +19924,7 @@
           "new_invitations_count",
           "recent_invitations",
           "active_task",
+          "task_offers",
           "profile_completeness",
           "fsp_linked",
           "hints"
@@ -19935,6 +19945,7 @@
             "onboarding_completed": true,
             "profile_completeness": 85,
             "recent_invitations": [],
+            "task_offers": [],
             "theta": 0.42
           }
         ]
@@ -21513,6 +21524,17 @@
             "type": "string",
             "title": "Title"
           },
+          "company_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Name"
+          },
           "due_at": {
             "type": "string",
             "format": "date-time",
@@ -21681,7 +21703,7 @@
             "type": "integer",
             "minimum": 0.0,
             "title": "Assigned",
-            "description": "Скольким кандидатам выдано задание"
+            "description": "Скольким кандидатам задание предложено"
           }
         },
         "type": "object",
@@ -27293,7 +27315,8 @@
           "assigned",
           "submitted",
           "graded",
-          "expired"
+          "expired",
+          "skipped"
         ],
         "title": "SubmissionStatus"
       },
@@ -27551,22 +27574,26 @@
       },
       "TaskInbox": {
         "properties": {
-          "active": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/TaskSubmission"
-              },
-              {
-                "type": "null"
-              }
-            ]
+          "offers": {
+            "items": {
+              "$ref": "#/components/schemas/TaskSubmission"
+            },
+            "type": "array",
+            "title": "Offers",
+            "description": "Задачи недели на выбор (до трёх, от разных компаний), ближайший срок — первым"
           },
           "history": {
             "items": {
               "$ref": "#/components/schemas/TaskSubmission"
             },
             "type": "array",
-            "title": "History"
+            "title": "History",
+            "description": "Отправленные и оценённые ответы"
+          },
+          "answered_this_week": {
+            "type": "boolean",
+            "title": "Answered This Week",
+            "description": "Кандидат уже ответил на этой неделе — новые задачи придут в понедельник"
           },
           "freshness": {
             "type": "number",
@@ -27577,12 +27604,13 @@
         },
         "type": "object",
         "required": [
-          "active",
+          "offers",
           "history",
+          "answered_this_week",
           "freshness"
         ],
         "title": "TaskInbox",
-        "description": "Раздел «Задания» кандидата: активное задание и история."
+        "description": "Раздел «Задания» кандидата: задачи недели на выбор и история ответов."
       },
       "TaskJobResult": {
         "properties": {
@@ -27600,7 +27628,7 @@
             "type": "integer",
             "minimum": 0.0,
             "title": "Assigned",
-            "description": "Сколько заданий выдано"
+            "description": "Сколько задач предложено кандидатам"
           },
           "freshness_factor": {
             "type": "number",
@@ -27758,7 +27786,7 @@
           "due_at"
         ],
         "title": "TaskSubmission",
-        "description": "Выданное задание и ответ кандидата (запись `task_submissions.json`).",
+        "description": "Предложенное кандидату задание и его ответ (запись `task_submissions.json`).",
         "examples": [
           {
             "answer_kind": "approach",

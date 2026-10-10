@@ -45,8 +45,11 @@ def _company(user: CurrentUser) -> int:
 @router.get(
     "/inbox",
     response_model=TaskInbox,
-    summary="Мои задания: активное и история (кандидат)",
-    description="Задания с прошедшим сроком без ответа при открытии становятся «истекло».",
+    summary="Мои задания: задачи недели на выбор и история (кандидат)",
+    description=(
+        "До трёх задач от разных компаний; кандидат выбирает одну и отвечает. Задачи с "
+        "прошедшим сроком без ответа при открытии становятся «истекло»."
+    ),
     responses=error_responses(*AUTH, 404),
 )
 async def task_inbox(user: CandidateUser, session: SessionDep) -> Any:
@@ -57,7 +60,10 @@ async def task_inbox(user: CandidateUser, session: SessionDep) -> Any:
     "/submissions/{submission_id}/answer",
     response_model=TaskSubmission,
     summary="Ответить на задание (кандидат)",
-    description="Ответ — текст, код или подход. Свежесть профиля растёт сразу после ответа.",
+    description=(
+        "Ответ — текст, код или подход. Свежесть профиля растёт сразу после ответа; остальные "
+        "задачи недели снимаются (статус `skipped`), новые придут в понедельник."
+    ),
     responses=error_responses(
         *AUTH, 404, TRANSITION, (409, "submission_expired", "Срок ответа истёк"), 422
     ),
@@ -84,8 +90,9 @@ async def list_tasks(user: RecruiterUser, session: SessionDep) -> Any:
     status_code=status.HTTP_201_CREATED,
     summary="Создать короткое задание (рекрутер)",
     description=(
-        "Задание сразу раздаётся кандидатам категории без активного задания; дальше — "
-        "планировщиком раз в N дней. `submissions_count` — скольким выдано."
+        "Задание сразу попадает в задачи недели кандидатов категории, у кого меньше трёх задач "
+        "и нет ответа на этой неделе; дальше — планировщиком по понедельникам. "
+        "`submissions_count` — скольким предложено (без тех, кто выбрал другую задачу)."
     ),
     responses=error_responses(
         *AUTH, BLOCKED, 422, (422, "unknown_category", "Неизвестная категория")
@@ -129,7 +136,10 @@ async def task_submissions(task_id: int, user: RecruiterUser, session: SessionDe
     "/{task_id}/distribute",
     response_model=DistributionResult,
     summary="Раздать задание ещё раз (рекрутер)",
-    description="Выдаёт задание новым кандидатам категории, у которых нет активного задания.",
+    description=(
+        "Дополняет задачи недели кандидатов категории; `assigned` — скольким предложено "
+        "именно это задание."
+    ),
     responses=error_responses(*AUTH, BLOCKED, 404, TRANSITION),
 )
 async def distribute_task(task_id: int, user: RecruiterUser, session: SessionDep) -> Any:

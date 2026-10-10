@@ -1,5 +1,6 @@
-"""Регулярные короткие задания: рекрутер создаёт, система раздаёт, кандидат отвечает,
-рекрутер оценивает 0–3 [ТЗ 2.1, E9]."""
+"""Регулярные короткие задания: рекрутер создаёт, система раз в неделю предлагает кандидату
+до трёх задач от разных компаний, кандидат выбирает одну и отвечает, рекрутер оценивает 0–3
+[ТЗ 2.1, E9]."""
 
 from datetime import datetime
 
@@ -51,7 +52,7 @@ class RegularTask(OutModel):
 
 
 class TaskSubmission(OutModel):
-    """Выданное задание и ответ кандидата (запись `task_submissions.json`)."""
+    """Предложенное кандидату задание и его ответ (запись `task_submissions.json`)."""
 
     model_config = ConfigDict(json_schema_extra=fixtures.first_example("task_submissions"))
 
@@ -79,10 +80,15 @@ class TaskSubmissionForRecruiter(TaskSubmission):
 
 
 class TaskInbox(OutModel):
-    """Раздел «Задания» кандидата: активное задание и история."""
+    """Раздел «Задания» кандидата: задачи недели на выбор и история ответов."""
 
-    active: TaskSubmission | None
-    history: list[TaskSubmission]
+    offers: list[TaskSubmission] = Field(
+        description="Задачи недели на выбор (до трёх, от разных компаний), ближайший срок — первым"
+    )
+    history: list[TaskSubmission] = Field(description="Отправленные и оценённые ответы")
+    answered_this_week: bool = Field(
+        description="Кандидат уже ответил на этой неделе — новые задачи придут в понедельник"
+    )
     freshness: float = Field(ge=0, le=1)
 
 
@@ -116,7 +122,7 @@ class DistributionResult(OutModel):
 
     model_config = ConfigDict(json_schema_extra={"examples": [{"assigned": 3}]})
 
-    assigned: int = Field(ge=0, description="Скольким кандидатам выдано задание")
+    assigned: int = Field(ge=0, description="Скольким кандидатам задание предложено")
 
 
 class TaskJobResult(OutModel):
@@ -130,5 +136,5 @@ class TaskJobResult(OutModel):
 
     job: str
     expired: int = Field(ge=0, description="Сколько заданий просрочено")
-    assigned: int = Field(ge=0, description="Сколько заданий выдано")
+    assigned: int = Field(ge=0, description="Сколько задач предложено кандидатам")
     freshness_factor: float = Field(ge=0, le=1, description="Множитель свежести профилей")

@@ -187,10 +187,11 @@ class TaskStatus(StrEnum):
 
 
 class SubmissionStatus(StrEnum):
-    assigned = "assigned"
+    assigned = "assigned"  # предложено кандидату на этой неделе, ответа ещё нет
     submitted = "submitted"
     graded = "graded"
     expired = "expired"
+    skipped = "skipped"  # кандидат выбрал другую задачу из предложенных
 
 
 class AnswerKind(StrEnum):

@@ -248,10 +248,14 @@ def test_vacancies_and_applications(client: TestClient) -> None:
 
 
 def test_tasks(client: TestClient) -> None:
+    # сроки фикстур — реальные даты: недельная раздача гарантирует свежие задачи
+    # (кандидатам на паузе задачи не раздаются — снимаем паузу из test_candidates_own_cabinet)
+    client.put("/api/candidates/me/settings/job-search", json={"paused": False}, headers=CANDIDATE)
+    client.post("/api/tasks/jobs/run", params={"job": "distribute"}, headers=ADMIN)
     inbox = client.get("/api/tasks/inbox", headers=CANDIDATE).json()
-    assert inbox["active"] is not None
+    assert inbox["offers"]
     answer = client.post(
-        f"/api/tasks/submissions/{inbox['active']['id']}/answer",
+        f"/api/tasks/submissions/{inbox['offers'][0]['id']}/answer",
         json={"answer_kind": "text", "answer_text": "Мой подход"},
         headers=CANDIDATE,
     )

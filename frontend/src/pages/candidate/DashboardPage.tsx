@@ -144,7 +144,7 @@ export default function CandidateDashboardPage() {
                 <CardHeader
                   title={
                     <span className="inline-flex items-center gap-2">
-                      <ClipboardList className="size-5 text-fsp-plum" aria-hidden /> Задание недели
+                      <ClipboardList className="size-5 text-fsp-plum" aria-hidden /> Задачи недели
                     </span>
                   }
                   actions={
@@ -153,19 +153,29 @@ export default function CandidateDashboardPage() {
                     </Link>
                   }
                 />
-                {d.active_task ? (
+                {d.task_offers.length ? (
                   <div>
-                    <p className="text-lg font-semibold text-ink">{d.active_task.title}</p>
-                    <p className="mt-1 text-sm text-muted">Ответить до {formatDate(d.active_task.due_at)}</p>
+                    <p className="text-sm text-muted">
+                      {d.task_offers.length > 1 ? `Выберите одну из ${d.task_offers.length} и ответьте` : 'Ответьте на задачу'} до{' '}
+                      {formatDate(d.task_offers[0].due_at)}
+                    </p>
+                    <ul className="mt-2 grid gap-1.5">
+                      {d.task_offers.map((t) => (
+                        <li key={t.submission_id} className="text-[15px]">
+                          <span className="font-semibold text-ink">{t.title}</span>
+                          {t.company_name && <span className="text-muted"> · {t.company_name}</span>}
+                        </li>
+                      ))}
+                    </ul>
                     <Link
                       to="/candidate/tasks"
                       className="mt-4 inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-semibold text-white hover:bg-primary-hover"
                     >
-                      Ответить
+                      {d.task_offers.length > 1 ? 'Выбрать и ответить' : 'Ответить'}
                     </Link>
                   </div>
                 ) : (
-                  <p className="text-[15px] text-muted">Активного задания нет. Новое придёт в течение недели.</p>
+                  <p className="text-[15px] text-muted">Задач пока нет. Новые придут в понедельник.</p>
                 )}
               </Card>
 
