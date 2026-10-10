@@ -48,8 +48,11 @@ export function Tabs({ items, value, onChange, variant = 'underline', className,
         aria-label={ariaLabel}
         onKeyDown={onKeyDown}
         className={cn(
-          'flex overflow-x-auto',
-          variant === 'underline' ? 'gap-1 border-b border-line' : 'inline-flex gap-1 rounded-md bg-neutral-soft p-1',
+          'flex',
+          // на телефоне вкладки страницы переносятся на вторую строку, а не прячутся за край
+          variant === 'underline'
+            ? 'flex-wrap gap-x-1 border-b border-line sm:flex-nowrap sm:overflow-x-auto'
+            : 'inline-flex max-w-full gap-1 overflow-x-auto rounded-md bg-neutral-soft p-1',
         )}
       >
         {items.map((item, i) => {

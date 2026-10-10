@@ -101,7 +101,7 @@ export default function RecruiterVacanciesPage() {
           }
         >
           {(data) => (
-            <Table caption="Вакансии" columns={columns} rows={data} rowKey={(v) => v.id} onRowClick={(v) => navigate(`/recruiter/vacancies/${v.id}`)} />
+            <Table mobileCards caption="Вакансии" columns={columns} rows={data} rowKey={(v) => v.id} onRowClick={(v) => navigate(`/recruiter/vacancies/${v.id}`)} />
           )}
         </QueryState>
       ) : (

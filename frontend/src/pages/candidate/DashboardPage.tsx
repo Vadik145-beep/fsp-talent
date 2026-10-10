@@ -128,8 +128,8 @@ export default function CandidateDashboardPage() {
                           className="flex items-center justify-between gap-3 rounded-md px-2 py-2 hover:bg-violet-soft"
                         >
                           <span className="min-w-0">
-                            <span className="block truncate font-semibold text-ink">{inv.company_name}</span>
-                            <span className="block truncate text-sm text-muted tabular-nums">{formatSalaryRange(inv.salary_from, inv.salary_to)}</span>
+                            <span className="block font-semibold break-words text-ink">{inv.company_name}</span>
+                            <span className="block text-sm text-muted tabular-nums">{formatSalaryRange(inv.salary_from, inv.salary_to)}</span>
                           </span>
                           <span className="shrink-0">
                             <StatusPill status={inv.status} />

@@ -200,7 +200,7 @@ export default function RecruiterNeedNewPage() {
               key={ex}
               type="button"
               onClick={() => setText(ex)}
-              className="max-w-full truncate rounded-full border border-line px-3 py-1 text-left text-[13px] text-fsp-plum hover:border-fsp-lavender hover:bg-violet-soft"
+              className="max-w-full rounded-2xl border border-line px-3 py-1 text-left text-[13px] text-fsp-plum hover:border-fsp-lavender hover:bg-violet-soft sm:truncate sm:rounded-full"
             >
               {ex}
             </button>

@@ -156,9 +156,9 @@ export default function RecruiterCandidatePage() {
               <h4 className="mb-2 text-sm font-semibold">История тестов</h4>
               <ul className="flex flex-col gap-1 text-sm">
                 {p.test_history!.map((h) => (
-                  <li key={h.date} className="flex justify-between gap-3">
-                    <span>{categoryLabel(h.category)}</span>
-                    <span className="text-muted tabular-nums">
+                  <li key={h.date} className="flex flex-wrap justify-between gap-x-3 gap-y-0.5">
+                    <span className="whitespace-nowrap">{categoryLabel(h.category)}</span>
+                    <span className="whitespace-nowrap text-muted tabular-nums">
                       θ {h.theta.toFixed(2).replace('.', ',')} · {formatDate(h.date)}
                     </span>
                   </li>

@@ -147,6 +147,7 @@ export default function RecruiterInvitationsPage() {
                 ))}
               </div>
               <Table
+                mobileCards
                 caption="Приглашения"
                 columns={columns}
                 rows={statusFilter ? data.filter((i) => i.status === statusFilter) : data}
@@ -157,7 +158,7 @@ export default function RecruiterInvitationsPage() {
             </>
           ) : (
             <div className="-mx-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0" data-testid="invitations-board">
-              <div className="grid min-w-[1080px] grid-cols-6 gap-3">
+              <div className="grid w-max grid-cols-[repeat(6,15rem)] gap-3 xl:w-auto xl:min-w-[1080px] xl:grid-cols-6">
                 {INVITATION_STATUSES.map((s) => {
                   const items = data.filter((i) => i.status === s)
                   return (

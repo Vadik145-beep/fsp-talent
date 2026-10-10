@@ -114,7 +114,7 @@ function GradeView({ g }: { g: GradeStatus }) {
         <GradeHistory g={g} />
         <div>
           <h2 className="mb-3 text-lg font-semibold">Тесты</h2>
-          <Table columns={testColumns} rows={g.tests} rowKey={(s) => s.id} empty={<EmptyState compact title="Тестов пока не было" />} caption="Мои тесты" />
+          <Table mobileCards columns={testColumns} rows={g.tests} rowKey={(s) => s.id} empty={<EmptyState compact title="Тестов пока не было" />} caption="Мои тесты" />
         </div>
       </div>
     )
@@ -194,7 +194,7 @@ function GradeView({ g }: { g: GradeStatus }) {
 
       <div>
         <h2 className="mb-3 text-lg font-semibold">Тесты</h2>
-        <Table columns={testColumns} rows={g.tests} rowKey={(s) => s.id} empty={<EmptyState compact title="Тестов пока не было" />} caption="Мои тесты" />
+        <Table mobileCards columns={testColumns} rows={g.tests} rowKey={(s) => s.id} empty={<EmptyState compact title="Тестов пока не было" />} caption="Мои тесты" />
       </div>
 
       <Modal
