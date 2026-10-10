@@ -55,7 +55,7 @@ describe('обезличенный профиль', () => {
   })
 
   it('в банке кандидатов и в подборке тоже нет ФИО и контактов', async () => {
-    const page = await api.get<S['Page_CandidateCard_']>('/candidates', { query: { page_size: 100 } })
+    const page = await api.get<S['Page_BankCandidateCard_']>('/candidates', { query: { page_size: 100 } })
     const matches = await api.get<MatchList>('/matching/needs/1/candidates')
     const raw = JSON.stringify(page) + JSON.stringify(matches)
     for (const v of Object.values(SECRET)) expect(raw).not.toContain(v)

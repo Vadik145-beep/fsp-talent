@@ -262,15 +262,50 @@ class CandidateProfileService:
 
     # ---------- банк кандидатов (рекрутер) ----------
 
-    async def search(self, *, page: int = 1, page_size: int = 20, **filters: Any) -> dict[str, Any]:
-        ids, total = await self.db.search_ids(page=page, page_size=page_size, **filters)
-        records = await self.db.records(ids)
-        return {
-            "items": [to_card(records[i]) for i in ids if i in records],
-            "total": total,
-            "page": page,
-            "page_size": page_size,
-        }
+    async def search(
+        self,
+        *,
+        page: int = 1,
+        page_size: int = 20,
+        sort: str = "theta",
+        need: Record | None = None,
+        **filters: Any,
+    ) -> dict[str, Any]:
+        """Банк кандидатов. С потребностью (`need`) у карточек есть счёт соответствия и
+        причины — та же формула, что в подборке; `sort="match"` — по убыванию счёта."""
+        page_info = {"page": page, "page_size": page_size}
+        if need is None:
+            ids, total = await self.db.search_ids(
+                page=page, page_size=page_size, sort=sort, **filters
+            )
+            records = await self.db.records(ids)
+            items = [to_card(records[i]) for i in ids if i in records]
+            return {"items": items, "total": total, **page_info}
+
+        # без цикла импортов: подборка (matching) сама использует карточки отсюда
+        from app.matching.service import BANK_REASONS, NeedService
+
+        if sort == "match":
+            all_ids, total = await self.db.search_ids(
+                page=1, page_size=None, sort="theta", **filters
+            )
+            pool, scores = await NeedService(self.session).score(need, all_ids)
+            ranked = sorted(all_ids, key=lambda i: (-scores[i]["score"], i))
+            ids = ranked[(page - 1) * page_size : page * page_size]
+        else:
+            ids, total = await self.db.search_ids(
+                page=page, page_size=page_size, sort=sort, **filters
+            )
+            pool, scores = await NeedService(self.session).score(need, ids)
+        items = []
+        for cid in ids:
+            if cid not in pool:
+                continue
+            card = to_card(pool[cid])
+            card["match_score"] = scores[cid]["score"]
+            card["match_reasons"] = scores[cid]["reasons"][:BANK_REASONS]
+            items.append(card)
+        return {"items": items, "total": total, **page_info}
 
     async def anonymous_profile(self, candidate_id: int, company_id: int) -> dict[str, Any]:
         cand = await self.db.record(candidate_id)

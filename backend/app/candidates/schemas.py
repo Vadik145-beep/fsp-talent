@@ -289,6 +289,20 @@ class CandidateCard(OutModel):
     freshness: float
 
 
+class BankCandidateCard(CandidateCard):
+    """Карточка банка кандидатов. С `need_id` — соответствие потребности, как в подборке."""
+
+    match_score: float | None = Field(
+        default=None,
+        description="Соответствие потребности 0..1 (тот же счёт, что в подборке); "
+        "null — потребность не выбрана",
+    )
+    match_reasons: list[str] = Field(
+        default_factory=list,
+        description="1–3 короткие причины «почему подходит» (те же, что в подборке)",
+    )
+
+
 class TestHistoryPoint(OutModel):
     date: date
     category: str

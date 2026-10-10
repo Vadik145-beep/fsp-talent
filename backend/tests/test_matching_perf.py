@@ -114,6 +114,9 @@ def test_synthetic_loaded(client: TestClient) -> None:
         {"grade": "middle", "skills": ["python", "postgresql"], "sort": "freshness"},
         {"category": "backend:middle", "has_fsp": False, "page": 3, "page_size": 50},
         {"skills": ["kafka"], "work_format": "remote", "city": "Казань", "sort": "recent"},
+        # под потребность: счёт как в подборке по всей выдаче (~1000), сортировка по нему
+        {"need_id": 1},
+        {"need_id": 1, "specialization": "backend", "has_fsp": False, "page": 2},
     ],
 )
 def test_bank_search_under_500ms(client: TestClient, params: dict[str, Any]) -> None:

@@ -263,8 +263,12 @@ class CandidateDb:
         city: str | None,
         sort: str,
         page: int,
-        page_size: int,
+        page_size: int | None,
     ) -> tuple[list[int], int]:
+        """Кандидаты банка по фильтрам: id страницы и общее число.
+
+        `page_size=None` — все id без страниц (для сортировки по соответствию потребности,
+        которая считается в Python той же формулой, что подборка)."""
         cp = CandidateProfile
         conditions = searchable_conditions()
         if specialization:
@@ -298,7 +302,9 @@ class CandidateDb:
             "recent": [cp.last_test_at.desc().nulls_last()],
         }
         order = orders.get(sort, orders["theta"])
-        stmt = base.order_by(*order, cp.id).offset((page - 1) * page_size).limit(page_size)
+        stmt = base.order_by(*order, cp.id)
+        if page_size is not None:
+            stmt = stmt.offset((page - 1) * page_size).limit(page_size)
         ids = list((await self.session.scalars(stmt)).all())
         return ids, total
 

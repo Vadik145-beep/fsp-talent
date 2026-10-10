@@ -3530,7 +3530,7 @@
           "candidates"
         ],
         "summary": "Банк кандидатов (обезличенно)",
-        "description": "Поиск по всей базе. В выдаче только кандидаты с грейдом, подтверждённым тестом (`grade_status = confirmed`; заявленный, но не подтверждённый грейд — не в выдаче), согласием на публикацию и без паузы поиска. ФИО и контактов в ответе нет.",
+        "description": "Поиск по всей базе. В выдаче только кандидаты с грейдом, подтверждённым тестом (`grade_status = confirmed`; заявленный, но не подтверждённый грейд — не в выдаче), согласием на публикацию и без паузы поиска. ФИО и контактов в ответе нет. `need_id` — потребность своей компании (чужая → 404): у карточек появляются `match_score` и `match_reasons` (та же формула и причины, что в подборке), сортировка по умолчанию — `match` (по соответствию). Фильтры работают вместе с ней. `sort=match` без `need_id` — 422.",
         "operationId": "search_candidates_api_candidates_get",
         "security": [
           {
@@ -3623,8 +3623,10 @@
                   "type": "null"
                 }
               ],
+              "description": "true — есть подтверждённые достижения ФСП и кандидат их не скрыл; false — остальные",
               "title": "Has Fsp"
-            }
+            },
+            "description": "true — есть подтверждённые достижения ФСП и кандидат их не скрыл; false — остальные"
           },
           {
             "name": "work_format",
@@ -3659,15 +3661,41 @@
             }
           },
           {
+            "name": "need_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Потребность своей компании: ранжирование под неё",
+              "title": "Need Id"
+            },
+            "description": "Потребность своей компании: ранжирование под неё"
+          },
+          {
             "name": "sort",
             "in": "query",
             "required": false,
             "schema": {
-              "type": "string",
-              "pattern": "^(theta|fsp|freshness|recent)$",
-              "default": "theta",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^(match|theta|fsp|freshness|recent)$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "По умолчанию: `match` с `need_id`, иначе `theta`",
               "title": "Sort"
-            }
+            },
+            "description": "По умолчанию: `match` с `need_id`, иначе `theta`"
           },
           {
             "name": "page",
@@ -3735,7 +3763,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Page_CandidateCard_"
+                  "$ref": "#/components/schemas/Page_BankCandidateCard_"
                 }
               }
             }
@@ -3770,6 +3798,26 @@
                     "value": {
                       "code": "forbidden",
                       "message": "Недостаточно прав",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`not_found` — Объект не найден",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Объект не найден",
+                    "value": {
+                      "code": "not_found",
+                      "message": "Объект не найден",
                       "details": {}
                     }
                   }
@@ -8642,8 +8690,10 @@
                   "type": "null"
                 }
               ],
+              "description": "true — есть подтверждённые достижения ФСП и кандидат их не скрыл; false — остальные",
               "title": "Has Fsp"
-            }
+            },
+            "description": "true — есть подтверждённые достижения ФСП и кандидат их не скрыл; false — остальные"
           },
           {
             "name": "work_format",
@@ -18686,7 +18736,7 @@
           "has_fsp": {
             "type": "boolean",
             "title": "Has Fsp",
-            "description": "Привязан ли ФСП ID (без самого ID)"
+            "description": "Есть подтверждённые достижения ФСП и кандидат их не скрыл (без ФСП ID)"
           },
           "fsp_score": {
             "anyOf": [
@@ -19461,6 +19511,238 @@
           }
         ]
       },
+      "BankCandidateCard": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "pseudonym": {
+            "type": "string",
+            "title": "Pseudonym"
+          },
+          "specialization": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SpecializationCode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "grade": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GradeCode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "category_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Label"
+          },
+          "theta": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Theta"
+          },
+          "stack": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Stack"
+          },
+          "work_formats": {
+            "items": {
+              "$ref": "#/components/schemas/WorkFormat"
+            },
+            "type": "array",
+            "title": "Work Formats"
+          },
+          "roles_in_team": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Roles In Team"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City",
+            "description": "null, если кандидат скрыл"
+          },
+          "experience_years": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Experience Years",
+            "description": "null, если скрыт"
+          },
+          "links": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ProfileLink"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Links",
+            "description": "null, если скрыты"
+          },
+          "has_fsp": {
+            "type": "boolean",
+            "title": "Has Fsp",
+            "description": "Есть подтверждённые достижения ФСП и кандидат их не скрыл (без ФСП ID)"
+          },
+          "fsp_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fsp Score"
+          },
+          "fsp_badges": {
+            "items": {
+              "$ref": "#/components/schemas/FspBadge"
+            },
+            "type": "array",
+            "title": "Fsp Badges"
+          },
+          "topic_scores": {
+            "items": {
+              "$ref": "#/components/schemas/TopicScore"
+            },
+            "type": "array",
+            "title": "Topic Scores"
+          },
+          "freshness": {
+            "type": "number",
+            "title": "Freshness"
+          },
+          "match_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Match Score",
+            "description": "Соответствие потребности 0..1 (тот же счёт, что в подборке); null — потребность не выбрана"
+          },
+          "match_reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Match Reasons",
+            "description": "1–3 короткие причины «почему подходит» (те же, что в подборке)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "pseudonym",
+          "specialization",
+          "grade",
+          "category",
+          "category_label",
+          "theta",
+          "stack",
+          "work_formats",
+          "roles_in_team",
+          "has_fsp",
+          "freshness"
+        ],
+        "title": "BankCandidateCard",
+        "description": "Карточка банка кандидатов. С `need_id` — соответствие потребности, как в подборке.",
+        "examples": [
+          {
+            "category": "backend:middle",
+            "category_label": "Backend · Middle",
+            "city": "Казань",
+            "experience_years": 3.5,
+            "freshness": 0.7,
+            "fsp_badges": [
+              {
+                "id": "national_prize",
+                "level": "national",
+                "title": "Призёр всероссийского соревнования",
+                "verified": true
+              }
+            ],
+            "fsp_score": 61.5,
+            "grade": "middle",
+            "has_fsp": true,
+            "id": 1,
+            "pseudonym": "Кандидат #A7F2",
+            "roles_in_team": [
+              "Разработчик"
+            ],
+            "specialization": "backend",
+            "stack": [
+              "python",
+              "fastapi",
+              "postgresql"
+            ],
+            "theta": 0.42,
+            "topic_scores": [],
+            "work_formats": [
+              "remote"
+            ]
+          }
+        ]
+      },
       "Body_evaluate_matching_api_eval_matching_post": {
         "properties": {
           "file": {
@@ -19650,7 +19932,7 @@
           "has_fsp": {
             "type": "boolean",
             "title": "Has Fsp",
-            "description": "Привязан ли ФСП ID (без самого ID)"
+            "description": "Есть подтверждённые достижения ФСП и кандидат их не скрыл (без ФСП ID)"
           },
           "fsp_score": {
             "anyOf": [
@@ -25469,11 +25751,11 @@
         ],
         "title": "Page[AuditEntry]"
       },
-      "Page_CandidateCard_": {
+      "Page_BankCandidateCard_": {
         "properties": {
           "items": {
             "items": {
-              "$ref": "#/components/schemas/CandidateCard"
+              "$ref": "#/components/schemas/BankCandidateCard"
             },
             "type": "array",
             "title": "Items"
@@ -25503,7 +25785,7 @@
           "page",
           "page_size"
         ],
-        "title": "Page[CandidateCard]"
+        "title": "Page[BankCandidateCard]"
       },
       "Page_ItemSummary_": {
         "properties": {

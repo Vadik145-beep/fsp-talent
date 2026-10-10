@@ -596,7 +596,7 @@ export interface paths {
         };
         /**
          * Банк кандидатов (обезличенно)
-         * @description Поиск по всей базе. В выдаче только кандидаты с грейдом, подтверждённым тестом (`grade_status = confirmed`; заявленный, но не подтверждённый грейд — не в выдаче), согласием на публикацию и без паузы поиска. ФИО и контактов в ответе нет.
+         * @description Поиск по всей базе. В выдаче только кандидаты с грейдом, подтверждённым тестом (`grade_status = confirmed`; заявленный, но не подтверждённый грейд — не в выдаче), согласием на публикацию и без паузы поиска. ФИО и контактов в ответе нет. `need_id` — потребность своей компании (чужая → 404): у карточек появляются `match_score` и `match_reasons` (та же формула и причины, что в подборке), сортировка по умолчанию — `match` (по соответствию). Фильтры работают вместе с ней. `sort=match` без `need_id` — 422.
          */
         get: operations["search_candidates_api_candidates_get"];
         put?: never;
@@ -2357,7 +2357,7 @@ export interface components {
             links?: components["schemas"]["ProfileLink"][] | null;
             /**
              * Has Fsp
-             * @description Привязан ли ФСП ID (без самого ID)
+             * @description Есть подтверждённые достижения ФСП и кандидат их не скрыл (без ФСП ID)
              */
             has_fsp: boolean;
             /** Fsp Score */
@@ -2691,6 +2691,102 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /**
+         * BankCandidateCard
+         * @description Карточка банка кандидатов. С `need_id` — соответствие потребности, как в подборке.
+         * @example {
+         *       "category": "backend:middle",
+         *       "category_label": "Backend · Middle",
+         *       "city": "Казань",
+         *       "experience_years": 3.5,
+         *       "freshness": 0.7,
+         *       "fsp_badges": [
+         *         {
+         *           "id": "national_prize",
+         *           "level": "national",
+         *           "title": "Призёр всероссийского соревнования",
+         *           "verified": true
+         *         }
+         *       ],
+         *       "fsp_score": 61.5,
+         *       "grade": "middle",
+         *       "has_fsp": true,
+         *       "id": 1,
+         *       "pseudonym": "Кандидат #A7F2",
+         *       "roles_in_team": [
+         *         "Разработчик"
+         *       ],
+         *       "specialization": "backend",
+         *       "stack": [
+         *         "python",
+         *         "fastapi",
+         *         "postgresql"
+         *       ],
+         *       "theta": 0.42,
+         *       "topic_scores": [],
+         *       "work_formats": [
+         *         "remote"
+         *       ]
+         *     }
+         */
+        BankCandidateCard: {
+            /** Id */
+            id: number;
+            /** Pseudonym */
+            pseudonym: string;
+            specialization: components["schemas"]["SpecializationCode"] | null;
+            grade: components["schemas"]["GradeCode"] | null;
+            /** Category */
+            category: string | null;
+            /** Category Label */
+            category_label: string | null;
+            /** Theta */
+            theta: number | null;
+            /** Stack */
+            stack: string[];
+            /** Work Formats */
+            work_formats: components["schemas"]["WorkFormat"][];
+            /** Roles In Team */
+            roles_in_team: string[];
+            /**
+             * City
+             * @description null, если кандидат скрыл
+             */
+            city?: string | null;
+            /**
+             * Experience Years
+             * @description null, если скрыт
+             */
+            experience_years?: number | null;
+            /**
+             * Links
+             * @description null, если скрыты
+             */
+            links?: components["schemas"]["ProfileLink"][] | null;
+            /**
+             * Has Fsp
+             * @description Есть подтверждённые достижения ФСП и кандидат их не скрыл (без ФСП ID)
+             */
+            has_fsp: boolean;
+            /** Fsp Score */
+            fsp_score?: number | null;
+            /** Fsp Badges */
+            fsp_badges?: components["schemas"]["FspBadge"][];
+            /** Topic Scores */
+            topic_scores?: components["schemas"]["TopicScore"][];
+            /** Freshness */
+            freshness: number;
+            /**
+             * Match Score
+             * @description Соответствие потребности 0..1 (тот же счёт, что в подборке); null — потребность не выбрана
+             */
+            match_score?: number | null;
+            /**
+             * Match Reasons
+             * @description 1–3 короткие причины «почему подходит» (те же, что в подборке)
+             */
+            match_reasons?: string[];
+        };
         /** Body_evaluate_matching_api_eval_matching_post */
         Body_evaluate_matching_api_eval_matching_post: {
             /**
@@ -2797,7 +2893,7 @@ export interface components {
             links?: components["schemas"]["ProfileLink"][] | null;
             /**
              * Has Fsp
-             * @description Привязан ли ФСП ID (без самого ID)
+             * @description Есть подтверждённые достижения ФСП и кандидат их не скрыл (без ФСП ID)
              */
             has_fsp: boolean;
             /** Fsp Score */
@@ -5471,10 +5567,10 @@ export interface components {
             /** Page Size */
             page_size: number;
         };
-        /** Page[CandidateCard] */
-        Page_CandidateCard_: {
+        /** Page[BankCandidateCard] */
+        Page_BankCandidateCard_: {
             /** Items */
-            items: components["schemas"]["CandidateCard"][];
+            items: components["schemas"]["BankCandidateCard"][];
             /**
              * Total
              * @description Сколько всего записей с учётом фильтров
@@ -9228,10 +9324,14 @@ export interface operations {
                 category?: string | null;
                 /** @description Все перечисленные навыки */
                 skills?: string[] | null;
+                /** @description true — есть подтверждённые достижения ФСП и кандидат их не скрыл; false — остальные */
                 has_fsp?: boolean | null;
                 work_format?: components["schemas"]["WorkFormat"] | null;
                 city?: string | null;
-                sort?: string;
+                /** @description Потребность своей компании: ранжирование под неё */
+                need_id?: number | null;
+                /** @description По умолчанию: `match` с `need_id`, иначе `theta` */
+                sort?: string | null;
                 page?: number;
                 page_size?: number;
             };
@@ -9252,7 +9352,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Page_CandidateCard_"];
+                    "application/json": components["schemas"]["Page_BankCandidateCard_"];
                 };
             };
             /** @description `unauthorized` — Требуется вход */
@@ -9266,6 +9366,15 @@ export interface operations {
             };
             /** @description `forbidden` — Недостаточно прав */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` — Объект не найден */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -11334,6 +11443,7 @@ export interface operations {
             query?: {
                 category?: string | null;
                 skills?: string[] | null;
+                /** @description true — есть подтверждённые достижения ФСП и кандидат их не скрыл; false — остальные */
                 has_fsp?: boolean | null;
                 work_format?: components["schemas"]["WorkFormat"] | null;
                 city?: string | null;

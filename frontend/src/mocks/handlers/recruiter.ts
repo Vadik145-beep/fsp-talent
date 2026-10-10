@@ -1032,9 +1032,12 @@ export const recruiterHandlers: HttpHandler[] = [
   // --- Банк кандидатов и обезличенный профиль ---
   http.get(
     '/api/candidates',
-    recruiterGet<S['Page_CandidateCard_']>(
-      (_ctx, { request }) => {
+    recruiterGet<S['Page_BankCandidateCard_']>(
+      (ctx, { request }) => {
         const p = new URL(request.url).searchParams
+        const needId = num(p.get('need_id'))
+        const need = needId != null ? findOwnNeed(needId, ctx) : null
+        if (needId != null && !need) return notFound('Потребность не найдена') as never
         const spec = p.get('specialization')
         const grade = p.get('grade')
         const category = p.get('category')
@@ -1042,12 +1045,13 @@ export const recruiterHandlers: HttpHandler[] = [
         const hasFsp = bool(p.get('has_fsp'))
         const format = p.get('work_format')
         const city = p.get('city')
-        const sort = p.get('sort') ?? 'theta'
+        const sort = p.get('sort') ?? (need ? 'match' : 'theta')
         const page = Math.max(1, num(p.get('page')) ?? 1)
         const pageSize = Math.min(100, Math.max(1, num(p.get('page_size')) ?? 20))
-        if (sort && !['theta', 'fsp', 'freshness', 'recent'].includes(sort)) {
+        if (sort && !['match', 'theta', 'fsp', 'freshness', 'recent'].includes(sort)) {
           return validationError({ sort: 'Неизвестная сортировка' }) as never
         }
+        if (sort === 'match' && !need) return validationError({ sort: 'Выберите потребность (need_id)' }) as never
         const rows = t.candidates().filter((c) => {
           if (!isVisible(c)) return false
           if (spec && c.specialization !== spec) return false
@@ -1061,7 +1065,10 @@ export const recruiterHandlers: HttpHandler[] = [
           if (city && (!c.privacy.show_city || c.city !== city)) return false
           return true
         })
+        // под потребность — тот же счёт и причины, что в подборке
+        const matched = new Map(need ? rows.map((c) => [c.id, scoreCandidate(c, need)] as const) : [])
         const key = (c: CandidateRow): number => {
+          if (sort === 'match') return matched.get(c.id)?.score ?? 0
           if (sort === 'fsp') return c.fsp_id && c.privacy.show_fsp_achievements ? (c.fsp_score ?? 0) : -1
           if (sort === 'freshness') return c.freshness
           if (sort === 'recent') return c.last_test_at ? Date.parse(c.last_test_at) : 0
@@ -1069,7 +1076,10 @@ export const recruiterHandlers: HttpHandler[] = [
         }
         rows.sort((a, b) => key(b) - key(a) || a.id - b.id)
         return {
-          items: rows.slice((page - 1) * pageSize, page * pageSize).map(toCandidateCard),
+          items: rows.slice((page - 1) * pageSize, page * pageSize).map((c) => {
+            const m = matched.get(c.id)
+            return { ...toCandidateCard(c), match_score: m?.score ?? null, match_reasons: m ? m.reasons.slice(0, 3) : [] }
+          }),
           total: rows.length,
           page,
           page_size: pageSize,
