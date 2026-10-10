@@ -260,6 +260,40 @@ def test_abandoned_session_expires_and_counts_as_attempt(client: TestClient) -> 
     assert retry.status_code == 409 and retry.json()["code"] == "cooldown_active"
 
 
+def _session_codes(session_id: int) -> list[str]:
+    rows = sql_sync(
+        "SELECT i.code FROM test_answers ta JOIN items i ON i.id = ta.item_id"
+        " WHERE ta.session_id = :s ORDER BY ta.position",
+        {"s": session_id},
+    )
+    return [r[0] for r in rows]
+
+
+def test_retake_gives_past_templates_last(client: TestClient) -> None:
+    """Пересдача: шаблоны прошлых попыток кандидата — в последнюю очередь, тест полный."""
+    first = start(client, CAND_40, "backend", "middle")
+    run_to_end(client, CAND_40, first, right=False)
+    sid1 = first["session"]["id"]
+    codes1 = _session_codes(sid1)
+    # кулдаун повтора истёк
+    sql_sync(
+        "UPDATE test_sessions SET started_at = started_at - interval '40 days',"
+        " finished_at = finished_at - interval '40 days' WHERE id = :s",
+        {"s": sid1},
+    )
+    second = start(client, CAND_40, "backend", "middle")
+    sid2 = second["session"]["id"]
+    state = sql_sync("SELECT engine_state FROM test_sessions WHERE id = :s", {"s": sid2})[0][0]
+    assert sorted(state["config"]["avoid_ids"]) == sorted(set(codes1))
+    shown = run_to_end(client, CAND_40, second, right=False)
+    codes2 = _session_codes(sid2)
+    assert len(shown) == len(codes1)  # длина теста та же, тест не оборвался
+    # доля общих шаблонов на рабочем банке проверяет движок (test_engine_cat); здесь —
+    # что сервер передал прошлые задачи и новые шаблоны действительно выдаются
+    assert set(codes2) - set(codes1)
+    assert len(set(codes1) & set(codes2)) < len(set(codes1))
+
+
 def test_pilot_item_does_not_change_theta(client: TestClient) -> None:
     # один шаблон backend делаем пилотным: движок вставит его в 1–2 позиции из первых шести
     client.get("/api/admin/items", headers=ADMIN)  # синхронизация банка после пересева

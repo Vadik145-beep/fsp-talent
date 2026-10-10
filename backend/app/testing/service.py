@@ -7,6 +7,8 @@
   непрозрачный `instance_id` для клиента. Клиенту уходит только публичная часть варианта;
 - ответ проверяет сервер; время = сейчас − время выдачи; после лимита ответ неверный;
 - пилотные задачи не влияют на θ (это делает движок);
+- при пересдаче шаблоны из прошлых попыток кандидата по этой специализации движок выдаёт
+  в последнюю очередь (`avoid_ids`): сначала новые для кандидата, повтор — с новым seed;
 - если на текущую задачу нет ответа дольше лимита + `abandon_after_min`, сессия брошена:
   текущая задача засчитывается неверной, сессия закрывается без смены грейда.
 """
@@ -224,8 +226,24 @@ class TestingDbService:
             state["cat"],
             config=self._config(cfg),
             exposure_rates=cfg.get("exposure_rates") or None,
+            avoid_ids=cfg.get("avoid_ids") or (),
         )
         return cat, by_code
+
+    async def _past_item_codes(self, candidate_id: int, specialization: str) -> list[str]:
+        """Шаблоны, которые кандидат уже видел в прошлых сессиях этой специализации."""
+        rows = await self.session.scalars(
+            select(Item.code)
+            .join(TestAnswer, TestAnswer.item_id == Item.id)
+            .join(TestSession, TestSession.id == TestAnswer.session_id)
+            .where(
+                TestSession.candidate_id == candidate_id,
+                TestSession.specialization == specialization,
+            )
+            .distinct()
+            .order_by(Item.code)
+        )
+        return list(rows.all())
 
     async def _pending(self, ts: TestSession) -> TestAnswer | None:
         pending: TestAnswer | None = await self.session.scalar(
@@ -431,12 +449,16 @@ class TestingDbService:
         if active >= self.settings.exposure_min_bank:
             cfg["max_exposure_rate"] = float(platform.get("exposure_max_share", 0.25))
             cfg["exposure_rates"] = await journal.exposure_rates(self.session, spec)
+        # пересдача: прошлые задачи кандидата — в последнюю очередь (не запрет)
+        if past := await self._past_item_codes(candidate_id, spec):
+            cfg["avoid_ids"] = past
         cat = CATSession(
             ItemBank(self._bank_item(i) for i in items),
             target,
             config=self._config(cfg),
             seed=secrets.randbelow(2**31),
             exposure_rates=cfg.get("exposure_rates"),
+            avoid_ids=cfg.get("avoid_ids") or (),
         )
         ts = TestSession(
             candidate_id=candidate_id,

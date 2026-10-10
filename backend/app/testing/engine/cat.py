@@ -2,12 +2,17 @@
 
 Как выбирается следующая задача:
 1. Текущая оценка θ — EAP по уже данным проверочным ответам; априор — по заявленному грейду.
-2. Из доступных задач убираются: уже показанные, исключённые вызывающим кодом (например,
-   из прошлых попыток), задачи с превышенной долей показов (контроль экспозиции) и темы,
+2. Из доступных задач убираются: уже показанные, жёстко исключённые вызывающим кодом
+   (`exclude_ids`), задачи с превышенной долей показов (контроль экспозиции) и темы,
    которых в тесте уже слишком много (баланс тем).
 3. Каждой задаче считается информация Фишера в текущей θ, поделённая на (1 + k·штраф),
    где k — сколько задач этой темы уже было.
-4. Берётся случайная задача из топ-5 по этой величине (randomesque): у двух кандидатов
+4. Прошлые задачи — в последнюю очередь (`avoid_ids`, например шаблоны из прошлых попыток
+   кандидата): если среди новых для кандидата задач есть достаточно информативные
+   (не меньше `repeat_info_ratio` от лучшей), выбор идёт только среди них; иначе — среди
+   всех, и прошлая задача выдаётся заново (с новыми параметрами генератора). Это
+   предпочтение, а не запрет: тест не обрывается раньше, даже если банк маленький.
+5. Берётся случайная задача из топ-5 по этой величине (randomesque): у двух кандидатов
    с одинаковыми ответами наборы задач всё равно расходятся.
 
 В 1–2 заранее выбранные позиции (в первых min_items показах) вставляются пилотные
@@ -115,6 +120,9 @@ class CATConfig:
     max_exposure_rate: float = 0.25  # задача не выдаётся, если её показали > 25% сессий
     max_topic_share: float = 0.34  # не больше ~трети теста из одной темы
     topic_penalty: float = 0.1  # мягкий штраф за повтор темы
+    # прошлые задачи кандидата (avoid_ids) уступают новым, если у новых информация
+    # не ниже этой доли от лучшей доступной; иначе выбираются наравне
+    repeat_info_ratio: float = 0.25
     pilot_min: int = 1
     pilot_max: int = 2
     time_limit_s: float = 180.0  # если у задачи свой лимит не задан
@@ -128,6 +136,8 @@ class CATConfig:
             raise ValueError("Нужно 0 ≤ pilot_min ≤ pilot_max < min_items")
         if self.top_k < 1:
             raise ValueError("top_k ≥ 1")
+        if not 0 <= self.repeat_info_ratio <= 1:
+            raise ValueError("Нужно 0 ≤ repeat_info_ratio ≤ 1")
 
     @property
     def max_per_topic(self) -> int:
@@ -243,6 +253,7 @@ class CATSession:
         seed: int = 0,
         exposure_rates: Mapping[str, float] | None = None,
         exclude_ids: Iterable[str] = (),
+        avoid_ids: Iterable[str] = (),
         state: SessionState | None = None,
     ) -> None:
         self.bank = bank if isinstance(bank, ItemBank) else ItemBank(bank)
@@ -254,6 +265,8 @@ class CATSession:
             [float(rates.get(i.item_id, 0.0)) for i in self.bank.items], dtype=np.float64
         )
         self._excluded = frozenset(exclude_ids)
+        avoid = frozenset(avoid_ids)
+        self._avoid = np.array([i.item_id in avoid for i in self.bank.items], dtype=bool)
         if state is None:
             state = SessionState(
                 claimed_grade=claimed_grade, seed=int(seed), pilot_slots=self._plan_pilots(seed)
@@ -271,6 +284,7 @@ class CATSession:
         config: CATConfig | None = None,
         exposure_rates: Mapping[str, float] | None = None,
         exclude_ids: Iterable[str] = (),
+        avoid_ids: Iterable[str] = (),
     ) -> CATSession:
         """Восстановить сессию из сохранённого состояния (например, из JSON в БД)."""
         st = state if isinstance(state, SessionState) else SessionState.from_dict(state)
@@ -281,6 +295,7 @@ class CATSession:
             seed=st.seed,
             exposure_rates=exposure_rates,
             exclude_ids=exclude_ids,
+            avoid_ids=avoid_ids,
             state=st,
         )
 
@@ -408,8 +423,9 @@ class CATSession:
         cands = [n for n in np.flatnonzero(bank.pilot) if bank.items[n].item_id not in used]
         if not cands:
             return None
-        # реже показанные пилотные — вперёд: так калибровка набирает ответы равномерно
-        cands.sort(key=lambda n: self._exposure[n])
+        # новые для кандидата и реже показанные пилотные — вперёд: так калибровка набирает
+        # ответы равномерно, а прошлые задачи кандидата идут в последнюю очередь
+        cands.sort(key=lambda n: (bool(self._avoid[n]), self._exposure[n]))
         return bank.items[rng.choice(cands[:3])]
 
     def _select_scored(self, used: set[str], rng: random.Random) -> BankItem | None:
@@ -434,6 +450,13 @@ class CATSession:
             mask = by_topic
         theta = self.estimate().theta
         score = information(theta, bank.a, bank.b) / (1.0 + cfg.topic_penalty * topic_counts)
+        fresh = mask & ~self._avoid
+        if fresh.any() and (fresh != mask).any():
+            # прошлые задачи — в последнюю очередь: только если новых подходящих не осталось
+            best = float(score[mask].max())
+            good_fresh = fresh & (score >= cfg.repeat_info_ratio * best)
+            if good_fresh.any():
+                mask = good_fresh
         cands = np.flatnonzero(mask)
         top = cands[np.argsort(-score[cands], kind="stable")[: cfg.top_k]]
         return bank.items[int(top[rng.randrange(len(top))])]
