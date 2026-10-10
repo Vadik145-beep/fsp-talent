@@ -12,7 +12,7 @@ def client() -> TestClient:
 def test_health(client):
     r = client.get("/health")
     assert r.status_code == 200
-    assert r.json() == {"status": "ok", "participants": 40, "synthetic": True}
+    assert r.json() == {"status": "ok", "participants": 120, "synthetic": True}
 
 
 def test_participant_with_history(client):
@@ -27,11 +27,11 @@ def test_participant_with_history(client):
 
 
 def test_all_ids_ranges(client):
-    for n in range(1, 41):
+    for n in [*range(1, 41), *range(101, 181)]:
         fsp_id = f"FSP-{n:06d}"
         body = client.get(f"/participants/{fsp_id}/achievements").json()
         assert body["fsp_id"] == fsp_id
-        if n <= 30:
+        if n <= 30 or n > 100:
             assert body["has_history"] is True and body["total"] >= 1, fsp_id
         else:
             assert body["has_history"] is False
