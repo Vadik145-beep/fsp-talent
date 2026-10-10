@@ -219,12 +219,12 @@ def test_bank_filters_and_sort(client: TestClient) -> None:
 
 def test_dashboard_from_db(client: TestClient) -> None:
     dashboard = client.get("/api/candidates/me/dashboard", headers=CANDIDATE).json()
-    active = [
+    unread = [
         i
         for i in fixtures.load("invitations")
-        if i["candidate_id"] == 1 and i["status"] in ("sent", "viewed")
+        if i["candidate_id"] == 1 and i["status"] == "sent"
     ]
-    assert dashboard["new_invitations_count"] == len(active)
+    assert dashboard["new_invitations_count"] == len(unread)
     assert (
         dashboard["profile_completeness"]
         == fixtures.by_id("candidates", 1)[  # type: ignore[index]

@@ -20,7 +20,12 @@ from app.candidates.repository import CandidateDb, CandidateRepository, session_
 from app.candidates.schemas import CandidateProfileUpdate, PrivacySettings
 from app.catalog.clock import as_msk, now_msk
 from app.catalog.repository import CatalogDb
-from app.common.enums import ACTIVE_INVITATION_STATUSES, ConsentType, GradeStatusCode
+from app.common.enums import (
+    ACTIVE_INVITATION_STATUSES,
+    ConsentType,
+    GradeStatusCode,
+    InvitationStatus,
+)
 from app.common.fixtures import Record
 from app.core.errors import AppError, not_found
 from app.core.security import CurrentUser
@@ -143,7 +148,8 @@ class CandidateProfileService:
     async def dashboard(self, candidate_id: int) -> dict[str, Any]:
         cand = await self.get_or_404(candidate_id)
         invitations = await self.db.invitations(candidate_id)
-        new = [i for i in invitations if i["status"] in ACTIVE_INVITATION_STATUSES]
+        # «Новые» — только непрочитанные: просмотренные и отвеченные бейдж не считает.
+        new = [i for i in invitations if i["status"] == InvitationStatus.sent]
         hints: list[str] = []
         if not cand.get("fsp_id"):
             hints.append(
