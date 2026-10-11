@@ -13,7 +13,7 @@ import type { NavItem } from '@/shared/config/nav'
 export const recruiterNav: NavItem[] = [
   { to: '/recruiter', label: 'Главная', icon: LayoutDashboard, end: true },
   { to: '/recruiter/company', label: 'Компания', icon: Building },
-  { to: '/recruiter/needs', label: 'Поиск кандидатов', icon: Target },
+  { to: '/recruiter/needs', label: 'Потребности', icon: Target },
   { to: '/recruiter/candidates', label: 'Банк кандидатов', icon: Users },
   { to: '/recruiter/invitations', label: 'Приглашения', icon: Mail },
   { to: '/recruiter/vacancies', label: 'Вакансии', icon: Briefcase },

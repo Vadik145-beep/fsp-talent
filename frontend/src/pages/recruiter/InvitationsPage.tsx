@@ -133,10 +133,10 @@ export default function RecruiterInvitationsPage() {
             <EmptyState
               icon={<Mail aria-hidden />}
               title="Приглашений пока нет"
-              description="Откройте подборку по поиску или банк кандидатов и пригласите первого."
+              description="Откройте подборку по потребности или банк кандидатов и пригласите первого."
               action={
                 <Link to="/recruiter/needs" className="font-semibold text-fsp-plum hover:underline">
-                  К поиску кандидатов
+                  К потребностям
                 </Link>
               }
             />

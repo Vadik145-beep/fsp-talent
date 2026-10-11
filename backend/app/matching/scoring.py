@@ -180,7 +180,7 @@ def score_candidate(
     if len(top) < 2:
         top.append(f"Категория по тесту: {cand.get('category_label') or '—'}")
     if len(top) < 2:
-        top.append("Подходит по категории поиска")
+        top.append("Подходит по категории потребности")
     return {
         "score": score,
         "breakdown": breakdown,

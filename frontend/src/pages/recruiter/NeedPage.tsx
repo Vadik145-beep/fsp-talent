@@ -104,7 +104,7 @@ export default function RecruiterNeedPage() {
   if (need.isError) {
     return (
       <>
-        <PageHeader title="Подборка" back={{ to: '/recruiter/needs', label: 'Поиск кандидатов' }} />
+        <PageHeader title="Подборка" back={{ to: '/recruiter/needs', label: 'Потребности' }} />
         <QueryState query={need}>{() => null}</QueryState>
       </>
     )
@@ -116,7 +116,7 @@ export default function RecruiterNeedPage() {
     <>
       <PageHeader
         title={n.title}
-        back={{ to: '/recruiter/needs', label: 'Поиск кандидатов' }}
+        back={{ to: '/recruiter/needs', label: 'Потребности' }}
         meta={
           <>
             <Badge tone="violet">{n.category_label}</Badge>
@@ -195,7 +195,7 @@ export default function RecruiterNeedPage() {
           </Card>
 
           <Card padding="sm" className="hidden lg:block">
-            <h2 className="mb-2 text-sm font-semibold">Кого ищем</h2>
+            <h2 className="mb-2 text-sm font-semibold">Потребность</h2>
             <dl className="flex flex-col gap-2 text-sm">
               <div>
                 <dt className="text-xs text-muted">Обязательный стек</dt>

@@ -105,7 +105,7 @@ export default function RecruiterCandidatesPage() {
     // выбор потребности по умолчанию зависит от списка потребностей — ждём его и подстановки в адрес
     enabled: !needs.isPending && !defaultNeed,
   })
-  const needOptions = [{ value: NO_NEED, label: 'Без поиска' }, ...needList.map((n) => ({ value: String(n.id), label: needLabel(n) }))]
+  const needOptions = [{ value: NO_NEED, label: 'Без потребности' }, ...needList.map((n) => ({ value: String(n.id), label: needLabel(n) }))]
 
   function update(mut: (p: URLSearchParams) => void, resetPage = true) {
     const next = new URLSearchParams(sp)
@@ -142,12 +142,12 @@ export default function RecruiterCandidatesPage() {
       }
     >
       <Select
-        label="Под поиск"
+        label="Под потребность"
         containerClassName="sm:w-[26rem]"
         value={need ? String(need.id) : NO_NEED}
         options={needOptions}
         disabled={needs.isPending}
-        title={need ? needLabel(need) : 'Без поиска'}
+        title={need ? needLabel(need) : 'Без потребности'}
         data-testid="bank-need"
         onChange={(e) =>
           update((p) => {
@@ -226,7 +226,7 @@ export default function RecruiterCandidatesPage() {
     <>
       <PageHeader
         title="Банк кандидатов"
-        description="Вся база в обезличенном виде. Категория присвоена по тесту, бейдж ФСП — подтверждённые достижения. Выберите поиск — кандидаты встанут по соответствию ему."
+        description="Вся база в обезличенном виде. Категория присвоена по тесту, бейдж ФСП — подтверждённые достижения. Выберите потребность — кандидаты встанут по соответствию ей."
       />
       {desktop ? (
         filters
@@ -243,7 +243,7 @@ export default function RecruiterCandidatesPage() {
               <SlidersHorizontal className="size-4 text-fsp-plum" aria-hidden />
               Фильтры{activeCount > 0 ? ` · ${activeCount}` : ''}
             </span>
-            <span className="min-w-0 truncate text-[13px] font-normal text-muted">{need ? need.title : 'Без поиска'}</span>
+            <span className="min-w-0 truncate text-[13px] font-normal text-muted">{need ? need.title : 'Без потребности'}</span>
           </button>
           {filtersOpen && (
             <div id="bank-filters" className="border-t border-line p-3">
@@ -277,7 +277,7 @@ export default function RecruiterCandidatesPage() {
           <>
             <p className="mb-3 text-sm" aria-live="polite" data-testid="bank-total">
               Найдено <b>{d.total}</b> {plural(d.total, ['кандидат', 'кандидата', 'кандидатов'])}
-              {need && <> · соответствие поиску «{need.title}»</>}
+              {need && <> · соответствие потребности «{need.title}»</>}
             </p>
             <ul className={cn('grid grid-cols-1 gap-3 md:grid-cols-2', bank.isPlaceholderData && 'opacity-60')}>
               {d.items.map((c) => {

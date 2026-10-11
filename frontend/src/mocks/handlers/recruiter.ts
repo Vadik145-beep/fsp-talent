@@ -1051,7 +1051,7 @@ export const recruiterHandlers: HttpHandler[] = [
         if (sort && !['match', 'theta', 'fsp', 'freshness', 'recent'].includes(sort)) {
           return validationError({ sort: 'Неизвестная сортировка' }) as never
         }
-        if (sort === 'match' && !need) return validationError({ sort: 'Выберите поиск (need_id)' }) as never
+        if (sort === 'match' && !need) return validationError({ sort: 'Выберите потребность (need_id)' }) as never
         const rows = t.candidates().filter((c) => {
           if (!isVisible(c)) return false
           if (spec && c.specialization !== spec) return false
