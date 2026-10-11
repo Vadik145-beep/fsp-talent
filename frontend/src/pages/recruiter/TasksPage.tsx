@@ -124,21 +124,20 @@ function TaskSubmissions({ task }: { task: RegularTask }) {
 function SubmissionCard({ sub }: { sub: TaskSubmission }) {
   const qc = useQueryClient()
   const { toast } = useToast()
-  const [editing, setEditing] = useState(false)
   const [score, setScore] = useState<number | null>(sub.score ?? null)
   const [comment, setComment] = useState(sub.grader_comment ?? '')
   const grade = useMutation({
     mutationFn: (body: S['SubmissionGrade']) => api.post<TaskSubmission>(`/tasks/submissions/${sub.id}/grade`, body),
     onSuccess: (s) => {
       toast({ tone: 'success', title: `Оценка ${s.score} — ${SCORE_LABELS[s.score ?? 0]}`, description: 'Свежесть профиля кандидата обновлена.' })
-      setEditing(false)
       upsertInList(qc, rk.submissions(s.task_id), s)
       void refreshRecruiter(qc, rk.submissions(s.task_id))
     },
     onError: (e) => toast({ tone: 'error', title: 'Не удалось оценить', description: getErrorMessage(e) }),
   })
   const st = SUBMISSION_STATUS[sub.status]
-  const canGrade = sub.status === 'submitted' || (sub.status === 'graded' && editing)
+  // оценка ставится один раз: после неё изменить нельзя
+  const canGrade = sub.status === 'submitted'
   return (
     <Card padding="sm" className="flex flex-col gap-3" data-testid="submission">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -159,17 +158,14 @@ function SubmissionCard({ sub }: { sub: TaskSubmission }) {
           {sub.status === 'expired' ? 'Кандидат не ответил в срок.' : `Ждём ответ до ${formatDate(sub.due_at)}`}
         </p>
       )}
-      {sub.status === 'graded' && !editing && (
-        <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+      {sub.status === 'graded' && (
+        <div className="text-sm">
           <span>
             <b>
               Оценка {sub.score} из 3 — {SCORE_LABELS[sub.score ?? 0]}
             </b>
             {sub.grader_comment && <span className="text-muted"> · {sub.grader_comment}</span>}
           </span>
-          <Button size="sm" variant="ghost" onClick={() => setEditing(true)}>
-            Изменить оценку
-          </Button>
         </div>
       )}
       {canGrade && (

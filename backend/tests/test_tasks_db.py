@@ -223,18 +223,15 @@ def test_create_distribute_answer_grade(client: TestClient) -> None:
     assert g["status"] == "graded" and g["score"] == 3 and g["grader_comment"] == "Чётко"
     assert freshness(cid) == pytest.approx(min(1.0, mid + 0.04 + 0.09), abs=1e-3)
     assert g["candidate"]["freshness"] == pytest.approx(freshness(cid), abs=1e-3)
-    # переоценка меняет свежесть на разницу баллов
+    # оценку изменить нельзя: 409, балл и свежесть прежние
     after3 = freshness(cid)
-    client.post(
+    again = client.post(
         f"/api/tasks/submissions/{active['id']}/grade", json={"score": 1}, headers=RECRUITER
     )
-    assert freshness(cid) == pytest.approx(after3 - 0.06, abs=1e-3)
-    bad = client.post(
-        f"/api/tasks/submissions/{active['id']}/grade", json={"score": 4}, headers=RECRUITER
-    )
-    assert bad.status_code == 422
+    assert again.status_code == 409 and again.json()["code"] == "already_graded"
+    assert freshness(cid) == pytest.approx(after3, abs=1e-3)
     history = client.get("/api/tasks/inbox", headers=headers).json()
-    assert history["offers"] == [] and history["history"][0]["score"] == 1
+    assert history["offers"] == [] and history["history"][0]["score"] == 3
     assert history["answered_this_week"] is True
 
 

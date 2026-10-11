@@ -1510,7 +1510,10 @@ export const recruiterHandlers: HttpHandler[] = [
       const s = t.submissions().find((x) => x.id === idParam(params.submission_id))
       const task = s && t.tasks().find((x) => x.id === s.task_id)
       if (!s || !task || task.company_id !== ctx.company.id) return notFound('Ответ не найден')
-      if (s.status !== 'submitted' && s.status !== 'graded') {
+      if (s.status === 'graded') {
+        return apiError(409, 'already_graded', 'Оценка уже выставлена — изменить её нельзя', { score: s.score })
+      }
+      if (s.status !== 'submitted') {
         return apiError(409, 'invalid_transition', 'Оценить можно только присланный ответ.', { status: s.status })
       }
       const body = await readJson<S['SubmissionGrade']>(request)
@@ -1518,14 +1521,13 @@ export const recruiterHandlers: HttpHandler[] = [
         return validationError({ score: 'Оценка — целое число от 0 до 3' })
       }
       if (body.comment && body.comment.length > 1000) return validationError({ comment: 'Комментарий — до 1000 символов' })
-      const firstGrade = s.status === 'submitted'
       s.score = body.score
       s.grader_comment = body.comment?.trim() || null
       s.graded_at = db.now()
       s.status = 'graded'
       // Оценённое задание освежает профиль (T9.3) — видно в «почему в подборке».
       const c = t.candidates().find((x) => x.id === s.candidate_id)
-      if (c && firstGrade) c.freshness = round2(Math.min(1, c.freshness + 0.04 + 0.03 * body.score))
+      if (c) c.freshness = round2(Math.min(1, c.freshness + 0.04 + 0.03 * body.score))
       db.save()
       return HttpResponse.json(enrichSubmission(s))
     }),

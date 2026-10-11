@@ -151,8 +151,13 @@ async def distribute_task(task_id: int, user: RecruiterUser, session: SessionDep
     "/submissions/{submission_id}/grade",
     response_model=TaskSubmissionForRecruiter,
     summary="Оценить ответ 0–3 (рекрутер)",
-    description="Первая оценка поднимает свежесть профиля кандидата: +0,04 + 0,03 × балл.",
-    responses=error_responses(*AUTH, 404, TRANSITION, 422),
+    description=(
+        "Оценка ставится один раз и поднимает свежесть профиля кандидата: +0,04 + 0,03 × балл. "
+        "Повторная оценка — 409 `already_graded`."
+    ),
+    responses=error_responses(
+        *AUTH, 404, TRANSITION, (409, "already_graded", "Оценка уже выставлена"), 422
+    ),
 )
 async def grade_submission(
     submission_id: int, body: SubmissionGrade, user: RecruiterUser, session: SessionDep

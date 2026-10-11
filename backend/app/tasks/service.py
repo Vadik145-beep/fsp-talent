@@ -289,7 +289,14 @@ class TaskService:
         task = await self.session.get(RegularTask, sub.task_id) if sub else None
         if sub is None or task is None or task.company_id != user.company_id:
             raise not_found("task_submission", submission_id)
-        if sub.status not in (S.submitted, S.graded):
+        if sub.status == S.graded:
+            raise AppError(
+                409,
+                "already_graded",
+                "Оценка уже выставлена — изменить её нельзя",
+                {"score": sub.score},
+            )
+        if sub.status != S.submitted:
             raise AppError(
                 409,
                 "invalid_transition",
@@ -297,10 +304,7 @@ class TaskService:
                 {"status": sub.status},
             )
         cfg = self.settings
-        if sub.status == S.submitted:
-            delta = cfg.freshness_grade_base + cfg.freshness_grade_per_point * body.score
-        else:  # переоценка: свежесть меняется на разницу баллов
-            delta = cfg.freshness_grade_per_point * (body.score - (sub.score or 0))
+        delta = cfg.freshness_grade_base + cfg.freshness_grade_per_point * body.score
         sub.status = S.graded.value
         sub.score = body.score
         sub.grader_comment = (body.comment or "").strip() or None
