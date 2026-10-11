@@ -67,7 +67,8 @@ export function PublicationPrompt({ className, preview = true }: { className?: s
 
   return (
     <Card className={cn('border-warning/40', className)} data-testid="publication-off">
-      <div className={cn('grid grid-cols-1 items-start gap-5', preview && 'lg:grid-cols-[minmax(0,1fr)_20rem]')}>
+      {/* Превью под текстом, а не колонкой справа: высокое превью рядом с коротким текстом оставляло слева пустоту */}
+      <div className="grid grid-cols-1 items-start gap-5">
         <div className="flex gap-3">
           <span className="hidden size-10 shrink-0 items-center justify-center rounded-lg bg-warning-soft text-warning sm:flex">
             <EyeOff className="size-5" aria-hidden />
