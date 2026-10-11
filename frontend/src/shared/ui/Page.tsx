@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from 'react'
-import { Link } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router'
 import { ArrowLeft, ChevronLeft, ChevronRight, Construction, Search, X } from 'lucide-react'
 import { cn } from '@/shared/lib/cn'
 import { APP_NAME } from '@/shared/config/env'
@@ -18,7 +18,7 @@ export interface PageHeaderProps {
   description?: ReactNode
   /** Кнопки справа: «Создать», «Скачать PDF»… */
   actions?: ReactNode
-  /** Ссылка «назад» над заголовком. */
+  /** Ссылка «назад» над заголовком: возвращает на прошлую страницу сайта, `to` — если пришли по прямой ссылке. */
   back?: { to: string; label?: string }
   breadcrumbs?: Crumb[]
   /** Доп. элементы рядом с заголовком (бейджи, статус). */
@@ -28,6 +28,9 @@ export interface PageHeaderProps {
 
 /** Заголовок экрана. Заодно ставит document.title. */
 export function PageHeader({ title, description, actions, back, breadcrumbs, meta, className }: PageHeaderProps) {
+  const navigate = useNavigate()
+  // key 'default' — страницу открыли первой (прямая ссылка, обновление): прошлой страницы сайта нет
+  const hasHistory = useLocation().key !== 'default'
   useEffect(() => {
     document.title = `${title} · ${APP_NAME}`
   }, [title])
@@ -37,10 +40,15 @@ export function PageHeader({ title, description, actions, back, breadcrumbs, met
       {back && (
         <Link
           to={back.to}
+          onClick={(e) => {
+            if (!hasHistory || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
+            e.preventDefault()
+            void navigate(-1)
+          }}
           className="mb-2 inline-flex items-center gap-1 text-sm font-medium text-muted hover:text-primary"
         >
           <ArrowLeft className="size-4" aria-hidden />
-          {back.label ?? 'Назад'}
+          {hasHistory ? 'Назад' : (back.label ?? 'Назад')}
         </Link>
       )}
       {breadcrumbs && breadcrumbs.length > 0 && (
