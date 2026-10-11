@@ -483,7 +483,8 @@ def test_accept_measured_when_grade_exists(client: TestClient) -> None:
     sid = _failed_placement(client, CAND_26, "backend")
     res = client.get(f"/api/testing/sessions/{sid}/result", headers=CAND_26).json()
     assert res["measured_grade"] == "intern" and not res["can_accept_measured"]
-    assert client.get("/api/candidates/me/dashboard", headers=CAND_26).json()["measured_offer"] is None
+    dash = client.get("/api/candidates/me/dashboard", headers=CAND_26).json()
+    assert dash["measured_offer"] is None
     r = _accept(client, CAND_26, sid)
     assert r.status_code == 409 and r.json()["code"] == "grade_already_confirmed"
     profile = client.get("/api/candidates/me/profile", headers=CAND_26).json()

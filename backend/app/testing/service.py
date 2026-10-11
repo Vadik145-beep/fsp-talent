@@ -943,7 +943,8 @@ class TestingDbService:
             message = keep_grade_reason(ts.target_grade, kept, days)
         measured = await self._measured_grade(ts)
         accepted = bool(state.get("measured_accepted"))
-        can_accept = await self._can_accept_measured(ts, measured, await self._profile(candidate_id))
+        profile = await self._profile(candidate_id)
+        can_accept = await self._can_accept_measured(ts, measured, profile)
         if accepted:
             # категория по уровню теста уже взята: тест ниже не нужен, повтор целевого — позже
             grade = await CandidateProfileService(self.session).grade(candidate_id)
