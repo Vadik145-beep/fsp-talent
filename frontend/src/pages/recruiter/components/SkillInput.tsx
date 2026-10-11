@@ -13,7 +13,7 @@ export interface SkillInputProps {
   className?: string
 }
 
-/** Выбор стека: показывает подписи справочника, хранит коды. */
+/** Выбор стека: показывает подписи справочника, хранит коды; Enter узнаёт сленг («постгрес»). */
 export function SkillInput({ value, onChange, label, hint, placeholder, id, className }: SkillInputProps) {
   const skills = useSkills()
   return (
@@ -25,6 +25,7 @@ export function SkillInput({ value, onChange, label, hint, placeholder, id, clas
       value={value.map(skills.label)}
       options={skills.list.map((s) => s.label)}
       allowCustom={false}
+      resolve={skills.resolve}
       onChange={(labels) => onChange(labels.map(skills.idOf))}
       className={className}
     />

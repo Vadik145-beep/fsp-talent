@@ -11,6 +11,7 @@ export const recruiterRoutes: RouteObject[] = [
   { path: 'needs', ...lazyPage(() => import('./NeedsPage')) },
   { path: 'needs/new', ...lazyPage(() => import('./NeedNewPage')) },
   { path: 'needs/:id', ...lazyPage(() => import('./NeedPage')) },
+  { path: 'needs/:id/edit', ...lazyPage(() => import('./NeedNewPage')) },
   { path: 'candidates', ...lazyPage(() => import('./CandidatesPage')) },
   { path: 'candidates/:id', ...lazyPage(() => import('./CandidatePage')) },
   { path: 'invitations', ...lazyPage(() => import('./InvitationsPage')) },

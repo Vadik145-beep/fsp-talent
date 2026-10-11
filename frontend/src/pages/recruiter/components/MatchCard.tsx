@@ -2,6 +2,7 @@ import { Link } from 'react-router'
 import { CircleCheck, Send, TriangleAlert } from 'lucide-react'
 import { Badge, Button, Card, Pseudonym, ScoreBar, StatusPill } from '@/shared/ui'
 import { formatPercent } from '@/shared/lib/format'
+import { useMediaQuery } from '@/shared/lib/useMediaQuery'
 import type { InvitationStatus } from '@/shared/config/dictionaries'
 import { pseudonymCodeOf, type MatchedCandidate } from '../api'
 import { WORK_FORMAT_LABELS, yearsText } from '../labels'
@@ -25,6 +26,24 @@ export function MatchCard({ match, rank, highlight, profileHref, onInvite }: Mat
   const meta = [c.city, c.experience_years != null ? `опыт ${yearsText(c.experience_years)}` : null].filter(Boolean).join(' · ')
   const status = match.invitation_status as InvitationStatus | null | undefined
   const invited = Boolean(status && ACTIVE.includes(status))
+  // на телефоне разбивка счёта свёрнута: иначе подборка растягивается на десятки экранов
+  const wide = useMediaQuery('(min-width: 768px)')
+  const bars = (
+    <div className="flex flex-col gap-2">
+      {match.breakdown.map((b) => (
+        <ScoreBar
+          key={b.factor}
+          label={
+            <>
+              {b.label} <span className="font-normal text-subtle">· вес {formatPercent(b.weight)}</span>
+            </>
+          }
+          value={b.value}
+          contribution={b.contribution}
+        />
+      ))}
+    </div>
+  )
   return (
     <Card padding="none" className="overflow-hidden" data-testid="match-card">
       <div className="flex flex-col gap-4 p-4 sm:p-5">
@@ -75,23 +94,17 @@ export function MatchCard({ match, rank, highlight, profileHref, onInvite }: Mat
               ))}
             </ul>
           </section>
-          <section aria-label="Вклад в счёт">
-            <h4 className="mb-2 text-sm font-semibold text-ink">Вклад в счёт</h4>
-            <div className="flex flex-col gap-2">
-              {match.breakdown.map((b) => (
-                <ScoreBar
-                  key={b.factor}
-                  label={
-                    <>
-                      {b.label} <span className="font-normal text-subtle">· вес {formatPercent(b.weight)}</span>
-                    </>
-                  }
-                  value={b.value}
-                  contribution={b.contribution}
-                />
-              ))}
-            </div>
-          </section>
+          {wide ? (
+            <section aria-label="Вклад в счёт">
+              <h4 className="mb-2 text-sm font-semibold text-ink">Вклад в счёт</h4>
+              {bars}
+            </section>
+          ) : (
+            <details className="group" data-testid="match-breakdown">
+              <summary className="cursor-pointer text-sm font-semibold text-fsp-plum">Подробнее: вклад в счёт</summary>
+              <div className="mt-2">{bars}</div>
+            </details>
+          )}
         </div>
       </div>
       <div className="flex flex-wrap items-center justify-end gap-2 border-t border-line bg-surface-muted px-4 py-3 sm:px-5">

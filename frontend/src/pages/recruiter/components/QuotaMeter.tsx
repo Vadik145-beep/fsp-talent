@@ -14,7 +14,7 @@ export function QuotaMeter({ className, compact }: { className?: string; compact
   return (
     <div className={cn('min-w-0', className)} data-testid="quota-meter">
       <div className="flex items-baseline justify-between gap-3 text-sm">
-        <span className="font-medium text-ink">Квота приглашений</span>
+        <span className="font-medium text-ink">Ваша квота приглашений</span>
         <span className="tabular-nums text-muted">
           осталось <b className={cn('text-ink', left === 0 && 'text-danger')}>{left}</b> из {limit}
         </span>
@@ -31,7 +31,7 @@ export function QuotaMeter({ className, compact }: { className?: string; compact
       </div>
       {!compact && (
         <p className={cn('mt-1 text-[13px]', left === 0 ? 'text-danger' : 'text-muted')}>
-          {hint ?? `Активных: ${used}. Ответ или отзыв приглашения освобождает место.`}{' '}
+          {hint ?? `Ваших активных: ${used}. Ответ или отзыв приглашения освобождает место.`}{' '}
           {left === 0 && (
             <Link to="/recruiter/invitations?status=sent" className="font-semibold underline">
               К приглашениям

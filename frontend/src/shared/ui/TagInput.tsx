@@ -10,6 +10,11 @@ export interface TagInputProps {
   options?: string[]
   /** Можно ли добавить значение не из списка. */
   allowCustom?: boolean
+  /**
+   * Узнать введённое как пункт из `options` (синонимы, сленг: «постгрес» → «PostgreSQL»).
+   * Узнанный пункт первым идёт в подсказках, Enter добавляет его.
+   */
+  resolve?: (query: string) => string | null
   label?: ReactNode
   hint?: ReactNode
   error?: ReactNode
@@ -29,6 +34,7 @@ export function TagInput({
   onChange,
   options = [],
   allowCustom = true,
+  resolve,
   label,
   hint,
   error,
@@ -44,15 +50,20 @@ export function TagInput({
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(0)
+  // выбрали подсказку стрелками — Enter берёт её, иначе — то, что введено
+  const [navigated, setNavigated] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const suggestions = useMemo(() => {
     const q = query.trim().toLowerCase()
     const selected = new Set(value.map((v) => v.toLowerCase()))
-    return options
-      .filter((o) => !selected.has(o.toLowerCase()) && (!q || o.toLowerCase().includes(q)))
-      .slice(0, 8)
-  }, [options, query, value])
+    const known = q ? resolve?.(q) : null
+    const matches = options.filter((o) => !selected.has(o.toLowerCase()) && (!q || o.toLowerCase().includes(q)))
+    // точное совпадение и узнанный синоним — первыми
+    const exact = options.find((o) => o.toLowerCase() === q)
+    const first = [exact, known].filter((o): o is string => Boolean(o) && !selected.has(o!.toLowerCase()))
+    return [...new Set([...first, ...matches])].slice(0, 8)
+  }, [options, query, value, resolve])
 
   const full = maxItems !== undefined && value.length >= maxItems
 
@@ -63,11 +74,16 @@ export function TagInput({
       setQuery('')
       return
     }
-    const fromList = options.find((o) => o.toLowerCase() === item.toLowerCase())
+    const fromList = options.find((o) => o.toLowerCase() === item.toLowerCase()) ?? resolve?.(item) ?? undefined
     if (!fromList && !allowCustom) return
+    if (value.some((v) => v.toLowerCase() === fromList?.toLowerCase())) {
+      setQuery('')
+      return
+    }
     onChange([...value, fromList ?? item])
     setQuery('')
     setActive(0)
+    setNavigated(false)
   }
 
   function remove(item: string) {
@@ -78,16 +94,22 @@ export function TagInput({
   function onKeyDown(e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault()
-      if (open && suggestions[active]) add(suggestions[active])
-      else add(query)
+      const typed = query.trim()
+      const typedKnown = typed && (options.some((o) => o.toLowerCase() === typed.toLowerCase()) || resolve?.(typed))
+      if (navigated && open && suggestions[active]) add(suggestions[active])
+      else if (typedKnown) add(typed)
+      else if (open && suggestions[0]) add(suggestions[0])
+      else add(typed)
     } else if (e.key === 'Backspace' && !query && value.length) {
       onChange(value.slice(0, -1))
     } else if (e.key === 'ArrowDown') {
       e.preventDefault()
       setOpen(true)
-      setActive((i) => Math.min(i + 1, Math.max(suggestions.length - 1, 0)))
+      setNavigated(true)
+      setActive((i) => (navigated ? Math.min(i + 1, Math.max(suggestions.length - 1, 0)) : 0))
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
+      setNavigated(true)
       setActive((i) => Math.max(i - 1, 0))
     } else if (e.key === 'Escape') {
       setOpen(false)
@@ -136,7 +158,7 @@ export function TagInput({
             aria-expanded={showList}
             aria-controls={listId}
             aria-autocomplete="list"
-            aria-activedescendant={showList ? `${listId}-${active}` : undefined}
+            aria-activedescendant={showList && navigated ? `${listId}-${active}` : undefined}
             aria-invalid={error ? true : undefined}
             disabled={disabled || full}
             value={query}
@@ -145,6 +167,7 @@ export function TagInput({
               setQuery(e.target.value)
               setOpen(true)
               setActive(0)
+              setNavigated(false)
             }}
             onFocus={() => setOpen(true)}
             onBlur={() => setTimeout(() => setOpen(false), 120)}
@@ -163,16 +186,16 @@ export function TagInput({
                 key={s}
                 id={`${listId}-${i}`}
                 role="option"
-                aria-selected={i === active}
+                aria-selected={navigated && i === active}
                 className={cn(
                   'cursor-pointer px-3 py-1.5 text-sm',
-                  i === active ? 'bg-primary-soft text-fsp-blue-deep' : 'text-ink',
+                  navigated && i === active ? 'bg-primary-soft text-fsp-blue-deep' : 'text-ink',
+                  'hover:bg-primary-soft',
                 )}
                 onMouseDown={(e) => {
                   e.preventDefault()
                   add(s)
                 }}
-                onMouseEnter={() => setActive(i)}
               >
                 {s}
               </li>

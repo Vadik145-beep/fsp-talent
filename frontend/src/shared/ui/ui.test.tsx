@@ -106,6 +106,37 @@ describe('UI-кит', () => {
     expect(screen.getByRole('button', { name: 'Убрать Rust' })).toBeInTheDocument()
   })
 
+  it('TagInput: Enter добавляет введённое, сленг узнаётся по синонимам', async () => {
+    const aliases: Record<string, string> = { постгрес: 'PostgreSQL', голанг: 'Go' }
+    function Harness() {
+      const [v, setV] = useState<string[]>([])
+      return (
+        <TagInput
+          label="Стек"
+          value={v}
+          onChange={setV}
+          allowCustom={false}
+          options={['Django', 'Go', 'MongoDB', 'PostgreSQL']}
+          resolve={(q) => aliases[q.trim().toLowerCase()] ?? null}
+        />
+      )
+    }
+    const user = userEvent.setup()
+    render(<Harness />)
+    const input = screen.getByRole('combobox', { name: 'Стек' })
+    // «go» входит и в Django, и в MongoDB — Enter берёт ровно введённое
+    await user.type(input, 'go{Enter}')
+    expect(screen.getByRole('button', { name: 'Убрать Go' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Убрать Django' })).not.toBeInTheDocument()
+    await user.type(input, 'постгрес')
+    expect(screen.getByRole('option', { name: 'PostgreSQL' })).toBeInTheDocument()
+    await user.keyboard('{Enter}')
+    expect(screen.getByRole('button', { name: 'Убрать PostgreSQL' })).toBeInTheDocument()
+    // неизвестное без подсказок не добавляется
+    await user.type(input, 'кобол{Enter}')
+    expect(screen.queryByRole('button', { name: 'Убрать кобол' })).not.toBeInTheDocument()
+  })
+
   it('Modal закрывается по Escape', async () => {
     const onClose = vi.fn()
     render(

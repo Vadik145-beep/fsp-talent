@@ -24,6 +24,7 @@ import {
   type Invitation,
   type InvitationCreate,
   type MarketHint,
+  type S,
   type Vacancy,
 } from '../api'
 import { CONTACT_TYPE_LABELS } from '../labels'
@@ -52,6 +53,8 @@ export function InviteModal(props: InviteModalProps) {
   return <InviteModalInner {...props} />
 }
 
+type BankPage = S['Page_BankCandidateCard_']
+
 type FieldErrors = Partial<Record<'description' | 'salary_from' | 'salary_to' | 'contact_method' | 'task_text', string>>
 
 interface InviteValues {
@@ -59,6 +62,8 @@ interface InviteValues {
   salaryFrom: number | null
   salaryTo: number | null
   contact: string
+  withTask: boolean
+  taskText: string
 }
 
 function validateInvite(v: InviteValues): FieldErrors {
@@ -68,6 +73,7 @@ function validateInvite(v: InviteValues): FieldErrors {
   if (!v.salaryTo) next.salary_to = 'Укажите сумму «до»'
   if (v.salaryFrom && v.salaryTo && v.salaryFrom > v.salaryTo) next.salary_from = '«От» не может быть больше «до»'
   if (v.contact.trim().length < 2) next.contact_method = 'Укажите контакт для связи'
+  if (v.withTask && !v.taskText.trim()) next.task_text = 'Напишите вопрос или снимите галочку'
   return next
 }
 
@@ -84,7 +90,7 @@ function InviteModalInner({ onClose, candidate, need, onSent }: InviteModalProps
   const position = need?.title ? `«${need.title}»` : (candidate.category_label ?? 'вакансию')
   const [description, setDescription] = useState('')
   const [descTouched, setDescTouched] = useState(false)
-  const defaultDescription = `${company.data?.name ?? 'Мы'} приглашает вас на позицию ${position}. Расскажем о задачах и команде на коротком созвоне.`
+  const defaultDescription = `${company.data?.name ? `${company.data.name} приглашает` : 'Приглашаем'} вас на позицию ${position}. Расскажем о задачах и команде на коротком созвоне.`
   const descriptionValue = descTouched ? description : defaultDescription
 
   const [salaryFrom, setSalaryFrom] = useState<number | null>(need?.salary_from ?? null)
@@ -112,7 +118,7 @@ function InviteModalInner({ onClose, candidate, need, onSent }: InviteModalProps
    * проверка идёт на лету — в том числе пара «от»/«до».
    */
   function revalidate(field: keyof FieldErrors, patch: Partial<InviteValues>) {
-    const values: InviteValues = { description: descriptionValue, salaryFrom, salaryTo, contact, ...patch }
+    const values: InviteValues = { description: descriptionValue, salaryFrom, salaryTo, contact, withTask, taskText, ...patch }
     const salary = field === 'salary_from' || field === 'salary_to'
     if (salary && banner?.code === 'salary_below_expectations') setBanner(null)
     setErrors((prev) => {
@@ -158,7 +164,10 @@ function InviteModalInner({ onClose, candidate, need, onSent }: InviteModalProps
           ? { ...old, items: old.items.map((m) => (m.candidate.id === candidate.id ? { ...m, invitation_status: inv.status } : m)) }
           : old,
       )
-      void refreshRecruiter(qc, rk.invitations, rk.candidate(candidate.id), isMatchesKey)
+      qc.setQueriesData<BankPage>({ queryKey: ['recruiter', 'bank'] }, (old) =>
+        old ? { ...old, items: old.items.map((c) => (c.id === candidate.id ? { ...c, invitation_status: inv.status } : c)) } : old,
+      )
+      void refreshRecruiter(qc, rk.invitations, rk.candidate(candidate.id), isMatchesKey, ['recruiter', 'bank'])
       onSent?.(inv)
       onClose()
     },
@@ -187,7 +196,7 @@ function InviteModalInner({ onClose, candidate, need, onSent }: InviteModalProps
 
   function submit(e: FormEvent) {
     e.preventDefault()
-    const next = validateInvite({ description: descriptionValue, salaryFrom, salaryTo, contact })
+    const next = validateInvite({ description: descriptionValue, salaryFrom, salaryTo, contact, withTask, taskText })
     setSubmitted(true)
     setErrors(next)
     setBanner(null)
@@ -200,7 +209,7 @@ function InviteModalInner({ onClose, candidate, need, onSent }: InviteModalProps
       salary_from: salaryFrom!,
       salary_to: salaryTo!,
       contact_method: { type: contactType, value: contact.trim() },
-      task_text: withTask && taskText.trim() ? taskText.trim() : null,
+      task_text: withTask ? taskText.trim() : null,
     })
   }
 
@@ -351,9 +360,12 @@ function InviteModalInner({ onClose, candidate, need, onSent }: InviteModalProps
         <div className="flex flex-col gap-2">
           <Checkbox
             label="Добавить вопрос к созвону"
-            description="Необязательно: 1–2 вопроса, которые обсудите на созвоне. Кандидат увидит их заранее."
+            description="Необязательно: 1–2 вопроса, которые обсудите на созвоне. Кандидат сразу узнает, что вопрос есть, а текст откроется ему после принятия приглашения."
             checked={withTask}
-            onChange={(e) => setWithTask(e.target.checked)}
+            onChange={(e) => {
+              setWithTask(e.target.checked)
+              revalidate('task_text', { withTask: e.target.checked })
+            }}
           />
           {withTask && (
             <Textarea
@@ -364,10 +376,9 @@ function InviteModalInner({ onClose, candidate, need, onSent }: InviteModalProps
               value={taskText}
               onChange={(e) => {
                 setTaskText(e.target.value)
-                revalidate('task_text', {})
+                revalidate('task_text', { taskText: e.target.value })
               }}
               error={errors.task_text}
-
             />
           )}
         </div>

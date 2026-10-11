@@ -8,6 +8,18 @@ import { apiFieldErrors, refreshRecruiter, rk, useCompany, useCompanyRecruiters,
 import { ContactRules } from './components/ContactRules'
 import { QueryState } from './components/QueryState'
 import { QuotaMeter } from './components/QuotaMeter'
+import { useFieldErrors, type FieldErrors } from './useFieldErrors'
+
+type CompanyValues = S['CompanyUpdate']
+
+function validateCompany(form: CompanyValues): FieldErrors<keyof CompanyValues> {
+  const next: FieldErrors<keyof CompanyValues> = {}
+  if (form.name.trim().length < 2) next.name = 'Название — не короче 2 символов'
+  const email = form.contact_email.trim()
+  if (!email) next.contact_email = 'Укажите почту'
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) next.contact_email = 'Неверный формат почты'
+  return next
+}
 
 /** Профиль компании, рекрутеры, квота и правила. */
 export default function RecruiterCompanyPage() {
@@ -189,7 +201,7 @@ function CompanyForm({ company, onDone }: { company: Company; onDone: () => void
     contact_email: company.contact_email,
     contact_phone: company.contact_phone ?? '',
   })
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const { errors, setErrors, touch, check } = useFieldErrors<CompanyValues, keyof CompanyValues>(validateCompany)
   const save = useMutation({
     mutationFn: (body: S['CompanyUpdate']) => api.put<Company>('/companies/my', body),
     onSuccess: (saved) => {
@@ -201,18 +213,18 @@ function CompanyForm({ company, onDone }: { company: Company; onDone: () => void
     },
     onError: (e) => {
       const fields = apiFieldErrors(e)
-      if (Object.keys(fields).length) setErrors(fields)
+      if (Object.keys(fields).length) setErrors(fields as FieldErrors<keyof CompanyValues>)
       else toast({ tone: 'error', title: 'Не удалось сохранить', description: getErrorMessage(e) })
     },
   })
-  const set = (k: keyof S['CompanyUpdate'], v: string) => setForm((f) => ({ ...f, [k]: v }))
+  const set = (k: keyof CompanyValues, v: string) => {
+    const next = { ...form, [k]: v }
+    setForm(next)
+    touch(k, next)
+  }
   function submit(e: FormEvent) {
     e.preventDefault()
-    const next: Record<string, string> = {}
-    if (form.name.trim().length < 2) next.name = 'Название — не короче 2 символов'
-    if (!/^\S+@\S+\.\S+$/.test(form.contact_email)) next.contact_email = 'Укажите почту'
-    setErrors(next)
-    if (!Object.keys(next).length) save.mutate(form)
+    if (check(form)) save.mutate({ ...form, contact_email: form.contact_email.trim() })
   }
   return (
     <Card>

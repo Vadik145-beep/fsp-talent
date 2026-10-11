@@ -50,7 +50,11 @@ export default function RecruiterNeedsPage() {
             <EmptyState
               icon={<Target aria-hidden />}
               title={tab === 'active' ? 'Активных потребностей нет' : 'Закрытых потребностей нет'}
-              description="Опишите, кого ищете, — подборка появится сразу."
+              description={
+                tab === 'active'
+                  ? 'Опишите, кого ищете, — подборка появится сразу.'
+                  : 'Когда подбор завершён, закройте потребность на её странице — она переедет сюда.'
+              }
               action={
                 tab === 'active' ? (
                   <Link to="/recruiter/needs/new" className={newNeedLink}>
