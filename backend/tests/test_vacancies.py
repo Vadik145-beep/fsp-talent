@@ -250,6 +250,8 @@ def test_feed_filters(client: TestClient) -> None:
     assert feed_ids(client, skills=["python", "kotlin"]) == []
     # зарплата «до» не ниже
     assert set(feed_ids(client, salary_min=300000)) == {2, 4}
+    # 0 в поле «Зарплата от» — не ошибка, а «без фильтра»
+    assert set(feed_ids(client, salary_min=0)) == set(feed_ids(client))
     # поиск по названию, описанию и компании
     assert set(feed_ids(client, q="тайга")) == {7}
     assert set(feed_ids(client, q="android")) == {2}

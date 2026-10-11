@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Briefcase, Check, MapPin, SearchX } from 'lucide-react'
@@ -12,11 +12,19 @@ import { WORK_FORMAT_LABELS, WORK_FORMAT_OPTIONS } from './labels'
 import { humanizeSkillCodes } from '@/shared/lib/skillText'
 
 const FILTER_KEYS = ['q', 'specialization', 'grade', 'work_format', 'salary_min'] as const
+/** Ввод зарплаты применяем после паузы: не дёргаем список на каждую цифру. */
+const SALARY_DEBOUNCE_MS = 400
+
+/** «0», «000» и пусто — без фильтра (на бэкенд не отправляем). */
+function salaryFilter(raw: string): string {
+  return raw.replace(/\D/g, '').replace(/^0+/, '')
+}
 
 export default function VacanciesPage() {
   const [params, setParams] = useSearchParams()
   const filters = Object.fromEntries(FILTER_KEYS.map((k) => [k, params.get(k) ?? ''])) as Record<(typeof FILTER_KEYS)[number], string>
   const [search, setSearch] = useState(filters.q)
+  const [salary, setSalary] = useState(filters.salary_min)
   const [opened, setOpened] = useState<Vacancy | null>(null)
   const [applyTo, setApplyTo] = useState<Vacancy | null>(null)
   const skillLabel = useSkillLabel()
@@ -25,7 +33,7 @@ export default function VacanciesPage() {
     queryKey: qk.vacancies(filters),
     queryFn: () =>
       api.get<Vacancy[]>('/vacancies', {
-        query: { ...filters, salary_min: filters.salary_min ? Number(filters.salary_min) : undefined },
+        query: { ...filters, salary_min: Number(filters.salary_min) > 0 ? Number(filters.salary_min) : undefined },
       }),
   })
 
@@ -35,6 +43,15 @@ export default function VacanciesPage() {
     else next.delete(key)
     setParams(next, { replace: true })
   }
+
+  // «Зарплата от» уходит в адрес (и в запрос) после паузы ввода; 0 и пусто — без фильтра.
+  useEffect(() => {
+    const value = salaryFilter(salary)
+    if (value === filters.salary_min) return
+    const timer = window.setTimeout(() => setFilter('salary_min', value), SALARY_DEBOUNCE_MS)
+    return () => window.clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- setFilter читает актуальные params при срабатывании
+  }, [salary, filters.salary_min])
 
   const activeCount = FILTER_KEYS.filter((k) => filters[k]).length
 
@@ -53,6 +70,7 @@ export default function VacanciesPage() {
         activeCount={activeCount}
         onReset={() => {
           setSearch('')
+          setSalary('')
           setParams(new URLSearchParams(), { replace: true })
         }}
       >
@@ -84,8 +102,8 @@ export default function VacanciesPage() {
           aria-label="Зарплата от, ₽"
           placeholder="Зарплата от, ₽"
           inputMode="numeric"
-          value={filters.salary_min}
-          onChange={(e) => setFilter('salary_min', e.target.value.replace(/\D/g, ''))}
+          value={salary}
+          onChange={(e) => setSalary(e.target.value.replace(/\D/g, ''))}
           containerClassName="sm:w-44"
         />
       </FilterBar>
