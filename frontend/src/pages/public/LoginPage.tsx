@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { useMutation } from '@tanstack/react-query'
-import { Eye, EyeOff, Mail, ShieldCheck } from 'lucide-react'
+import { Eye, EyeOff, Mail } from 'lucide-react'
 import { useAuth } from '@/app/auth/AuthContext'
 import { safeNext } from '@/app/auth/guard'
 import { api, apiFieldErrors, getErrorMessage, isApiError, looksLikeEmail } from '@/shared/api'
@@ -9,9 +9,8 @@ import type { components } from '@/shared/api/schema'
 import { USE_MOCKS } from '@/shared/config/env'
 import { ROLE_HOME } from '@/shared/config/roles'
 import { Button, Input, Modal, useToast } from '@/shared/ui'
-import { AuthCard, FormAlert, OrDivider } from './components/AuthCard'
+import { AuthCard, FormAlert } from './components/AuthCard'
 import { DEMO_LOGINS, DEMO_PASSWORD, takeOnboardingPending } from './authFlags'
-import { startFspAuth } from './fspAuth'
 
 type S = components['schemas']
 
@@ -23,8 +22,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [resetOpen, setResetOpen] = useState(false)
-  const [fspLoading, setFspLoading] = useState(false)
-  const [fspError, setFspError] = useState<string | null>(null)
   // Проверка до отправки: пустые поля и почта без «@» — сразу у поля, без запроса.
   const [localErrors, setLocalErrors] = useState<Record<string, string>>({})
 
@@ -58,21 +55,10 @@ export default function LoginPage() {
     login.mutate({ email: email.trim(), password })
   }
 
-  async function loginWithFsp() {
-    setFspError(null)
-    setFspLoading(true)
-    try {
-      await startFspAuth('login', navigate)
-    } catch (err) {
-      setFspError(getErrorMessage(err))
-      setFspLoading(false)
-    }
-  }
-
   return (
     <AuthCard
       title="Вход"
-      description="Войдите по почте или через ФСП ID."
+      description="Войдите по почте и паролю."
       footer={
         <>
           Нет аккаунта?{' '}
@@ -95,7 +81,6 @@ export default function LoginPage() {
           )}
         </FormAlert>
       )}
-      {fspError && <FormAlert>{fspError}</FormAlert>}
 
       <form onSubmit={submit} noValidate className="grid gap-4">
         <Input
@@ -143,18 +128,6 @@ export default function LoginPage() {
         </Button>
       </form>
 
-      <OrDivider />
-      <Button
-        variant="secondary"
-        size="lg"
-        fullWidth
-        onClick={loginWithFsp}
-        loading={fspLoading}
-        leftIcon={<ShieldCheck className="size-5 text-primary" aria-hidden />}
-      >
-        Войти через ФСП ID
-      </Button>
-      <p className="mt-2 text-center text-[13px] text-muted">Для участников соревнований ФСП с привязанным профилем</p>
 
       {USE_MOCKS && (
         <div className="mt-6 rounded-md border border-dashed border-fsp-blush bg-primary-soft p-3">
