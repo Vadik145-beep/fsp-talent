@@ -76,24 +76,30 @@ export default function RecruiterVacanciesPage() {
           </Button>
         }
       />
-      <Tabs
-        className="mb-4"
-        value={tab}
-        onChange={(v) => setSp(v === 'applications' ? { tab: 'applications' } : {}, { replace: true })}
-        items={[
-          { id: 'vacancies', label: 'Вакансии', count: vacancies.data?.length },
-          {
-            id: 'applications',
-            // счётчик — все отклики; новые — отдельной подписью (было «4» при 13 в списке)
-            label: newApps ? `Отклики · новых ${newApps} из ${applications.data?.length ?? 0}` : 'Отклики',
-            count: newApps ? undefined : applications.data?.length,
-          },
-        ]}
-      />
+      {/* подписи вкладок зависят от обоих списков — пока грузятся, держим место той же высоты, чтобы вкладки не прыгали */}
+      {vacancies.isPending || applications.isPending ? (
+        <div className="mb-4 h-[42px] shadow-[inset_0_-1px_0_var(--color-line)]" aria-hidden />
+      ) : (
+        <Tabs
+          className="mb-4"
+          value={tab}
+          onChange={(v) => setSp(v === 'applications' ? { tab: 'applications' } : {}, { replace: true })}
+          items={[
+            { id: 'vacancies', label: 'Вакансии', count: vacancies.data?.length },
+            {
+              id: 'applications',
+              // счётчик — все отклики; новые — отдельной подписью (было «4» при 13 в списке)
+              label: newApps ? `Отклики · новых ${newApps} из ${applications.data?.length ?? 0}` : 'Отклики',
+              count: newApps ? undefined : applications.data?.length,
+            },
+          ]}
+        />
+      )}
       {tab === 'vacancies' ? (
         <QueryState
           query={vacancies}
           isEmpty={(d) => d.length === 0}
+          loading={<Table mobileCards caption="Вакансии" columns={columns} rows={[]} rowKey={(v) => v.id} loading />}
           empty={
             <Card padding="none">
               <EmptyState
