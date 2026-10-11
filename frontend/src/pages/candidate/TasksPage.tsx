@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Building2, CalendarClock, ClipboardList, Sparkles } from 'lucide-react'
 import { api, getErrorMessage, isApiError } from '@/shared/api'
@@ -116,6 +116,12 @@ function ActiveTask({ task, onBack }: { task: TaskSubmission; onBack?: () => voi
   const [text, setText] = useState('')
   const [now] = useState(() => Date.now())
   const left = daysLeft(task.due_at, now)
+  // выбрали задачу из списка — форма ответа на месте списка: прокрутить к ней (на телефоне список длинный)
+  const cardRef = useRef<HTMLDivElement>(null)
+  const chosenFromList = Boolean(onBack)
+  useEffect(() => {
+    if (chosenFromList) cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [chosenFromList])
   const submit = useMutation({
     mutationFn: () => api.post<TaskSubmission>(`/tasks/submissions/${task.id}/answer`, { answer_kind: kind, answer_text: text.trim() }),
     onSuccess: () => {
@@ -127,6 +133,7 @@ function ActiveTask({ task, onBack }: { task: TaskSubmission; onBack?: () => voi
   const fieldError = isApiError(submit.error) && submit.error.code === 'validation_error' ? getErrorMessage(submit.error) : undefined
 
   return (
+    <div ref={cardRef} className="scroll-mt-20">
     <Card padding="lg" className="border-fsp-lavender">
       {onBack && (
         <button type="button" onClick={onBack} className="mb-3 inline-flex items-center gap-1 text-sm font-medium text-fsp-plum hover:underline">
@@ -182,6 +189,7 @@ function ActiveTask({ task, onBack }: { task: TaskSubmission; onBack?: () => voi
         </div>
       </form>
     </Card>
+    </div>
   )
 }
 

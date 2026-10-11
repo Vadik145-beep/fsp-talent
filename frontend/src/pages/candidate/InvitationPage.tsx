@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { useParams } from 'react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { AtSign, Building2, Check, Clock, Flag, Lock, Mail, MessageCircle, MessagesSquare, Phone, Send, X } from 'lucide-react'
+import { AtSign, Briefcase, Building2, Check, Clock, Flag, Lock, Mail, MessageCircle, MessagesSquare, Phone, Send, X } from 'lucide-react'
 import { api, getErrorMessage, isApiError } from '@/shared/api'
 import { INVITATION_STATUS_LABELS } from '@/shared/config/dictionaries'
 import { formatDate, formatDateTime, formatSalaryRange } from '@/shared/lib/format'
@@ -112,6 +112,11 @@ function InvitationView({ inv }: { inv: InvitationDetail }) {
               <Building2 className="size-4" aria-hidden /> {inv.company_name} · {inv.recruiter_name}
             </span>
           </div>
+          {inv.vacancy_title && (
+            <p className="mt-3 inline-flex items-center gap-1.5 text-sm text-ink" data-testid="invitation-vacancy">
+              <Briefcase className="size-4 text-fsp-plum" aria-hidden /> Вакансия: <b className="font-semibold">{inv.vacancy_title}</b>
+            </p>
+          )}
           <p className="mt-5 text-[15px] leading-relaxed whitespace-pre-line text-ink">{inv.description}</p>
         </Card>
 
@@ -367,7 +372,8 @@ const REPORT_TEXT_MAX = 3000
 
 function ReportModal({ open, onClose, inv }: { open: boolean; onClose: () => void; inv: InvitationDetail }) {
   const { toast } = useToast()
-  const [reason, setReason] = useState<S['ReportReason']>('fake_vacancy')
+  // причину выбирает сам кандидат — без подстановки по умолчанию
+  const [reason, setReason] = useState<S['ReportReason'] | ''>('')
   const [text, setText] = useState('')
   const tooShort = text.trim().length < REPORT_TEXT_MIN
   const report = useMutation({
@@ -375,6 +381,7 @@ function ReportModal({ open, onClose, inv }: { open: boolean; onClose: () => voi
     onSuccess: () => {
       onClose()
       setText('')
+      setReason('')
       toast({ tone: 'success', title: 'Жалоба отправлена', description: 'Модератор проверит работодателя.' })
     },
   })
@@ -389,7 +396,7 @@ function ReportModal({ open, onClose, inv }: { open: boolean; onClose: () => voi
           <Button variant="ghost" onClick={onClose}>
             Отмена
           </Button>
-          <Button variant="danger" onClick={() => report.mutate()} loading={report.isPending} disabled={tooShort}>
+          <Button variant="danger" onClick={() => report.mutate()} loading={report.isPending} disabled={tooShort || !reason}>
             Отправить
           </Button>
         </>
@@ -398,8 +405,10 @@ function ReportModal({ open, onClose, inv }: { open: boolean; onClose: () => voi
       <div className="grid gap-4">
         <Select
           label="Что случилось"
+          required
+          placeholder="Выберите причину"
           value={reason}
-          onChange={(e) => setReason(e.target.value as S['ReportReason'])}
+          onChange={(e) => setReason(e.target.value as S['ReportReason'] | '')}
           options={(Object.keys(REPORT_REASON_LABELS) as S['ReportReason'][]).map((r) => ({ value: r, label: REPORT_REASON_LABELS[r] }))}
         />
         <Textarea
