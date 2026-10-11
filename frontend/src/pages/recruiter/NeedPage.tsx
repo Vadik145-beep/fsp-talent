@@ -15,7 +15,7 @@ import {
   type RecommendedCategory,
   type WorkFormat,
 } from './api'
-import { RELATION_LABELS, WORK_FORMAT_LABELS, WORK_FORMAT_OPTIONS } from './labels'
+import { RELATION_LABELS, WORK_FORMAT_OPTIONS } from './labels'
 import { InviteModal } from './components/InviteModal'
 import { MatchCard } from './components/MatchCard'
 import { NeedActions } from './components/NeedActions'
@@ -123,7 +123,7 @@ export default function RecruiterNeedPage() {
             {n.status === 'closed' && <Badge tone="neutral">Закрыта</Badge>}
           </>
         }
-        description={[formatSalaryRange(n.salary_from, n.salary_to), WORK_FORMAT_LABELS[n.work_format], n.city]
+        description={[formatSalaryRange(n.salary_from, n.salary_to), n.city]
           .filter(Boolean)
           .join(' · ')}
         actions={
@@ -139,8 +139,7 @@ export default function RecruiterNeedPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
         <aside className="flex min-w-0 flex-col gap-4" aria-label="Рекомендованные категории">
           <Card padding="sm">
-            <h2 className="mb-1 text-sm font-semibold">Рекомендованные категории</h2>
-            <p className="mb-3 text-[13px] text-muted">Подборка строится по категориям из теста, а не по тексту резюме.</p>
+            <h2 className="mb-3 text-sm font-semibold">Рекомендованные категории</h2>
             {cats.isPending ? (
               <div className="flex flex-col gap-2">
                 <Skeleton className="h-12" />
@@ -262,12 +261,9 @@ export default function RecruiterNeedPage() {
                   <span className="text-muted"> · исходная подборка сохранена</span>
                 </span>
               ) : (
-                <span>
-                  <b>
-                    {list.data.total} {plural(list.data.total, ['кандидат', 'кандидата', 'кандидатов'])}
-                  </b>
-                  <span className="text-muted"> в категории {list.data.category_label}, по убыванию соответствия</span>
-                </span>
+                <b>
+                  {list.data.total} {plural(list.data.total, ['кандидат', 'кандидата', 'кандидатов'])}
+                </b>
               )}
               {activeCount > 0 && (
                 <Button variant="ghost" size="sm" onClick={resetFilters} leftIcon={<X className="size-4" aria-hidden />}>
