@@ -221,6 +221,38 @@ describe('моки соискателя: «грейд не подтверждё�
     expect(dashboard.data.hints.some((h) => h.includes('Middle не подтверждён'))).toBe(true)
   })
 
+  it('несданный Junior без грейда: категория по уровню теста — один раз', async () => {
+    const created = await call<S['TestSessionState']>('POST', '/testing/sessions', {
+      ...cand40,
+      body: { specialization: 'qa', target_grade: 'junior', kind: 'placement' },
+    })
+    expect(created.status).toBe(201)
+    const id = created.data.session.id
+    let item = created.data.current_item
+    while (item) {
+      const ack = await call<S['AnswerAck']>('POST', `/testing/sessions/${id}/answers`, {
+        ...cand40,
+        body: { instance_id: item.instance_id, answer: { choice_ids: ['zz'], text: '###', line: 9999, order: ['zz'] } },
+      })
+      item = ack.data.finished ? null : (ack.data.next_item ?? null)
+    }
+    const result = await call<S['TestResult']>('GET', `/testing/sessions/${id}/result`, cand40)
+    expect(result.data.passed).toBe(false)
+    expect(result.data.measured_grade).toBe('intern')
+    expect(result.data.can_accept_measured).toBe(true)
+    const dash = await call<S['CandidateDashboard']>('GET', '/candidates/me/dashboard', cand40)
+    expect(dash.data.measured_offer).toMatchObject({ session_id: id, target_grade: 'junior', grade: 'intern', category: 'qa:intern' })
+    const accepted = await call<S['TestResult']>('POST', `/testing/sessions/${id}/accept-measured`, cand40)
+    expect(accepted.status).toBe(200)
+    expect(accepted.data.measured_accepted).toBe(true)
+    const profile = await call<S['CandidateProfile']>('GET', '/candidates/me/profile', cand40)
+    expect(profile.data.category).toBe('qa:intern')
+    expect(profile.data.grade_status).toBe('confirmed')
+    const again = await call<{ code: string }>('POST', `/testing/sessions/${id}/accept-measured`, cand40)
+    expect(again.status).toBe(409)
+    expect(again.data.code).toBe('measured_already_accepted')
+  }, 30_000)
+
   it('кандидат с грейдом по тесту — confirmed с датой', async () => {
     const profile = await call<S['CandidateProfile']>('GET', '/candidates/me/profile')
     expect(profile.data.grade_status).toBe('confirmed')

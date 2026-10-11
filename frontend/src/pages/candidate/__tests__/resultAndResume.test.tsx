@@ -1,4 +1,5 @@
 import { screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
 import { renderApp } from '@/test/renderApp'
@@ -34,6 +35,33 @@ const SUGGEST_HIGHER: TestResult = {
     target_grade: 'senior',
   },
   outcome: 'suggest_higher',
+  measured_grade: null,
+  can_accept_measured: false,
+  measured_accepted: false,
+}
+
+/** Новичок не сдал Junior: тест показал уровень «Стажёр» — категорию можно взять сразу. */
+const MEASURED: TestResult = {
+  ...SUGGEST_HIGHER,
+  session_id: 903,
+  specialization: 'frontend',
+  target_grade: 'junior',
+  result_grade: 'intern',
+  category: 'frontend:intern',
+  category_label: 'Frontend · Стажёр',
+  theta: -1.8,
+  ci_low: -2.3,
+  ci_high: -1.3,
+  passed: false,
+  recommendation: {
+    action: 'offer_lower',
+    message: 'Результат ниже порога грейда Junior. Можно пройти тест на грейд «Стажёр».',
+    available_at: null,
+    target_grade: 'intern',
+  },
+  outcome: 'suggest_lower',
+  measured_grade: 'intern',
+  can_accept_measured: true,
 }
 
 describe('результат теста: присвоенная категория и совет отдельно', () => {
@@ -46,6 +74,34 @@ describe('результат теста: присвоенная категори
     expect(screen.getByText('Ваш уровень выше Middle — можно пройти тест на грейд «Senior»')).toBeInTheDocument()
     expect(screen.queryByText('Backend · Senior')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Пройти тест на грейд «Senior»' })).toBeInTheDocument()
+  }, 20_000)
+
+  it('несданный первичный тест: кнопка «Получить категорию» присваивает категорию по уровню', async () => {
+    let accepted = false
+    const done: TestResult = {
+      ...MEASURED,
+      can_accept_measured: false,
+      measured_accepted: true,
+      recommendation: { action: 'retry_later', message: 'Категория присвоена.', available_at: null, target_grade: null },
+    }
+    server.use(
+      http.get('*/api/testing/sessions/903/result', () => HttpResponse.json(accepted ? done : MEASURED)),
+      http.post('*/api/testing/sessions/903/accept-measured', () => {
+        accepted = true
+        return HttpResponse.json(done)
+      }),
+    )
+    const user = userEvent.setup()
+    renderApp('/candidate/test/903/result', { role: 'candidate' })
+    expect(
+      await screen.findByText('Грейд Junior не подтверждён. Тест показал уровень «Стажёр» — получить категорию Frontend · Стажёр?', {}, T),
+    ).toBeInTheDocument()
+    // тест на грейд ниже — второй вариант
+    expect(screen.getByRole('button', { name: 'Пройти тест на грейд «Стажёр»' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Получить категорию Frontend · Стажёр' }))
+    expect(await screen.findByTestId('measured-accepted', {}, T)).toHaveTextContent('Категория по результату теста')
+    expect(screen.getByText('Ваша категория')).toBeInTheDocument()
+    expect(screen.queryByTestId('measured-offer')).not.toBeInTheDocument()
   }, 20_000)
 })
 
