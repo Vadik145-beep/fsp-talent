@@ -272,7 +272,12 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
                       { specialization: r.specialization, target_grade: recGrade, kind: startKind },
                       {
                         onSuccess: (s) => navigate(`/candidate/test/${s.session.id}`),
-                        onError: (err) => toast({ tone: 'error', title: 'Тест не запустился', description: getErrorMessage(err) }),
+                        onError: (err) => {
+                          if (isApiError(err) && err.code === 'session_in_progress' && err.details.session_id) {
+                            toast({ title: 'У вас есть начатый тест', description: 'Открываем его — закончите, потом можно начать новый.' })
+                            navigate(`/candidate/test/${Number(err.details.session_id)}`)
+                          } else toast({ tone: 'error', title: 'Тест не запустился', description: getErrorMessage(err) })
+                        },
                       },
                     )
                   }
