@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { ArrowDown, ArrowUp, CalendarClock, ClipboardCheck, ClipboardX, GraduationCap, Info, MessageSquareText, Sparkles, TrendingDown, TrendingUp } from 'lucide-react'
+import { ArrowUp, CalendarClock, ClipboardCheck, ClipboardX, GraduationCap, Info, MessageSquareText, Sparkles, TrendingDown, TrendingUp } from 'lucide-react'
 import { getErrorMessage, isApiError } from '@/shared/api'
 import { GRADE_LABELS, GRADES, SPECIALIZATION_LABELS, type Grade } from '@/shared/config/dictionaries'
 import { formatDate } from '@/shared/lib/format'
@@ -101,7 +101,6 @@ function GradeView({ g }: { g: GradeStatus }) {
   const [confirm, setConfirm] = useState<{ kind: 'lower' | 'higher'; grade: Grade } | null>(null)
   const idx = g.grade ? GRADES.indexOf(g.grade) : -1
   // Соседние грейды: бэкенд присылает их в lower/higher вместе с причиной, почему тест недоступен.
-  const lower = g.lower?.target_grade ?? (idx > 0 ? GRADES[idx - 1] : null)
   const higher = g.higher?.target_grade ?? (idx >= 0 && idx < GRADES.length - 1 ? GRADES[idx + 1] : null)
 
   if ((!g.grade || !g.specialization) && g.grade_status === 'unconfirmed' && g.declared_grade) {
@@ -161,7 +160,7 @@ function GradeView({ g }: { g: GradeStatus }) {
       </Card>
 
       <Card>
-        <CardHeader title="Пересдача" description="Хотите подтвердить другой грейд — пройдите тест на уровень ниже или выше." />
+        <CardHeader title="Пересдача" description="Хотите грейд выше — пройдите тест на уровень выше." />
         {inProgress && (
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-md border border-primary/30 bg-primary-soft p-3 text-sm" data-testid="test-in-progress">
             <span>
@@ -173,15 +172,6 @@ function GradeView({ g }: { g: GradeStatus }) {
           </div>
         )}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <RetakeOption
-            icon={<ArrowDown className="size-5" aria-hidden />}
-            title={lower ? gradeTestLabel(lower, true) : 'Грейд ниже'}
-            unavailableText={lower ? undefined : 'Стажёр — начальный грейд'}
-            can={g.can_test_lower}
-            availableAt={g.lower_available_at}
-            reason={g.lower?.allowed === false ? g.lower.reason : undefined}
-            onStart={() => lower && setConfirm({ kind: 'lower', grade: lower })}
-          />
           <RetakeOption
             icon={<ArrowUp className="size-5" aria-hidden />}
             title={higher ? gradeTestLabel(higher, true) : 'Грейд выше'}
