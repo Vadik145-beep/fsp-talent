@@ -84,7 +84,8 @@ export function VariantPreview({ variants }: { variants: ItemVariantPreview[] })
                 <div key={i} className="flex gap-3">
                   <span
                     className="shrink-0 text-right text-fsp-silver select-none"
-                    style={{ width: `${Math.max(2, String(all.length).length)}ch` }}
+                    // em, а не ch: у JetBrains Mono цифра 0,6 em, а ch браузер считает по запасному шрифту (меньше)
+                    style={{ width: `${Math.max(2, String(all.length).length) * 0.62}em` }}
                   >
                     {i + 1}
                   </span>

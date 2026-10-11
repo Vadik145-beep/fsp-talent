@@ -78,8 +78,8 @@ export function CodeBlock({ code, selectable, selectedLine, onSelectLine, classN
             <>
               <span
                 className={cn('inline-block shrink-0 pr-4 pl-4 text-right text-fsp-silver select-none', selectable && 'group-hover:text-white')}
-                // цифры номера + отступы pl-4/pr-4 (2rem): иначе номера 10+ налезают на код
-                style={{ width: `calc(${gutter}ch + 2rem)` }}
+                // цифры номера (0,6 em у JetBrains Mono; ch браузер меряет по запасному шрифту) + отступы pl-4/pr-4 (2rem)
+                style={{ width: `calc(${gutter * 0.62}em + 2rem)` }}
                 aria-hidden
               >
                 {n}
