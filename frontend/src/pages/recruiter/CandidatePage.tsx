@@ -33,6 +33,7 @@ export default function RecruiterCandidatePage() {
   const id = Number(useParams().id)
   const [sp] = useSearchParams()
   const needId = Number(sp.get('need')) || null
+  const vacancyId = Number(sp.get('vacancy')) || null
   const [inviteOpen, setInviteOpen] = useState(false)
   const quota = useQuota()
 
@@ -42,7 +43,11 @@ export default function RecruiterCandidatePage() {
     queryFn: () => api.get<Need>(`/matching/needs/${needId}`),
     enabled: needId !== null,
   })
-  const back = needId ? { to: `/recruiter/needs/${needId}`, label: 'К подборке' } : { to: '/recruiter/candidates', label: 'Банк кандидатов' }
+  const back = needId
+    ? { to: `/recruiter/needs/${needId}`, label: 'К подборке' }
+    : vacancyId
+      ? { to: `/recruiter/vacancies/${vacancyId}`, label: 'К вакансии' }
+      : { to: '/recruiter/candidates', label: 'Банк кандидатов' }
 
   if (profile.isPending) {
     return (

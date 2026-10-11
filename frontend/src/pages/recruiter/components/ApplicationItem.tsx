@@ -157,7 +157,7 @@ export function ApplicationItem({ app, showVacancy }: { app: Application; showVa
         <div className="flex flex-col gap-2">
           <ThetaInfo theta={c.theta} />
           <StackTags stack={c.stack} limit={8} />
-          <Link to={`/recruiter/candidates/${c.id}`} className="text-[13px] font-semibold text-fsp-plum hover:underline">
+          <Link to={`/recruiter/candidates/${c.id}?vacancy=${app.vacancy_id}`} className="text-[13px] font-semibold text-fsp-plum hover:underline">
             Профиль и результаты теста
           </Link>
         </div>
