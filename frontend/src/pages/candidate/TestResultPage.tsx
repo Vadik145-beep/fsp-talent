@@ -230,7 +230,7 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
         {allZero ? (
           <p className="mt-6 rounded-md border border-line p-4 text-[15px] text-ink" data-testid="topics-all-zero">
             Верных ответов не было ни в одной теме, поэтому сильные и слабые стороны по этому тесту не определить.
-            {recGrade ? ` Начните с теста на грейд «${GRADE_LABELS[recGrade]}» — задачи там проще.` : ''}
+            {recGrade && !r.can_accept_measured ? ` Начните с теста на грейд «${GRADE_LABELS[recGrade]}» — задачи там проще.` : ''}
           </p>
         ) : (
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
