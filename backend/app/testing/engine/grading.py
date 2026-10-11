@@ -135,6 +135,16 @@ def decide(
                 reason=keep_grade_reason(claimed_grade, current_grade),
             )
         keep = f" Текущий грейд {GRADE_LABELS[current_grade]} сохраняется." if current_grade else ""
+        reason = f"Результат ниже порога грейда {label}."
+        if suggested:
+            offer = f"пройти тест на грейд «{GRADE_LABELS[suggested]}»."
+            # «принудительно не понижается» — только когда уже есть грейд, который не понижаем
+            reason += (
+                f" Грейд принудительно не понижается: можно {offer}"
+                if current_grade
+                else f" Можно {offer}"
+            )
+        reason += keep
         return GradeDecision(
             outcome="suggest_lower",
             claimed_grade=claimed_grade,
@@ -144,11 +154,7 @@ def decide(
             theta=theta,
             ci_low=lo,
             ci_high=hi,
-            reason=(
-                f"Результат ниже порога грейда {label}. Грейд принудительно не понижается: "
-                f"можно пройти тест на грейд "
-                f"{GRADE_LABELS[suggested] if suggested else 'ниже'}.{keep}"
-            ),
+            reason=reason,
         )
     higher = _neighbour(claimed_grade, +1)
     if higher is not None and lo >= thresholds.lower_bound(higher):

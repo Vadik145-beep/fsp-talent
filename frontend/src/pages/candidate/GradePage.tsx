@@ -10,7 +10,7 @@ import { useGradeStatus, useStartTest, type GradeStatus, type S, type TestSessio
 import { QueryView } from './components/QueryView'
 import { GradeConfirmedBadge, UnconfirmedGrade } from './components/GradeStatus'
 import { ThetaScale } from './components/ThetaScale'
-import { GRADE_EVENT_LABELS, TEST_KIND_LABELS, formatTheta, ruThetaText } from './labels'
+import { GRADE_EVENT_LABELS, TEST_KIND_LABELS, formatTheta, gradeTestLabel, ruThetaText } from './labels'
 
 export default function GradePage() {
   const q = useGradeStatus()
@@ -163,7 +163,7 @@ function GradeView({ g }: { g: GradeStatus }) {
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <RetakeOption
             icon={<ArrowDown className="size-5" aria-hidden />}
-            title={lower ? `Тест на ${GRADE_LABELS[lower]}` : 'Грейд ниже'}
+            title={lower ? gradeTestLabel(lower, true) : 'Грейд ниже'}
             unavailableText={lower ? undefined : 'Стажёр — начальный грейд'}
             can={g.can_test_lower}
             availableAt={g.lower_available_at}
@@ -172,7 +172,7 @@ function GradeView({ g }: { g: GradeStatus }) {
           />
           <RetakeOption
             icon={<ArrowUp className="size-5" aria-hidden />}
-            title={higher ? `Тест на ${GRADE_LABELS[higher]}` : 'Грейд выше'}
+            title={higher ? gradeTestLabel(higher, true) : 'Грейд выше'}
             unavailableText={higher ? undefined : 'Senior — максимальный грейд'}
             can={g.can_test_higher}
             availableAt={g.higher_available_at}
@@ -201,7 +201,7 @@ function GradeView({ g }: { g: GradeStatus }) {
         open={!!confirm}
         onClose={() => setConfirm(null)}
         size="sm"
-        title={confirm ? `Тест на ${GRADE_LABELS[confirm.grade]}` : ''}
+        title={confirm ? gradeTestLabel(confirm.grade, true) : ''}
         description="До 20 задач, время на каждую ограничено."
         footer={
           <>
