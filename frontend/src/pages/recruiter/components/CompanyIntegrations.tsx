@@ -80,7 +80,8 @@ function deliveryProblem(d: Pick<Delivery, 'last_error' | 'last_status_code'>): 
   if (code != null && (code < 200 || code >= 300)) {
     const hint = STATUS_HINTS[code] ?? (code >= 500 ? 'ошибка на стороне ATS' : 'адрес отклонил запрос')
     const body = plainResponseText((d.last_error ?? '').replace(/^HTTP \d+:?\s*/, ''))
-    const extra = body && !body.toLowerCase().includes(hint.toLowerCase()) ? `: ${body}` : ''
+    // заголовок страницы ошибки («405 Method Not Allowed») повторяет код — его не показываем
+    const extra = body && !/^\d{3}\b/.test(body) && !body.toLowerCase().includes(hint.toLowerCase()) ? `: ${body}` : ''
     return `HTTP ${code} — ${hint}${extra}`
   }
   return d.last_error ? plainResponseText(d.last_error) : null
