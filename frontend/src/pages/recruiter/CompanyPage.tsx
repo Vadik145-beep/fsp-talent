@@ -125,7 +125,7 @@ function InviteCodeCard({ code }: { code?: string | null }) {
   }
   return (
     <Card data-testid="invite-code">
-      <CardHeader title="Код приглашения в компанию" description="Коллега указывает его при регистрации рекрутером и сразу попадает в вашу компанию." />
+      <CardHeader title="Код приглашения в компанию" description="Коллега указывает его при регистрации и сразу попадает в вашу компанию." />
       {code ? (
         <div className="flex flex-wrap items-center gap-2">
           <code className="rounded-md border border-line bg-surface-muted px-3 py-1.5 font-mono text-base font-semibold tracking-wider select-all">{code}</code>
