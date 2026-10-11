@@ -137,8 +137,6 @@ function GradeView({ g }: { g: GradeStatus }) {
   }
 
 
-  const inProgress = g.tests.find((s) => s.status === 'in_progress')
-
   return (
     <div className="grid grid-cols-1 gap-5">
       <Card padding="lg">
@@ -161,16 +159,6 @@ function GradeView({ g }: { g: GradeStatus }) {
 
       <Card>
         <CardHeader title="Пересдача" description="Хотите грейд выше — пройдите тест на уровень выше." />
-        {inProgress && (
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-md border border-primary/30 bg-primary-soft p-3 text-sm" data-testid="test-in-progress">
-            <span>
-              Начат {gradeTestLabel(inProgress.target_grade)}, ответов: {inProgress.items_answered}. Новый можно начать после него.
-            </span>
-            <Link to={`/candidate/test/${inProgress.id}`} className="inline-flex h-9 items-center rounded-md bg-primary px-4 font-semibold text-white hover:bg-primary-hover">
-              Продолжить тест
-            </Link>
-          </div>
-        )}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <RetakeOption
             icon={<ArrowUp className="size-5" aria-hidden />}

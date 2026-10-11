@@ -398,18 +398,16 @@ class TestingDbService:
         await ensure_bank(self.session)
         profile = await self._profile(candidate_id)
         await self._expire_candidate_sessions(candidate_id, now)
-        busy = await self.session.scalar(
-            select(TestSession.id).where(
+        # Новый старт — тест с нуля: незаконченный закрываем без отметки о попытке
+        # (finished_at пустой — в _attempts не попадает, кулдауна нет).
+        busy = await self.session.scalars(
+            select(TestSession).where(
                 TestSession.candidate_id == candidate_id, TestSession.status == "in_progress"
             )
         )
-        if busy is not None:
-            raise AppError(
-                409,
-                "session_in_progress",
-                "Сначала завершите начатый тест",
-                {"session_id": busy},
-            )
+        for old in busy.all():
+            old.status = "abandoned"
+        await self.session.flush()
         spec, target, kind = str(body.specialization), str(body.target_grade), str(body.kind)
         current = profile.grade if profile.specialization == spec else None
         if current is None and kind in ("lower", "higher"):
