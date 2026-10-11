@@ -7,7 +7,8 @@ import { QueryView } from './components/QueryView'
 import { FspLinkButton } from './components/FspLinkButton'
 import { GradeConfirmedBadge, TakeTestButton, UnconfirmedGrade } from './components/GradeStatus'
 import { PublicationPrompt } from './components/PublicationPrompt'
-import { MeasuredOffer } from './components/MeasuredOffer'
+import { AcceptMeasuredButton, MeasuredOffer } from './components/MeasuredOffer'
+import { GRADE_LABELS } from '@/shared/config/dictionaries'
 import { CANDIDATE_INVITATION_STATUS, formatTheta } from './labels'
 import { greetingName } from './components/personName'
 import { PageHeader } from '@/shared/ui'
@@ -126,6 +127,18 @@ export default function CandidateDashboardPage() {
                       <p className="mt-1 text-sm text-muted">Уровень по тесту: {formatTheta(d.theta)}</p>
                     )}
                   </>
+                ) : d.measured_offer ? (
+                  <div className="grid gap-3" data-testid="category-measured">
+                    <p className="text-sm text-muted">
+                      Тест на {GRADE_LABELS[d.measured_offer.target_grade]} не подтвердил грейд. Повторить его можно через 30 дней.
+                    </p>
+                    <p className="text-2xl font-bold text-fsp-night">По результату теста: {d.measured_offer.category_label}</p>
+                    <AcceptMeasuredButton
+                      sessionId={d.measured_offer.session_id}
+                      categoryLabel={d.measured_offer.category_label}
+                      className="justify-self-start"
+                    />
+                  </div>
                 ) : d.grade_status === 'unconfirmed' && d.declared_grade ? (
                   <UnconfirmedGrade specialization={d.declared_specialization} grade={d.declared_grade} />
                 ) : (

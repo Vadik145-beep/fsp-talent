@@ -10,6 +10,37 @@ import { useAcceptMeasured, type GradeCode } from '../api'
  * категорию по нему можно взять сразу, не дожидаясь повтора через 30 дней.
  * `banner` — тёмный баннер главной, `card` — блок над результатом теста.
  */
+/** Кнопка «Получить категорию …» — общая для баннера, блока результата и карточки категории. */
+export function AcceptMeasuredButton({
+  sessionId,
+  categoryLabel,
+  size = 'md',
+  className,
+}: {
+  sessionId: number
+  categoryLabel: string
+  size?: 'sm' | 'md' | 'lg'
+  className?: string
+}) {
+  const { toast } = useToast()
+  const accept = useAcceptMeasured()
+  return (
+    <Button
+      size={size}
+      className={cn('shrink-0', className)}
+      loading={accept.isPending}
+      onClick={() =>
+        accept.mutate(sessionId, {
+          onSuccess: () => toast({ tone: 'success', title: `Категория «${categoryLabel}» присвоена` }),
+          onError: (err) => toast({ tone: 'error', title: 'Не удалось получить категорию', description: getErrorMessage(err) }),
+        })
+      }
+    >
+      Получить категорию {categoryLabel}
+    </Button>
+  )
+}
+
 export function MeasuredOffer({
   sessionId,
   targetGrade,
@@ -25,24 +56,8 @@ export function MeasuredOffer({
   variant?: 'card' | 'banner'
   className?: string
 }) {
-  const { toast } = useToast()
-  const accept = useAcceptMeasured()
   const banner = variant === 'banner'
-  const button = (
-    <Button
-      size={banner ? 'lg' : 'md'}
-      className="shrink-0"
-      loading={accept.isPending}
-      onClick={() =>
-        accept.mutate(sessionId, {
-          onSuccess: () => toast({ tone: 'success', title: `Категория «${categoryLabel}» присвоена` }),
-          onError: (err) => toast({ tone: 'error', title: 'Не удалось получить категорию', description: getErrorMessage(err) }),
-        })
-      }
-    >
-      Получить категорию {categoryLabel}
-    </Button>
-  )
+  const button = <AcceptMeasuredButton sessionId={sessionId} categoryLabel={categoryLabel} size={banner ? 'lg' : 'md'} />
   return (
     <Card
       className={cn(banner ? 'border-0 bg-fsp-night text-white' : 'border-primary/40 bg-violet-soft/40', className)}
