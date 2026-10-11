@@ -110,7 +110,7 @@ def render(mx: dict[str, Any], generated: str) -> str:
     )
     add(
         f"| Детектор утечек: полнота / точность | 6.2 | {pct(de['item_recall'], 0)} / "
-        f"{pct(de['item_precision'], 0)} |"
+        f"{pct(de['item_precision'])} |"
     )
     add("")
     add(

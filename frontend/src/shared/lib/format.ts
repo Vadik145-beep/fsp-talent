@@ -1,5 +1,20 @@
 const NBSP = '\u00A0'
 
+/**
+ * Округление «как в школе» без ошибки двоичной дроби: 57.65 → «57.7» (у toFixed — «57.6»,
+ * потому что 0.5765 * 100 = 57.64999…). Сначала отбрасываем шум (12 значащих цифр), потом
+ * округляем половину от нуля в десятичной записи.
+ */
+export function toFixedRound(value: number, digits = 0): string {
+  if (!Number.isFinite(value)) return String(value)
+  const clean = Number(value.toPrecision(12))
+  // Очень малые/большие числа в экспоненциальной записи — округления «на границе» у них нет.
+  if (/e/i.test(String(Math.abs(clean)))) return clean.toFixed(digits)
+  const shifted = Math.round(Number(`${Math.abs(clean)}e${digits}`))
+  const rounded = Number(`${shifted}e-${digits}`)
+  return (clean < 0 && rounded !== 0 ? -rounded : rounded).toFixed(digits)
+}
+
 /** 250000 → «250 000» (неразрывные пробелы между разрядами). */
 export function formatNumber(value: number): string {
   const sign = value < 0 ? '-' : ''
@@ -35,13 +50,13 @@ export function formatSalaryRange(
 
 /** 0.324 → «+0,32»; знак показывается всегда. */
 export function formatSigned(value: number, digits = 2): string {
-  const s = Math.abs(value).toFixed(digits).replace('.', ',')
+  const s = toFixedRound(Math.abs(value), digits).replace('.', ',')
   return (value < 0 ? '−' : '+') + s
 }
 
 /** 0.873 → «87 %». */
 export function formatPercent(value: number, digits = 0): string {
-  return `${(value * 100).toFixed(digits).replace('.', ',')}${NBSP}%`
+  return `${toFixedRound(value * 100, digits).replace('.', ',')}${NBSP}%`
 }
 
 /** Секунды → «mm:ss» (или «h:mm:ss», если больше часа). */
@@ -79,4 +94,9 @@ export function plural(n: number, forms: [string, string, string]): string {
   if (n10 === 1 && n100 !== 11) return forms[0]
   if (n10 >= 2 && n10 <= 4 && (n100 < 12 || n100 > 14)) return forms[1]
   return forms[2]
+}
+
+/** Число со словом в нужной форме: pluralize(143, ['символ', 'символа', 'символов']) → «143 символа». */
+export function pluralize(n: number, forms: [string, string, string]): string {
+  return `${formatNumber(n)}${NBSP}${plural(n, forms)}`
 }
