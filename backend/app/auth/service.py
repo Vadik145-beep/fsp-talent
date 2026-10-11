@@ -24,6 +24,7 @@ from app.auth.emails import send_password_reset_email, send_verification_email
 from app.auth.passwords import hash_password, verify_password
 from app.auth.repository import AuthRepository, utcnow
 from app.auth.schemas import RegisterRequest
+from app.candidates.schemas import PRIVACY_DEFAULTS
 from app.common import fixtures
 from app.common.enums import ConsentType, Role
 from app.core.config import get_settings
@@ -195,7 +196,7 @@ class AuthService:
                 soft_skills=[],
                 about="",
                 links=[],
-                privacy={},
+                privacy=dict(PRIVACY_DEFAULTS),
                 freshness=0,
             )
         )

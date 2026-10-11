@@ -30,7 +30,8 @@ function Hidden({ children }: { children: string }) {
 export function EmployerPreview({ profile, privacy, hidden, skillLabel = (id) => id, className }: EmployerPreviewProps) {
   const code = profile.pseudonym.split('#')[1] ?? profile.pseudonym
   const notVisible = hidden && (hidden.paused || hidden.noConsent)
-  const topics = [...(profile.topic_scores ?? [])].sort((a, b) => b.score - a.score).slice(0, 4)
+  // все темы, как в карточке у рекрутера (раньше — четыре лучших, и часть тем из разбора пропадала)
+  const topics = [...(profile.topic_scores ?? [])].sort((a, b) => b.score - a.score)
   const years = profile.experience_years
 
   return (

@@ -150,6 +150,26 @@ def test_privacy_changes_anonymous_profile(client: TestClient, fresh_db: None) -
     assert 14 not in {c["id"] for c in by_city["items"]}
 
 
+def test_empty_privacy_uses_settings_defaults(client: TestClient, fresh_db: None) -> None:
+    """Новый соискатель (privacy={}): настройки, карточка рекрутера и фильтр по городу
+    читают одни и те же умолчания — город и стаж видны, ссылки скрыты."""
+    sql_sync("UPDATE candidate_profiles SET privacy = '{}'::jsonb WHERE id = :id", {"id": 14})
+    settings = client.get("/api/candidates/me/settings", headers=CANDIDATE_14).json()
+    assert settings["privacy"] == {
+        "show_city": True,
+        "show_experience": True,
+        "show_links": False,
+        "show_fsp_achievements": True,
+    }
+    card = client.get("/api/candidates/14", headers=RECRUITER).json()
+    assert card["city"] == "Томск" and card["experience_years"] is not None
+    assert card["links"] is None
+    by_city = client.get(
+        "/api/candidates", params={"city": "Томск", "page_size": 100}, headers=RECRUITER
+    ).json()
+    assert 14 in {c["id"] for c in by_city["items"]}
+
+
 def test_publication_consent_revoke_and_grant(client: TestClient, fresh_db: None) -> None:
     assert 3 in _bank_ids(client)
     assert client.get("/api/candidates/3", headers=RECRUITER_C2).status_code == 200
