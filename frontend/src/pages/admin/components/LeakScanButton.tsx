@@ -54,6 +54,7 @@ export function LeakScanButton({ variant = 'secondary' }: { variant?: 'secondary
             <section>
               <h3 className="mb-2 text-sm font-semibold">Выведены из оборота: {result.retired.length}</h3>
               <Table
+                mobileCards
                 caption="Шаблоны с признаками утечки"
                 rows={result.retired}
                 rowKey={(r) => r.item_id}
@@ -70,7 +71,7 @@ export function LeakScanButton({ variant = 'secondary' }: { variant?: 'secondary
                   },
                   { key: 'n', header: 'Ответов', align: 'right' },
                   { key: 'rate', header: 'Верных / ожидалось', align: 'right', render: (r) => `${pct(r.observed_rate)} / ${pct(r.expected_rate)}` },
-                  { key: 'z', header: 'z', align: 'right', render: (r) => <Badge tone="danger">{num(r.z, 1)}</Badge> },
+                  { key: 'z', header: <span className="normal-case">z</span>, align: 'right', render: (r) => <Badge tone="danger">{num(r.z, 1)}</Badge> },
                   { key: 'fast', header: 'Быстрых верных', align: 'right', render: (r) => r.fast_correct },
                   { key: 'reasons', header: 'Почему', hideOnMobile: true, render: (r) => r.reasons.join('; ') },
                 ]}

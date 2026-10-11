@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { Ban, Building, CircleCheck, ExternalLink, Flag, ShieldCheck, ShieldQuestion } from 'lucide-react'
 import { api } from '@/shared/api'
-import { formatDate } from '@/shared/lib/format'
+import { formatDate, plural } from '@/shared/lib/format'
 import { Badge, Button, Card, Drawer, EmptyState, ErrorState, FilterBar, PageHeader, ScoreBar, Select, SkeletonCard } from '@/shared/ui'
 import { useAdminMutation, type AdminCompany } from './api'
 import { ConfirmModal } from './components/common'
@@ -30,7 +30,7 @@ function trustFactors(c: AdminCompany) {
     {
       label: 'Ответы кандидатов на приглашения',
       value: answered ? c.response_rate : 0.5,
-      hint: answered ? `${pct(c.response_rate)} с ответом из ${c.invitations_sent} → ${Math.round(base)} баллов из 80` : 'приглашений ещё не было → 50 баллов',
+      hint: answered ? `${pct(c.response_rate)} с ответом из ${c.invitations_sent} → ${Math.round(base)} ${plural(Math.round(base), ['балл', 'балла', 'баллов'])} из 80` : 'приглашений ещё не было → 50 баллов',
     },
     {
       label: 'Почта рекрутеров на домене компании',
@@ -128,7 +128,7 @@ export default function AdminCompaniesPage() {
               <dl className="mt-4 grid grid-cols-3 gap-2 text-center text-[13px]">
                 <div className="rounded-md bg-surface-muted p-2">
                   <dd className="text-base font-bold text-ink">{c.invitations_sent}</dd>
-                  <dt className="text-muted">приглашений</dt>
+                  <dt className="text-muted">{plural(c.invitations_sent, ['приглашение', 'приглашения', 'приглашений'])}</dt>
                 </div>
                 <div className="rounded-md bg-surface-muted p-2">
                   <dd className="text-base font-bold text-ink">{pct(c.response_rate)}</dd>
@@ -136,7 +136,7 @@ export default function AdminCompaniesPage() {
                 </div>
                 <div className="rounded-md bg-surface-muted p-2">
                   <dd className={`text-base font-bold ${c.reports_count ? 'text-danger' : 'text-ink'}`}>{c.reports_count}</dd>
-                  <dt className="text-muted">жалоб</dt>
+                  <dt className="text-muted">{plural(c.reports_count, ['жалоба', 'жалобы', 'жалоб'])}</dt>
                 </div>
               </dl>
               <div className="mt-3 flex flex-wrap gap-1.5">
