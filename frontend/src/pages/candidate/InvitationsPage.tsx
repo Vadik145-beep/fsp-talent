@@ -24,7 +24,7 @@ export default function InvitationsPage() {
     <>
       <PageHeader
         title="Приглашения"
-        description="Работодатели нашли вас по категории. В каждом приглашении — зарплата «от–до»; ваши контакты откроются, только если примете."
+        description="Ваши контакты откроются, только если примете."
       />
       <QueryView
         query={q}
