@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, ArrowRight, Clock, FileUp, Info, ListChecks, PencilLine, Shuffle, Sparkles, Undo2 } from 'lucide-react'
-import { api, getErrorMessage, isApiError } from '@/shared/api'
+import { api, apiFieldErrors, getErrorMessage, isApiError } from '@/shared/api'
 import {
   GRADE_LABELS,
   GRADES,
@@ -186,10 +186,8 @@ function ProfileStepForm({
       onDone(hasClaim(claim) ? claim : null)
     },
   })
-  const serverErrors =
-    isApiError(save.error) && save.error.code === 'validation_error'
-      ? (save.error.details.fields as Record<string, string> | undefined)
-      : undefined
+  const fieldErrors = apiFieldErrors(save.error)
+  const serverErrors = Object.keys(fieldErrors).length ? fieldErrors : undefined
 
   if (pdf && !parsed) {
     return (

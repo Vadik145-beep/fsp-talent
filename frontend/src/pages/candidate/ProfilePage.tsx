@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Download, Eye, FileUp, X } from 'lucide-react'
-import { api, getErrorMessage, isApiError } from '@/shared/api'
+import { api, apiFieldErrors, getErrorMessage } from '@/shared/api'
 import { Button, Card, CardHeader, PageHeader, ProgressBar, useToast } from '@/shared/ui'
 import { invalidateCandidate, qk, useProfile, type CandidateProfile, type S } from './api'
 import { ProfileForm } from './components/ProfileForm'
@@ -89,10 +89,8 @@ function ProfileEditor({ profile }: { profile: CandidateProfile }) {
     })
   }
 
-  const serverErrors =
-    isApiError(save.error) && save.error.code === 'validation_error'
-      ? (save.error.details.fields as Record<string, string> | undefined)
-      : undefined
+  const fieldErrors = apiFieldErrors(save.error)
+  const serverErrors = Object.keys(fieldErrors).length ? fieldErrors : undefined
 
   return (
     <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_18rem]">

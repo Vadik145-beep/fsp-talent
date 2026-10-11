@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { useMutation } from '@tanstack/react-query'
 import { Eye, EyeOff } from 'lucide-react'
-import { api, getErrorMessage, isApiError } from '@/shared/api'
+import { api, apiFieldErrors, getErrorMessage, isApiError, looksLikeEmail } from '@/shared/api'
 import type { components } from '@/shared/api/schema'
 import { Button, Checkbox, Input, Modal, RadioGroup, Switch } from '@/shared/ui'
 import { AuthCard, FormAlert } from './components/AuthCard'
@@ -12,7 +12,6 @@ type S = components['schemas']
 type RegRole = 'candidate' | 'recruiter'
 
 const CONSENT_VERSION = '2026-10-01'
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export default function RegisterPage() {
   const navigate = useNavigate()
@@ -37,8 +36,10 @@ export default function RegisterPage() {
       navigate(`/verify-email?email=${encodeURIComponent(res.email)}&uid=${res.user_id}`)
     },
     onError: (err) => {
-      if (isApiError(err) && err.code === 'validation_error' && err.details.fields) {
-        setErrors(err.details.fields as Record<string, string>)
+      const fields = apiFieldErrors(err)
+      if (isApiError(err) && err.code === 'validation_error' && Object.keys(fields).length) {
+        // company.name / company.inn приходят как поле company
+        setErrors(fields)
       } else if (isApiError(err) && err.code === 'email_taken') {
         setErrors({ email: 'Эта почта уже зарегистрирована' })
       } else if (isApiError(err) && err.code === 'company_invite_not_found') {
@@ -50,7 +51,7 @@ export default function RegisterPage() {
   function validate(): Record<string, string> {
     const e: Record<string, string> = {}
     if (fullName.trim().length < 2) e.full_name = 'Укажите имя и фамилию'
-    if (!EMAIL_RE.test(email.trim())) e.email = 'Укажите почту в формате name@example.com'
+    if (!looksLikeEmail(email)) e.email = 'Укажите почту в формате name@example.com'
     if (password.length < 8) e.password = 'Пароль — не короче 8 символов'
     if (role === 'recruiter' && !hasInvite && companyName.trim().length < 2) e.company = 'Укажите название компании'
     if (role === 'recruiter' && hasInvite && !inviteCode.trim()) e.invite_code = 'Введите код приглашения'
@@ -81,7 +82,8 @@ export default function RegisterPage() {
 
   const generalError =
     register.isError &&
-    !(isApiError(register.error) && ['validation_error', 'email_taken', 'company_invite_not_found'].includes(register.error.code))
+    !(isApiError(register.error) && ['email_taken', 'company_invite_not_found'].includes(register.error.code)) &&
+    !Object.keys(apiFieldErrors(register.error)).length
 
   return (
     <AuthCard
