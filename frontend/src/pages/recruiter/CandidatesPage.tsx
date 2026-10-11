@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { Check, CircleCheck, SearchX, Send, ShieldCheck, SlidersHorizontal } from 'lucide-react'
+import { Check, CircleCheck, SearchX, Send, ShieldCheck, SlidersHorizontal, X } from 'lucide-react'
 import { api } from '@/shared/api'
 import { GRADE_OPTIONS, INVITATION_STATUS_LABELS, SPECIALIZATION_OPTIONS, type InvitationStatus } from '@/shared/config/dictionaries'
 import { cn } from '@/shared/lib/cn'
 import { plural } from '@/shared/lib/format'
 import { useMediaQuery } from '@/shared/lib/useMediaQuery'
-import { Badge, Button, Card, EmptyState, FilterBar, PageHeader, Pagination, Pseudonym, Select, StatusPill, Tag } from '@/shared/ui'
+import { Badge, Button, Card, EmptyState, PageHeader, Pagination, Pseudonym, Select, StatusPill, Tag } from '@/shared/ui'
 import { pseudonymCodeOf, rk, useCategories, type Need, type S } from './api'
 import { WORK_FORMAT_LABELS, yearsText } from './labels'
 import { FspBadges, StackTags, ThetaInfo } from './components/CandidateBits'
@@ -126,24 +126,17 @@ export default function RecruiterCandidatesPage() {
       ? { id: need.id, title: need.title, salary_from: need.salary_from, salary_to: need.salary_to }
       : null
 
+  // Своя сетка вместо FilterBar: два ряда по 4 колонки, второй ровно под первым.
   const filters = (
-    <FilterBar
-      className={desktop ? undefined : 'mb-0 border-0 p-0'}
-      activeCount={activeCount}
-      onReset={() => update((p) => FILTER_KEYS.forEach((k) => p.delete(k)))}
-      actions={
-        <Select
-          label="Сортировка"
-          containerClassName="w-full sm:w-56"
-          value={params.sort}
-          options={need ? [MATCH_SORT, ...SORT_OPTIONS] : SORT_OPTIONS}
-          onChange={(e) => update((p) => p.set('sort', e.target.value))}
-        />
-      }
+    <div
+      className={cn(
+        'mb-4 grid grid-cols-1 items-end gap-3 rounded-lg border border-line bg-surface p-3 sm:grid-cols-2 sm:p-4 lg:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))]',
+        !desktop && 'mb-0 border-0 p-0 sm:p-0',
+      )}
     >
       <Select
         label="Под потребность"
-        containerClassName="sm:w-[26rem]"
+        containerClassName="min-w-0"
         value={need ? String(need.id) : NO_NEED}
         options={needOptions}
         disabled={needs.isPending}
@@ -166,7 +159,7 @@ export default function RecruiterCandidatesPage() {
       />
       <Select
         label="Специализация"
-        containerClassName="sm:w-44"
+        containerClassName="min-w-0"
         placeholder="Все"
         options={SPECIALIZATION_OPTIONS}
         value={params.specialization ?? ''}
@@ -180,7 +173,7 @@ export default function RecruiterCandidatesPage() {
       />
       <Select
         label="Грейд"
-        containerClassName="sm:w-36"
+        containerClassName="min-w-0"
         placeholder="Все"
         options={GRADE_OPTIONS}
         value={params.grade ?? ''}
@@ -194,7 +187,7 @@ export default function RecruiterCandidatesPage() {
       />
       <Select
         label="Категория"
-        containerClassName="sm:w-52"
+        containerClassName="min-w-0"
         placeholder="Все"
         options={categoryOptions}
         value={params.category ?? ''}
@@ -202,7 +195,7 @@ export default function RecruiterCandidatesPage() {
       />
       <SkillInput
         label="Стек (все из списка)"
-        className="sm:w-64"
+        className="min-w-0"
         value={params.skills}
         onChange={(v) =>
           update((p) => {
@@ -211,15 +204,29 @@ export default function RecruiterCandidatesPage() {
           })
         }
       />
-      <div className="flex flex-col gap-1.5">
-        <span className="hidden text-sm font-medium text-ink sm:block" aria-hidden>
-          &nbsp;
-        </span>
-        <Tag onClick={() => setOne('has_fsp', params.has_fsp ? null : 'true')} selected={Boolean(params.has_fsp)} icon={<ShieldCheck aria-hidden />}>
-          Есть достижения ФСП
-        </Tag>
-      </div>
-    </FilterBar>
+      <Tag
+        className="h-10 w-full justify-center rounded-md"
+        onClick={() => setOne('has_fsp', params.has_fsp ? null : 'true')}
+        selected={Boolean(params.has_fsp)}
+        icon={<ShieldCheck aria-hidden />}
+      >
+        Есть достижения ФСП
+      </Tag>
+      {activeCount > 0 ? (
+        <Button variant="ghost" className="w-full" onClick={() => update((p) => FILTER_KEYS.forEach((k) => p.delete(k)))} leftIcon={<X className="size-4" aria-hidden />}>
+          Сбросить ({activeCount})
+        </Button>
+      ) : (
+        <span className="hidden lg:block" aria-hidden />
+      )}
+      <Select
+        label="Сортировка"
+        containerClassName="min-w-0"
+        value={params.sort}
+        options={need ? [MATCH_SORT, ...SORT_OPTIONS] : SORT_OPTIONS}
+        onChange={(e) => update((p) => p.set('sort', e.target.value))}
+      />
+    </div>
   )
 
   return (
