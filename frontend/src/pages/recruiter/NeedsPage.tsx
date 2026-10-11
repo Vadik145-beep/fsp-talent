@@ -28,7 +28,7 @@ export default function RecruiterNeedsPage() {
         actions={
           <Link to="/recruiter/needs/new" className={newNeedLink}>
             <Search className="size-4" aria-hidden />
-            Найти кандидата
+            Описать потребность
           </Link>
         }
       />
@@ -58,7 +58,7 @@ export default function RecruiterNeedsPage() {
                 tab === 'active' ? (
                   <Link to="/recruiter/needs/new" className={newNeedLink}>
                     <Search className="size-4" aria-hidden />
-                    Найти кандидата
+                    Описать потребность
                   </Link>
                 ) : undefined
               }

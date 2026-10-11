@@ -37,7 +37,7 @@ export default function RecruiterDashboardPage() {
             </Link>
             <Link to="/recruiter/needs/new" className={primaryLink}>
               <Search className="size-4" aria-hidden />
-              Найти кандидата
+              Описать потребность
             </Link>
           </>
         }
