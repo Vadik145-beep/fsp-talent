@@ -968,6 +968,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/testing/sessions/{session_id}/accept-measured": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Взять категорию по уровню, который показал несданный первичный тест
+         * @description Только для своей завершённой несданной сессии первичного теста, когда у кандидата нет подтверждённого грейда и это его последняя завершённая попытка (`can_accept_measured` в результате). Категория `<специализация>:<measured_grade>` присваивается так же, как при сданном тесте; первое присвоение сменой грейда не считается. Возвращает обновлённый результат.
+         */
+        post: operations["accept_measured_api_testing_sessions__session_id__accept_measured_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/fsp/status": {
         parameters: {
             query?: never;
@@ -1590,7 +1610,7 @@ export interface paths {
         put?: never;
         /**
          * Оценить ответ 0–3 (рекрутер)
-         * @description Первая оценка поднимает свежесть профиля кандидата: +0,04 + 0,03 × балл.
+         * @description Оценка ставится один раз и поднимает свежесть профиля кандидата: +0,04 + 0,03 × балл. Повторная оценка — 409 `already_graded`.
          */
         post: operations["grade_submission_api_tasks_submissions__submission_id__grade_post"];
         delete?: never;
@@ -3018,6 +3038,8 @@ export interface components {
             fsp_linked: boolean;
             /** Hints */
             hints: string[];
+            /** @description Первичный тест не подтвердил заявленный грейд: категория по уровню теста, которую можно взять (`POST /api/testing/sessions/{id}/accept-measured`) */
+            measured_offer?: components["schemas"]["MeasuredOffer"] | null;
         };
         /**
          * CandidateFlag
@@ -5221,6 +5243,23 @@ export interface components {
             /** Company Id */
             company_id?: number | null;
         };
+        /**
+         * MeasuredOffer
+         * @description Первичный тест не сдан, но показал уровень ниже — можно взять категорию по нему.
+         */
+        MeasuredOffer: {
+            /** Session Id */
+            session_id: number;
+            specialization: components["schemas"]["SpecializationCode"];
+            /** @description На какой грейд был тест */
+            target_grade: components["schemas"]["GradeCode"];
+            /** @description Уровень, который показал тест */
+            grade: components["schemas"]["GradeCode"];
+            /** Category */
+            category: string;
+            /** Category Label */
+            category_label: string;
+        };
         /** MessageResponse */
         MessageResponse: {
             /**
@@ -6939,6 +6978,20 @@ export interface components {
              * @description Решение движка по заявленному грейду
              */
             outcome?: ("passed_claimed" | "suggest_lower" | "suggest_higher" | "abandoned") | null;
+            /** @description Первичный тест не сдан: уровень, который тест показал (грейд по θ и порогам специализации, строго ниже целевого) */
+            measured_grade?: components["schemas"]["GradeCode"] | null;
+            /**
+             * Can Accept Measured
+             * @description Можно взять категорию по измеренному уровню (`POST /api/testing/sessions/{id}/accept-measured`): у кандидата нет подтверждённого грейда, это его последняя завершённая попытка
+             * @default false
+             */
+            can_accept_measured: boolean;
+            /**
+             * Measured Accepted
+             * @description Категория по измеренному уровню уже присвоена
+             * @default false
+             */
+            measured_accepted: boolean;
         };
         /**
          * TestSession
@@ -10905,6 +10958,78 @@ export interface operations {
             };
         };
     };
+    accept_measured_api_testing_sessions__session_id__accept_measured_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя */
+                "x-demo-role"?: components["schemas"]["Role"] | null;
+                /** @description Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли) */
+                "x-demo-user-id"?: number | null;
+            };
+            path: {
+                session_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TestResult"];
+                };
+            };
+            /** @description `unauthorized` — Требуется вход */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden` — Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` — Объект не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `session_not_finished` — Тест ещё не завершён; `measured_already_accepted` — Категория по этому тесту уже присвоена; `grade_already_confirmed` — Грейд уже подтверждён; `measured_not_available` — По этому тесту категорию по результату получить нельзя */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     fsp_status_api_fsp_status_get: {
         parameters: {
             query?: never;
@@ -13367,7 +13492,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description `invalid_transition` — Действие недоступно в текущем статусе */
+            /** @description `invalid_transition` — Действие недоступно в текущем статусе; `already_graded` — Оценка уже выставлена */
             409: {
                 headers: {
                     [name: string]: unknown;

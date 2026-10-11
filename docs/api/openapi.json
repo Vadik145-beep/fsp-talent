@@ -7111,6 +7111,194 @@
         }
       }
     },
+    "/api/testing/sessions/{session_id}/accept-measured": {
+      "post": {
+        "tags": [
+          "testing"
+        ],
+        "summary": "Взять категорию по уровню, который показал несданный первичный тест",
+        "description": "Только для своей завершённой несданной сессии первичного теста, когда у кандидата нет подтверждённого грейда и это его последняя завершённая попытка (`can_accept_measured` в результате). Категория `<специализация>:<measured_grade>` присваивается так же, как при сданном тесте; первое присвоение сменой грейда не считается. Возвращает обновлённый результат.",
+        "operationId": "accept_measured_api_testing_sessions__session_id__accept_measured_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "x-demo-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя",
+              "title": "X-Demo-Role"
+            },
+            "description": "Демо-режим (DEMO_AUTH_ENABLED=true), если нет Bearer: роль текущего пользователя"
+          },
+          {
+            "name": "x-demo-user-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)",
+              "title": "X-Demo-User-Id"
+            },
+            "description": "Демо-режим: id пользователя (по умолчанию — демо-аккаунт роли)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthorized` — Требуется вход",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Требуется вход",
+                    "value": {
+                      "code": "unauthorized",
+                      "message": "Требуется вход",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — Недостаточно прав",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Недостаточно прав",
+                    "value": {
+                      "code": "forbidden",
+                      "message": "Недостаточно прав",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`not_found` — Объект не найден",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Объект не найден",
+                    "value": {
+                      "code": "not_found",
+                      "message": "Объект не найден",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`session_not_finished` — Тест ещё не завершён; `measured_already_accepted` — Категория по этому тесту уже присвоена; `grade_already_confirmed` — Грейд уже подтверждён; `measured_not_available` — По этому тесту категорию по результату получить нельзя",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "session_not_finished": {
+                    "summary": "Тест ещё не завершён",
+                    "value": {
+                      "code": "session_not_finished",
+                      "message": "Тест ещё не завершён",
+                      "details": {}
+                    }
+                  },
+                  "measured_already_accepted": {
+                    "summary": "Категория по этому тесту уже присвоена",
+                    "value": {
+                      "code": "measured_already_accepted",
+                      "message": "Категория по этому тесту уже присвоена",
+                      "details": {}
+                    }
+                  },
+                  "grade_already_confirmed": {
+                    "summary": "Грейд уже подтверждён",
+                    "value": {
+                      "code": "grade_already_confirmed",
+                      "message": "Грейд уже подтверждён",
+                      "details": {}
+                    }
+                  },
+                  "measured_not_available": {
+                    "summary": "По этому тесту категорию по результату получить нельзя",
+                    "value": {
+                      "code": "measured_not_available",
+                      "message": "По этому тесту категорию по результату получить нельзя",
+                      "details": {}
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/fsp/status": {
       "get": {
         "tags": [
@@ -13022,7 +13210,7 @@
           "tasks"
         ],
         "summary": "Оценить ответ 0–3 (рекрутер)",
-        "description": "Первая оценка поднимает свежесть профиля кандидата: +0,04 + 0,03 × балл.",
+        "description": "Оценка ставится один раз и поднимает свежесть профиля кандидата: +0,04 + 0,03 × балл. Повторная оценка — 409 `already_graded`.",
         "operationId": "grade_submission_api_tasks_submissions__submission_id__grade_post",
         "security": [
           {
@@ -13158,7 +13346,7 @@
             }
           },
           "409": {
-            "description": "`invalid_transition` — Действие недоступно в текущем статусе",
+            "description": "`invalid_transition` — Действие недоступно в текущем статусе; `already_graded` — Оценка уже выставлена",
             "content": {
               "application/json": {
                 "examples": {
@@ -13167,6 +13355,14 @@
                     "value": {
                       "code": "invalid_transition",
                       "message": "Действие недоступно в текущем статусе",
+                      "details": {}
+                    }
+                  },
+                  "already_graded": {
+                    "summary": "Оценка уже выставлена",
+                    "value": {
+                      "code": "already_graded",
+                      "message": "Оценка уже выставлена",
                       "details": {}
                     }
                   }
@@ -18855,6 +19051,12 @@
             "title": "Can Invite",
             "description": "Можно ли отправить приглашение сейчас"
           },
+          "invited_by_application": {
+            "type": "boolean",
+            "title": "Invited By Application",
+            "description": "Компания уже пригласила кандидата по его отклику на вакансию",
+            "default": false
+          },
           "fsp_profile_note": {
             "anyOf": [
               {
@@ -20254,6 +20456,17 @@
             },
             "type": "array",
             "title": "Hints"
+          },
+          "measured_offer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MeasuredOffer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Первичный тест не подтвердил заявленный грейд: категория по уровню теста, которую можно взять (`POST /api/testing/sessions/{id}/accept-measured`)"
           }
         },
         "type": "object",
@@ -25007,6 +25220,44 @@
           }
         ]
       },
+      "MeasuredOffer": {
+        "properties": {
+          "session_id": {
+            "type": "integer",
+            "title": "Session Id"
+          },
+          "specialization": {
+            "$ref": "#/components/schemas/SpecializationCode"
+          },
+          "target_grade": {
+            "$ref": "#/components/schemas/GradeCode",
+            "description": "На какой грейд был тест"
+          },
+          "grade": {
+            "$ref": "#/components/schemas/GradeCode",
+            "description": "Уровень, который показал тест"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "category_label": {
+            "type": "string",
+            "title": "Category Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "session_id",
+          "specialization",
+          "target_grade",
+          "grade",
+          "category",
+          "category_label"
+        ],
+        "title": "MeasuredOffer",
+        "description": "Первичный тест не сдан, но показал уровень ниже — можно взять категорию по нему."
+      },
       "MessageResponse": {
         "properties": {
           "ok": {
@@ -28523,6 +28774,29 @@
             ],
             "title": "Outcome",
             "description": "Решение движка по заявленному грейду"
+          },
+          "measured_grade": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GradeCode"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Первичный тест не сдан: уровень, который тест показал (грейд по θ и порогам специализации, строго ниже целевого)"
+          },
+          "can_accept_measured": {
+            "type": "boolean",
+            "title": "Can Accept Measured",
+            "description": "Можно взять категорию по измеренному уровню (`POST /api/testing/sessions/{id}/accept-measured`): у кандидата нет подтверждённого грейда, это его последняя завершённая попытка",
+            "default": false
+          },
+          "measured_accepted": {
+            "type": "boolean",
+            "title": "Measured Accepted",
+            "description": "Категория по измеренному уровню уже присвоена",
+            "default": false
           }
         },
         "type": "object",
