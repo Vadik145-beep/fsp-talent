@@ -19,8 +19,10 @@
 
 import hashlib
 import hmac
+import html
 import json
 import logging
+import re
 import time
 from collections.abc import Sequence
 from datetime import date, datetime, timedelta
@@ -49,6 +51,23 @@ EVENTS = {
 }
 
 PENDING, DELIVERED, FAILED = "pending", "delivered", "failed"
+
+
+_TITLE_RE = re.compile(r"<title[^>]*>(.*?)</title>", re.IGNORECASE | re.DOTALL)
+_SCRIPT_RE = re.compile(r"<(script|style)[^>]*>.*?</\1>", re.IGNORECASE | re.DOTALL)
+_TAG_RE = re.compile(r"<[^>]+>")
+
+
+def short_body(text: str, limit: int = 120) -> str:
+    """Тело ответа ATS для журнала доставок: без HTML-тегов, в одну строку, не длиннее limit.
+
+    У HTML-страницы ошибки (nginx, фреймворки) берём заголовок <title>, иначе — текст без тегов.
+    """
+    if "<" in text and ">" in text:
+        title = _TITLE_RE.search(text)
+        text = title.group(1) if title else _TAG_RE.sub(" ", _SCRIPT_RE.sub(" ", text))
+    text = " ".join(html.unescape(text).split())
+    return text if len(text) <= limit else text[: limit - 1].rstrip() + "…"
 
 
 def sign(secret: str, timestamp: str, body: bytes) -> str:
@@ -152,7 +171,8 @@ async def deliver(
         code = response.status_code
         ok = 200 <= code < 300
         if not ok:
-            error = f"HTTP {code}: {response.text[:200]}"
+            detail = short_body(response.text)
+            error = f"HTTP {code}: {detail}" if detail else f"HTTP {code}"
     except httpx.HTTPError as exc:
         error = f"{type(exc).__name__}: {exc}"[:500]
     finally:

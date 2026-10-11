@@ -21,6 +21,7 @@ from app.integrations.webhooks import (
     deliver_pending,
     notify_application_created,
     notify_invitation_accepted,
+    short_body,
     verify,
 )
 from app.seed.testkit import reseed_sync, sql_sync
@@ -306,3 +307,16 @@ def test_webhook_validation_and_access(client: TestClient, monkeypatch: pytest.M
         == 204
     )
     assert client.get("/api/companies/my/webhooks", headers=RECRUITER).json() == []
+
+
+def test_short_body_strips_html() -> None:
+    page = (
+        "<!doctype html><html><head><title>405 Method Not Allowed</title>"
+        "<style>body{color:red}</style></head><body><h1>Method Not Allowed</h1></body></html>"
+    )
+    assert short_body(page) == "405 Method Not Allowed"
+    assert short_body("<p>Нет &amp; <b>доступа</b></p>") == "Нет & доступа"
+    assert short_body('  {"detail":   "bad"}\n') == '{"detail": "bad"}'
+    long = short_body("x" * 500)
+    assert len(long) == 120 and long.endswith("…")
+    assert short_body("") == ""

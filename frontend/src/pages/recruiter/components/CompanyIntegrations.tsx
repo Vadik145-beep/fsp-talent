@@ -42,6 +42,50 @@ const DELIVERY_LABELS: Record<Delivery['status'], { label: string; tone: Tone }>
   failed: { label: 'Не доставлено', tone: 'danger' },
 }
 
+const STATUS_HINTS: Record<number, string> = {
+  400: 'адрес отклонил запрос',
+  401: 'адрес требует авторизацию',
+  403: 'доступ к адресу запрещён',
+  404: 'адрес не найден',
+  405: 'адрес не принимает POST-запросы',
+  408: 'адрес не дождался запроса',
+  413: 'адрес не принял размер запроса',
+  429: 'слишком много запросов',
+  500: 'ошибка на стороне ATS',
+  502: 'шлюз ATS не отвечает',
+  503: 'ATS временно недоступна',
+  504: 'ATS не ответила вовремя',
+}
+
+/** Текст ответа ATS для показа: без HTML-тегов (у страницы ошибки — её заголовок), не длиннее 120 символов. */
+function plainResponseText(raw: string, limit = 120): string {
+  let text = raw
+  if (/<[a-z!/][^>]*>/i.test(text)) {
+    const title = /<title[^>]*>([\s\S]*?)(<\/title>|$)/i.exec(text)
+    text = title ? title[1] : text.replace(/<(script|style)[^>]*>[\s\S]*?<\/\1>/gi, ' ').replace(/<[^>]*>?/g, ' ')
+  }
+  text = text
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/\s+/g, ' ')
+    .trim()
+  return text.length <= limit ? text : `${text.slice(0, limit - 1).trimEnd()}…`
+}
+
+/** Почему доставка не прошла: «HTTP 405 — адрес не принимает POST-запросы» или ошибка сети. */
+function deliveryProblem(d: Pick<Delivery, 'last_error' | 'last_status_code'>): string | null {
+  const code = d.last_status_code
+  if (code != null && (code < 200 || code >= 300)) {
+    const hint = STATUS_HINTS[code] ?? (code >= 500 ? 'ошибка на стороне ATS' : 'адрес отклонил запрос')
+    const body = plainResponseText((d.last_error ?? '').replace(/^HTTP \d+:?\s*/, ''))
+    const extra = body && !body.toLowerCase().includes(hint.toLowerCase()) ? `: ${body}` : ''
+    return `HTTP ${code} — ${hint}${extra}`
+  }
+  return d.last_error ? plainResponseText(d.last_error) : null
+}
+
 function useCopy() {
   const { toast } = useToast()
   return async (text: string, what: string) => {
@@ -55,12 +99,12 @@ function useCopy() {
 }
 
 /** Секрет или токен, который показывается один раз. */
-function OneTimeSecret({ label, value, onHide }: { label: string; value: string; onHide: () => void }) {
+function OneTimeSecret({ label, note, value, onHide }: { label: string; note: string; value: string; onHide: () => void }) {
   const copy = useCopy()
   return (
     <div className="mb-4 rounded-md border border-warning bg-warning-soft p-3" role="status">
       <p className="text-sm font-semibold text-ink">{label}</p>
-      <p className="mt-0.5 text-[13px] text-muted">Сохраните его сейчас: после закрытия он больше не покажется — в базе хранится только хеш.</p>
+      <p className="mt-0.5 text-[13px] text-muted">{note}</p>
       <code className="mt-2 block rounded-xs border border-line bg-surface px-2 py-1.5 font-mono text-[13px] break-all text-ink select-all">{value}</code>
       <div className="mt-2 flex flex-wrap gap-2">
         <Button size="sm" variant="secondary" leftIcon={<Copy className="size-3.5" aria-hidden />} onClick={() => void copy(value, label.split(' ')[0])}>
@@ -136,7 +180,14 @@ function TokensCard({ onIssued }: { onIssued: (token: string) => void }) {
         }
         description="ATS забирает по токену вакансии, приглашения и отклики компании. Токен даёт доступ только к данным вашей компании."
       />
-      {issued && <OneTimeSecret label={`Токен «${issued.name}»`} value={issued.token} onHide={() => setIssued(null)} />}
+      {issued && (
+        <OneTimeSecret
+          label={`Токен «${issued.name}»`}
+          note="Сохраните его сейчас: платформа хранит только хеш токена, показать его ещё раз не сможет. Потеряли — выпустите новый и отзовите старый."
+          value={issued.token}
+          onHide={() => setIssued(null)}
+        />
+      )}
       <form onSubmit={submit} noValidate className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start">
         <Input
           label="Для чего токен"
@@ -217,16 +268,17 @@ function Deliveries({ webhookId }: { webhookId: number }) {
           <ul className="flex flex-col gap-1.5 text-[13px]">
             {rows.map((d) => {
               const st = DELIVERY_LABELS[d.status]
+              const problem = d.status === 'delivered' ? null : deliveryProblem(d)
               return (
                 <li key={d.id} className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                   <Badge tone={st.tone}>{st.label}</Badge>
                   <span className="text-ink">{EVENT_LABELS[d.event] ?? d.event}</span>
                   <span className="w-full text-muted">
                     {formatDateTime(d.delivered_at ?? d.created_at)}
-                    {d.last_status_code != null ? ` · ответ ${d.last_status_code}` : ''}
+                    {d.last_status_code != null && !problem ? ` · ответ ${d.last_status_code}` : ''}
                     {` · ${pluralize(d.attempts, ['попытка', 'попытки', 'попыток'])}`}
                   </span>
-                  {d.last_error && <span className="w-full break-words text-danger">{d.last_error}</span>}
+                  {problem && <span className="w-full break-words text-danger">{problem}</span>}
                 </li>
               )
             })}
@@ -252,7 +304,7 @@ function WebhookRow({ hook }: { hook: Webhook }) {
         toast({
           tone: 'error',
           title: 'Адрес не принял событие',
-          description: `${d.last_error ?? (d.last_status_code ? `Ответ ${d.last_status_code}` : 'Нет ответа')}. Платформа повторит отправку позже.`,
+          description: `${deliveryProblem(d) ?? 'Нет ответа'}. Платформа повторит отправку позже.`,
         })
     },
     onError: (e) => toast({ tone: 'error', title: 'Проверка не отправлена', description: getErrorMessage(e) }),
@@ -351,7 +403,14 @@ function WebhooksCard() {
         }
         description="Платформа сама отправит POST-запрос в вашу ATS, когда кандидат примет приглашение или откликнется на вакансию. Не дошло — повторим до 5 раз с паузами."
       />
-      {created && <OneTimeSecret label="Секрет подписи вебхука" value={created.secret} onHide={() => setCreated(null)} />}
+      {created && (
+        <OneTimeSecret
+          label="Секрет подписи вебхука"
+          note="Сохраните его и укажите в ATS для проверки подписи. Платформа хранит секрет, чтобы подписывать каждое событие, но в интерфейсе больше его не покажет. Потеряли — удалите вебхук и добавьте заново."
+          value={created.secret}
+          onHide={() => setCreated(null)}
+        />
+      )}
       <form onSubmit={submit} noValidate className="mb-4 flex flex-col gap-3">
         <Input
           label="Адрес приёма событий"
