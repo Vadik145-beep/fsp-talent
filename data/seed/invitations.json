@@ -2,20 +2,20 @@
   {
     "id": 1,
     "candidate_id": 1,
-    "recruiter_id": 1,
-    "company_id": 1,
-    "company_name": "Северный код",
-    "recruiter_name": "Ирина Белова",
-    "need_id": 1,
-    "vacancy_id": 1,
+    "recruiter_id": 5,
+    "company_id": 2,
+    "company_name": "Лаборатория данных «Вектор»",
+    "recruiter_name": "Георгий Лаптев",
+    "need_id": null,
+    "vacancy_id": null,
     "category": "backend:middle",
     "category_label": "Backend · Middle",
-    "description": "Северный код приглашает на позицию Backend · Middle. Расскажем о задачах на созвоне.",
+    "description": "Лаборатория данных «Вектор» приглашает на позицию Backend · Middle. Расскажем о задачах на созвоне.",
     "salary_from": 160000,
     "salary_to": 190000,
     "contact_method": {
       "type": "phone",
-      "value": "+7 900 201-00-11"
+      "value": "+7 900 205-00-15"
     },
     "task_text": null,
     "status": "accepted",

@@ -2857,15 +2857,15 @@
   {
     "id": 220,
     "at": "2026-09-28T06:00:00+03:00",
-    "actor_user_id": 41,
+    "actor_user_id": 45,
     "actor_role": "recruiter",
     "action": "contacts_revealed",
     "target_type": "invitation",
     "target_id": 1,
-    "summary": "Раскрыты контакты: Кандидат #CFAD ↔ Северный код",
+    "summary": "Раскрыты контакты: Кандидат #CFAD ↔ Лаборатория данных «Вектор»",
     "details": {
       "candidate_id": 1,
-      "company_id": 1
+      "company_id": 2
     }
   },
   {

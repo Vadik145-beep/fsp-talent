@@ -183,7 +183,7 @@ def test_second_application_is_409(client: TestClient) -> None:
     assert again.json()["code"] == "already_applied"
     assert again.json()["details"] == {"application_id": created["id"]}
     # отклик из сида (кандидат 1 → вакансия 1)
-    seed_dup = client.post("/api/vacancies/1/applications", json={}, headers=CANDIDATE)
+    seed_dup = client.post("/api/vacancies/4/applications", json={}, headers=CANDIDATE)
     assert seed_dup.status_code == 409
     count = sql_sync("SELECT count(*) FROM applications WHERE candidate_id = 1 AND vacancy_id = 7")
     assert count[0][0] == 1
@@ -320,9 +320,9 @@ def test_invite_contact_visible_to_candidate_only_while_invited(
 
 
 def test_seed_invited_application_has_contact(client: TestClient) -> None:
-    seeded = mine(client, 2)  # «Middle Python-разработчик», кандидат 1 — приглашён
+    seeded = mine(client, 1)  # «ML-инженер» «Вектора», кандидат 1 — приглашён
     assert seeded["status"] == "invited"
-    assert seeded["contact_method"] == {"type": "telegram", "value": "@hr_belova"}
+    assert seeded["contact_method"] == {"type": "telegram", "value": "@hr_titova"}
     assert seeded["invite_message"]
 
 

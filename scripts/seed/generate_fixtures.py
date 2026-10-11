@@ -2421,7 +2421,9 @@ def event(inv_id: int, typ: str, at: datetime, role: str | None) -> None:
 
 INVITATION_PLAN = [
     # (candidate_id, recruiter_id, status, decline_reason, created_days_ago)
-    (1, 1, "accepted", None, 9),
+    # candidate@ принял приглашение «Вектора», а не «Северного кода» (компании recruiter@):
+    # в подборке recruiter@ кандидат обезличен, и его можно пригласить на показе
+    (1, 5, "accepted", None, 9),
     (1, 4, "sent", None, 1),
     (1, 6, "declined", "not_interested_domain", 12),
     (1, 5, "viewed", None, 3),
@@ -2550,8 +2552,8 @@ def build_invitations() -> None:
             event(idx, "withdrawn", withdrawn, "recruiter")
 
     plan = [
-        (1, 4, "viewed"),
-        (1, 1, "invited"),
+        (1, 4, "invited"),  # candidate@: «Вектор» пригласил по отклику, контакты открыты
+        (32, 1, "viewed"),  # не candidate@: отклик открыл бы его контакты «Северному коду»
         (2, 1, "new"),
         (3, 1, "rejected"),
         (26, 3, "new"),
@@ -2583,7 +2585,8 @@ def build_invitations() -> None:
             }
         )
         if status == "invited":  # приглашая, рекрутер оставляет способ связи и пару слов
-            APPLICATIONS[-1]["contact_method"] = {"type": "telegram", "value": "@hr_belova"}
+            rec = next(r for r in RECRUITERS if r["company_id"] == vac["company_id"])
+            APPLICATIONS[-1]["contact_method"] = {"type": "telegram", "value": rec["telegram"]}
             APPLICATIONS[-1]["invite_message"] = (
                 "Добрый день! Давайте созвонимся на 30 минут — напишите в Telegram, когда удобно."
             )

@@ -214,12 +214,12 @@ def test_invitation_accepted_and_application_events(client: TestClient, receiver
     add_webhook(client, receiver.url, ["invitation.accepted"])
     only_apps = add_webhook(client, receiver.url + "/apps", ["application.created"])
 
-    run_db(lambda s: notify_invitation_accepted(s, 1))  # приглашение 1 компании 1 — принято
+    run_db(lambda s: notify_invitation_accepted(s, 8))  # приглашение 8 компании 1 — принято
     assert len(receiver.requests) == 1
     event = json.loads(receiver.requests[0]["body"])
     assert event["event"] == "invitation.accepted" and receiver.requests[0]["path"] == "/hooks/fsp"
     data = event["data"]
-    assert data["invitation_id"] == 1 and data["status"] == "accepted"
+    assert data["invitation_id"] == 8 and data["status"] == "accepted"
     assert data["candidate"]["contacts"]["email"]  # после принятия контакты раскрыты
     assert "T" in data["accepted_at"]  # даты — ISO 8601
 
@@ -244,7 +244,7 @@ def test_invitation_accepted_and_application_events(client: TestClient, receiver
 def test_retry_then_delivered_then_failed(client: TestClient, receiver: Receiver) -> None:
     hook = add_webhook(client, receiver.url, ["invitation.accepted"])
     receiver.codes = [500]
-    run_db(lambda s: notify_invitation_accepted(s, 1))
+    run_db(lambda s: notify_invitation_accepted(s, 8))
     row = sql_sync(
         "SELECT status, attempts, last_status_code, next_attempt_at > now() FROM webhook_deliveries"
     )
