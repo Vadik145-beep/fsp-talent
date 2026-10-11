@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
-import { ChevronRight, Plus, Target, Users } from 'lucide-react'
+import { ChevronRight, Search, Target, Users } from 'lucide-react'
 import { api } from '@/shared/api'
 import { formatDate, formatSalaryRange, plural } from '@/shared/lib/format'
 import { Badge, Card, EmptyState, PageHeader, Tabs } from '@/shared/ui'
@@ -27,8 +27,8 @@ export default function RecruiterNeedsPage() {
         description="Кого ищет компания. По каждой потребности — подборка кандидатов с объяснением."
         actions={
           <Link to="/recruiter/needs/new" className={newNeedLink}>
-            <Plus className="size-4" aria-hidden />
-            Новая потребность
+            <Search className="size-4" aria-hidden />
+            Найти кандидата
           </Link>
         }
       />
@@ -57,8 +57,8 @@ export default function RecruiterNeedsPage() {
               action={
                 tab === 'active' ? (
                   <Link to="/recruiter/needs/new" className={newNeedLink}>
-                    <Plus className="size-4" aria-hidden />
-                    Новая потребность
+                    <Search className="size-4" aria-hidden />
+                    Найти кандидата
                   </Link>
                 ) : undefined
               }

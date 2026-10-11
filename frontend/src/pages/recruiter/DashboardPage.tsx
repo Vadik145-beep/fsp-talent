@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowRight, Inbox, Mail, Plus, Target, Users, UserCheck } from 'lucide-react'
+import { ArrowRight, Inbox, Mail, Search, Target, Users, UserCheck } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { api } from '@/shared/api'
 import { INVITATION_STATUSES, categoryLabel } from '@/shared/config/dictionaries'
@@ -36,8 +36,8 @@ export default function RecruiterDashboardPage() {
               Банк кандидатов
             </Link>
             <Link to="/recruiter/needs/new" className={primaryLink}>
-              <Plus className="size-4" aria-hidden />
-              Новая потребность
+              <Search className="size-4" aria-hidden />
+              Найти кандидата
             </Link>
           </>
         }
