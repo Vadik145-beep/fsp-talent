@@ -139,6 +139,25 @@ class PasswordResetConfirm(ApiModel):
     new_password: str = Field(min_length=8, max_length=128)
 
 
+class FspLogoutUrl(OutModel):
+    """Куда отправить браузер после выхода, чтобы закрыть и сессию ФСП ID (Keycloak)."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "logout_url": "http://localhost:18180/realms/fsp/protocol/openid-connect/logout?client_id=fsp-talent&post_logout_redirect_uri=http%3A%2F%2Flocalhost%3A15173%2Flogin&id_token_hint=...",
+                }
+            ]
+        }
+    )
+
+    logout_url: str | None = Field(
+        default=None,
+        description="null — входа через ФСП ID в этом браузере не было или Keycloak недоступен",
+    )
+
+
 class FspAuthorizeUrl(OutModel):
     """Ссылка на Keycloak (realm `fsp`) для входа или привязки через ФСП ID."""
 

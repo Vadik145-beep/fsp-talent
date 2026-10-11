@@ -337,7 +337,7 @@
       ],
       "attributes": {
         "pkce.code.challenge.method": "S256",
-        "post.logout.redirect.uris": "http://localhost:15173/*##http://localhost:18000/*"
+        "post.logout.redirect.uris": "http://localhost:15173/*##http://localhost:18000/*##https://159-194-200-243.sslip.io/*"
       },
       "protocolMappers": [
         {
