@@ -116,6 +116,23 @@ export function useStartTest() {
   })
 }
 
+/**
+ * Взять категорию по уровню, который показал несданный первичный тест (`can_accept_measured`).
+ * Ответ — обновлённый результат теста; профиль, главная и грейд перезапрашиваются.
+ */
+export function useAcceptMeasured() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (sessionId: number) => api.post<TestResult>(`/testing/sessions/${sessionId}/accept-measured`),
+    onSuccess: (result) => {
+      client.setQueryData(qk.result(result.session_id), result)
+      void invalidateCandidate(client)
+    },
+  })
+}
+
+export type MeasuredOffer = S['MeasuredOffer']
+
 /** После действий, меняющих профиль, обновить всё, что от него зависит. */
 export function invalidateCandidate(client: ReturnType<typeof useQueryClient>) {
   return client.invalidateQueries({ queryKey: qk.all })

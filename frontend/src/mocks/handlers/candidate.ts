@@ -94,7 +94,7 @@ interface MockSessionState {
   answers: MockAnswer[]
 }
 
-type SessionRow = S['TestSession'] & { _mock?: MockSessionState }
+type SessionRow = S['TestSession'] & { _mock?: MockSessionState; _measured_accepted?: boolean }
 
 const T = {
   candidates: () => db.data.candidates as unknown as CandidateRow[],
@@ -264,7 +264,10 @@ function profileView(c: CandidateRow): S['CandidateProfile'] {
 function gradeStatusFields(c: CandidateRow) {
   const confirmedAt = c.grade
     ? (latest(
-        T.sessions().filter((s) => s.candidate_id === c.id && s.status === 'finished' && s.passed && s.specialization === c.specialization),
+        T.sessions().filter(
+          (s) =>
+            s.candidate_id === c.id && s.status === 'finished' && (s.passed || s._measured_accepted) && s.specialization === c.specialization,
+        ),
         (s) => s.finished_at ?? '',
       )[0]?.finished_at ?? c.last_test_at ?? null)
     : null
@@ -814,9 +817,45 @@ function recommendation(session: SessionRow, c: CandidateRow): S['Recommendation
   }
 }
 
+/** Как на бэкенде: несданный первичный тест — уровень по θ строго ниже целевого. */
+function measuredGrade(session: SessionRow): Grade | null {
+  if (session.kind !== 'placement' || session.status !== 'finished' || session.passed || session.theta == null) return null
+  const g = gradeByTheta(session.specialization, session.theta)
+  return GRADES.indexOf(g) < GRADES.indexOf(session.target_grade) ? g : null
+}
+
+/** Категорию по уровню можно взять: грейда нет, ещё не брали, это последняя завершённая попытка. */
+function canAcceptMeasured(session: SessionRow, c: CandidateRow): boolean {
+  if (!measuredGrade(session) || c.grade || session._measured_accepted) return false
+  const last = latest(
+    T.sessions().filter((s) => s.candidate_id === c.id && s.status !== 'in_progress' && s.finished_at),
+    (s) => s.finished_at ?? '',
+  )[0]
+  return last?.id === session.id
+}
+
+function measuredOffer(c: CandidateRow): S['MeasuredOffer'] | null {
+  if (c.grade) return null
+  const last = latest(
+    T.sessions().filter((s) => s.candidate_id === c.id && s.status !== 'in_progress' && s.finished_at),
+    (s) => s.finished_at ?? '',
+  )[0]
+  const grade = last ? measuredGrade(last) : null
+  if (!last || !grade || !canAcceptMeasured(last, c)) return null
+  return {
+    session_id: last.id,
+    specialization: last.specialization,
+    target_grade: last.target_grade,
+    grade,
+    category: `${last.specialization}:${grade}`,
+    category_label: categoryLabel(last.specialization, grade),
+  }
+}
+
 function testResult(session: SessionRow, c: CandidateRow): S['TestResult'] {
   const scores = session.topic_scores ?? []
   const resultGrade = session.result_grade ?? session.target_grade
+  const accepted = !!session._measured_accepted
   return {
     session_id: session.id,
     specialization: session.specialization,
@@ -834,7 +873,16 @@ function testResult(session: SessionRow, c: CandidateRow): S['TestResult'] {
     topic_scores: scores,
     strong_topics: scores.filter((s) => s.level === 'strong').map((s) => s.label),
     weak_topics: scores.filter((s) => s.level === 'weak').map((s) => s.label),
-    recommendation: recommendation(session, c),
+    recommendation: accepted
+      ? {
+          action: 'retry_later',
+          message: `Категория ${categoryLabel(session.specialization, resultGrade)} присвоена по результату теста. Повторить тест на ${GRADE_LABELS[session.target_grade]} можно через ${settings().retryCooldownDays} дней.`,
+          available_at: retryAvailableAt(c, session.specialization, session.target_grade),
+        }
+      : recommendation(session, c),
+    measured_grade: measuredGrade(session),
+    can_accept_measured: canAcceptMeasured(session, c),
+    measured_accepted: accepted,
   }
 }
 
@@ -1004,6 +1052,7 @@ export const candidateHandlers: HttpHandler[] = [
           profile_completeness: completeness(c),
           fsp_linked: !!c.fsp_id,
           hints,
+          measured_offer: measuredOffer(c),
         }
         return dashboard
       },
@@ -1435,6 +1484,41 @@ export const candidateHandlers: HttpHandler[] = [
       if (!session) return notFound('Тест не найден')
       if (session.status !== 'finished') return apiError(409, 'session_not_finished', 'Тест ещё не завершён')
       return testResult(session, c)
+    }),
+  ),
+
+  http.post(
+    '/api/testing/sessions/:sessionId/accept-measured',
+    candidateMutation((c, { params }) => {
+      const session = T.sessions().find((s) => s.id === Number(params.sessionId) && s.candidate_id === c.id)
+      if (!session) return notFound('Тест не найден')
+      if (session.status === 'in_progress') return apiError(409, 'session_not_finished', 'Тест ещё не завершён')
+      if (session._measured_accepted) return apiError(409, 'measured_already_accepted', 'Категория по этому тесту уже присвоена')
+      const grade = measuredGrade(session)
+      if (!grade) return apiError(409, 'measured_not_available', 'Категорию по результату можно взять только за несданный первичный тест')
+      if (c.grade) return apiError(409, 'grade_already_confirmed', 'Грейд уже подтверждён — категория по результату теста не нужна')
+      if (!canAcceptMeasured(session, c)) {
+        return apiError(409, 'measured_not_available', 'Категорию можно взять только по последнему завершённому тесту')
+      }
+      const spec = session.specialization
+      c.specialization = spec
+      c.grade = grade
+      c.category = `${spec}:${grade}`
+      c.category_label = categoryLabel(spec, grade)
+      c.theta = session.theta ?? null
+      c.theta_se = session.se ?? null
+      c.topic_scores = session.topic_scores ?? []
+      session._measured_accepted = true
+      addHistory(c, {
+        event: 'grade_changed',
+        specialization: spec,
+        grade_from: null,
+        grade_to: grade,
+        test_session_id: session.id,
+        comment: `Категория по результату теста: ${c.category_label}, θ = ${session.theta} (тест на ${GRADE_LABELS[session.target_grade]} не пройден)`,
+      })
+      db.save()
+      return HttpResponse.json(testResult(session, c))
     }),
   ),
 

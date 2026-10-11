@@ -13,6 +13,7 @@ import { ThetaScale } from './components/ThetaScale'
 import { ONBOARDING_STEPS, writeOnboarding } from './components/onboardingSteps'
 import { claimLabel, hasClaim, readResumeClaim } from './components/resumeClaimStore'
 import { PublicationPrompt } from './components/PublicationPrompt'
+import { MeasuredOffer } from './components/MeasuredOffer'
 import { TOPIC_LEVEL, formatTheta, gradeTestLabel } from './labels'
 
 const linkBtn =
@@ -82,7 +83,17 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
         : null
   const canStartNow = recGrade && !rec.available_at
   const grade = useGradeStatus()
-  const failNote = r.passed ? null : failedNote(r, grade.data, recGrade, rec.available_at ?? null)
+  // Категория взята по уровню несданного теста — дальше экран как у сданного.
+  const accepted = r.measured_accepted === true
+  const hasCategory = r.passed || accepted
+  const failNote = hasCategory
+    ? accepted
+      ? `Тест на ${GRADE_LABELS[r.target_grade]} не пройден — категория присвоена по уровню, который показал тест.` +
+        (rec.available_at ? ` Повторить ${gradeTestLabel(r.target_grade)} можно с ${formatDate(rec.available_at)}` : '')
+      : null
+    : r.can_accept_measured
+      ? null // объяснение и кнопка — в блоке «получить категорию» сверху
+      : failedNote(r, grade.data, recGrade, rec.available_at ?? null)
   // Ни одного верного ответа: подписи «в пределах уровня» и «ровный результат» тут вводят в заблуждение.
   const allZero = r.topic_scores.length > 0 && r.topic_scores.every((t) => t.score <= 0)
   // «По резюме заявлен Senior → тест подтвердил Middle»: резюме только заявка, категорию даёт тест.
@@ -91,7 +102,7 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
   // Не подтвердил грейд выше/ниже, но своя категория в этой специализации есть — крупно показываем её,
   // а уровень по попытке отдельной строкой (иначе «Backend · Стажёр» читается как новая категория).
   const kept =
-    !r.passed && grade.data?.grade_status === 'confirmed' && grade.data.specialization === r.specialization && grade.data.category_label
+    !hasCategory && grade.data?.grade_status === 'confirmed' && grade.data.specialization === r.specialization && grade.data.category_label
       ? grade.data.category_label
       : null
   // Грейд в этой специализации ещё не подтверждён: следующий тест — снова первичный, на другой заявленный грейд.
@@ -100,17 +111,26 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
 
   return (
     <div className="grid grid-cols-1 gap-5">
+      {r.can_accept_measured && r.measured_grade && (
+        <MeasuredOffer
+          sessionId={r.session_id}
+          targetGrade={r.target_grade}
+          grade={r.measured_grade}
+          categoryLabel={r.category_label}
+        />
+      )}
+
       {/* Категория */}
-      <Card padding="lg" className={r.passed ? 'border-success/30' : 'border-warning/30'}>
+      <Card padding="lg" className={hasCategory ? 'border-success/30' : 'border-warning/30'}>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            {onboarding && r.passed && (
+            {onboarding && hasCategory && (
               <p className="mb-2 inline-flex items-center gap-2 text-sm font-semibold text-success">
                 <PartyPopper className="size-4" aria-hidden /> Знакомство завершено
               </p>
             )}
             <p className="text-sm font-semibold text-muted">
-              {r.passed ? 'Ваша категория' : kept ? 'Ваша категория сохраняется' : 'Уровень по тесту соответствует'}
+              {hasCategory ? 'Ваша категория' : kept ? 'Ваша категория сохраняется' : 'Уровень по тесту соответствует'}
             </p>
             <p className="mt-1 text-4xl leading-tight font-bold text-fsp-night sm:text-5xl" data-testid="result-category">
               {kept ?? r.category_label}
@@ -140,6 +160,10 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
             <Badge tone="success" icon={<CircleCheck />} className="self-start px-3 py-1 text-sm">
               Грейд {GRADE_LABELS[r.target_grade]} подтверждён
             </Badge>
+          ) : accepted ? (
+            <Badge tone="success" icon={<CircleCheck />} className="self-start px-3 py-1 text-sm" data-testid="measured-accepted">
+              Категория по результату теста
+            </Badge>
           ) : (
             <Badge tone="warning" icon={<TriangleAlert />} className="self-start px-3 py-1 text-sm">
               Грейд {GRADE_LABELS[r.target_grade]} не подтверждён
@@ -147,7 +171,10 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
           )}
         </div>
         {failNote && (
-          <p className="mt-4 rounded-md bg-warning-soft px-3 py-2 text-sm text-warning" data-testid="fail-note">
+          <p
+            className={`mt-4 rounded-md px-3 py-2 text-sm ${accepted ? 'bg-success-soft text-success' : 'bg-warning-soft text-warning'}`}
+            data-testid="fail-note"
+          >
             {failNote}
           </p>
         )}
@@ -238,6 +265,7 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
               {canStartNow && (
                 <Button
+                  variant={r.can_accept_measured ? 'secondary' : 'primary'}
                   loading={start.isPending}
                   onClick={() =>
                     start.mutate(

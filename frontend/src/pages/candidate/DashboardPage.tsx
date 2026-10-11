@@ -7,6 +7,7 @@ import { QueryView } from './components/QueryView'
 import { FspLinkButton } from './components/FspLinkButton'
 import { GradeConfirmedBadge, TakeTestButton, UnconfirmedGrade } from './components/GradeStatus'
 import { PublicationPrompt } from './components/PublicationPrompt'
+import { MeasuredOffer } from './components/MeasuredOffer'
 import { CANDIDATE_INVITATION_STATUS, formatTheta } from './labels'
 import { greetingName } from './components/personName'
 import { PageHeader } from '@/shared/ui'
@@ -37,7 +38,15 @@ export default function CandidateDashboardPage() {
       >
         {(d) => (
           <div className="grid grid-cols-1 gap-4">
-            {!d.onboarding_completed && d.grade_status === 'unconfirmed' && d.declared_grade && d.declared_specialization ? (
+            {d.measured_offer ? (
+              <MeasuredOffer
+                variant="banner"
+                sessionId={d.measured_offer.session_id}
+                targetGrade={d.measured_offer.target_grade}
+                grade={d.measured_offer.grade}
+                categoryLabel={d.measured_offer.category_label}
+              />
+            ) : !d.onboarding_completed && d.grade_status === 'unconfirmed' && d.declared_grade && d.declared_specialization ? (
               <Card className="border-0 bg-fsp-night text-white" padding="lg">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex gap-4">
