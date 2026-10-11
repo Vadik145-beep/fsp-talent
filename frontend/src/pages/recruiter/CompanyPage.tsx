@@ -5,6 +5,7 @@ import { useAuth } from '@/app/auth/AuthContext'
 import { api, getErrorMessage } from '@/shared/api'
 import { Avatar, Badge, Button, Card, CardHeader, Input, PageHeader, Table, Textarea, useToast } from '@/shared/ui'
 import { apiFieldErrors, refreshRecruiter, rk, useCompany, useCompanyRecruiters, type Company, type S } from './api'
+import { CompanyIntegrations } from './components/CompanyIntegrations'
 import { ContactRules } from './components/ContactRules'
 import { QueryState } from './components/QueryState'
 import { QuotaMeter } from './components/QuotaMeter'
@@ -82,6 +83,7 @@ export default function RecruiterCompanyPage() {
           <ContactRules />
         </div>
       </div>
+      {canEdit && <CompanyIntegrations />}
     </>
   )
 }
