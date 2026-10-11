@@ -64,6 +64,14 @@ function WrappedTick(props: { x?: number; y?: number; payload?: { value: string 
   )
 }
 
+/** Подпись на оси X: числа по-русски (запятая, минус «−»), в текстовых интервалах — тоже. */
+function axisTick(v: unknown): string {
+  if (typeof v === 'number') return num(v, Number.isInteger(v) ? 0 : Math.min(2, String(v).split('.')[1]?.length ?? 2))
+  return String(v)
+    .replace(/(\d)\.(\d)/g, '$1,$2')
+    .replace(/(^|[\s([–—])-(?=\d)/g, '$1−')
+}
+
 function fmt(v: unknown, percent?: boolean): string {
   if (typeof v !== 'number') return String(v)
   return percent ? pct(v, v < 0.995 && v > 0.005 && Math.round(v * 100) !== v * 100 ? 1 : 0) : num(v, Number.isInteger(v) ? 0 : 2)
@@ -86,7 +94,7 @@ export function ValidationChartView({ chart, options = {} }: { chart: Validation
       <ChartBox height={height} label={`${chart.title}: ${chart.x_label} против ${chart.y_label}`}>
         <ScatterChart margin={{ top: 8, right: 16, bottom: 28, left: 4 }}>
           <CartesianGrid {...GRID} />
-          <XAxis type="number" dataKey="x" name={chart.x_label} domain={diagonal ? [lo, hi] : ['auto', 'auto']} {...AXIS}
+          <XAxis type="number" dataKey="x" name={chart.x_label} domain={diagonal ? [lo, hi] : ['auto', 'auto']} {...AXIS} tickFormatter={axisTick}
             label={{ value: chart.x_label, position: 'insideBottom', offset: -16, ...AXIS_LABEL }} />
           <YAxis type="number" dataKey="y" name={chart.y_label} domain={diagonal ? [lo, hi] : yDomain ?? ['auto', 'auto']} width={44} {...AXIS} tickFormatter={yTick} />
           <Tooltip {...TOOLTIP_STYLE} cursor={{ strokeDasharray: '3 3' }} formatter={(v) => fmt(v, percent)} />
@@ -128,9 +136,9 @@ export function ValidationChartView({ chart, options = {} }: { chart: Validation
       <ChartBox height={height} label={chart.title}>
         <LineChart data={rows} margin={{ top: 8, right: 16, bottom: 28, left: 4 }}>
           <CartesianGrid {...GRID} vertical={false} />
-          <XAxis dataKey="x" {...AXIS} label={{ value: chart.x_label, position: 'insideBottom', offset: -16, ...AXIS_LABEL }} />
+          <XAxis dataKey="x" {...AXIS} tickFormatter={axisTick} label={{ value: chart.x_label, position: 'insideBottom', offset: -16, ...AXIS_LABEL }} />
           <YAxis width={44} {...AXIS} tickFormatter={yTick} domain={yDomain ?? ['auto', 'auto']} />
-          <Tooltip {...TOOLTIP_STYLE} formatter={(v) => fmt(v, percent)} labelFormatter={(l) => `${chart.x_label}: ${l}`} />
+          <Tooltip {...TOOLTIP_STYLE} formatter={(v) => fmt(v, percent)} labelFormatter={(l) => `${chart.x_label}: ${axisTick(l)}`} />
           {multi && <Legend itemSorter={null} verticalAlign="top" height={28} iconType="plainline" wrapperStyle={{ fontSize: 12 }} />}
           {chart.series.map((s, i) => (
             <Line key={s.name} type="monotone" dataKey={s.name} stroke={colors[i]} strokeWidth={2}
@@ -168,7 +176,7 @@ export function ValidationChartView({ chart, options = {} }: { chart: Validation
     <ChartBox height={height} label={chart.title}>
       <BarChart data={rows} margin={{ top: labelBars ? 20 : 8, right: 8, bottom: longLabels ? 8 : 28, left: 4 }} barGap={2} barCategoryGap={chart.chart_type === 'histogram' ? 2 : '22%'}>
         <CartesianGrid {...GRID} vertical={false} />
-        <XAxis dataKey="x" {...AXIS} interval={dense ? 1 : 0} height={longLabels ? 48 : 30}
+        <XAxis dataKey="x" {...AXIS} interval={dense ? 1 : 0} height={longLabels ? 48 : 30} tickFormatter={axisTick}
           tick={longLabels || dense ? { ...AXIS.tick, fontSize: 11 } : AXIS.tick}
           label={longLabels ? undefined : { value: chart.x_label, position: 'insideBottom', offset: -16, ...AXIS_LABEL }} />
         <YAxis width={44} {...AXIS} tickFormatter={yTick} domain={yDomain ?? (percent ? [0, 1] : [0, 'auto'])} />

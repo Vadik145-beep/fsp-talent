@@ -2,7 +2,7 @@ import { Link } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Briefcase, Lock, UserRound } from 'lucide-react'
 import { api } from '@/shared/api'
-import { formatDateTime } from '@/shared/lib/format'
+import { formatDateTime, formatPhone } from '@/shared/lib/format'
 import { Button, Drawer, Pseudonym, SalaryRange, SkeletonText, StatusPill, ErrorState } from '@/shared/ui'
 import { pseudonymCodeOf, rk, useMyRecruiterId, type Invitation, type InvitationDetail } from '../api'
 import { CONTACT_TYPE_LABELS, EVENT_LABELS } from '../labels'
@@ -94,7 +94,7 @@ export function InvitationDrawer({
                 <h3 className="mb-1 font-semibold text-success">Контакты кандидата</h3>
                 <p className="font-semibold">{inv.candidate_contacts.full_name}</p>
                 <p>{inv.candidate_contacts.email}</p>
-                {inv.candidate_contacts.phone && <p>{inv.candidate_contacts.phone}</p>}
+                {inv.candidate_contacts.phone && <p>{formatPhone(inv.candidate_contacts.phone)}</p>}
                 {inv.candidate_contacts.telegram && <p>{inv.candidate_contacts.telegram}</p>}
               </section>
             ) : (

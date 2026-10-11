@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatDuration, formatMoney, formatPercent, formatSalaryRange, formatSigned, plural, pluralize, toFixedRound } from './format'
+import { formatDecimal, formatDuration, formatMoney, formatNumber, formatPercent, formatPhone, formatSalaryRange, formatSigned, lowerFirst, plural, pluralize, toFixedRound } from './format'
 import { categoryLabel } from '@/shared/config/dictionaries'
 import { pseudonymCode } from './pseudonym'
 
@@ -39,6 +39,24 @@ describe('форматирование', () => {
     expect(toFixedRound(-0.001, 1)).toBe('0.0')
     expect(toFixedRound(20, 0)).toBe('20')
     expect(toFixedRound(1e-9, 2)).toBe('0.00')
+  })
+
+  it('десятичное с минусом, подпись со строчной', () => {
+    expect(formatDecimal(-0.6)).toBe('−0,60')
+    expect(formatDecimal(1.234)).toBe('1,23')
+    expect(formatDecimal(-0.001)).toBe('0,00')
+    expect(n(formatNumber(-250000))).toBe('−250 000')
+    expect(lowerFirst('Достижения ФСП')).toBe('достижения ФСП')
+    expect(lowerFirst('ФСП ID')).toBe('ФСП ID')
+    expect(lowerFirst('Стек')).toBe('стек')
+  })
+
+  it('телефон', () => {
+    expect(formatPhone('+79172451863')).toBe('+7 917 245-18-63')
+    expect(formatPhone('8 (917) 245 18 63')).toBe('+7 917 245-18-63')
+    expect(formatPhone('+7 900 101-55-37')).toBe('+7 900 101-55-37')
+    expect(formatPhone('+44 20 7946 0958')).toBe('+44 20 7946 0958')
+    expect(formatPhone('доб. 123')).toBe('доб. 123')
   })
 
   it('число со склонением', () => {

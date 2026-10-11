@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Mail, MessageCircle, Phone } from 'lucide-react'
 import { api, getErrorMessage } from '@/shared/api'
-import { formatDate } from '@/shared/lib/format'
+import { formatDate, formatPhone } from '@/shared/lib/format'
 import { Badge, Card, Select, useToast } from '@/shared/ui'
 import { apiFieldErrors, refreshRecruiter, rk, upsertInList, type Application, type ApplicationStatus } from '../api'
 import { APPLICATION_STATUS_LABELS, APPLICATION_STATUS_TONE, APPLICATION_TRANSITIONS, CONTACT_TYPE_LABELS } from '../labels'
@@ -103,7 +103,7 @@ export function ApplicationItem({ app, showVacancy }: { app: Application; showVa
           {contacts.phone && (
             <span className="inline-flex items-center gap-1.5">
               <Phone className="size-4 text-success" aria-hidden />
-              {contacts.phone}
+              {formatPhone(contacts.phone)}
             </span>
           )}
           {contacts.telegram && (

@@ -157,7 +157,7 @@ def score_candidate(
         )
     if theta is not None:
         strong = [t["label"] for t in cand.get("topic_scores") or [] if t.get("level") == "strong"]
-        pct = round(values["theta"] * 100)
+        pct = min(99, max(1, round(values["theta"] * 100)))  # как на карточке: 1–99 %
         topics = f"; сильные темы: {', '.join(strong[:2])}" if strong else ""
         reasons.append(
             (f"Тест сильнее, чем у {pct} % специалистов{topics}", contrib["theta"] + 0.01)

@@ -3,7 +3,7 @@ import { useParams } from 'react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AtSign, Briefcase, Building2, Check, Clock, Flag, Lock, Mail, MessageCircle, MessagesSquare, Phone, Send, X } from 'lucide-react'
 import { api, getErrorMessage, isApiError } from '@/shared/api'
-import { formatDate, formatDateTime, formatSalaryRange } from '@/shared/lib/format'
+import { formatDate, formatDateTime, formatPhone, formatSalaryRange } from '@/shared/lib/format'
 import { Button, Card, CardHeader, EmptyState, Modal, PageHeader, RadioGroup, Select, Skeleton, StatusPill, Tag, Textarea, useToast } from '@/shared/ui'
 import { qk, useDeclineReasons, type DeclineReason, type Invitation, type InvitationDetail, type S } from './api'
 import { QueryView } from './components/QueryView'
@@ -219,7 +219,7 @@ function InvitationView({ inv }: { inv: InvitationDetail }) {
               {inv.recruiter_contacts.phone && (
                 <ContactLine icon={<Phone className="size-4" aria-hidden />}>
                   <a href={`tel:${inv.recruiter_contacts.phone.replace(/[^\d+]/g, '')}`} className="text-fsp-plum hover:underline">
-                    {inv.recruiter_contacts.phone}
+                    {formatPhone(inv.recruiter_contacts.phone)}
                   </a>
                 </ContactLine>
               )}

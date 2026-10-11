@@ -1,4 +1,5 @@
 import type { Tone } from '@/shared/ui'
+import { formatDecimal } from '@/shared/lib/format'
 import { GRADE_LABELS } from '@/shared/config/dictionaries'
 import type { S } from './api'
 
@@ -134,8 +135,7 @@ export const DECLINE_REASON_FALLBACK: Record<S['DeclineReason'], string> = {
 
 /** θ → «0,42» (знак минуса типографский). */
 export function formatTheta(value: number, digits = 2): string {
-  const s = Math.abs(value).toFixed(digits).replace('.', ',')
-  return value < 0 ? `−${s}` : s
+  return formatDecimal(value, digits)
 }
 
 /** В текстах событий с бэкенда «θ = 0.42» / «θ = -1.98» → «θ = 0,42» / «θ = −1,98». */

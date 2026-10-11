@@ -4,7 +4,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Info, SearchX, ShieldCheck, Users, X } from 'lucide-react'
 import { api, getErrorMessage } from '@/shared/api'
 import { cn } from '@/shared/lib/cn'
-import { formatPercent, formatSalaryRange, plural } from '@/shared/lib/format'
+import { formatPercent, formatSalaryRange, lowerFirst, plural } from '@/shared/lib/format'
 import { Badge, Button, Card, EmptyState, FilterBar, PageHeader, Select, Skeleton, SkeletonCard, Tag } from '@/shared/ui'
 import {
   rk,
@@ -284,7 +284,7 @@ export default function RecruiterNeedPage() {
                 Как считается соответствие
               </summary>
               <p className="mt-2 text-muted">
-                Счёт от 0 до 100 = {weights.map((w) => `${w.label.toLowerCase()} ${formatPercent(w.weight)}`).join(' + ')}. У каждого
+                Счёт от 0 до 100 = {weights.map((w) => `${lowerFirst(w.label)} ${formatPercent(w.weight)}`).join(' + ')}. У каждого
                 фактора полоска показывает силу (0–1), число справа — вклад в итог. Ожидания кандидата по зарплате сравниваются с
                 вилкой без раскрытия суммы.
               </p>

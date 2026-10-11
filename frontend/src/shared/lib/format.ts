@@ -1,4 +1,5 @@
 const NBSP = '\u00A0'
+const MINUS = '\u2212'
 
 /**
  * Округление «как в школе» без ошибки двоичной дроби: 57.65 → «57.7» (у toFixed — «57.6»,
@@ -15,9 +16,14 @@ export function toFixedRound(value: number, digits = 0): string {
   return (clean < 0 && rounded !== 0 ? -rounded : rounded).toFixed(digits)
 }
 
+/** Десятичное число по-русски: −0.6 → «−0,60» (запятая и настоящий минус «−», не дефис). */
+export function formatDecimal(value: number, digits = 2): string {
+  return toFixedRound(value, digits).replace('.', ',').replace('-', MINUS)
+}
+
 /** 250000 → «250 000» (неразрывные пробелы между разрядами). */
 export function formatNumber(value: number): string {
-  const sign = value < 0 ? '-' : ''
+  const sign = value < 0 ? MINUS : ''
   const [int, frac] = Math.abs(value).toString().split('.')
   const grouped = int.replace(/\B(?=(\d{3})+(?!\d))/g, NBSP)
   return sign + grouped + (frac ? ',' + frac : '')
@@ -51,7 +57,7 @@ export function formatSalaryRange(
 /** 0.324 → «+0,32»; знак показывается всегда. */
 export function formatSigned(value: number, digits = 2): string {
   const s = toFixedRound(Math.abs(value), digits).replace('.', ',')
-  return (value < 0 ? '−' : '+') + s
+  return (value < 0 ? MINUS : '+') + s
 }
 
 /** 0.873 → «87 %». */
@@ -85,6 +91,20 @@ export function formatDateTime(iso: string | Date): string {
     hour: '2-digit',
     minute: '2-digit',
   })
+}
+
+/** Российский номер в едином виде: «+79172451863», «8 (917) 245 18 63» → «+7 917 245-18-63»; иной номер — как есть. */
+export function formatPhone(raw: string): string {
+  const d = raw.replace(/\D/g, '')
+  const ten = d.length === 11 && (d[0] === '7' || d[0] === '8') ? d.slice(1) : d.length === 10 && d[0] === '9' ? d : null
+  if (!ten || !/^[\d\s()+-]+$/.test(raw.trim())) return raw
+  return `+7 ${ten.slice(0, 3)} ${ten.slice(3, 6)}-${ten.slice(6, 8)}-${ten.slice(8)}`
+}
+
+/** Подпись со строчной буквы внутри фразы, аббревиатуры не трогаем: «Достижения ФСП» → «достижения ФСП», «ФСП ID» → «ФСП ID». */
+export function lowerFirst(text: string): string {
+  if (text.length > 1 && text[1] === text[1].toUpperCase() && text[1] !== text[1].toLowerCase()) return text
+  return text.charAt(0).toLowerCase() + text.slice(1)
 }
 
 /** Склонение: plural(5, ['кандидат', 'кандидата', 'кандидатов']) → «кандидатов». */

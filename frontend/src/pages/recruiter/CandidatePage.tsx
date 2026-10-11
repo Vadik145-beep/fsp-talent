@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Lock, Mail, MessageCircle, Phone, Send, Target, UserRound } from 'lucide-react'
 import { api } from '@/shared/api'
 import { categoryLabel, type InvitationStatus } from '@/shared/config/dictionaries'
-import { formatDate } from '@/shared/lib/format'
+import { formatDate, formatDecimal, formatPhone } from '@/shared/lib/format'
 import {
   Badge,
   Button,
@@ -109,7 +109,7 @@ export default function RecruiterCandidatePage() {
           <dl className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
             <ContactItem icon={<UserRound aria-hidden />} label="ФИО" value={p.contacts.full_name} />
             <ContactItem icon={<Mail aria-hidden />} label="Почта" value={p.contacts.email} href={`mailto:${p.contacts.email}`} />
-            <ContactItem icon={<Phone aria-hidden />} label="Телефон" value={p.contacts.phone} href={p.contacts.phone ? `tel:${p.contacts.phone.replace(/[^\d+]/g, '')}` : undefined} />
+            <ContactItem icon={<Phone aria-hidden />} label="Телефон" value={p.contacts.phone ? formatPhone(p.contacts.phone) : p.contacts.phone} href={p.contacts.phone ? `tel:${p.contacts.phone.replace(/[^\d+]/g, '')}` : undefined} />
             <ContactItem icon={<MessageCircle aria-hidden />} label="Telegram" value={p.contacts.telegram} />
           </dl>
         </Card>
@@ -159,7 +159,7 @@ export default function RecruiterCandidatePage() {
                   <li key={h.date} className="flex flex-wrap justify-between gap-x-3 gap-y-0.5">
                     <span className="whitespace-nowrap">{categoryLabel(h.category)}</span>
                     <span className="whitespace-nowrap text-muted tabular-nums">
-                      θ {h.theta.toFixed(2).replace('.', ',')} · {formatDate(h.date)}
+                      θ {formatDecimal(h.theta)} · {formatDate(h.date)}
                     </span>
                   </li>
                 ))}

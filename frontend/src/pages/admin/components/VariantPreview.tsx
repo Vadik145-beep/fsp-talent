@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Check, Clock } from 'lucide-react'
 import { cn } from '@/shared/lib/cn'
+import { plural } from '@/shared/lib/format'
 import type { ItemVariantPreview } from '../api'
 
 const SPLIT = /([\s,.;:!?()«»"'`{}[\]=<>+*/|-]+)/
@@ -35,9 +36,24 @@ function Highlighted({ text, varying }: { text: string; varying: Set<string> }) 
   )
 }
 
+/** Единицы-слова, которые склоняются по числу («32 запроса»); остальные (мс, px, %) — как есть. */
+const UNIT_FORMS: Record<string, [string, string, string]> = {
+  запросов: ['запрос', 'запроса', 'запросов'],
+}
+
+function unitFor(value: number, unit: string): string {
+  const forms = UNIT_FORMS[unit]
+  if (!forms) return unit
+  // дробное число — родительный падеж единственного: «2,5 запроса»
+  return Number.isInteger(value) ? plural(value, forms) : forms[1]
+}
+
 function answerText(v: ItemVariantPreview): ReactNode {
   const a = v.correct_answer
-  if (a.value != null) return `${String(a.value).replace('.', ',')}${v.unit ? ` ${v.unit}` : ''}`
+  if (a.value != null) {
+    const n = String(a.value).replace('.', ',').replace('-', '−')
+    return v.unit ? `${n} ${unitFor(a.value, v.unit)}` : n
+  }
   if (a.line != null) return `строка ${a.line}`
   if (a.text) return a.text
   if (a.order?.length && v.steps) return a.order.map((id) => v.steps!.findIndex((s) => s.id === id) + 1).join(' → ')

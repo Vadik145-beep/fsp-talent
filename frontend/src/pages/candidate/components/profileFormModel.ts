@@ -1,3 +1,4 @@
+import { formatPhone } from '@/shared/lib/format'
 import { GRADES, SPECIALIZATIONS } from '@/shared/config/dictionaries'
 import type { CandidateProfile, CandidateProfileUpdate, GradeCode, S, SpecializationCode, WorkFormat } from '../api'
 
@@ -23,7 +24,7 @@ export type ParsedConfidence = Partial<Record<keyof ProfileFormState, number>>
 export function formFromProfile(p: Partial<CandidateProfile> | undefined): ProfileFormState {
   return {
     full_name: p?.full_name ?? '',
-    phone: p?.phone ?? '',
+    phone: p?.phone ? formatPhone(p.phone) : '',
     telegram: p?.telegram ?? '',
     city: p?.city ?? '',
     work_formats: p?.work_formats ?? [],
@@ -83,8 +84,11 @@ export function applyParsedResume(
     // Не найдено в резюме: value null, confidence 0 — поле формы не трогаем.
     if (field.confidence <= 0 || v === null || v === undefined || (Array.isArray(v) && v.length === 0) || v === '') continue
     switch (key) {
-      case 'full_name':
       case 'phone':
+        form.phone = formatPhone(asString(v))
+        confidence.phone = field.confidence
+        break
+      case 'full_name':
       case 'telegram':
       case 'city':
       case 'about':

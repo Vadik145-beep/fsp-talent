@@ -1,5 +1,5 @@
 /** Подписи и цвета статусов кабинета администратора. */
-import { toFixedRound } from '@/shared/lib/format'
+import { formatDecimal, toFixedRound } from '@/shared/lib/format'
 import type { Tone } from '@/shared/ui'
 import type { ItemFormat, ItemStatus, ReportReason, ReportStatus } from './api'
 
@@ -140,5 +140,5 @@ export function pct(value: number | null | undefined, digits = 0): string {
 /** 1.234 → «1,23». */
 export function num(value: number | null | undefined, digits = 2): string {
   if (value == null || Number.isNaN(value)) return '—'
-  return toFixedRound(value, digits).replace('.', ',').replace('-', '−')
+  return formatDecimal(value, digits)
 }

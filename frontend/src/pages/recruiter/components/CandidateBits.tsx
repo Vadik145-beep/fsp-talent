@@ -1,6 +1,7 @@
 import { Check, ShieldOff } from 'lucide-react'
 import { Badge, FspVerifiedBadge, Tag, Tooltip } from '@/shared/ui'
 import { cn } from '@/shared/lib/cn'
+import { formatDecimal } from '@/shared/lib/format'
 import { useSkills, type CandidateCard } from '../api'
 import { thetaLevel, thetaSummary } from '../lib'
 
@@ -76,7 +77,7 @@ export function ThetaInfo({ theta, className }: { theta: number | null | undefin
       <span className="font-semibold text-ink">{thetaSummary(theta)}</span>
       <Tooltip content="θ — оценка уровня по адаптивному тесту. 0 — средний уровень среди всех прошедших, +1 — заметно выше.">
         <button type="button" className="rounded-xs text-muted underline decoration-dotted underline-offset-2 hover:text-ink">
-          θ = {theta.toFixed(2).replace('.', ',')} · {thetaLevel(theta)}
+          θ = {formatDecimal(theta)} · {thetaLevel(theta)}
         </button>
       </Tooltip>
     </span>

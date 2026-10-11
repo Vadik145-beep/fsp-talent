@@ -386,7 +386,7 @@ export function scoreCandidate(c: CandidateRow, need: NeedRow): S['MatchedCandid
   }
   if (c.theta !== null) {
     const strong = c.topic_scores.filter((ts) => ts.level === 'strong').map((ts) => ts.label)
-    const pct = Math.round(thetaValue * 100)
+    const pct = Math.min(99, Math.max(1, Math.round(thetaValue * 100)))
     reasons.push({
       text: `Тест сильнее, чем у ${pct} % специалистов${strong.length ? `; сильные темы: ${strong.slice(0, 2).join(', ')}` : ''}`,
       weight: breakdown[1].contribution + 0.01,
