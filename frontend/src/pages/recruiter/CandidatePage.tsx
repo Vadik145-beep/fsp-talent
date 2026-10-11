@@ -72,7 +72,9 @@ export default function RecruiterCandidatePage() {
   const status = p.invitation_status as InvitationStatus | null | undefined
   const topics = p.topic_scores ?? []
   const inviteBlock = !p.can_invite
-    ? status === 'sent' || status === 'viewed'
+    ? p.invited_by_application
+      ? 'Уже приглашён по отклику на вакансию.'
+      : status === 'sent' || status === 'viewed'
         ? 'Приглашение уже отправлено — ждём ответа.'
         : quota.data?.left === 0
           ? 'Квота приглашений исчерпана.'

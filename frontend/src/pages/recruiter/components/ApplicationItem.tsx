@@ -1,12 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Mail, MessageCircle, Phone } from 'lucide-react'
 import { api, getErrorMessage } from '@/shared/api'
 import { formatDate, formatPhone } from '@/shared/lib/format'
-import { Badge, Card, Select, useToast } from '@/shared/ui'
+import { Badge, Button, Card, useToast } from '@/shared/ui'
 import { apiFieldErrors, refreshRecruiter, rk, upsertInList, type Application, type ApplicationStatus } from '../api'
-import { APPLICATION_STATUS_LABELS, APPLICATION_STATUS_TONE, APPLICATION_TRANSITIONS, CONTACT_TYPE_LABELS } from '../labels'
+import { APPLICATION_STATUS_LABELS, APPLICATION_STATUS_TONE, CONTACT_TYPE_LABELS } from '../labels'
 import { ApplicationInviteModal, type ApplicationInviteBody } from './ApplicationInviteModal'
 import { StackTags, ThetaInfo } from './CandidateBits'
 
@@ -37,13 +37,47 @@ export function ApplicationItem({ app, showVacancy }: { app: Application; showVa
       else toast({ tone: 'error', title: 'Не удалось сменить статус', description: getErrorMessage(e) })
     },
   })
+  // «Просмотрен» ставится сам, когда новый отклик попал на экран рекрутера; бейдж «Новый» держим до перезагрузки
+  const [wasNew] = useState(app.status === 'new')
+  const cardRef = useRef<HTMLDivElement>(null)
+  const markViewed = useMutation({
+    mutationFn: () => api.patch<Application>(`/applications/${app.id}`, { status: 'viewed' }),
+    onSuccess: (a) => {
+      upsertInList(qc, rk.applications, a)
+      upsertInList(qc, rk.vacancyApplications(a.vacancy_id), a)
+      void refreshRecruiter(qc, rk.applications, rk.vacancyApplications(a.vacancy_id))
+    },
+  })
+  const { mutate: viewNow } = markViewed
+  const isNew = app.status === 'new'
+  useEffect(() => {
+    const el = cardRef.current
+    if (!isNew || !el || typeof IntersectionObserver === 'undefined') return
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          io.disconnect()
+          viewNow()
+        }
+      },
+      { threshold: 0.5 },
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [isNew, viewNow])
   const c = app.candidate
   const contacts = app.candidate_contacts
+  const canInvite = app.status !== 'invited'
+  const canReject = app.status === 'new' || app.status === 'viewed'
   return (
+    <div ref={cardRef}>
     <Card padding="sm" className="flex flex-col gap-3" data-testid="application-item">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="font-semibold">{contacts?.full_name ?? c?.pseudonym ?? 'Кандидат'}</p>
+          <p className="flex flex-wrap items-center gap-2 font-semibold">
+            {contacts?.full_name ?? c?.pseudonym ?? 'Кандидат'}
+            {wasNew && canReject && <Badge tone={APPLICATION_STATUS_TONE.new}>{APPLICATION_STATUS_LABELS.new}</Badge>}
+          </p>
           <p className="text-[13px] text-muted">
             {c?.category_label ?? 'Категория не определена'}
             {showVacancy && (
@@ -58,26 +92,30 @@ export function ApplicationItem({ app, showVacancy }: { app: Application; showVa
             {formatDate(app.created_at)}
           </p>
         </div>
-        {/* статус — одним элементом: список, если есть куда переводить, иначе бейдж */}
-        {APPLICATION_TRANSITIONS[app.status].length === 0 ? (
-          <Badge tone={APPLICATION_STATUS_TONE[app.status]}>{APPLICATION_STATUS_LABELS[app.status]}</Badge>
-        ) : (
-          <Select
-            aria-label="Статус отклика"
-            containerClassName="w-40"
-            value={app.status}
-            disabled={setStatus.isPending}
-            // только текущий статус и разрешённые переходы
-            options={[app.status, ...APPLICATION_TRANSITIONS[app.status]].map((s) => ({ value: s, label: APPLICATION_STATUS_LABELS[s] }))}
-            onChange={(e) => {
-              const status = e.target.value as ApplicationStatus
-              if (status === 'invited') {
+        {/* действия кнопками; итог (приглашён / отказ) — бейджем */}
+        <div className="flex flex-wrap items-center gap-2">
+          {(app.status === 'invited' || app.status === 'rejected') && (
+            <Badge tone={APPLICATION_STATUS_TONE[app.status]}>{APPLICATION_STATUS_LABELS[app.status]}</Badge>
+          )}
+          {canReject && (
+            <Button size="sm" variant="ghost" disabled={setStatus.isPending} onClick={() => setStatus.mutate({ status: 'rejected' })}>
+              Отклонить
+            </Button>
+          )}
+          {canInvite && (
+            <Button
+              size="sm"
+              variant={app.status === 'rejected' ? 'secondary' : 'primary'}
+              disabled={setStatus.isPending}
+              onClick={() => {
                 setInviteError(undefined)
                 setInviting(true)
-              } else setStatus.mutate({ status })
-            }}
-          />
-        )}
+              }}
+            >
+              Пригласить
+            </Button>
+          )}
+        </div>
       </div>
       {inviting && (
         <ApplicationInviteModal
@@ -125,5 +163,6 @@ export function ApplicationItem({ app, showVacancy }: { app: Application; showVa
         </div>
       )}
     </Card>
+    </div>
   )
 }

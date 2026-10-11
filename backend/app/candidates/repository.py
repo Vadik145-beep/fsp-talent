@@ -358,6 +358,16 @@ class CandidateDb:
         )
         return bool(await self.session.scalar(select(accepted | applied)))
 
+    async def invited_by_application(self, candidate_id: int, company_id: int) -> bool:
+        """Рекрутер компании уже пригласил кандидата по его отклику на вакансию."""
+        invited = exists().where(
+            Application.candidate_id == candidate_id,
+            Application.vacancy_id == Vacancy.id,
+            Vacancy.company_id == company_id,
+            Application.status == "invited",
+        )
+        return bool(await self.session.scalar(select(invited)))
+
     async def task_offers(self, candidate_id: int) -> list[Record]:
         """Задачи недели на выбор (без ответа, срок не вышел), ближайший срок — первым."""
         rows = await self.session.execute(

@@ -2410,6 +2410,12 @@ export interface components {
              */
             can_invite: boolean;
             /**
+             * Invited By Application
+             * @description Компания уже пригласила кандидата по его отклику на вакансию
+             * @default false
+             */
+            invited_by_application: boolean;
+            /**
              * Fsp Profile Note
              * @description Лучшее достижение ФСП по профильной для специализации кандидата дисциплине; null — профильных достижений нет или кандидат скрыл достижения
              * @example Призёр всероссийского соревнования по программированию систем ИБ, 2025 — профильно для DevOps

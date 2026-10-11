@@ -352,6 +352,7 @@ class CandidateProfileService:
             for s in sorted(await self.db.test_sessions(candidate_id), key=lambda s: s.id)
             if s.status == "finished" and s.passed and s.finished_at and (grade := session_grade(s))
         ]
+        by_application = await self.db.invited_by_application(candidate_id, company_id)
         profile = to_card(cand)
         note = None
         if cand.get("fsp_id") and privacy_flag(cand.get("privacy"), "show_fsp_achievements"):
@@ -365,7 +366,9 @@ class CandidateProfileService:
             invitation_status=last_inv["status"] if last_inv else None,
             contacts_visible=visible,
             contacts=to_contacts(cand) if visible else None,
+            invited_by_application=by_application,
             can_invite=is_searchable(cand)
+            and not by_application
             and not (last_inv and last_inv["status"] in ACTIVE_INVITATION_STATUSES),
         )
         return profile

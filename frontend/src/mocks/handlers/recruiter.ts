@@ -679,6 +679,7 @@ export function anonymousProfile(c: CandidateRow, ctx: RecruiterCtx): S['Anonymo
     invitation_status: inv?.status ?? null,
     contacts_visible: open,
     contacts: open ? candidateContacts(c) : null,
+    invited_by_application: false,
     // После ответа (принято/отклонено/истекло) можно отправить новое предложение; активное — только одно.
     can_invite: isVisible(c) && !activeInv && quotaFor(ctx.recruiter.id).left > 0,
     fsp_profile_note: c.fsp_id && c.privacy.show_fsp_achievements ? fspProfileNote(achievementsOf(c.fsp_id), c.specialization) : null,

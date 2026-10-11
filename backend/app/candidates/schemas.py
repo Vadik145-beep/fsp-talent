@@ -339,6 +339,9 @@ class AnonymousCandidateProfile(CandidateCard):
     contacts_visible: bool
     contacts: CandidateContacts | None = None
     can_invite: bool = Field(description="Можно ли отправить приглашение сейчас")
+    invited_by_application: bool = Field(
+        default=False, description="Компания уже пригласила кандидата по его отклику на вакансию"
+    )
     fsp_profile_note: str | None = Field(
         default=None,
         description=(
