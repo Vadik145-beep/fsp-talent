@@ -401,6 +401,17 @@ class DashboardTask(OutModel):
     due_at: datetime
 
 
+class MeasuredOffer(OutModel):
+    """Первичный тест не сдан, но показал уровень ниже — можно взять категорию по нему."""
+
+    session_id: int
+    specialization: SpecializationCode
+    target_grade: GradeCode = Field(description="На какой грейд был тест")
+    grade: GradeCode = Field(description="Уровень, который показал тест")
+    category: str
+    category_label: str
+
+
 class CandidateDashboard(OutModel):
     """Главная кандидата: категория, новые приглашения, задание, полнота профиля."""
 
@@ -447,6 +458,13 @@ class CandidateDashboard(OutModel):
     profile_completeness: int
     fsp_linked: bool
     hints: list[str]
+    measured_offer: MeasuredOffer | None = Field(
+        default=None,
+        description=(
+            "Первичный тест не подтвердил заявленный грейд: категория по уровню теста, "
+            "которую можно взять (`POST /api/testing/sessions/{id}/accept-measured`)"
+        ),
+    )
 
 
 class PublicationConsentUpdate(ApiModel):

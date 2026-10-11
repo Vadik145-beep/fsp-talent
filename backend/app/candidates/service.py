@@ -166,7 +166,15 @@ class CandidateProfileService:
             )
         if not cand.get("links"):
             hints.append("Добавьте ссылку на GitHub — профиль станет полнее")
-        if cand.get("grade_status") == GradeStatusCode.unconfirmed:
+        from app.testing.service import TestingDbService  # тестирование импортирует кандидатов
+
+        measured = await TestingDbService(self.session).measured_offer(candidate_id)
+        if measured is not None:
+            hints.append(
+                f"Возьмите категорию «{measured['category_label']}» по результату теста — "
+                "тогда профиль попадёт в выдачу работодателям"
+            )
+        elif cand.get("grade_status") == GradeStatusCode.unconfirmed:
             label = GRADE_LABELS.get(cand.get("declared_grade") or "", "")
             hints.append(
                 f"Грейд {label} не подтверждён — пройдите тест: официально грейд присваивается "
@@ -197,6 +205,7 @@ class CandidateProfileService:
             "profile_completeness": cand["profile_completeness"],
             "fsp_linked": bool(cand.get("fsp_id")),
             "hints": hints,
+            "measured_offer": measured,
         }
 
     # ---------- настройки ----------
@@ -342,7 +351,8 @@ class CandidateProfileService:
             i for i in await self.db.invitations(candidate_id) if i["company_id"] == company_id
         ]
         last_inv = company_invs[0] if company_invs else None
-        # История тестов — присвоенная категория, как в профиле (не уровень по θ)
+        # История тестов — присвоенная категория, как в профиле (не уровень по θ);
+        # несданный тест — только если категорию взяли по его уровню (accept-measured)
         history = [
             {
                 "date": as_msk(s.finished_at).date(),  # type: ignore[union-attr]
@@ -350,7 +360,10 @@ class CandidateProfileService:
                 "theta": s.theta,
             }
             for s in sorted(await self.db.test_sessions(candidate_id), key=lambda s: s.id)
-            if s.status == "finished" and s.passed and s.finished_at and (grade := session_grade(s))
+            if s.status == "finished"
+            and (s.passed or (s.engine_state or {}).get("measured_accepted"))
+            and s.finished_at
+            and (grade := session_grade(s))
         ]
         by_application = await self.db.invited_by_application(candidate_id, company_id)
         profile = to_card(cand)

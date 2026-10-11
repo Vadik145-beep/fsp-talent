@@ -235,6 +235,24 @@ class TestResult(OutModel):
     outcome: Literal["passed_claimed", "suggest_lower", "suggest_higher", "abandoned"] | None = (
         Field(default=None, description="Решение движка по заявленному грейду")
     )
+    measured_grade: GradeCode | None = Field(
+        default=None,
+        description=(
+            "Первичный тест не сдан: уровень, который тест показал (грейд по θ и порогам "
+            "специализации, строго ниже целевого)"
+        ),
+    )
+    can_accept_measured: bool = Field(
+        default=False,
+        description=(
+            "Можно взять категорию по измеренному уровню "
+            "(`POST /api/testing/sessions/{id}/accept-measured`): у кандидата нет "
+            "подтверждённого грейда, это его последняя завершённая попытка"
+        ),
+    )
+    measured_accepted: bool = Field(
+        default=False, description="Категория по измеренному уровню уже присвоена"
+    )
 
 
 # ---------- грейд ----------

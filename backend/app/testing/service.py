@@ -779,6 +779,136 @@ class TestingDbService:
             profile.topic_scores = topic_scores
         self.session.add_all(history)
 
+    # ------------------------------------------------------------------ измеренный грейд
+
+    async def _measured_grade(self, ts: TestSession) -> str | None:
+        """Уровень, который показал несданный первичный тест: грейд по θ и порогам
+        специализации, строго ниже целевого. Иначе None."""
+        if ts.kind != "placement" or ts.status != "finished" or ts.passed or ts.theta is None:
+            return None
+        grade = (await self.thresholds(ts.specialization)).grade_for(ts.theta)
+        return grade if _grade_idx(grade) < _grade_idx(ts.target_grade) else None
+
+    async def _latest_finished_id(self, candidate_id: int) -> int | None:
+        latest: int | None = await self.session.scalar(
+            select(TestSession.id)
+            .where(
+                TestSession.candidate_id == candidate_id,
+                TestSession.status.in_(("finished", "abandoned")),
+                TestSession.finished_at.is_not(None),
+            )
+            .order_by(TestSession.finished_at.desc(), TestSession.id.desc())
+            .limit(1)
+        )
+        return latest
+
+    async def _can_accept_measured(
+        self, ts: TestSession, measured: str | None, profile: CandidateProfile
+    ) -> bool:
+        """Категорию по уровню теста можно взять: грейда ещё нет, ещё не брали,
+        это последняя завершённая попытка кандидата."""
+        if measured is None or profile.grade is not None:
+            return False
+        if (ts.engine_state or {}).get("measured_accepted"):
+            return False
+        return await self._latest_finished_id(ts.candidate_id) == ts.id
+
+    async def measured_offer(self, candidate_id: int) -> dict[str, Any] | None:
+        """Для главной: непринятое предложение «категория по результату теста»."""
+        profile = await self.session.get(CandidateProfile, candidate_id)
+        if profile is None or profile.grade is not None:
+            return None
+        latest = await self._latest_finished_id(candidate_id)
+        ts = await self.session.get(TestSession, latest) if latest else None
+        if ts is None:
+            return None
+        measured = await self._measured_grade(ts)
+        if not await self._can_accept_measured(ts, measured, profile):
+            return None
+        assert measured is not None
+        category = f"{ts.specialization}:{measured}"
+        label = await self.session.scalar(select(Category.label).where(Category.code == category))
+        return {
+            "session_id": ts.id,
+            "specialization": ts.specialization,
+            "target_grade": ts.target_grade,
+            "grade": measured,
+            "category": category,
+            "category_label": label or category,
+        }
+
+    async def accept_measured(self, session_id: int, candidate_id: int) -> dict[str, Any]:
+        """Взять категорию по уровню, который показал несданный первичный тест.
+
+        Присвоение — как при сданном тесте (грейд, категория, θ, темы, история), но в истории
+        одно событие «Категория по результату теста»: это первое присвоение, не смена грейда.
+        Сама сессия остаётся несданной: повтор теста на целевой грейд — по обычным правилам.
+        """
+        now = _now()
+        ts = await self._own(session_id, candidate_id, lock=True)
+        profile = await self.session.scalar(
+            select(CandidateProfile).where(CandidateProfile.id == candidate_id).with_for_update()
+        )
+        if profile is None:
+            raise not_found("candidate", candidate_id)
+        if ts.status == "in_progress":
+            raise AppError(409, "session_not_finished", "Тест ещё не завершён")
+        if (ts.engine_state or {}).get("measured_accepted"):
+            raise AppError(
+                409, "measured_already_accepted", "Категория по этому тесту уже присвоена"
+            )
+        measured = await self._measured_grade(ts)
+        if measured is None:
+            raise AppError(
+                409,
+                "measured_not_available",
+                "Категорию по результату можно взять только за несданный первичный тест",
+            )
+        if profile.grade is not None:
+            raise AppError(
+                409,
+                "grade_already_confirmed",
+                "Грейд уже подтверждён — категория по результату теста не нужна",
+            )
+        if not await self._can_accept_measured(ts, measured, profile):
+            raise AppError(
+                409,
+                "measured_not_available",
+                "Категорию можно взять только по последнему завершённому тесту",
+            )
+        assert measured is not None and ts.theta is not None
+        spec = ts.specialization
+        category = f"{spec}:{measured}"
+        label = await self.session.scalar(select(Category.label).where(Category.code == category))
+        if label is None:
+            raise AppError(409, "measured_not_available", "Категория не найдена в справочнике")
+        self.session.add(
+            GradeHistory(
+                candidate_id=candidate_id,
+                at=now,
+                event="grade_changed",
+                specialization=spec,
+                grade_from=None,
+                grade_to=measured,
+                test_session_id=ts.id,
+                comment=(
+                    f"Категория по результату теста: {label}, θ = {ts.theta:.2f} "
+                    f"(тест на {GRADE_LABELS[ts.target_grade]} не пройден)"
+                ),
+            )
+        )
+        profile.specialization = spec
+        profile.grade = measured
+        profile.category = category
+        profile.theta = ts.theta
+        profile.theta_se = ts.se
+        profile.topic_scores = list(ts.topic_scores or [])
+        state = dict(ts.engine_state or {})
+        state["measured_accepted"] = {"grade": measured, "at": now.isoformat()}
+        ts.engine_state = state
+        await self.session.commit()
+        return await self.result(session_id, candidate_id)
+
     async def result(self, session_id: int, candidate_id: int) -> dict[str, Any]:
         ts = await self._own(session_id, candidate_id, lock=True)
         if await self._expire_if_stale(ts, _now()):
@@ -811,6 +941,21 @@ class TestingDbService:
             days = int(grade.get("retry_cooldown_days") or 30)
             action, suggested = "retry_later", None
             message = keep_grade_reason(ts.target_grade, kept, days)
+        measured = await self._measured_grade(ts)
+        accepted = bool(state.get("measured_accepted"))
+        can_accept = await self._can_accept_measured(ts, measured, await self._profile(candidate_id))
+        if accepted:
+            # категория по уровню теста уже взята: тест ниже не нужен, повтор целевого — позже
+            grade = await CandidateProfileService(self.session).grade(candidate_id)
+            higher = grade.get("higher")
+            if higher and higher["target_grade"] == ts.target_grade:
+                available_at = higher["available_at"]
+            action, suggested = "retry_later", None
+            message = (
+                f"Категория {label or category} присвоена по результату теста. Повторить тест "
+                f"на {GRADE_LABELS[ts.target_grade]} можно через "
+                f"{int(grade.get('retry_cooldown_days') or 30)} дней."
+            )
         if action in ("offer_lower", "offer_higher") and suggested:
             grade = await CandidateProfileService(self.session).grade(candidate_id)
             for option in (grade.get("lower"), grade.get("higher")):
@@ -841,6 +986,9 @@ class TestingDbService:
                 "target_grade": suggested,
             },
             "outcome": outcome,
+            "measured_grade": measured,
+            "can_accept_measured": can_accept,
+            "measured_accepted": accepted,
         }
 
     # ------------------------------------------------------------------ грейд

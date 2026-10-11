@@ -139,3 +139,27 @@ async def submit_answer(
 )
 async def get_result(session_id: int, user: CandidateUser, session: SessionDep) -> Any:
     return await TestingDbService(session).result(session_id, _cid(user))
+
+
+@router.post(
+    "/sessions/{session_id}/accept-measured",
+    response_model=TestResult,
+    summary="Взять категорию по уровню, который показал несданный первичный тест",
+    description=(
+        "Только для своей завершённой несданной сессии первичного теста, когда у кандидата "
+        "нет подтверждённого грейда и это его последняя завершённая попытка "
+        "(`can_accept_measured` в результате). Категория `<специализация>:<measured_grade>` "
+        "присваивается так же, как при сданном тесте; первое присвоение сменой грейда не "
+        "считается. Возвращает обновлённый результат."
+    ),
+    responses=error_responses(
+        *AUTH,
+        404,
+        (409, "session_not_finished", "Тест ещё не завершён"),
+        (409, "measured_already_accepted", "Категория по этому тесту уже присвоена"),
+        (409, "grade_already_confirmed", "Грейд уже подтверждён"),
+        (409, "measured_not_available", "По этому тесту категорию по результату получить нельзя"),
+    ),
+)
+async def accept_measured(session_id: int, user: CandidateUser, session: SessionDep) -> Any:
+    return await TestingDbService(session).accept_measured(session_id, _cid(user))

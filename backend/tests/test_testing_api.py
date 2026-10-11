@@ -407,6 +407,89 @@ def test_failed_session_keeps_theta_grade(client: TestClient) -> None:
     assert seen["category"] is None
 
 
+# ---------------------------------------------------------------- категория по уровню теста
+
+
+def _failed_placement(client: TestClient, headers: dict[str, str], spec: str = "backend") -> int:
+    state = start(client, headers, spec, "junior")
+    run_to_end(client, headers, state, right=False)
+    sid: int = state["session"]["id"]
+    return sid
+
+
+def _accept(client: TestClient, headers: dict[str, str], sid: int) -> Any:
+    return client.post(f"/api/testing/sessions/{sid}/accept-measured", headers=headers)
+
+
+def test_accept_measured_grade(client: TestClient) -> None:
+    """Новичок не сдал Junior: тест измерил уровень — категорию по нему можно взять один раз."""
+    sid = _failed_placement(client, CAND_40)
+    res = client.get(f"/api/testing/sessions/{sid}/result", headers=CAND_40).json()
+    assert not res["passed"] and res["measured_grade"] == "intern"
+    assert res["can_accept_measured"] and not res["measured_accepted"]
+    offer = client.get("/api/candidates/me/dashboard", headers=CAND_40).json()["measured_offer"]
+    assert offer == {
+        "session_id": sid,
+        "specialization": "backend",
+        "target_grade": "junior",
+        "grade": "intern",
+        "category": "backend:intern",
+        "category_label": res["category_label"],
+    }
+    r = _accept(client, CAND_40, sid)
+    assert r.status_code == 200, r.text
+    after = r.json()
+    assert after["measured_accepted"] and not after["can_accept_measured"]
+    assert after["category"] == "backend:intern" and not after["passed"]
+    assert after["recommendation"]["action"] == "retry_later"
+    assert after["recommendation"]["target_grade"] is None
+    profile = client.get("/api/candidates/me/profile", headers=CAND_40).json()
+    assert profile["category"] == "backend:intern" and profile["theta"] == res["theta"]
+    assert profile["grade_status"] == "confirmed" and profile["grade_confirmed_at"]
+    assert profile["topic_scores"]
+    grade = client.get("/api/testing/grade", headers=CAND_40).json()
+    assert grade["grade"] == "intern" and grade["grade_changed_at"] is None  # первое присвоение
+    accepted = [
+        h for h in grade["history"] if h["test_session_id"] == sid and h["event"] == "grade_changed"
+    ]
+    assert len(accepted) == 1 and accepted[0]["grade_from"] is None
+    assert accepted[0]["comment"].startswith("Категория по результату теста: ")
+    dash = client.get("/api/candidates/me/dashboard", headers=CAND_40).json()
+    assert dash["measured_offer"] is None and dash["onboarding_completed"]
+    # повторно — 409
+    again = _accept(client, CAND_40, sid)
+    assert again.status_code == 409 and again.json()["code"] == "measured_already_accepted"
+
+
+def test_accept_measured_foreign_session(client: TestClient) -> None:
+    sid = _failed_placement(client, CAND_40)
+    r = _accept(client, CAND_27, sid)
+    assert r.status_code == 404
+
+
+def test_accept_measured_passed_session(client: TestClient) -> None:
+    state = start(client, CAND_40, "backend", "intern")
+    run_to_end(client, CAND_40, state, right=True)
+    sid = state["session"]["id"]
+    res = client.get(f"/api/testing/sessions/{sid}/result", headers=CAND_40).json()
+    assert res["passed"] and res["measured_grade"] is None and not res["can_accept_measured"]
+    r = _accept(client, CAND_40, sid)
+    assert r.status_code == 409 and r.json()["code"] == "measured_not_available"
+
+
+def test_accept_measured_when_grade_exists(client: TestClient) -> None:
+    """Frontend · Junior уже есть: несданный первичный тест по другой специализации
+    категорию по уровню не даёт."""
+    sid = _failed_placement(client, CAND_26, "backend")
+    res = client.get(f"/api/testing/sessions/{sid}/result", headers=CAND_26).json()
+    assert res["measured_grade"] == "intern" and not res["can_accept_measured"]
+    assert client.get("/api/candidates/me/dashboard", headers=CAND_26).json()["measured_offer"] is None
+    r = _accept(client, CAND_26, sid)
+    assert r.status_code == 409 and r.json()["code"] == "grade_already_confirmed"
+    profile = client.get("/api/candidates/me/profile", headers=CAND_26).json()
+    assert profile["category"] == "frontend:junior"
+
+
 # ---------------------------------------------------------------- админка: банк, утечки, калибровка
 
 

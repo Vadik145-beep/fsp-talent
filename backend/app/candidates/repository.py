@@ -8,7 +8,7 @@
 from collections.abc import Sequence
 from typing import Any
 
-from sqlalchemy import any_, delete, exists, func, insert, literal, select
+from sqlalchemy import any_, delete, exists, func, insert, literal, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.elements import ColumnElement
 
@@ -170,7 +170,11 @@ class CandidateDb:
             .where(
                 TestSession.candidate_id.in_(ids),
                 TestSession.status == "finished",
-                TestSession.passed.is_(True),
+                # сданный тест или категория по уровню несданного (accept-measured)
+                or_(
+                    TestSession.passed.is_(True),
+                    TestSession.engine_state.has_key("measured_accepted"),
+                ),
             )
             .group_by(TestSession.candidate_id, TestSession.specialization)
         )
