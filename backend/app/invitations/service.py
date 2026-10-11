@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 from typing import Any
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.admin.audit import write_audit
@@ -120,6 +121,7 @@ class InvitationService:
             "recruiter_name": recruiter_name,
             "need_id": inv.need_id,
             "vacancy_id": inv.vacancy_id,
+            "vacancy_title": None,
             "category": inv.category,
             "category_label": category_label or inv.category,
             "description": inv.description,
@@ -145,6 +147,14 @@ class InvitationService:
     async def _views(self, rows: list[InvitationRow], role: Role) -> list[dict[str, Any]]:
         """Записи для API пачкой: карточки кандидатов и контакты — одним запросом на всех."""
         data = [self._record(r) for r in rows]
+        vacancy_ids = {d["vacancy_id"] for d in data if d["vacancy_id"] is not None}
+        if vacancy_ids:
+            rows_ = await self.session.execute(
+                select(Vacancy.id, Vacancy.title).where(Vacancy.id.in_(vacancy_ids))
+            )
+            titles: dict[int, str] = {vid: title for vid, title in rows_.all()}
+            for d in data:
+                d["vacancy_title"] = titles.get(d["vacancy_id"])
         if role == Role.recruiter:
             cands = await self.pool.records(list({d["candidate_id"] for d in data}))
             for d in data:
@@ -192,6 +202,16 @@ class InvitationService:
             # чужое приглашение неотличимо от несуществующего
             raise not_found("invitation", invitation_id)
         return inv
+
+    @staticmethod
+    def _check_sender(inv: Invitation, user: CurrentUser) -> None:
+        """Отозвать приглашение может только рекрутер, который его отправил."""
+        if inv.recruiter_id != user.recruiter_id:
+            raise AppError(
+                403,
+                "forbidden",
+                "Отозвать приглашение может только рекрутер, который его отправил",
+            )
 
     def _event(self, inv: Invitation, type_: str, user: CurrentUser | None) -> None:
         self.session.add(
@@ -328,6 +348,7 @@ class InvitationService:
 
     async def withdraw(self, invitation_id: int, user: CurrentUser) -> dict[str, Any]:
         inv = await self._own(invitation_id, user)
+        self._check_sender(inv, user)
         self._check_transition(inv, S.withdrawn)
         inv.status = S.withdrawn.value
         inv.withdrawn_at = now_msk()

@@ -269,10 +269,12 @@ class CandidateProfileService:
         page_size: int = 20,
         sort: str = "theta",
         need: Record | None = None,
+        company_id: int | None = None,
         **filters: Any,
     ) -> dict[str, Any]:
         """Банк кандидатов. С потребностью (`need`) у карточек есть счёт соответствия и
-        причины — та же формула, что в подборке; `sort="match"` — по убыванию счёта."""
+        причины — та же формула, что в подборке; `sort="match"` — по убыванию счёта.
+        С `company_id` у карточек — статус последнего приглашения от этой компании."""
         page_info = {"page": page, "page_size": page_size}
         if need is None:
             ids, total = await self.db.search_ids(
@@ -280,6 +282,7 @@ class CandidateProfileService:
             )
             records = await self.db.records(ids)
             items = [to_card(records[i]) for i in ids if i in records]
+            await self._with_invitation_status(items, company_id)
             return {"items": items, "total": total, **page_info}
 
         # без цикла импортов: подборка (matching) сама использует карточки отсюда
@@ -305,7 +308,22 @@ class CandidateProfileService:
             card["match_score"] = scores[cid]["score"]
             card["match_reasons"] = scores[cid]["reasons"][:BANK_REASONS]
             items.append(card)
+        await self._with_invitation_status(items, company_id)
         return {"items": items, "total": total, **page_info}
+
+    async def _with_invitation_status(
+        self, items: list[dict[str, Any]], company_id: int | None
+    ) -> None:
+        """Статус последнего приглашения компании — как в подборке (один запрос)."""
+        if company_id is None or not items:
+            return
+        from app.matching.repository import CandidatePool
+
+        statuses = await CandidatePool(self.session).last_invitation_status(
+            company_id, [c["id"] for c in items]
+        )
+        for card in items:
+            card["invitation_status"] = statuses.get(card["id"])
 
     async def anonymous_profile(self, candidate_id: int, company_id: int) -> dict[str, Any]:
         cand = await self.db.record(candidate_id)

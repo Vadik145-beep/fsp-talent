@@ -596,7 +596,7 @@ export interface paths {
         };
         /**
          * Банк кандидатов (обезличенно)
-         * @description Поиск по всей базе. В выдаче только кандидаты с грейдом, подтверждённым тестом (`grade_status = confirmed`; заявленный, но не подтверждённый грейд — не в выдаче), согласием на публикацию и без паузы поиска. ФИО и контактов в ответе нет. `need_id` — потребность своей компании (чужая → 404): у карточек появляются `match_score` и `match_reasons` (та же формула и причины, что в подборке), сортировка по умолчанию — `match` (по соответствию). Фильтры работают вместе с ней. `sort=match` без `need_id` — 422.
+         * @description Поиск по всей базе. В выдаче только кандидаты с грейдом, подтверждённым тестом (`grade_status = confirmed`; заявленный, но не подтверждённый грейд — не в выдаче), согласием на публикацию и без паузы поиска. ФИО и контактов в ответе нет. `need_id` — потребность своей компании (чужая → 404): у карточек появляются `match_score` и `match_reasons` (та же формула и причины, что в подборке), сортировка по умолчанию — `match` (по соответствию). Фильтры работают вместе с ней. `sort=match` без `need_id` — 422. `invitation_status` — статус последнего приглашения от вашей компании (null — не приглашали).
          */
         get: operations["search_candidates_api_candidates_get"];
         put?: never;
@@ -1284,7 +1284,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Отозвать приглашение (рекрутер) */
+        /**
+         * Отозвать приглашение (рекрутер)
+         * @description Отозвать может только рекрутер, который отправил приглашение (иначе 403).
+         */
         post: operations["withdraw_invitation_api_invitations__invitation_id__withdraw_post"];
         delete?: never;
         options?: never;
@@ -2597,6 +2600,11 @@ export interface components {
             /** Candidate Pseudonym */
             candidate_pseudonym: string;
             /**
+             * Candidate Name
+             * @description ФИО: кандидат откликнулся сам, контакты открыты
+             */
+            candidate_name?: string | null;
+            /**
              * Created At
              * Format: date-time
              */
@@ -2786,6 +2794,8 @@ export interface components {
              * @description 1–3 короткие причины «почему подходит» (те же, что в подборке)
              */
             match_reasons?: string[];
+            /** @description Статус последнего приглашения от вашей компании; null — не приглашали */
+            invitation_status?: components["schemas"]["InvitationStatus"] | null;
         };
         /** Body_evaluate_matching_api_eval_matching_post */
         Body_evaluate_matching_api_eval_matching_post: {
@@ -4180,6 +4190,11 @@ export interface components {
             need_id?: number | null;
             /** Vacancy Id */
             vacancy_id?: number | null;
+            /**
+             * Vacancy Title
+             * @description Вакансия, к которой привязано
+             */
+            vacancy_title?: string | null;
             /** Category */
             category: string;
             /** Category Label */
@@ -4337,6 +4352,11 @@ export interface components {
             need_id?: number | null;
             /** Vacancy Id */
             vacancy_id?: number | null;
+            /**
+             * Vacancy Title
+             * @description Вакансия, к которой привязано
+             */
+            vacancy_title?: string | null;
             /** Category */
             category: string;
             /** Category Label */
@@ -6378,6 +6398,43 @@ export interface components {
             label: string;
             /** Specializations */
             specializations: components["schemas"]["SpecializationCode"][];
+        };
+        /**
+         * SkillWithAliases
+         * @description Технология справочника с синонимами — для подсказок ввода стека.
+         * @example {
+         *       "id": "python",
+         *       "label": "Python",
+         *       "specializations": [
+         *         "backend",
+         *         "data_ml",
+         *         "qa"
+         *       ]
+         *     }
+         */
+        SkillWithAliases: {
+            /**
+             * Id
+             * @example python
+             */
+            id: string;
+            /**
+             * Label
+             * @example Python
+             */
+            label: string;
+            /** Specializations */
+            specializations: components["schemas"]["SpecializationCode"][];
+            /**
+             * Aliases
+             * @description Синонимы и сленг для подсказок ввода (словарь разбора текста)
+             * @example [
+             *       "питон",
+             *       "пайтон",
+             *       "python3"
+             *     ]
+             */
+            aliases?: string[];
         };
         /**
          * Specialization
@@ -8569,7 +8626,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Skill"][];
+                    "application/json": components["schemas"]["SkillWithAliases"][];
                 };
             };
             /** @description Validation Error */

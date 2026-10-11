@@ -244,6 +244,12 @@ def is_catalog(code: str) -> bool:
     return code in catalog()
 
 
+def skill_aliases(code: str, skill_label: str = "") -> list[str]:
+    """Синонимы технологии для подсказок ввода — без самого кода и подписи."""
+    own = {code.lower(), skill_label.lower()}
+    return [a for a in CATALOG_ALIASES.get(code, ()) if a not in own]
+
+
 def _alias_pattern(alias: str) -> str:
     parts = [re.escape(p) for p in re.split(r"[\s\-]+", alias.strip()) if p]
     body = r"[\s\-]?".join(parts)

@@ -55,6 +55,16 @@ class Skill(OutModel):
     specializations: list[SpecializationCode]
 
 
+class SkillWithAliases(Skill):
+    """Технология справочника с синонимами — для подсказок ввода стека."""
+
+    aliases: list[str] = Field(
+        default_factory=list,
+        examples=[["питон", "пайтон", "python3"]],
+        description="Синонимы и сленг для подсказок ввода (словарь разбора текста)",
+    )
+
+
 class DeclineReasonItem(OutModel):
     model_config = ConfigDict(json_schema_extra=fixtures.first_example("decline_reasons"))
 
