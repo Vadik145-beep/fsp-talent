@@ -76,11 +76,15 @@ def llm_on(monkeypatch: pytest.MonkeyPatch) -> Iterator[Callable[[Any], list[dic
     get_nlp_settings.cache_clear()
 
 
+def llm_kwargs() -> dict[str, Any]:
+    return {k.lower(): v for k, v in LLM_ENV.items()}
+
+
 # ---------------------------------------------------------------- клиент
 
 
 def test_async_client_sends_json_schema_and_limits() -> None:
-    cfg = NlpSettings(**{k.lower(): v for k, v in LLM_ENV.items()})
+    cfg = NlpSettings(**llm_kwargs())
     seen: dict[str, Any] = {}
 
     async def handler(request: httpx.Request) -> httpx.Response:
@@ -107,7 +111,7 @@ def test_async_client_sends_json_schema_and_limits() -> None:
     ],
 )
 def test_async_client_errors_give_none(fail: Exception) -> None:
-    cfg = NlpSettings(**{k.lower(): v for k, v in LLM_ENV.items()})
+    cfg = NlpSettings(**llm_kwargs())
 
     async def handler(request: httpx.Request) -> httpx.Response:
         raise fail

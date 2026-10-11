@@ -5,6 +5,7 @@ import json
 import threading
 from collections.abc import Awaitable, Callable, Iterator
 from datetime import timedelta
+from functools import partial
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 
@@ -58,6 +59,11 @@ class Receiver:
     def close(self) -> None:
         self.server.shutdown()
         self.server.server_close()
+
+
+async def deliver_later(session: AsyncSession, days: int) -> Any:
+    """Доставка вебхуков так, будто прошло days дней (для повторов с паузой)."""
+    return await deliver_pending(session, now_msk() + timedelta(days=days))
 
 
 def run_db[T](fn: Callable[[AsyncSession], Awaitable[T]]) -> T:
@@ -255,7 +261,7 @@ def test_retry_then_delivered_then_failed(client: TestClient, receiver: Receiver
     receiver.codes = [503] * (max_attempts + 2)
     client.post(f"/api/companies/my/webhooks/{hook['id']}/ping", headers=RECRUITER)
     for step in range(max_attempts):
-        run_db(lambda s, k=step: deliver_pending(s, now_msk() + timedelta(days=k + 1)))
+        run_db(partial(deliver_later, days=step + 1))
     ping = sql_sync("SELECT status, attempts FROM webhook_deliveries WHERE event = 'ping'")
     assert ping == [("failed", max_attempts)]
 

@@ -2,6 +2,7 @@
 
 import asyncio
 from collections.abc import Iterator
+from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
@@ -35,7 +36,7 @@ def _restore_db() -> Iterator[None]:
     reseed_sync()
 
 
-def companies(client: TestClient) -> dict[int, dict[str, object]]:
+def companies(client: TestClient) -> dict[int, dict[str, Any]]:
     return {c["id"]: c for c in client.get("/api/admin/companies", headers=ADMIN).json()}
 
 
@@ -52,7 +53,7 @@ def no_contact_candidate(company_id: int) -> int:
     contacted |= {
         s["candidate_id"] for s in fixtures.load("task_submissions") if s["task_id"] in tasks
     }
-    return next(c["id"] for c in fixtures.load("candidates") if c["id"] not in contacted)
+    return int(next(c["id"] for c in fixtures.load("candidates") if c["id"] not in contacted))
 
 
 def test_candidate_creates_report(client: TestClient) -> None:

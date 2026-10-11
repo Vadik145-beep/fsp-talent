@@ -64,11 +64,13 @@ def test_html_built_from_text_when_not_given() -> None:
         "Здравствуйте!\n\nПринять: https://stand.example/candidate/invitations/7.\n— ФСП · Таланты"
     )
     message = email_module.build_message("a@example.com", "Тема", text)
-    html = message.get_body(("html",)).get_content()
+    html_part, plain_part = message.get_body(("html",)), message.get_body(("plain",))
+    assert html_part is not None and plain_part is not None
+    html = html_part.get_content()
     assert '<a href="https://stand.example/candidate/invitations/7"' in html  # точка не в ссылке
     assert "ФСП · Таланты" in html and "#402FFF" in html
     assert "— ФСП · Таланты" not in html  # подпись заменена шапкой и подвалом
-    assert message.get_body(("plain",)).get_content().strip() == text
+    assert plain_part.get_content().strip() == text
 
 
 def test_html_escapes_user_text() -> None:
