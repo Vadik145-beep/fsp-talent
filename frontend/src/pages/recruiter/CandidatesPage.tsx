@@ -205,7 +205,7 @@ export default function RecruiterCandidatesPage() {
         }
       />
       <Tag
-        className="h-10 w-full justify-center rounded-md"
+        className="h-10 w-full justify-center rounded-md px-2 [&>svg]:shrink-0"
         onClick={() => setOne('has_fsp', params.has_fsp ? null : 'true')}
         selected={Boolean(params.has_fsp)}
         icon={<ShieldCheck aria-hidden />}
