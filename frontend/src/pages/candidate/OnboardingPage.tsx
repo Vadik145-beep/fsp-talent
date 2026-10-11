@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, ArrowRight, Clock, FileUp, Info, ListChecks, PencilLine, Shuffle, Sparkles, Undo2 } from 'lucide-react'
+import { useAuth } from '@/app/auth/AuthContext'
 import { api, apiFieldErrors, getErrorMessage, isApiError } from '@/shared/api'
 import {
   GRADE_LABELS,
@@ -163,6 +164,7 @@ function ProfileStepForm({
   onDone: (claim: ResumeClaim | null) => void
 }) {
   const client = useQueryClient()
+  const { reloadUser } = useAuth()
   const [form, setForm] = useState<ProfileFormState>(() => formFromProfile(profile))
   const [confidence, setConfidence] = useState<ParsedConfidence>({})
   const [parsed, setParsed] = useState<S['ResumeParseResponse'] | null>(null)
@@ -182,6 +184,8 @@ function ProfileStepForm({
     onSuccess: (updated) => {
       client.setQueryData(qk.profile, updated)
       void invalidateCandidate(client)
+      // ФИО из профиля — это и имя в шапке (users.full_name): перечитываем пользователя
+      void reloadUser().catch(() => undefined)
       if (hasClaim(claim)) writeResumeClaim(claim)
       onDone(hasClaim(claim) ? claim : null)
     },

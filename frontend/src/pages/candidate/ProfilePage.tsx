@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Download, Eye, FileUp, X } from 'lucide-react'
+import { useAuth } from '@/app/auth/AuthContext'
 import { api, apiFieldErrors, getErrorMessage } from '@/shared/api'
 import { Button, Card, CardHeader, PageHeader, ProgressBar, useToast } from '@/shared/ui'
 import { invalidateCandidate, qk, useProfile, type CandidateProfile, type S } from './api'
@@ -49,6 +50,7 @@ export default function ProfilePage() {
 
 function ProfileEditor({ profile }: { profile: CandidateProfile }) {
   const client = useQueryClient()
+  const { reloadUser } = useAuth()
   const { toast } = useToast()
   const [form, setForm] = useState<ProfileFormState>(() => formFromProfile(profile))
   const [confidence, setConfidence] = useState<ParsedConfidence>({})
@@ -69,6 +71,8 @@ function ProfileEditor({ profile }: { profile: CandidateProfile }) {
     onSuccess: (updated) => {
       client.setQueryData(qk.profile, updated)
       void invalidateCandidate(client)
+      // ФИО из профиля — это и имя в шапке (users.full_name): перечитываем пользователя
+      void reloadUser().catch(() => undefined)
       if (hasClaim(claim)) writeResumeClaim(claim)
       setConfidence({})
       toast({ tone: 'success', title: 'Профиль сохранён' })
