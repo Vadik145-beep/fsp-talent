@@ -2,18 +2,77 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { ScrollText } from 'lucide-react'
 import { api } from '@/shared/api'
+import { GRADE_LABELS } from '@/shared/config/dictionaries'
 import { ROLE_LABELS } from '@/shared/config/roles'
 import { formatDateTime } from '@/shared/lib/format'
 import { Badge, Button, EmptyState, ErrorState, FilterBar, PageHeader, Pagination, Select, Table } from '@/shared/ui'
 import type { AuditEntry, AuditPage } from './api'
-import { AUDIT_ACTION_LABELS, AUDIT_ACTION_TONES, SETTING_LABELS, TARGET_TYPE_LABELS } from './labels'
+import {
+  AUDIT_ACTION_LABELS,
+  AUDIT_ACTION_TONES,
+  ITEM_STATUS_LABELS,
+  num,
+  REPORT_REASON_LABELS,
+  REPORT_STATUS_LABELS,
+  SETTING_LABELS,
+  TARGET_TYPE_LABELS,
+} from './labels'
 
 const PAGE_SIZE = 20
 const ACTION_OPTIONS = Object.entries(AUDIT_ACTION_LABELS).map(([value, label]) => ({ value, label }))
 const TARGET_OPTIONS = Object.entries(TARGET_TYPE_LABELS).map(([value, label]) => ({ value, label }))
 
 const scalar = (v: unknown) => v == null || ['string', 'number', 'boolean'].includes(typeof v)
-const show = (v: unknown) => (v == null ? '—' : String(v))
+
+/** Ссылки на объекты в подробностях: «Кандидат #16». */
+const REF_LABELS: Record<string, string> = {
+  company_id: 'Компания',
+  candidate_id: 'Кандидат',
+  user_id: 'Пользователь',
+  vacancy_id: 'Вакансия',
+  recruiter_id: 'Рекрутер',
+  token_id: 'Токен',
+  webhook_id: 'Вебхук',
+  report_id: 'Жалоба',
+  item_id: 'Шаблон',
+  need_id: 'Потребность',
+  invitation_id: 'Приглашение',
+  session_id: 'Сессия теста',
+}
+
+/** Подписи остальных полей подробностей; значения переводим справочниками ниже. */
+const DETAIL_LABELS: Record<string, string> = {
+  ...SETTING_LABELS,
+  grade_to: 'Новый грейд',
+  grade_from: 'Прежний грейд',
+  type: 'Согласие',
+  reason: 'Причина',
+  status: 'Статус',
+  role: 'Роль',
+  events: 'События',
+  leak_score: 'Отклонение z',
+  block_company: 'Блокировка компании',
+  min_responses: 'Минимум ответов',
+  id: 'Код',
+  new: 'Новый код',
+}
+
+const VALUE_LABELS: Record<string, Record<string, string>> = {
+  grade_to: GRADE_LABELS,
+  grade_from: GRADE_LABELS,
+  role: ROLE_LABELS,
+  type: { publication: 'публикация профиля', processing: 'обработка персональных данных' },
+  reason: { ...REPORT_REASON_LABELS, cheating: 'Списывание в тесте' },
+  status: { ...ITEM_STATUS_LABELS, ...REPORT_STATUS_LABELS },
+  events: { 'invitation.accepted': 'кандидат принял приглашение', 'application.created': 'новый отклик' },
+}
+
+function show(key: string, v: unknown): string {
+  if (v == null) return '—'
+  if (typeof v === 'boolean') return v ? 'да' : 'нет'
+  if (typeof v === 'number') return Number.isInteger(v) ? String(v) : num(v)
+  return VALUE_LABELS[key]?.[String(v)] ?? String(v)
+}
 
 /**
  * Подробности записи одной строкой. Пары [было, стало] показываем стрелкой; вложенные объекты
@@ -22,10 +81,14 @@ const show = (v: unknown) => (v == null ? '—' : String(v))
 function details(e: AuditEntry): string {
   const parts: string[] = []
   for (const [k, v] of Object.entries(e.details ?? {})) {
-    const label = SETTING_LABELS[k] ?? k
-    if (Array.isArray(v) && v.length === 2 && v.every(scalar)) parts.push(`${label}: ${show(v[0])} → ${show(v[1])}`)
-    else if (Array.isArray(v) && v.every(scalar)) parts.push(`${label}: ${v.map(show).join(', ')}`)
-    else if (scalar(v)) parts.push(`${label}: ${show(v)}`)
+    if (REF_LABELS[k] && scalar(v)) {
+      parts.push(`${REF_LABELS[k]} #${String(v)}`)
+      continue
+    }
+    const label = DETAIL_LABELS[k] ?? k
+    if (Array.isArray(v) && v.length === 2 && v.every(scalar) && k !== 'events') parts.push(`${label}: ${show(k, v[0])} → ${show(k, v[1])}`)
+    else if (Array.isArray(v) && v.every(scalar)) parts.push(`${label}: ${v.map((x) => show(k, x)).join(', ')}`)
+    else if (scalar(v)) parts.push(`${label}: ${show(k, v)}`)
     else parts.push(`${label}: изменено`)
   }
   return parts.join(' · ')
@@ -57,6 +120,7 @@ export default function AdminAuditPage() {
       ) : (
         <>
           <Table
+            mobileCards
             caption="Журнал действий"
             rows={q.data?.items ?? []}
             rowKey={(e) => e.id}
@@ -77,7 +141,7 @@ export default function AdminAuditPage() {
                 render: (e) => (
                   <div className="min-w-56">
                     <p className="text-ink">{e.summary}</p>
-                    {details(e) && <p className="font-mono text-xs text-muted">{details(e)}</p>}
+                    {details(e) && <p className="text-xs text-muted">{details(e)}</p>}
                   </div>
                 ),
               },
@@ -85,13 +149,17 @@ export default function AdminAuditPage() {
                 key: 'actor',
                 header: 'Кто',
                 hideOnMobile: true,
-                render: (e) => (e.actor_role ? `${ROLE_LABELS[e.actor_role]}${e.actor_user_id ? ` #${e.actor_user_id}` : ''}` : 'Система'),
+                render: (e) => (
+                  <span className="whitespace-nowrap">{e.actor_role ? `${ROLE_LABELS[e.actor_role]}${e.actor_user_id ? ` #${e.actor_user_id}` : ''}` : 'Система'}</span>
+                ),
               },
               {
                 key: 'target',
                 header: 'Объект',
                 hideOnMobile: true,
-                render: (e) => `${TARGET_TYPE_LABELS[e.target_type] ?? e.target_type}${e.target_id != null ? ` #${e.target_id}` : ''}`,
+                render: (e) => (
+                  <span className="whitespace-nowrap">{`${TARGET_TYPE_LABELS[e.target_type] ?? e.target_type}${e.target_id != null ? ` #${e.target_id}` : ''}`}</span>
+                ),
               },
             ]}
           />

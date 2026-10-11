@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { ArrowRight, CheckCircle2, Circle, Cpu, FileText, Lightbulb, ListChecks, Sparkles, Tags, Wand2 } from 'lucide-react'
 import { api } from '@/shared/api'
 import { GRADE_LABELS, SPECIALIZATION_LABELS, SPECIALIZATION_OPTIONS } from '@/shared/config/dictionaries'
-import { formatDateTime } from '@/shared/lib/format'
+import { formatDateTime, pluralize } from '@/shared/lib/format'
 import { Badge, Button, Card, CardHeader, EmptyState, ErrorState, PageHeader, ProgressBar, Select, SkeletonText, Tag, Textarea } from '@/shared/ui'
 import { fetchAllItems, useAdminMutation, type ItemDetail, type ItemDraft, type ItemSummary, type SpecCode, type VacancyTestResult } from './api'
 import { ItemStatusBadge } from './components/common'
@@ -54,7 +54,7 @@ export default function AdminVacancyTestsPage() {
   const history = useQuery({ queryKey: ['admin', 'vacancy-tests'], queryFn: () => api.get<VacancyTestResult[]>('/admin/vacancy-tests') })
   const build = useAdminMutation(
     (vars: { text: string; specialization: SpecCode | null }) => api.post<VacancyTestResult>('/admin/vacancy-tests', vars),
-    { success: (r) => `Тест собран: ${r.items.length} шаблонов, черновиков ${r.drafts.length}`, onSuccess: (r) => setShown({ result: r, fromHistory: false }) },
+    { success: (r) => `Тест собран: ${pluralize(r.items.length, ITEM_FORMS)}${r.drafts.length ? `, ${pluralize(r.drafts.length, DRAFT_FORMS)}` : ', без черновиков'}`, onSuccess: (r) => setShown({ result: r, fromHistory: false }) },
   )
 
   const shownResult = shown?.fromHistory ? (history.data?.find((r) => r.id === shown.result.id) ?? shown.result) : shown?.result
@@ -82,7 +82,7 @@ export default function AdminVacancyTestsPage() {
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Например: «Ищем Middle Python-разработчика: FastAPI, PostgreSQL, Kafka…»"
-          hint={`${text.trim().length} символов, нужно не меньше 20`}
+          hint={`${pluralize(text.trim().length, ['символ', 'символа', 'символов'])}, нужно не меньше 20`}
         />
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <Select
@@ -134,10 +134,12 @@ export default function AdminVacancyTestsPage() {
                   className="flex w-full flex-wrap items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-violet-soft/60 aria-[current]:bg-violet-soft"
                 >
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-semibold text-ink">{r.vacancy_title}</span>
+                    <span className="block truncate font-semibold text-ink" title={r.vacancy_title}>
+                      {shortTitle(r.vacancy_title)}
+                    </span>
                     <span className="block text-[13px] text-muted">
                       {r.created_at ? `${formatDateTime(r.created_at)} · ` : ''}
-                      {SPECIALIZATION_LABELS[r.specialization]} · {GRADE_LABELS[r.grade]} · тем {r.topics.length}, шаблонов {r.items.length}, черновиков {r.drafts.length}
+                      {SPECIALIZATION_LABELS[r.specialization]} · {GRADE_LABELS[r.grade]} · {resultCounts(r)}
                     </span>
                   </span>
                   <ArrowRight className="size-4 text-subtle" aria-hidden />
@@ -149,6 +151,35 @@ export default function AdminVacancyTestsPage() {
       </Card>
     </>
   )
+}
+
+const ITEM_FORMS: [string, string, string] = ['шаблон', 'шаблона', 'шаблонов']
+const DRAFT_FORMS: [string, string, string] = ['черновик', 'черновика', 'черновиков']
+
+/** «5 тем · 5 шаблонов · 1 черновик» — для истории. */
+function resultCounts(r: VacancyTestResult): string {
+  return [
+    pluralize(r.topics.length, ['тема', 'темы', 'тем']),
+    pluralize(r.items.length, ITEM_FORMS),
+    r.drafts.length ? pluralize(r.drafts.length, DRAFT_FORMS) : 'без черновиков',
+  ].join(' · ')
+}
+
+/**
+ * Короткий заголовок из текста вакансии: первая строка, а если она длинная — до двоеточия или конца
+ * первой фразы; дальше обрезаем по слову. Полный текст показываем под катом.
+ */
+function shortTitle(text: string, max = 80): string {
+  let title = text.trim().split('\n')[0]?.trim() ?? ''
+  if (title.length > max / 2) {
+    const m = /^(.{12,}?)(?::|[.!?;](?:\s|$)|\s[—–-]\s)/.exec(title)
+    if (m) title = m[1].trim()
+  }
+  if (title.length > max) {
+    const cut = title.slice(0, max)
+    title = `${cut.slice(0, cut.lastIndexOf(' ') > max / 2 ? cut.lastIndexOf(' ') : max).replace(/[\s,;:.—–-]+$/, '')}…`
+  }
+  return title || 'Вакансия без названия'
 }
 
 function Step({ n, icon, title, children }: { n: number; icon: ReactNode; title: string; children: ReactNode }) {
@@ -169,9 +200,16 @@ function VacancyTestView({ result }: { result: VacancyTestResult }) {
   return (
     <Card>
       <CardHeader
-        title={result.vacancy_title}
+        className="mb-2"
+        title={<span className="font-sans text-lg font-semibold">{shortTitle(result.vacancy_title || result.vacancy_text)}</span>}
         description={`${SPECIALIZATION_LABELS[result.specialization]} · ${GRADE_LABELS[result.grade]} · темы по словарю, ${result.parser === 'llm' ? 'черновики новых задач написала нейросеть' : 'черновики — заготовки словаря (без нейросети)'}`}
       />
+      {result.vacancy_text && (
+        <details className="mb-5 text-sm">
+          <summary className="cursor-pointer font-medium text-fsp-plum">Текст вакансии ({pluralize(result.vacancy_text.trim().length, ['символ', 'символа', 'символов'])})</summary>
+          <p className="mt-2 rounded-md bg-surface-muted p-3 whitespace-pre-line text-ink">{result.vacancy_text}</p>
+        </details>
+      )}
       <div className="flex flex-col gap-7">
         <Step n={1} icon={<Tags />} title="Темы, найденные в тексте">
           {result.topics.length ? (
@@ -206,10 +244,9 @@ function VacancyTestView({ result }: { result: VacancyTestResult }) {
                 <li key={i.item_id} className="flex gap-3 rounded-md border border-line p-3">
                   <span className="font-semibold text-muted">{idx + 1}.</span>
                   <div className="min-w-0 flex-1">
-                    <Link to={`/admin/items/${i.item_id}`} className="font-semibold text-fsp-plum hover:underline">
-                      {i.title}
-                    </Link>{' '}
-                    <span className="font-mono text-xs text-muted">{i.code}</span>
+                    <Link to={`/admin/items/${i.item_id}`} className="font-semibold text-fsp-plum hover:underline" title={`Код шаблона: ${i.code}`}>
+                      {i.title || `Шаблон №${i.item_id}`}
+                    </Link>
                     {i.target_grade && <Badge tone="neutral" className="ml-2">{GRADE_LABELS[i.target_grade]}</Badge>}
                     <p className="mt-0.5 text-sm text-ink">{i.reason}</p>
                   </div>

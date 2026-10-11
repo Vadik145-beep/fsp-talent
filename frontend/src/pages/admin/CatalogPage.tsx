@@ -187,51 +187,52 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
             {badSpec ? ` (${SPECIALIZATION_LABELS[badSpec as SpecCodeT] ?? badSpec})` : ''}
           </p>
         )}
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-sm">
-            <thead>
-              <tr className="text-left text-xs font-semibold tracking-wide text-muted uppercase">
-                <th className="py-2 pr-3">Специализация</th>
-                <th className="px-2 py-2">Junior от</th>
-                <th className="px-2 py-2">Middle от</th>
-                <th className="px-2 py-2">Senior от</th>
-                <th className="py-2 pl-3">Стажёр · Junior · Middle · Senior</th>
-              </tr>
-            </thead>
-            <tbody>
-              {draft.grade_thresholds.map((t) => {
-                const shares = [normCdf(t.junior_from), normCdf(t.middle_from) - normCdf(t.junior_from), normCdf(t.senior_from) - normCdf(t.middle_from), 1 - normCdf(t.senior_from)]
-                const bad = !(t.junior_from < t.middle_from && t.middle_from < t.senior_from) || badSpec === t.specialization
-                return (
-                  <tr key={t.specialization} className="border-t border-line">
-                    <th scope="row" className="py-2 pr-3 text-left font-medium">{SPECIALIZATION_LABELS[t.specialization as SpecCodeT]}</th>
-                    {(['junior_from', 'middle_from', 'senior_from'] as const).map((k) => (
-                      <td key={k} className="px-2 py-2">
-                        <input
-                          type="number"
-                          step={0.1}
-                          aria-label={`${SPECIALIZATION_LABELS[t.specialization as SpecCodeT]}: ${k.replace('_from', '')} от`}
-                          aria-invalid={bad || undefined}
-                          value={t[k]}
-                          onChange={(e) => setThreshold(t.specialization, k, Number(e.target.value))}
-                          className="h-9 w-20 rounded-md border border-line-strong px-2 tabular-nums focus:border-fsp-pink focus:shadow-[var(--shadow-focus)] focus:outline-none aria-[invalid=true]:border-danger"
-                        />
-                      </td>
-                    ))}
-                    <td className="py-2 pl-3">
-                      <div className="flex h-5 gap-0.5 overflow-hidden rounded-sm" aria-label={shares.map((s) => pct(Math.max(0, s))).join(' · ')}>
-                        {shares.map((s, i) => (
-                          <span key={i} className={`flex items-center justify-center text-[10px] font-semibold ${SHARE_RAMP[i]}`} style={{ width: `${Math.max(0, s) * 100}%` }}>
-                            {s > 0.08 ? Math.round(s * 100) : ''}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+        {/* Сетка вместо таблицы: на телефоне строка специализации раскладывается в карточку без горизонтальной прокрутки. */}
+        <div className="text-sm" role="group" aria-label="Пороги грейдов по специализациям">
+          <div className="hidden grid-cols-[minmax(9rem,1fr)_repeat(3,6rem)_minmax(12rem,2fr)] gap-x-3 py-2 text-left text-xs font-semibold tracking-wide text-muted uppercase sm:grid">
+            <span>Специализация</span>
+            <span>Junior от</span>
+            <span>Middle от</span>
+            <span>Senior от</span>
+            <span>Стажёр · Junior · Middle · Senior</span>
+          </div>
+          {draft.grade_thresholds.map((t) => {
+            const shares = [normCdf(t.junior_from), normCdf(t.middle_from) - normCdf(t.junior_from), normCdf(t.senior_from) - normCdf(t.middle_from), 1 - normCdf(t.senior_from)]
+            const bad = !(t.junior_from < t.middle_from && t.middle_from < t.senior_from) || badSpec === t.specialization
+            const specLabel = SPECIALIZATION_LABELS[t.specialization as SpecCodeT]
+            return (
+              <div
+                key={t.specialization}
+                className="grid grid-cols-3 items-center gap-x-3 gap-y-2 border-t border-line py-3 sm:grid-cols-[minmax(9rem,1fr)_repeat(3,6rem)_minmax(12rem,2fr)] sm:py-2"
+              >
+                <span className="col-span-3 font-medium sm:col-span-1">{specLabel}</span>
+                {(['junior_from', 'middle_from', 'senior_from'] as const).map((k) => {
+                  const gradeLabel = { junior_from: 'Junior', middle_from: 'Middle', senior_from: 'Senior' }[k]
+                  return (
+                    <label key={k} className="flex min-w-0 flex-col gap-1">
+                      <span className="text-xs text-muted sm:sr-only">{gradeLabel} от</span>
+                      <input
+                        type="number"
+                        step={0.1}
+                        aria-label={`${specLabel}: ${gradeLabel} от`}
+                        aria-invalid={bad || undefined}
+                        value={t[k]}
+                        onChange={(e) => setThreshold(t.specialization, k, Number(e.target.value))}
+                        className="h-9 w-full min-w-0 rounded-md border border-line-strong px-2 tabular-nums focus:border-fsp-pink focus:shadow-[var(--shadow-focus)] focus:outline-none aria-[invalid=true]:border-danger sm:w-20"
+                      />
+                    </label>
+                  )
+                })}
+                <div className="col-span-3 flex h-5 gap-0.5 overflow-hidden rounded-sm sm:col-span-1" aria-label={shares.map((x) => pct(Math.max(0, x))).join(' · ')}>
+                  {shares.map((x, i) => (
+                    <span key={i} className={`flex items-center justify-center text-[10px] font-semibold ${SHARE_RAMP[i]}`} style={{ width: `${Math.max(0, x) * 100}%` }}>
+                      {x > 0.08 ? Math.round(x * 100) : ''}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
         </div>
       </Card>
 
@@ -408,6 +409,7 @@ function SkillsTab() {
         <Card padding="none"><ErrorState error={q.error} onRetry={() => q.refetch()} /></Card>
       ) : (
         <Table
+          mobileCards
           caption="Справочник стека"
           rows={rows}
           rowKey={(s) => s.id}

@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { Library, ShieldAlert } from 'lucide-react'
 import { api } from '@/shared/api'
+import { plural } from '@/shared/lib/format'
 import {
   GRADE_LABELS,
   GRADE_OPTIONS,
@@ -28,10 +29,10 @@ function CorrectRate({ row }: { row: ItemSummary }) {
   const exp = row.expected_correct_rate
   const high = exp != null && row.correct_rate - exp >= 0.1
   return (
-    <div className="min-w-28" title={exp != null ? `Ожидается по модели: ${pct(exp)}` : undefined}>
+    <div className="min-w-32" title={exp != null ? `Ожидается по модели: ${pct(exp)}` : undefined}>
       <div className="flex items-baseline justify-between gap-2 text-[13px] tabular-nums">
         <b className={high ? 'text-danger' : 'text-ink'}>{pct(row.correct_rate)}</b>
-        {exp != null && <span className="text-muted">ожид. {pct(exp)}</span>}
+        {exp != null && <span className="whitespace-nowrap text-muted">ожид. {pct(exp)}</span>}
       </div>
       <div className="relative mt-1 h-1.5 rounded-full bg-line">
         <div className={`h-full rounded-full ${high ? 'bg-danger' : 'bg-fsp-blue'}`} style={{ width: `${row.correct_rate * 100}%` }} />
@@ -105,17 +106,28 @@ export default function AdminItemsPage() {
       header: 'Шаблон',
       sortable: true,
       render: (r) => (
-        <div className="min-w-48">
+        <div className="max-w-56 min-w-40">
           <p className="font-semibold text-ink">{r.title}</p>
-          <p className="font-mono text-xs text-muted">
-            {r.code} · {r.variants_count}+ вариантов{r.source === 'llm_vacancy' ? ' · из вакансии' : ''}
+          <p className="text-xs text-muted">
+            <span className="font-mono">{r.code}</span> · {ITEM_FORMAT_LABELS[r.format]} · {r.variants_count}+{' '}
+            {plural(r.variants_count, ['вариант', 'варианта', 'вариантов'])}
+            {r.source === 'llm_vacancy' ? ' · из вакансии' : ''}
           </p>
         </div>
       ),
     },
-    { key: 'specialization', header: 'Специализация', sortable: true, hideOnMobile: true, render: (r) => SPECIALIZATION_LABELS[r.specialization] },
-    { key: 'topic_label', header: 'Тема', sortable: true, hideOnMobile: true },
-    { key: 'format', header: 'Формат', hideOnMobile: true, render: (r) => ITEM_FORMAT_LABELS[r.format] },
+    {
+      key: 'topic_label',
+      header: 'Тема',
+      sortable: true,
+      hideOnMobile: true,
+      render: (r) => (
+        <div className="min-w-32">
+          <p className="text-ink">{r.topic_label}</p>
+          <p className="text-xs text-muted">{SPECIALIZATION_LABELS[r.specialization]}</p>
+        </div>
+      ),
+    },
     {
       key: 'target_grade',
       header: 'Грейд',
@@ -123,10 +135,10 @@ export default function AdminItemsPage() {
       sortValue: (r) => ['intern', 'junior', 'middle', 'senior'].indexOf(r.target_grade),
       render: (r) => GRADE_LABELS[r.target_grade as Grade],
     },
-    { key: 'a', header: 'a', sortable: true, align: 'right', hideOnMobile: true, render: (r) => num(r.a) },
-    { key: 'b', header: 'b', sortable: true, align: 'right', hideOnMobile: true, render: (r) => num(r.b) },
+    { key: 'a', header: <span className="normal-case" title="Различающая сила">a</span>, sortable: true, align: 'right', hideOnMobile: true, render: (r) => num(r.a) },
+    { key: 'b', header: <span className="normal-case" title="Сложность">b</span>, sortable: true, align: 'right', hideOnMobile: true, render: (r) => num(r.b) },
     { key: 'exposures', header: 'Показы', sortable: true, align: 'right', hideOnMobile: true },
-    { key: 'correct_rate', header: 'Доля верных', sortable: true, hideOnMobile: true, render: (r) => <CorrectRate row={r} /> },
+    { key: 'correct_rate', header: <span title="Доля верных ответов и ожидаемая по модели">Верных</span>, sortable: true, hideOnMobile: true, render: (r) => <CorrectRate row={r} /> },
     {
       key: 'status',
       header: 'Статус',
@@ -222,6 +234,7 @@ export default function AdminItemsPage() {
       ) : (
         <>
           <Table
+            mobileCards
             caption="Шаблоны банка задач"
             columns={columns}
             rows={rows}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatDuration, formatMoney, formatSalaryRange, formatSigned, plural } from './format'
+import { formatDuration, formatMoney, formatPercent, formatSalaryRange, formatSigned, plural, pluralize, toFixedRound } from './format'
 import { categoryLabel } from '@/shared/config/dictionaries'
 import { pseudonymCode } from './pseudonym'
 
@@ -25,6 +25,27 @@ describe('форматирование', () => {
     expect(plural(3, ['кандидат', 'кандидата', 'кандидатов'])).toBe('кандидата')
     expect(plural(11, ['кандидат', 'кандидата', 'кандидатов'])).toBe('кандидатов')
     expect(plural(25, ['кандидат', 'кандидата', 'кандидатов'])).toBe('кандидатов')
+  })
+
+  it('округление без ошибки двоичной дроби', () => {
+    // 0.5765 * 100 = 57.64999…: toFixed дал бы «57.6», в отчёте валидации — 57,7.
+    expect(toFixedRound(0.5765 * 100, 1)).toBe('57.7')
+    expect(n(formatPercent(0.5765, 1))).toBe('57,7 %')
+    expect(n(formatPercent(0.9474, 1))).toBe('94,7 %')
+    expect(n(formatPercent(0.1267, 1))).toBe('12,7 %')
+    expect(toFixedRound(1.005, 2)).toBe('1.01')
+    expect(toFixedRound(0.3576, 2)).toBe('0.36')
+    expect(toFixedRound(-0.125, 2)).toBe('-0.13')
+    expect(toFixedRound(-0.001, 1)).toBe('0.0')
+    expect(toFixedRound(20, 0)).toBe('20')
+    expect(toFixedRound(1e-9, 2)).toBe('0.00')
+  })
+
+  it('число со склонением', () => {
+    expect(n(pluralize(143, ['символ', 'символа', 'символов']))).toBe('143 символа')
+    expect(n(pluralize(1, ['жалоба', 'жалобы', 'жалоб']))).toBe('1 жалоба')
+    expect(n(pluralize(12, ['жалоба', 'жалобы', 'жалоб']))).toBe('12 жалоб')
+    expect(n(pluralize(1021, ['пара', 'пары', 'пар']))).toBe('1 021 пара')
   })
 
   it('подпись категории и псевдоним', () => {

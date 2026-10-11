@@ -2,6 +2,7 @@ import { useRef, useState, type ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { AlertTriangle, Download, FlaskConical, Play, Upload } from 'lucide-react'
 import { api } from '@/shared/api'
+import { pluralize, toFixedRound } from '@/shared/lib/format'
 import { Badge, Button, Card, CardHeader, EmptyState, ErrorState, PageHeader, SkeletonCard, Table } from '@/shared/ui'
 import { useAdminMutation, type MatchingEvalResult, type ValidationChart, type ValidationOverview } from './api'
 import { ValidationChartView, type ChartViewOptions } from './components/charts'
@@ -22,8 +23,11 @@ interface ChartMeta {
   facts: Fact[] | ((s: Summary) => Fact[])
 }
 
-/** Доля в процентах: целые без дробной части, остальное — с одним знаком. */
-const P = (v: number) => pct(v, Math.round(v * 1000) % 10 === 0 ? 0 : 1)
+/**
+ * Доля в процентах так же, как в docs/validation/report.md и презентации: один знак после запятой,
+ * целые — без дробной части (0.5765 → «57,7 %», 0.39 → «39 %», 1 → «100 %»).
+ */
+const P = (v: number) => pct(v, toFixedRound(v * 100, 1).endsWith('.0') ? 0 : 1)
 
 /** Точки серии по имени (или первая серия). */
 function seriesPoints(chart: ValidationChart, name?: string) {
@@ -187,7 +191,9 @@ const ORDER = Object.keys(META)
 
 function fmtFact(v: number | undefined, kind: FactKind): string {
   if (v == null) return '—'
-  return kind === 'pct' ? P(v) : num(v, v >= 10 ? 1 : 2)
+  if (kind === 'pct') return P(v)
+  if (Number.isInteger(v)) return num(v, 0)
+  return num(v, v >= 10 ? 1 : 2)
 }
 
 function ChartCard({ chart }: { chart: ValidationChart }) {
@@ -322,6 +328,9 @@ function Procedure({ seed, generatedAt }: { seed: number; generatedAt?: string }
   )
 }
 
+const pairsText = (n: number) => pluralize(n, ['пара', 'пары', 'пар'])
+const needsText = (n: number) => pluralize(n, ['потребность', 'потребности', 'потребностей'])
+
 const EXAMPLE_CSV = `${import.meta.env.BASE_URL}example_pairs.csv`
 
 const RANKING_LABELS: Record<string, string> = {
@@ -340,7 +349,7 @@ function MatchingUpload() {
       form.append('file', file)
       return api.post<MatchingEvalResult>('/eval/matching', form)
     },
-    { success: (r) => `Посчитано: ${r.pairs_count} пар, ${r.needs_count} потребностей` },
+    { success: (r) => `Посчитано: ${pairsText(r.pairs_count)}, ${needsText(r.needs_count)}` },
   )
 
   function upload(file: File) {
@@ -430,7 +439,7 @@ function MatchingUpload() {
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <Badge tone={fileOrder ? 'warning' : 'violet'}>{RANKING_LABELS[r.ranking] ?? r.ranking}</Badge>
             <span className="text-sm text-muted">
-              {r.filename} · {r.pairs_count} пар · {r.needs_count} потребностей
+              {r.filename} · {pairsText(r.pairs_count)} · {needsText(r.needs_count)}
             </span>
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -456,6 +465,7 @@ function MatchingUpload() {
             </ul>
           )}
           <Table
+            mobileCards
             className="mt-3"
             caption="Метрики по потребностям"
             rows={r.per_need}

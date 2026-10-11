@@ -34,12 +34,13 @@ export function UserMenu({ user }: { user: DemoUser }) {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-haspopup="menu"
+        title={`${user.name} · ${user.subtitle}`}
         className="flex items-center gap-2 rounded-md py-1 pr-1.5 pl-1 text-left text-ink transition-colors hover:bg-nav-hover"
       >
         <Avatar name={user.name} size="sm" className="ring-2 ring-primary-tint" />
         <span className="hidden min-w-0 sm:block">
-          <span className="block max-w-40 truncate text-sm leading-tight font-semibold">{user.name}</span>
-          <span className="block max-w-40 truncate text-xs leading-tight text-muted">{user.subtitle}</span>
+          <span className="block max-w-64 truncate text-sm leading-tight font-semibold">{user.name}</span>
+          <span className="block max-w-64 truncate text-xs leading-tight text-muted">{user.subtitle}</span>
         </span>
         <ChevronDown className={cn('size-4 text-muted transition-transform', open && 'rotate-180')} aria-hidden />
       </button>
@@ -49,8 +50,8 @@ export function UserMenu({ user }: { user: DemoUser }) {
           className="absolute right-0 z-50 mt-2 w-64 animate-pop-in rounded-md border border-line bg-surface py-1 shadow-[var(--shadow-pop)]"
         >
           <div className="border-b border-line px-4 py-3">
-            <p className="truncate text-sm font-semibold text-ink">{user.name}</p>
-            <p className="truncate text-[13px] text-muted">{user.email}</p>
+            <p className="text-sm font-semibold break-words text-ink">{user.name}</p>
+            <p className="text-[13px] break-all text-muted">{user.email}</p>
           </div>
           <button
             type="button"

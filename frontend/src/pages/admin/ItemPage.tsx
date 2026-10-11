@@ -108,7 +108,7 @@ export default function AdminItemPage() {
       )}
 
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-        <StatTile label="Сложность b" value={num(item.b)} hint={`50% верных при θ = ${num(item.b)}`} />
+        <StatTile label="Сложность b" value={num(item.b)} hint={`${pct(0.5)} верных при θ = ${num(item.b)}`} />
         <StatTile label="Различающая сила a" value={num(item.a)} hint={item.a >= 1 ? 'хорошо разделяет' : item.a >= 0.6 ? 'средне' : 'слабо разделяет'} />
         <StatTile label="Показов" value={item.exposures} hint={item.status === 'pilot' ? `до рабочего: ${Math.max(0, 150 - item.exposures)}` : undefined} />
         <StatTile label="Доля верных" value={pct(item.correct_rate)} tone={gap != null && gap >= 0.1 ? 'accent' : 'default'} hint={`ожидается ${pct(item.expected_correct_rate)}`} />

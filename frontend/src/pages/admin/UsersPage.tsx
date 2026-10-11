@@ -113,7 +113,7 @@ export default function AdminUsersPage() {
         <Select
           aria-label="Блокировка"
           containerClassName="sm:w-48"
-          placeholder="Все"
+          placeholder="Все статусы"
           options={[
             { value: 'false', label: 'Активные' },
             { value: 'true', label: 'Заблокированные' },
@@ -129,6 +129,7 @@ export default function AdminUsersPage() {
       ) : (
         <>
           <Table
+            mobileCards
             caption="Пользователи"
             columns={columns}
             rows={list.data?.items ?? []}

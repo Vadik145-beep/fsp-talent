@@ -170,7 +170,9 @@ function DashboardBody({ data, period, setPeriod }: { data: AdminDashboard; peri
                     <span className="block font-semibold text-ink">{f.title}</span>
                     <span className="block text-[13px] text-muted">{SPECIALIZATION_LABELS[f.specialization as Specialization]} · шаблон #{f.item_id}</span>
                   </span>
-                  <Badge tone="danger">z = {num(f.leak_score, 1)}</Badge>
+                  <Badge tone="danger" className="shrink-0" title="Насколько доля верных ответов выше ожидаемой моделью (z-оценка); флаг ставится выше порога детектора">
+                    z = {num(f.leak_score, 1)}
+                  </Badge>
                   <ArrowRight className="size-4 text-subtle" aria-hidden />
                 </Link>
               </li>

@@ -1,4 +1,5 @@
 /** Подписи и цвета статусов кабинета администратора. */
+import { toFixedRound } from '@/shared/lib/format'
 import type { Tone } from '@/shared/ui'
 import type { ItemFormat, ItemStatus, ReportReason, ReportStatus } from './api'
 
@@ -77,6 +78,13 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   report_resolved: 'Жалоба обработана',
   consent_granted: 'Дано согласие',
   consent_revoked: 'Отзыв согласия',
+  report_created: 'Новая жалоба',
+  company_invite_code_changed: 'Новый код приглашения',
+  api_token_issued: 'Выпущен API-токен',
+  api_token_revoked: 'Отозван API-токен',
+  webhook_created: 'Добавлен вебхук',
+  webhook_deleted: 'Удалён вебхук',
+  freshness_decayed: 'Снижена свежесть профилей',
 }
 
 export const AUDIT_ACTION_TONES: Record<string, Tone> = {
@@ -107,6 +115,7 @@ export const TARGET_TYPE_LABELS: Record<string, string> = {
   grade: 'Грейд',
   category: 'Категория',
   topic: 'Тема теста',
+  system: 'Система',
 }
 
 /** Подписи ключей настроек (для журнала: «было → стало»). */
@@ -125,11 +134,11 @@ export const SETTING_LABELS: Record<string, string> = {
 /** 0.873 → «87 %», null → «—». */
 export function pct(value: number | null | undefined, digits = 0): string {
   if (value == null || Number.isNaN(value)) return '—'
-  return `${(value * 100).toFixed(digits).replace('.', ',')}\u00A0%`
+  return `${toFixedRound(value * 100, digits).replace('.', ',')}\u00A0%`
 }
 
 /** 1.234 → «1,23». */
 export function num(value: number | null | undefined, digits = 2): string {
   if (value == null || Number.isNaN(value)) return '—'
-  return value.toFixed(digits).replace('.', ',').replace('-', '−')
+  return toFixedRound(value, digits).replace('.', ',').replace('-', '−')
 }

@@ -39,7 +39,8 @@ export function CardHeader({ title, description, actions, className }: CardHeade
         <h3 className="text-base font-semibold">{title}</h3>
         {description && <p className="mt-0.5 text-sm text-muted">{description}</p>}
       </div>
-      {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
+      {/* На узком экране действия переносятся под заголовок и сами переносятся по строкам — без горизонтальной прокрутки. */}
+      {actions && <div className="flex max-w-full min-w-0 flex-wrap items-center gap-x-3 gap-y-2 sm:shrink-0">{actions}</div>}
     </div>
   )
 }
