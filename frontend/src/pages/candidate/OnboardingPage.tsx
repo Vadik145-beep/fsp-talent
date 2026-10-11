@@ -23,7 +23,7 @@ import { ONBOARDING_STEPS, readOnboarding, writeOnboarding, type OnboardingProgr
 import { applyParsedResume, formFromProfile, toUpdate, type ParsedConfidence, type ProfileFormState, type ResumeClaim } from './components/profileFormModel'
 import { ResumeClaimNote } from './components/ResumeClaim'
 import { hasClaim, writeResumeClaim } from './components/resumeClaimStore'
-import { ITEM_FORMAT_LABELS } from './labels'
+import { ITEM_FORMAT_LABELS, gradeTestLabel } from './labels'
 
 /** Мастер: 1 профиль → 2 опрос → 3 грейд → 4 тест (отдельный экран) → 5 результат. */
 export default function OnboardingPage() {
@@ -621,6 +621,25 @@ function StepTest({
   const conflict = isApiError(start.error) ? start.error : null
   const runningId = conflict?.code === 'session_in_progress' ? Number(conflict.details.session_id) : null
   const cooldownAt = conflict?.code === 'cooldown_active' ? String(conflict.details.available_at ?? '') : null
+  // тест на этот грейд уже не сдан — повтор через 30 дней, а грейд ниже можно пройти сразу (ТЗ)
+  const failedRetry = conflict?.code === 'cooldown_active' && conflict.details.reason_code === 'failed_retry_cooldown'
+  const lower: Grade | null = GRADES.indexOf(grade) > 0 ? GRADES[GRADES.indexOf(grade) - 1] : null
+
+  const startTest = (target: Grade) =>
+    start.mutate(
+      { specialization, target_grade: target, kind: 'placement' },
+      {
+        onSuccess: (state) => {
+          onStarted()
+          navigate(`/candidate/test/${state.session.id}?onboarding=1`)
+        },
+        onError: (err) => {
+          if (!isApiError(err) || err.status !== 409) {
+            toast({ tone: 'error', title: 'Тест не запустился', description: getErrorMessage(err) })
+          }
+        },
+      },
+    )
 
   return (
     <div className="grid gap-5">
@@ -654,7 +673,25 @@ function StepTest({
           </div>
         </div>
       </Card>
-      {conflict && (
+      {failedRetry ? (
+        <div className="grid gap-3 rounded-lg border border-warning/30 bg-warning-soft px-4 py-3 text-sm text-warning" role="alert">
+          <p>
+            {gradeTestLabel(grade, true)} вы уже проходили, и грейд не подтвердился. Повторить его можно
+            {cooldownAt ? ` с ${formatDate(cooldownAt)}` : ' позже'}.{' '}
+            {lower ? `Сейчас можно пройти ${gradeTestLabel(lower)} или выбрать другой грейд.` : 'Сейчас можно выбрать другую специализацию.'}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {lower && (
+              <Button size="sm" loading={start.isPending} onClick={() => startTest(lower)}>
+                Пройти {gradeTestLabel(lower)}
+              </Button>
+            )}
+            <Button size="sm" variant="secondary" onClick={onBack}>
+              Выбрать другой грейд
+            </Button>
+          </div>
+        </div>
+      ) : conflict && (
         <div className="rounded-lg border border-warning/30 bg-warning-soft px-4 py-3 text-sm text-warning" role="alert">
           {conflict.message}
           {cooldownAt && ` Станет доступно ${formatDate(cooldownAt)}`}
@@ -666,26 +703,7 @@ function StepTest({
         </div>
       )}
       <StepActions onBack={onBack}>
-        <Button
-          size="lg"
-          loading={start.isPending}
-          onClick={() =>
-            start.mutate(
-              { specialization, target_grade: grade, kind: 'placement' },
-              {
-                onSuccess: (state) => {
-                  onStarted()
-                  navigate(`/candidate/test/${state.session.id}?onboarding=1`)
-                },
-                onError: (err) => {
-                  if (!isApiError(err) || err.status !== 409) {
-                    toast({ tone: 'error', title: 'Тест не запустился', description: getErrorMessage(err) })
-                  }
-                },
-              },
-            )
-          }
-        >
+        <Button size="lg" loading={start.isPending} disabled={failedRetry} onClick={() => startTest(grade)}>
           Начать тест
         </Button>
       </StepActions>
