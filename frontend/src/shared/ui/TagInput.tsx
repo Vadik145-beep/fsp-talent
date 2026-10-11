@@ -100,6 +100,8 @@ export function TagInput({
       else if (typedKnown) add(typed)
       else if (open && suggestions[0]) add(suggestions[0])
       else add(typed)
+      // добавили — подсказки закрываем, иначе на телефоне они закрывают поля ниже; ввод откроет снова
+      setOpen(false)
     } else if (e.key === 'Backspace' && !query && value.length) {
       onChange(value.slice(0, -1))
     } else if (e.key === 'ArrowDown') {

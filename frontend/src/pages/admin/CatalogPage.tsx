@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Pencil, Plus, RotateCcw, Save, Scale, Trash2 } from 'lucide-react'
+import { cn } from '@/shared/lib/cn'
 import { api, isApiError } from '@/shared/api'
 import { SPECIALIZATION_LABELS, SPECIALIZATION_OPTIONS, type Specialization as SpecCodeT } from '@/shared/config/dictionaries'
 import {
@@ -175,11 +176,11 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
   }
 
   return (
-    <div className="flex flex-col gap-6 pb-20">
+    <div className="flex flex-col gap-6 pb-6">
       <Card>
         <CardHeader
           title="Пороги грейдов по уровню θ"
-          description="Уровень θ из теста переводится в грейд по этим порогам. Ниже порога Junior — Стажёр. Поднимете порог — грейд будет получить труднее. Справа — какая доля людей попадёт в каждый грейд при обычном распределении уровней."
+          description="Уровень θ из теста переводится в грейд по этим порогам. Ниже порога Junior — Стажёр. Поднимете порог — грейд будет получить труднее. Цветная полоса рядом с порогами показывает, какая доля людей попадёт в каждый грейд при обычном распределении уровней."
         />
         {errors.grade_thresholds && (
           <p role="alert" className="mb-3 text-sm text-danger">
@@ -311,8 +312,9 @@ function SettingsForm({ settings }: { settings: PlatformSettings }) {
         </Card>
       </div>
 
-      <div className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center justify-end gap-3 border-t border-line bg-surface/95 px-4 py-3 backdrop-blur sm:mx-0 sm:rounded-lg sm:border">
-        <span className="mr-auto text-sm text-muted">
+      {/* Панель липнет к низу экрана: непрозрачная и на телефоне в одну строку, чтобы не закрывать поля */}
+      <div className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center justify-end gap-x-3 gap-y-1 border-t border-line bg-surface px-4 py-2 sm:mx-0 sm:rounded-lg sm:border sm:py-3">
+        <span className={cn('mr-auto text-sm text-muted', !changedCount && !errors._ && 'max-sm:hidden')}>
           {changedCount ? `Изменено настроек: ${changedCount}` : 'Изменений нет'}
           {errors._ && <span role="alert" className="ml-2 text-danger">{errors._}</span>}
         </span>

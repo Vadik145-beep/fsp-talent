@@ -128,6 +128,8 @@ describe('UI-кит', () => {
     await user.type(input, 'go{Enter}')
     expect(screen.getByRole('button', { name: 'Убрать Go' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Убрать Django' })).not.toBeInTheDocument()
+    // добавили — подсказки закрылись и не закрывают поля ниже (телефон)
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
     await user.type(input, 'постгрес')
     expect(screen.getByRole('option', { name: 'PostgreSQL' })).toBeInTheDocument()
     await user.keyboard('{Enter}')
