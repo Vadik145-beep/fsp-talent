@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import type { UseQueryResult } from '@tanstack/react-query'
+import { isApiError } from '@/shared/api'
 import { Card, ErrorState, SkeletonCard } from '@/shared/ui'
 
 /**
@@ -14,9 +15,11 @@ export interface QueryViewProps<T> {
   isEmpty?: (data: T) => boolean
   empty?: ReactNode
   errorTitle?: string
+  /** Что показать на 404 (объекта нет или он чужой) вместо ошибки с «Повторить». */
+  notFound?: ReactNode
 }
 
-export function QueryView<T>({ query, children, loading, isEmpty, empty, errorTitle }: QueryViewProps<T>) {
+export function QueryView<T>({ query, children, loading, isEmpty, empty, errorTitle, notFound }: QueryViewProps<T>) {
   if (query.isPending) {
     return (
       loading ?? (
@@ -28,6 +31,7 @@ export function QueryView<T>({ query, children, loading, isEmpty, empty, errorTi
     )
   }
   if (query.isError) {
+    if (notFound && isApiError(query.error) && query.error.status === 404) return <>{notFound}</>
     return (
       <Card padding="none">
         <ErrorState title={errorTitle} error={query.error} onRetry={() => void query.refetch()} retrying={query.isFetching} />

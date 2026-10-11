@@ -43,9 +43,56 @@ describe('результат теста: присвоенная категори
     expect(await screen.findByText('Backend · Middle', {}, T)).toBeInTheDocument()
     expect(screen.getByText('Ваша категория')).toBeInTheDocument()
     expect(screen.getByText('Грейд Middle подтверждён')).toBeInTheDocument()
-    expect(screen.getByText('Ваш уровень выше Middle — можно пройти тест на Senior')).toBeInTheDocument()
+    expect(screen.getByText('Ваш уровень выше Middle — можно пройти тест на грейд «Senior»')).toBeInTheDocument()
     expect(screen.queryByText('Backend · Senior')).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Пройти тест на Senior' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Пройти тест на грейд «Senior»' })).toBeInTheDocument()
+  }, 20_000)
+})
+
+/** Задача «один вариант» с кодом в условии: код виден над вариантами (раньше рисовался только у «что выведет»). */
+const SESSION_WITH_CODE: S['TestSessionState'] = {
+  session: {
+    id: 902,
+    candidate_id: 1,
+    specialization: 'backend',
+    target_grade: 'middle',
+    kind: 'placement',
+    status: 'in_progress',
+    started_at: '2026-10-07T12:00:00+03:00',
+    items_answered: 0,
+    max_items: 20,
+  },
+  current_item: {
+    instance_id: 'it-1-s1',
+    format: 'single_choice',
+    topic: 'backend.python',
+    topic_label: 'Python',
+    prompt: 'Что вернёт функция для пустого списка?',
+    code: 'def first(items):\n    return items[0] if items else None',
+    code_language: 'python',
+    options: [
+      { id: 'a', text: 'None' },
+      { id: 'b', text: 'IndexError' },
+    ],
+    time_limit_sec: 120,
+  },
+  item_number: 1,
+  time_left_sec: 120,
+}
+
+describe('экран теста', () => {
+  it('код к задаче виден и у формата «один вариант»', async () => {
+    server.use(http.get('*/api/testing/sessions/902', () => HttpResponse.json(SESSION_WITH_CODE)))
+    renderApp('/candidate/test/902', { role: 'candidate' })
+    expect(await screen.findByText('Что вернёт функция для пустого списка?', {}, T)).toBeInTheDocument()
+    // код подсвечен по токенам — проверяем текст блока целиком
+    expect(document.body.textContent).toContain('return items[0] if items else None')
+    expect(screen.getByText('IndexError')).toBeInTheDocument()
+  }, 20_000)
+
+  it('адрес с неверным id — «Тест не найден», а не пустая страница', async () => {
+    renderApp('/candidate/test/abc', { role: 'candidate' })
+    expect(await screen.findByText('Тест не найден', {}, T)).toBeInTheDocument()
   }, 20_000)
 })
 

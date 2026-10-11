@@ -7,10 +7,12 @@ import { GRADE_LABELS, SPECIALIZATION_LABELS } from '@/shared/config/dictionarie
 import { APP_NAME } from '@/shared/config/env'
 import { Button, Card, ProgressBar, Skeleton, Stepper, Tag, Timer, useToast } from '@/shared/ui'
 import { invalidateCandidate, qk, type AnswerAck, type ItemView, type TestSessionState } from './api'
+import { CodeBlock } from './components/CodeBlock'
 import { ItemAnswer, type AnswerDraft } from './components/ItemAnswer'
+import { TestNotFound } from './components/TestNotFound'
 import { QueryView } from './components/QueryView'
 import { ONBOARDING_STEPS } from './components/onboardingSteps'
-import { isAnswerReady, normalizeAnswer } from './components/testAnswer'
+import { CODE_IN_ANSWER, isAnswerReady, normalizeAnswer } from './components/testAnswer'
 import { ITEM_FORMAT_LABELS } from './labels'
 
 /** Если бэкенд не прислал max_items — верхняя граница адаптивного теста. */
@@ -20,15 +22,18 @@ const DEFAULT_MAX_ITEMS = 20
 export default function TestPage() {
   const { sessionId } = useParams()
   const id = Number(sessionId)
+  const validId = Number.isInteger(id) && id > 0
   const [params] = useSearchParams()
   const onboarding = params.get('onboarding') === '1'
   const q = useQuery({
     queryKey: qk.session(id),
     queryFn: () => api.get<TestSessionState>(`/testing/sessions/${id}`),
-    enabled: Number.isInteger(id),
+    enabled: validId,
     staleTime: Infinity,
     gcTime: 0,
   })
+
+  if (!validId) return <TestNotFound />
 
   return (
     <>
@@ -38,6 +43,7 @@ export default function TestPage() {
         </Card>
       )}
       <QueryView
+        notFound={<TestNotFound />}
         query={q}
         loading={
           <Card padding="lg">
@@ -132,6 +138,8 @@ function TestRunner({ state, onboarding }: { state: TestSessionState; onboarding
             <Tag tone="neutral">{ITEM_FORMAT_LABELS[item.format]}</Tag>
           </div>
           <p className="mb-5 text-lg leading-relaxed font-semibold whitespace-pre-line text-ink">{item.prompt}</p>
+          {/* Код к условию. Для «Что выведет код» и «Строка с ошибкой» его рисует само поле ответа. */}
+          {item.code && !CODE_IN_ANSWER.has(item.format) && <CodeBlock code={item.code} className="mb-5" />}
           <ItemAnswer item={item} value={draft} onChange={setDraft} disabled={answer.isPending} />
           <div className="mt-8 flex flex-col-reverse gap-3 border-t border-line pt-5 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-[13px] text-muted">После отправки ответ изменить нельзя.</p>
