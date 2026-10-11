@@ -3268,7 +3268,7 @@
     "target_id": 21,
     "summary": "Возможная утечка шаблона «Граничные значения»",
     "details": {
-      "leak_score": 3.61
+      "leak_score": 3.93
     }
   },
   {
@@ -3372,7 +3372,7 @@
     "target_id": 28,
     "summary": "Возможная утечка шаблона «Kubernetes: перезапуск подов»",
     "details": {
-      "leak_score": 4.28
+      "leak_score": 4.36
     }
   },
   {
@@ -3385,7 +3385,7 @@
     "target_id": 13,
     "summary": "Возможная утечка шаблона «Срезы списков (Kotlin-подобный псевдокод)»",
     "details": {
-      "leak_score": 3.16
+      "leak_score": 3.64
     }
   },
   {

@@ -1516,7 +1516,8 @@ def build_items() -> None:
                 "correct_rate": obs_rate,
                 "expected_correct_rate": None if exposures == 0 else exp_rate,
                 "leak_flag": is_leak,
-                "leak_score": round(rng.uniform(3.1, 4.5), 2)
+                # флаг ставится при z ≥ 3,5 (z_threshold детектора) — у демо-флагов z выше порога
+                "leak_score": round(rng.uniform(3.6, 4.5), 2)
                 if is_leak
                 else round(rng.uniform(0, 1.2), 2),
                 "variants_count": variants,
