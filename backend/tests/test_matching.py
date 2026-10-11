@@ -291,7 +291,12 @@ def test_profile_note_for_recruiter(client: TestClient) -> None:
 
 
 def test_invitation_status_in_results(client: TestClient) -> None:
-    # кандидат 1 (backend:middle) принял приглашение компании 1
+    # демо: кандидат 1 (backend:middle) принял приглашение другой компании —
+    # в подборке компании 1 он без статуса приглашения и обезличен
+    item = next(m for m in matches(client)["items"] if m["candidate"]["id"] == 1)
+    assert item["invitation_status"] is None
+    # принятое приглашение своей компании видно в подборке
+    sql_sync("UPDATE invitations SET company_id = 1, recruiter_id = 1 WHERE id = 1")
     item = next(m for m in matches(client)["items"] if m["candidate"]["id"] == 1)
     assert item["invitation_status"] == "accepted"
 

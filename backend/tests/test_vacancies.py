@@ -235,7 +235,7 @@ def test_feed_only_published(client: TestClient) -> None:
     assert {v["status"] for v in feed} == {"published"}
     assert sorted(v["id"] for v in feed) == [1, 2, 3, 4, 5, 7]  # 6 снята, 8 черновик
     mine = {v["id"]: v["my_application_id"] for v in feed}
-    assert mine[1] == 2 and mine[4] == 1, "отклики демо-кандидата из сида"
+    assert mine[4] == 1 and mine[1] is None, "отклик демо-кандидата из сида — только в «Вектор»"
     assert mine[2] is None
 
 
@@ -286,11 +286,13 @@ def test_feed_hides_blocked_company(client: TestClient) -> None:
 
 
 def test_candidate_keeps_seeing_vacancy_he_applied_to(client: TestClient) -> None:
+    applied = client.post("/api/vacancies/1/applications", json={}, headers=CANDIDATE).json()
     client.post("/api/vacancies/1/unpublish", headers=RECRUITER)
     assert 1 not in feed_ids(client)
     card = client.get("/api/vacancies/1", headers=CANDIDATE)
     assert card.status_code == 200
-    assert card.json()["status"] == "unpublished" and card.json()["my_application_id"] == 2
+    assert card.json()["status"] == "unpublished"
+    assert card.json()["my_application_id"] == applied["id"]
 
 
 # ---------- счётчики откликов ----------

@@ -31,10 +31,10 @@ def test_anonymous_profile_has_no_name_or_contacts(client: TestClient) -> None:
 
 
 def test_contacts_open_after_accepted_invitation(client: TestClient) -> None:
-    # кандидат 1 принял приглашение компании 1
-    body = client.get("/api/candidates/1", headers=RECRUITER).json()
+    # кандидат 5 принял приглашение компании 1 (приглашение 8)
+    body = client.get("/api/candidates/5", headers=RECRUITER).json()
     assert body["contacts_visible"] is True
-    assert body["contacts"]["full_name"] == _private_values(1)[0]
+    assert body["contacts"]["full_name"] == _private_values(5)[0]
 
 
 def test_contacts_closed_for_other_company(client: TestClient) -> None:
