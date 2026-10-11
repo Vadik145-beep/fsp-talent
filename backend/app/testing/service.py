@@ -89,6 +89,15 @@ def _assigned_grade(decision: GradeDecision, target: str, previous: str | None) 
     return granted
 
 
+def _topic_level(topic: dict[str, Any]) -> str:
+    """Уровень темы для разбора. Ни одного верного ответа — тема всегда «подтянуть»,
+    даже если по модели так и ожидалось (иначе экран пишет «Нет верных ответов» и
+    одновременно «ни одна тема не проседает»)."""
+    if float(topic.get("score") or 0) <= 0:
+        return "weak"
+    return str(topic.get("level") or "ok")
+
+
 class TestingDbService:
     """Тест соискателя на БД. Коммит делает сервис (одна транзакция на запрос)."""
 
@@ -403,6 +412,10 @@ class TestingDbService:
             )
         spec, target, kind = str(body.specialization), str(body.target_grade), str(body.kind)
         current = profile.grade if profile.specialization == spec else None
+        if current is None and kind in ("lower", "higher"):
+            # Грейда ещё нет (только заявленный): «тест ниже/выше» с экрана результата —
+            # это новая попытка первичного теста на другой заявленный грейд.
+            kind = "placement"
         if kind == "lower" and not (current and _grade_idx(target) < _grade_idx(current)):
             raise AppError(
                 422, "invalid_kind", "Тест «ниже» — только на грейд ниже текущего", {"kind": kind}
@@ -819,8 +832,8 @@ class TestingDbService:
             "items_answered": ts.items_answered,
             "finished_at": as_msk(ts.finished_at) or _now(),
             "topic_scores": scores,
-            "strong_topics": [t["label"] for t in scores if t.get("level") == "strong"],
-            "weak_topics": [t["label"] for t in scores if t.get("level") == "weak"],
+            "strong_topics": [t["label"] for t in scores if _topic_level(t) == "strong"],
+            "weak_topics": [t["label"] for t in scores if _topic_level(t) == "weak"],
             "recommendation": {
                 "action": action,
                 "message": message,

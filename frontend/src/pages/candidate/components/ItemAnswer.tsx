@@ -4,6 +4,7 @@ import { Input } from '@/shared/ui'
 import { cn } from '@/shared/lib/cn'
 import type { AnswerPayload, ItemView } from '../api'
 import { CodeBlock } from './CodeBlock'
+import { codeOutputHint, numericHint } from './testAnswer'
 
 export type AnswerDraft = AnswerPayload & { raw?: string }
 
@@ -30,7 +31,7 @@ export function ItemAnswer({ item, value, onChange, disabled }: ItemAnswerProps)
           value={value.raw ?? ''}
           onChange={(e) => onChange({ raw: e.target.value })}
           disabled={disabled}
-          hint="Число; дробную часть можно через запятую"
+          hint={numericHint(item.prompt)}
           rightSlot={item.unit ? <span className="pr-1 text-sm text-muted">{item.unit}</span> : undefined}
           className={item.unit ? 'pr-24' : undefined}
           containerClassName="max-w-sm"
@@ -53,7 +54,7 @@ export function ItemAnswer({ item, value, onChange, disabled }: ItemAnswerProps)
         <div className="space-y-4">
           {item.code && <CodeBlock code={item.code} />}
           <Input
-            label="Что выведет программа"
+            label="Ваш ответ"
             autoComplete="off"
             spellCheck={false}
             value={value.text ?? ''}
@@ -61,7 +62,7 @@ export function ItemAnswer({ item, value, onChange, disabled }: ItemAnswerProps)
             disabled={disabled}
             className="font-mono"
             containerClassName="max-w-md"
-            hint="Ровно то, что появится в консоли"
+            hint={codeOutputHint(item.prompt)}
           />
         </div>
       )

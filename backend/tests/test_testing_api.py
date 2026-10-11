@@ -184,9 +184,21 @@ def test_failed_without_grade_offers_lower_test(client: TestClient) -> None:
     sid = state["session"]["id"]
     res = client.get(f"/api/testing/sessions/{sid}/result", headers=CAND_40).json()
     assert res["outcome"] == "suggest_lower" and res["recommendation"]["action"] == "offer_lower"
+    # «Нет верных ответов» в теме — она и в «Что подтянуть» (без противоречия на экране)
+    zero = {t["label"] for t in res["topic_scores"] if t["score"] <= 0}
+    assert zero and zero <= set(res["weak_topics"]) and not zero & set(res["strong_topics"])
+    # новичку не пишем «грейд принудительно не понижается» — грейда ещё нет
+    assert "принудительно" not in res["recommendation"]["message"]
     history = client.get("/api/testing/grade", headers=CAND_40).json()["history"]
     offers = [h for h in history if h["test_session_id"] == sid and h["event"] == "offer_lower"]
     assert len(offers) == 1 and offers[0]["grade_to"] == res["recommendation"]["target_grade"]
+    # кнопка «Пройти тест на <ниже>» с экрана результата: у новичка грейда нет, только заявленный
+    lower = res["recommendation"]["target_grade"]
+    again = start(client, CAND_40, "backend", lower, "lower")
+    assert again["session"]["kind"] == "placement"
+    assert again["session"]["target_grade"] == lower
+    grade = client.get("/api/testing/grade", headers=CAND_40).json()
+    assert grade["grade"] is None and grade["declared_grade"] == lower
 
 
 def test_grade_change_cooldown_after_pass(client: TestClient) -> None:

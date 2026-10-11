@@ -66,6 +66,8 @@ export function CodeBlock({ code, selectable, selectedLine, onSelectLine, classN
   return (
     <div
       className={cn('overflow-x-auto rounded-lg bg-fsp-black py-3 font-mono text-[14px] leading-6 text-fsp-gray', className)}
+      // без лигатур JetBrains Mono: в задачах важно, «<=» это или «≤», «!=» или «≠»
+      style={{ fontVariantLigatures: 'none' }}
       role={selectable ? 'group' : undefined}
       aria-label={ariaLabel ?? (selectable ? 'Код: выберите строку' : 'Код')}
     >

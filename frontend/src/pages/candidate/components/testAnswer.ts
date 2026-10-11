@@ -47,3 +47,17 @@ export function isAnswerReady(item: ItemView, value: AnswerPayload & { raw?: str
       return false
   }
 }
+
+/** Форматы, у которых код показывает само поле ответа (остальным код рисует экран теста над полем). */
+export const CODE_IN_ANSWER: ReadonlySet<ItemView['format']> = new Set(['code_output', 'find_error_line'])
+
+/** Подсказка к числовому ответу — по условию: «целое число» без дробей. */
+export function numericHint(prompt: string): string {
+  return /целое число|целым числом|целых|сколько раз/i.test(prompt) ? 'Целое число' : 'Число; дробную часть можно через запятую'
+}
+
+/** Подсказка к «Что выведет код»: про консоль — только если условие о выводе в консоль. */
+export function codeOutputHint(prompt: string): string {
+  if (/консол|напечата|выведет|print|console\.log/i.test(prompt)) return 'Ровно то, что появится в консоли'
+  return 'В том виде, как просит условие задачи'
+}

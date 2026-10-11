@@ -345,12 +345,12 @@ def test_decline_with_reason(client: TestClient, mails: list[dict[str, str]]) ->
     assert declined["status"] == "declined" and declined["recruiter_contacts"] is None
     seen = client.get(f"/api/invitations/{created['id']}", headers=RECRUITER).json()
     assert seen["decline_reason"] == "salary_too_low"
-    assert seen["decline_reason_label"] == "Мала зарплата"
+    assert seen["decline_reason_label"] == "Зарплата ниже ожиданий"
     assert seen["decline_comment"] == "Рассматриваю выше"
     assert seen["candidate_contacts"] is None
     assert [e["type"] for e in seen["events"]] == ["created", "viewed", "declined"]
     assert mails[-1]["to"] == "recruiter@example.com"
-    assert "Мала зарплата" in mails[-1]["text"]
+    assert "Зарплата ниже ожиданий" in mails[-1]["text"]
 
 
 def test_expired_lazily_on_read(client: TestClient) -> None:

@@ -17,7 +17,12 @@ from app.admin.audit import write_audit
 from app.candidates.grading import grade_status
 from app.candidates.models import CandidateProfile
 from app.candidates.repository import CandidateDb, CandidateRepository, session_grade
-from app.candidates.schemas import CandidateProfileUpdate, PrivacySettings
+from app.candidates.schemas import (
+    PRIVACY_DEFAULTS,
+    CandidateProfileUpdate,
+    PrivacySettings,
+    privacy_flag,
+)
 from app.catalog.clock import as_msk, now_msk
 from app.catalog.repository import CatalogDb
 from app.common.enums import (
@@ -64,12 +69,12 @@ def is_searchable(candidate: Record) -> bool:
 def to_card(candidate: Record) -> dict[str, Any]:
     privacy = candidate.get("privacy") or {}
     card: dict[str, Any] = {key: candidate.get(key) for key in CARD_FIELDS}
-    card["city"] = candidate.get("city") if privacy.get("show_city") else None
+    card["city"] = candidate.get("city") if privacy_flag(privacy, "show_city") else None
     card["experience_years"] = (
-        candidate.get("experience_years") if privacy.get("show_experience") else None
+        candidate.get("experience_years") if privacy_flag(privacy, "show_experience") else None
     )
-    card["links"] = candidate.get("links") if privacy.get("show_links") else None
-    show_fsp = privacy.get("show_fsp_achievements", True)
+    card["links"] = candidate.get("links") if privacy_flag(privacy, "show_links") else None
+    show_fsp = privacy_flag(privacy, "show_fsp_achievements")
     # «Есть достижения ФСП» — как фильтр банка (`has_fsp_condition`): достижения есть и не
     # скрыты. Скрытое участие и привязку без истории карточка не выдаёт.
     card["has_fsp"] = bool(
@@ -199,7 +204,7 @@ class CandidateProfileService:
     @staticmethod
     def _settings(cand: Record) -> dict[str, Any]:
         return {
-            "privacy": cand["privacy"],
+            "privacy": {**PRIVACY_DEFAULTS, **(cand.get("privacy") or {})},
             "job_search_paused": cand["job_search_paused"],
             "publication_consent": cand["publication_consent"],
             "fsp_linked": bool(cand.get("fsp_id")),
@@ -349,7 +354,7 @@ class CandidateProfileService:
         ]
         profile = to_card(cand)
         note = None
-        if cand.get("fsp_id") and (cand.get("privacy") or {}).get("show_fsp_achievements", True):
+        if cand.get("fsp_id") and privacy_flag(cand.get("privacy"), "show_fsp_achievements"):
             summary = (await fsp_summaries(self.session, [candidate_id]))[candidate_id]
             note = fsp_profile_note(summary.achievements, cand.get("specialization"))
         profile.update(

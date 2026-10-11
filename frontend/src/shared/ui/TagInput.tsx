@@ -195,6 +195,8 @@ export function TagInput({
                 onMouseDown={(e) => {
                   e.preventDefault()
                   add(s)
+                  // выбрали мышью/пальцем — список закрываем, иначе он закрывает поля ниже (на телефоне)
+                  setOpen(false)
                 }}
               >
                 {s}

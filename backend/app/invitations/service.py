@@ -59,7 +59,7 @@ STATUS_LABELS = {
     S.withdrawn: "Отозвано",
 }
 DECLINE_LABELS = {
-    DeclineReason.salary_too_low: "Мала зарплата",
+    DeclineReason.salary_too_low: "Зарплата ниже ожиданий",
     DeclineReason.wrong_stack: "Не тот стек",
     DeclineReason.not_interested_domain: "Не интересна сфера",
     DeclineReason.not_looking: "Не ищу работу сейчас",

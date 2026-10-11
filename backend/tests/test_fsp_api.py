@@ -9,6 +9,7 @@ import json
 from collections.abc import Iterator
 from datetime import UTC, datetime, timedelta
 from typing import Any
+from urllib.parse import parse_qs, urlparse
 
 import pytest
 from fastapi.testclient import TestClient
@@ -176,6 +177,26 @@ def test_login_linked_issues_session(client: TestClient, fakes: Fakes) -> None:
     assert resp.status_code == 200, resp.text
     assert resp.json()["user"]["id"] == 1
     assert "refresh_token" in resp.cookies
+
+
+def test_logout_ends_keycloak_session(client: TestClient, fakes: Fakes) -> None:
+    """Выход после входа через ФСП ID закрывает и сессию Keycloak (end_session)."""
+    client.post("/api/auth/fsp/logout")  # cookie от входов в прошлых тестах модуля
+    assert client.post("/api/auth/fsp/logout").json() == {"logout_url": None}
+    body = start(client, fakes, "login", "FSP-000001")
+    resp = client.post("/api/auth/fsp/login", json=body)
+    assert resp.status_code == 200, resp.text
+    id_token = resp.cookies.get("fsp_id_token")
+    assert id_token
+    out = client.post("/api/auth/fsp/logout")
+    assert out.status_code == 200, out.text
+    url = urlparse(out.json()["logout_url"])
+    query = {k: v[0] for k, v in parse_qs(url.query).items()}
+    assert url.path == "/realms/fsp/protocol/openid-connect/logout"
+    assert query["client_id"] == "fsp-talent" and query["id_token_hint"] == id_token
+    assert query["post_logout_redirect_uri"].endswith("/login")
+    # cookie удалена: повторный выход уже без Keycloak
+    assert client.post("/api/auth/fsp/logout").json() == {"logout_url": None}
 
 
 def test_login_not_linked_404(client: TestClient, fakes: Fakes) -> None:

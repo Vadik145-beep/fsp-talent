@@ -235,6 +235,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/fsp/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Выход из ФСП ID (адрес end_session Keycloak)
+         * @description Вызывается фронтом при выходе. Если в этом браузере был вход через ФСП ID (httpOnly cookie `fsp_id_token`), отдаёт адрес выхода Keycloak с `id_token_hint`, `client_id` и `post_logout_redirect_uri` (страница входа) и удаляет cookie. Иначе `logout_url` = null. Свою сессию закрывает `POST /api/auth/logout`.
+         */
+        post: operations["fsp_logout_api_auth_fsp_logout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/fsp-link": {
         parameters: {
             query?: never;
@@ -3719,7 +3739,7 @@ export interface components {
          * DeclineReasonItem
          * @example {
          *       "id": "salary_too_low",
-         *       "label": "Мала зарплата"
+         *       "label": "Зарплата ниже ожиданий"
          *     }
          */
         DeclineReasonItem: {
@@ -3939,6 +3959,20 @@ export interface components {
          * @enum {string}
          */
         FspLevel: "regional" | "national" | "international";
+        /**
+         * FspLogoutUrl
+         * @description Куда отправить браузер после выхода, чтобы закрыть и сессию ФСП ID (Keycloak).
+         * @example {
+         *       "logout_url": "http://localhost:18180/realms/fsp/protocol/openid-connect/logout?client_id=fsp-talent&post_logout_redirect_uri=http%3A%2F%2Flocalhost%3A15173%2Flogin&id_token_hint=..."
+         *     }
+         */
+        FspLogoutUrl: {
+            /**
+             * Logout Url
+             * @description null — входа через ФСП ID в этом браузере не было или Keycloak недоступен
+             */
+            logout_url?: string | null;
+        };
         /**
          * FspStatus
          * @description Экран «Достижения ФСП»: привязка, скор, бейджи. Без истории — нейтрально (T5.4).
@@ -6733,7 +6767,7 @@ export interface components {
          * @description Предложенное кандидату задание и его ответ (запись `task_submissions.json`).
          * @example {
          *       "answer_kind": "approach",
-         *       "answer_text": "Ключ идемпотентности в заголовке, уникальный индекс в БД, повтор возвращает сохранённый результат.",
+         *       "answer_text": "Кэш перед сервисом (Redis, TTL + сброс по событию), прогрев популярных справочников, при недоступности источника — отдать последнюю версию из кэша.",
          *       "assigned_at": "2026-09-15T12:00:00+03:00",
          *       "candidate_id": 1,
          *       "company_name": "Северный код",
@@ -6790,7 +6824,7 @@ export interface components {
          * @description Ответ в кабинете рекрутера — кандидат обезличен.
          * @example {
          *       "answer_kind": "approach",
-         *       "answer_text": "Ключ идемпотентности в заголовке, уникальный индекс в БД, повтор возвращает сохранённый результат.",
+         *       "answer_text": "Кэш перед сервисом (Redis, TTL + сброс по событию), прогрев популярных справочников, при недоступности источника — отдать последнюю версию из кэша.",
          *       "assigned_at": "2026-09-15T12:00:00+03:00",
          *       "candidate_id": 1,
          *       "company_name": "Северный код",
@@ -8238,6 +8272,35 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    fsp_logout_api_auth_fsp_logout_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FspLogoutUrl"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -12152,7 +12215,7 @@ export interface operations {
                 grade?: components["schemas"]["GradeCode"] | null;
                 work_format?: components["schemas"]["WorkFormat"] | null;
                 skills?: string[] | null;
-                /** @description Зарплата «до» не ниже */
+                /** @description Зарплата «до» не ниже (0 — без фильтра) */
                 salary_min?: number | null;
                 q?: string | null;
                 /** @description Размер страницы */

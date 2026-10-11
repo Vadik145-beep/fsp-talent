@@ -126,10 +126,12 @@ const statusTone: Record<InvitationStatus, { cls: string; icon: LucideIcon }> = 
 export interface StatusPillProps {
   status: InvitationStatus
   className?: string
+  /** Своя подпись статуса (например, у соискателя «sent» — «Новое»). */
+  label?: string
 }
 
 /** Статус приглашения: Отправлено, Просмотрено, Принято, Отклонено, Истекло, Отозвано. */
-export function StatusPill({ status, className }: StatusPillProps) {
+export function StatusPill({ status, className, label }: StatusPillProps) {
   const tone = statusTone[status]
   const Icon = tone.icon
   return (
@@ -142,7 +144,7 @@ export function StatusPill({ status, className }: StatusPillProps) {
       data-status={status}
     >
       <Icon className="size-3.5 shrink-0" strokeWidth={2.25} aria-hidden />
-      {INVITATION_STATUS_LABELS[status]}
+      {label ?? INVITATION_STATUS_LABELS[status]}
     </span>
   )
 }

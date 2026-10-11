@@ -1012,6 +1012,38 @@
         }
       }
     },
+    "/api/auth/fsp/logout": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Выход из ФСП ID (адрес end_session Keycloak)",
+        "description": "Вызывается фронтом при выходе. Если в этом браузере был вход через ФСП ID (httpOnly cookie `fsp_id_token`), отдаёт адрес выхода Keycloak с `id_token_hint`, `client_id` и `post_logout_redirect_uri` (страница входа) и удаляет cookie. Иначе `logout_url` = null. Свою сессию закрывает `POST /api/auth/logout`.",
+        "operationId": "fsp_logout_api_auth_fsp_logout_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FspLogoutUrl"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/auth/fsp-link": {
       "post": {
         "tags": [
@@ -10355,16 +10387,16 @@
               "anyOf": [
                 {
                   "type": "integer",
-                  "exclusiveMinimum": 0
+                  "minimum": 0
                 },
                 {
                   "type": "null"
                 }
               ],
-              "description": "Зарплата «до» не ниже",
+              "description": "Зарплата «до» не ниже (0 — без фильтра)",
               "title": "Salary Min"
             },
-            "description": "Зарплата «до» не ниже"
+            "description": "Зарплата «до» не ниже (0 — без фильтра)"
           },
           {
             "name": "q",
@@ -21928,7 +21960,7 @@
         "examples": [
           {
             "id": "salary_too_low",
-            "label": "Мала зарплата"
+            "label": "Зарплата ниже ожиданий"
           }
         ]
       },
@@ -22347,6 +22379,30 @@
           "international"
         ],
         "title": "FspLevel"
+      },
+      "FspLogoutUrl": {
+        "properties": {
+          "logout_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logout Url",
+            "description": "null — входа через ФСП ID в этом браузере не было или Keycloak недоступен"
+          }
+        },
+        "type": "object",
+        "title": "FspLogoutUrl",
+        "description": "Куда отправить браузер после выхода, чтобы закрыть и сессию ФСП ID (Keycloak).",
+        "examples": [
+          {
+            "logout_url": "http://localhost:18180/realms/fsp/protocol/openid-connect/logout?client_id=fsp-talent&post_logout_redirect_uri=http%3A%2F%2Flocalhost%3A15173%2Flogin&id_token_hint=..."
+          }
+        ]
       },
       "FspStatus": {
         "properties": {
@@ -28179,7 +28235,7 @@
         "examples": [
           {
             "answer_kind": "approach",
-            "answer_text": "Ключ идемпотентности в заголовке, уникальный индекс в БД, повтор возвращает сохранённый результат.",
+            "answer_text": "Кэш перед сервисом (Redis, TTL + сброс по событию), прогрев популярных справочников, при недоступности источника — отдать последнюю версию из кэша.",
             "assigned_at": "2026-09-15T12:00:00+03:00",
             "candidate_id": 1,
             "company_name": "Северный код",
@@ -28332,7 +28388,7 @@
         "examples": [
           {
             "answer_kind": "approach",
-            "answer_text": "Ключ идемпотентности в заголовке, уникальный индекс в БД, повтор возвращает сохранённый результат.",
+            "answer_text": "Кэш перед сервисом (Redis, TTL + сброс по событию), прогрев популярных справочников, при недоступности источника — отдать последнюю версию из кэша.",
             "assigned_at": "2026-09-15T12:00:00+03:00",
             "candidate_id": 1,
             "company_name": "Северный код",

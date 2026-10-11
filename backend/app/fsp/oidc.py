@@ -163,6 +163,8 @@ class FspIdentity:
     fsp_id: str
     sub: str
     claims: dict[str, Any]
+    # исходный ID-токен — подсказка Keycloak при выходе (id_token_hint)
+    id_token: str = ""
 
 
 class IdTokenVerifier:
@@ -214,7 +216,7 @@ class IdTokenVerifier:
             raise OidcError(
                 "fsp_id_missing", "В учётной записи ФСП ID нет номера участника", {"fsp_id": fsp_id}
             )
-        return FspIdentity(fsp_id=fsp_id, sub=str(claims["sub"]), claims=claims)
+        return FspIdentity(fsp_id=fsp_id, sub=str(claims["sub"]), claims=claims, id_token=id_token)
 
 
 _jwk_clients: dict[str, jwt.PyJWKClient] = {}
@@ -289,6 +291,18 @@ class KeycloakClient:
             }
         )
         return f"{self.public_realm}/protocol/openid-connect/auth?{query}"
+
+    def end_session_url(self, post_logout_redirect_uri: str, id_token_hint: str | None) -> str:
+        """Адрес выхода из Keycloak (RP-initiated logout): закрывает SSO-сессию ФСП ID.
+
+        С `id_token_hint` Keycloak выходит без вопроса; без него (подсказки нет) — спросит
+        «Выйти?». `post_logout_redirect_uri` должен быть в «Valid post logout redirect URIs»
+        клиента (атрибут `post.logout.redirect.uris` в realm).
+        """
+        params = {"client_id": self.client_id, "post_logout_redirect_uri": post_logout_redirect_uri}
+        if id_token_hint:
+            params["id_token_hint"] = id_token_hint
+        return f"{self.public_realm}/protocol/openid-connect/logout?{urlencode(params)}"
 
     async def check_available(self) -> None:
         """Быстрая проверка, что realm отвечает (discovery по внутреннему адресу)."""

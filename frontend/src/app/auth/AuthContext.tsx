@@ -17,6 +17,7 @@ import { resolveCabinetAccess, type AuthStatus } from './guard'
 
 export type { AuthStatus } from './guard'
 export type Me = components['schemas']['Me']
+type FspLogoutUrl = components['schemas']['FspLogoutUrl']
 
 /**
  * Авторизация приложения. Два режима (VITE_USE_MOCKS):
@@ -67,6 +68,8 @@ const browserNavigator: AuthNavigator = {
 const DEMO_ROLE_KEY = 'fsp.demoRole'
 /** Признак «в этом браузере был вход» — без него при загрузке не дёргаем refresh (лишний 401). */
 const SESSION_HINT_KEY = 'fsp.hasSession'
+/** Вход был через ФСП ID: при выходе закрываем и сессию Keycloak, иначе «Войти через ФСП ID» пустит обратно без пароля. */
+const FSP_SSO_KEY = 'fsp.ssoLogin'
 /** Черновики интерфейса, привязанные к пользователю: при выходе стираем, чтобы не достались следующему. */
 const USER_SCOPED_KEYS = ['fsp.candidate.onboarding']
 
@@ -189,6 +192,7 @@ function RealAuthProvider({ children, navigator = browserNavigator }: { children
     (token: TokenResponse) => {
       setAccessToken(token.access_token)
       writeStorage(SESSION_HINT_KEY, '1')
+      writeStorage(FSP_SSO_KEY, '1')
       // Данные прошлого пользователя в кэше не нужны.
       queryClient?.removeQueries()
       setMe(token.user)
@@ -201,6 +205,7 @@ function RealAuthProvider({ children, navigator = browserNavigator }: { children
     async (email: string, password: string) => {
       const res = await api.post<TokenResponse>('/auth/login', { email, password })
       acceptSession(res)
+      writeStorage(FSP_SSO_KEY, null)
       return res.user
     },
     [acceptSession],
@@ -216,14 +221,26 @@ function RealAuthProvider({ children, navigator = browserNavigator }: { children
   const logout = useCallback(() => {
     if (!logoutInFlight.current) {
       logoutInFlight.current = (async () => {
+        // Вход через ФСП ID: адрес end_session Keycloak (бэкенд знает id_token из httpOnly cookie).
+        let ssoLogoutUrl: string | null = null
+        if (readStorage(FSP_SSO_KEY)) {
+          try {
+            ssoLogoutUrl = (await api.post<FspLogoutUrl>('/auth/fsp/logout')).logout_url ?? null
+          } catch {
+            // Keycloak или сеть недоступны — выходим хотя бы у себя
+          }
+        }
         try {
           await api.post('/auth/logout')
         } catch {
           // сеть или сессия уже закрыта — локально выходим в любом случае
         }
         dropSession()
+        writeStorage(FSP_SSO_KEY, null)
         USER_SCOPED_KEYS.forEach((key) => writeStorage(key, null))
         queryClient?.removeQueries()
+        // Keycloak закроет свою сессию и вернёт на страницу входа (post_logout_redirect_uri).
+        if (ssoLogoutUrl) window.location.assign(ssoLogoutUrl)
       })().finally(() => {
         logoutInFlight.current = null
       })

@@ -27,7 +27,7 @@ describe('моки соискателя: приглашения', () => {
       body: { reason: 'salary_too_low', comment: 'Жду от 250 000' },
     })
     expect(res.status).toBe(200)
-    expect(res.data.decline_reason_label).toBe('Мала зарплата')
+    expect(res.data.decline_reason_label).toBe('Зарплата ниже ожиданий')
     expect(invitation(21).status).toBe('declined')
     expect(invitation(21).decline_reason).toBe('salary_too_low')
     expect(invitation(21).decline_comment).toBe('Жду от 250 000')

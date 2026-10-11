@@ -8,11 +8,12 @@ import { formatDate, formatDateTime } from '@/shared/lib/format'
 import { Badge, Button, Card, CardHeader, EmptyState, PageHeader, ProgressBar, Stepper, useToast } from '@/shared/ui'
 import { qk, useGradeStatus, useStartTest, type GradeStatus, type TestResult } from './api'
 import { QueryView } from './components/QueryView'
+import { TestNotFound } from './components/TestNotFound'
 import { ThetaScale } from './components/ThetaScale'
 import { ONBOARDING_STEPS, writeOnboarding } from './components/onboardingSteps'
 import { claimLabel, hasClaim, readResumeClaim } from './components/resumeClaimStore'
 import { PublicationPrompt } from './components/PublicationPrompt'
-import { TOPIC_LEVEL, formatTheta } from './labels'
+import { TOPIC_LEVEL, formatTheta, gradeTestLabel } from './labels'
 
 const linkBtn =
   'inline-flex h-10 items-center justify-center gap-1.5 rounded-md px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus)]'
@@ -21,12 +22,13 @@ const linkBtn =
 export default function TestResultPage() {
   const { sessionId } = useParams()
   const id = Number(sessionId)
+  const validId = Number.isInteger(id) && id > 0
   const [params] = useSearchParams()
   const onboarding = params.get('onboarding') === '1'
   const q = useQuery({
     queryKey: qk.result(id),
     queryFn: () => api.get<TestResult>(`/testing/sessions/${id}/result`),
-    enabled: Number.isInteger(id),
+    enabled: validId,
   })
 
   useEffect(() => {
@@ -43,7 +45,9 @@ export default function TestResultPage() {
         </Card>
       )}
       <PageHeader title="Результат теста" back={onboarding ? undefined : { to: '/candidate/grade', label: 'Категория и грейд' }} />
-      {notFinished ? (
+      {!validId ? (
+        <TestNotFound />
+      ) : notFinished ? (
         <Card padding="none">
           <EmptyState
             title="Тест ещё не завершён"
@@ -56,7 +60,7 @@ export default function TestResultPage() {
           />
         </Card>
       ) : (
-        <QueryView query={q} errorTitle="Не удалось загрузить результат">
+        <QueryView query={q} errorTitle="Не удалось загрузить результат" notFound={<TestNotFound />}>
           {(r) => <ResultView result={r} onboarding={onboarding} />}
         </QueryView>
       )}
@@ -84,6 +88,15 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
   // «По резюме заявлен Senior → тест подтвердил Middle»: резюме только заявка, категорию даёт тест.
   const [claim] = useState(readResumeClaim)
   const showClaim = hasClaim(claim) && (!claim.specialization || claim.specialization.value === r.specialization)
+  // Не подтвердил грейд выше/ниже, но своя категория в этой специализации есть — крупно показываем её,
+  // а уровень по попытке отдельной строкой (иначе «Backend · Стажёр» читается как новая категория).
+  const kept =
+    !r.passed && grade.data?.grade_status === 'confirmed' && grade.data.specialization === r.specialization && grade.data.category_label
+      ? grade.data.category_label
+      : null
+  // Грейд в этой специализации ещё не подтверждён: следующий тест — снова первичный, на другой заявленный грейд.
+  const hasGrade = grade.data?.grade_status === 'confirmed' && grade.data.specialization === r.specialization
+  const startKind = !hasGrade ? 'placement' : rec.action === 'offer_lower' ? 'lower' : 'higher'
 
   return (
     <div className="grid grid-cols-1 gap-5">
@@ -96,10 +109,19 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
                 <PartyPopper className="size-4" aria-hidden /> Знакомство завершено
               </p>
             )}
-            <p className="text-sm font-semibold text-muted">{r.passed ? 'Ваша категория' : 'Уровень по тесту соответствует'}</p>
-            <p className="mt-1 text-4xl leading-tight font-bold text-fsp-night sm:text-5xl">{r.category_label}</p>
+            <p className="text-sm font-semibold text-muted">
+              {r.passed ? 'Ваша категория' : kept ? 'Ваша категория сохраняется' : 'Уровень по тесту соответствует'}
+            </p>
+            <p className="mt-1 text-4xl leading-tight font-bold text-fsp-night sm:text-5xl" data-testid="result-category">
+              {kept ?? r.category_label}
+            </p>
+            {kept && (
+              <p className="mt-2 text-[15px] text-ink" data-testid="attempt-level">
+                Эта попытка: {gradeTestLabel(r.target_grade)} не пройден, уровень по тесту — {r.category_label}
+              </p>
+            )}
             <p className="mt-2 text-sm text-muted">
-              Решено задач: {r.items_answered} · {formatDateTime(r.finished_at)}
+              Отвечено задач: {r.items_answered} · {formatDateTime(r.finished_at)}
             </p>
             {showClaim && (
               <p className="mt-3 flex items-start gap-2 text-[15px] text-ink" data-testid="resume-vs-test">
@@ -151,7 +173,7 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
         {r.passed && rec.action === 'offer_higher' && recGrade && (
           <p className="mt-2 flex items-center gap-2 text-[15px] font-semibold text-success">
             <TrendingUp className="size-4 shrink-0" aria-hidden />
-            Ваш уровень выше {GRADE_LABELS[r.result_grade]} — можно пройти тест на {GRADE_LABELS[recGrade]}
+            Ваш уровень выше {GRADE_LABELS[r.result_grade]} — можно пройти {gradeTestLabel(recGrade)}
           </p>
         )}
         <p className="mt-1 text-[15px] text-muted">
@@ -181,7 +203,7 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
         {allZero ? (
           <p className="mt-6 rounded-md border border-line p-4 text-[15px] text-ink" data-testid="topics-all-zero">
             Верных ответов не было ни в одной теме, поэтому сильные и слабые стороны по этому тесту не определить.
-            {recGrade ? ` Начните с теста на ${GRADE_LABELS[recGrade]} — задачи там проще.` : ''}
+            {recGrade ? ` Начните с теста на грейд «${GRADE_LABELS[recGrade]}» — задачи там проще.` : ''}
           </p>
         ) : (
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -210,7 +232,7 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
             <p className="mt-1 text-[15px] text-ink">{rec.message}</p>
             {rec.available_at && recGrade && (
               <p className="mt-1 text-sm text-muted">
-                Тест на {GRADE_LABELS[recGrade]} станет доступен {formatDate(rec.available_at)}
+                {gradeTestLabel(recGrade, true)} станет доступен {formatDate(rec.available_at)}
               </p>
             )}
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
@@ -219,7 +241,7 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
                   loading={start.isPending}
                   onClick={() =>
                     start.mutate(
-                      { specialization: r.specialization, target_grade: recGrade, kind: rec.action === 'offer_lower' ? 'lower' : 'higher' },
+                      { specialization: r.specialization, target_grade: recGrade, kind: startKind },
                       {
                         onSuccess: (s) => navigate(`/candidate/test/${s.session.id}`),
                         onError: (err) => toast({ tone: 'error', title: 'Тест не запустился', description: getErrorMessage(err) }),
@@ -227,7 +249,7 @@ function ResultView({ result: r, onboarding }: { result: TestResult; onboarding:
                     )
                   }
                 >
-                  Пройти тест на {GRADE_LABELS[recGrade]}
+                  Пройти {gradeTestLabel(recGrade)}
                 </Button>
               )}
               <Link to="/candidate" className={`${linkBtn} ${canStartNow ? 'border border-line-strong bg-surface text-fsp-plum hover:bg-violet-soft' : 'bg-primary text-white hover:bg-primary-hover'}`}>
@@ -254,14 +276,14 @@ function failedNote(r: TestResult, g: GradeStatus | undefined, recGrade: Grade |
     const target = GRADES.indexOf(r.target_grade)
     const at = target > cur ? g.higher_available_at : target < cur ? g.lower_available_at : null
     const retry = at ?? addDays(r.finished_at, g.retry_cooldown_days ?? 30)
-    return `Ваш грейд ${GRADE_LABELS[g.grade]} и категория «${g.category_label}» сохраняются. Повторить тест на ${GRADE_LABELS[r.target_grade]} можно с ${formatDate(retry)}`
+    return `Ваш грейд ${GRADE_LABELS[g.grade]} и категория «${g.category_label}» сохраняются. Повторить ${gradeTestLabel(r.target_grade)} можно с ${formatDate(retry)}`
   }
   if (recGrade) {
     return recAvailableAt
-      ? `Категории пока нет. Чтобы её получить, пройдите тест на ${GRADE_LABELS[recGrade]} — он станет доступен ${formatDate(recAvailableAt)}`
-      : `Категории пока нет. Чтобы её получить, пройдите тест на ${GRADE_LABELS[recGrade]} — кнопка ниже.`
+      ? `Категории пока нет. Чтобы её получить, пройдите ${gradeTestLabel(recGrade)} — он станет доступен ${formatDate(recAvailableAt)}`
+      : `Категории пока нет. Чтобы её получить, пройдите ${gradeTestLabel(recGrade)} — кнопка ниже.`
   }
-  return `Категории пока нет. Повторить тест на ${GRADE_LABELS[r.target_grade]} можно с ${formatDate(addDays(r.finished_at, g?.retry_cooldown_days ?? 30))}`
+  return `Категории пока нет. Повторить ${gradeTestLabel(r.target_grade)} можно с ${formatDate(addDays(r.finished_at, g?.retry_cooldown_days ?? 30))}`
 }
 
 function addDays(iso: string, days: number): string {

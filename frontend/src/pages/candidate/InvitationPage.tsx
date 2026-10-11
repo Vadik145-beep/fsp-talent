@@ -3,12 +3,11 @@ import { useParams } from 'react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AtSign, Briefcase, Building2, Check, Clock, Flag, Lock, Mail, MessageCircle, MessagesSquare, Phone, Send, X } from 'lucide-react'
 import { api, getErrorMessage, isApiError } from '@/shared/api'
-import { INVITATION_STATUS_LABELS } from '@/shared/config/dictionaries'
 import { formatDate, formatDateTime, formatSalaryRange } from '@/shared/lib/format'
 import { Button, Card, CardHeader, EmptyState, Modal, PageHeader, RadioGroup, Select, Skeleton, StatusPill, Tag, Textarea, useToast } from '@/shared/ui'
 import { qk, useDeclineReasons, type DeclineReason, type Invitation, type InvitationDetail, type S } from './api'
 import { QueryView } from './components/QueryView'
-import { CONTACT_TYPE_LABELS, DECLINE_REASON_FALLBACK, REPORT_REASON_LABELS } from './labels'
+import { CANDIDATE_INVITATION_STATUS, CONTACT_TYPE_LABELS, CONTACT_TYPE_PHRASE, DECLINE_REASON_FALLBACK, REPORT_REASON_LABELS } from './labels'
 
 const EVENT_LABELS: Record<S['InvitationEventType'], string> = {
   created: 'Приглашение отправлено',
@@ -47,7 +46,7 @@ export default function InvitationPage() {
       <PageHeader
         title={q.data ? q.data.company_name : 'Приглашение'}
         back={{ to: '/candidate/invitations', label: 'Все приглашения' }}
-        meta={q.data && <StatusPill status={q.data.status} />}
+        meta={q.data && <StatusPill status={q.data.status} label={CANDIDATE_INVITATION_STATUS[q.data.status]} />}
       />
       {notFound ? (
         <Card padding="none">
@@ -228,7 +227,7 @@ function InvitationView({ inv }: { inv: InvitationDetail }) {
                 <ContactLine icon={<AtSign className="size-4" aria-hidden />}>{inv.recruiter_contacts.telegram}</ContactLine>
               )}
             </ul>
-            <p className="mt-3 text-[13px] text-muted">Рекрутер свяжется с вами: {CONTACT_TYPE_LABELS[inv.contact_method.type].toLowerCase()}.</p>
+            <p className="mt-3 text-[13px] text-muted">Рекрутер свяжется с вами {CONTACT_TYPE_PHRASE[inv.contact_method.type]}.</p>
           </Card>
         )}
 
@@ -244,7 +243,7 @@ function InvitationView({ inv }: { inv: InvitationDetail }) {
 
         {(inv.status === 'expired' || inv.status === 'withdrawn') && (
           <Card>
-            <p className="font-semibold text-ink">{INVITATION_STATUS_LABELS[inv.status]}</p>
+            <p className="font-semibold text-ink">{CANDIDATE_INVITATION_STATUS[inv.status]}</p>
             <p className="mt-1 text-sm text-muted">
               {inv.status === 'expired' ? 'Срок ответа — 7 дней. Приглашение больше не активно.' : 'Работодатель отозвал приглашение.'}
             </p>

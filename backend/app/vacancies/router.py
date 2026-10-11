@@ -65,7 +65,9 @@ async def list_vacancies(
     grade: GradeCode | None = None,
     work_format: WorkFormat | None = None,
     skills: Annotated[list[str] | None, Query()] = None,
-    salary_min: Annotated[int | None, Query(gt=0, description="Зарплата «до» не ниже")] = None,
+    salary_min: Annotated[
+        int | None, Query(ge=0, description="Зарплата «до» не ниже (0 — без фильтра)")
+    ] = None,
     q: Annotated[str | None, Query(max_length=100)] = None,
     limit: Annotated[int | None, Query(ge=1, le=100, description="Размер страницы")] = None,
     offset: Annotated[int, Query(ge=0, description="Сколько пропустить")] = 0,

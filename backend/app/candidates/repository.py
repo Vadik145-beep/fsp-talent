@@ -14,6 +14,7 @@ from sqlalchemy.sql.elements import ColumnElement
 
 from app.candidates.fsp_score import achievements_for, fsp_badges, fsp_score
 from app.candidates.models import CandidateProfile, candidate_skills
+from app.candidates.schemas import PRIVACY_DEFAULTS
 from app.catalog.clock import as_msk, now_msk
 from app.catalog.models import Category
 from app.common import fixtures
@@ -290,7 +291,9 @@ class CandidateDb:
             conditions.append(literal(work_format) == any_(cp.work_formats))
         if city:
             conditions.append(cp.city == city)
-            conditions.append(cp.privacy["show_city"].as_boolean().is_(True))
+            # город не скрыт: нет ключа — действует умолчание (показывать), как в настройках
+            shown = cp.privacy["show_city"].as_boolean()
+            conditions.append(func.coalesce(shown, PRIVACY_DEFAULTS["show_city"]).is_(True))
 
         base = select(cp.id).join(User, User.id == cp.user_id).where(*conditions)
         total = int(

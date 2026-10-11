@@ -1,4 +1,5 @@
 import type { Tone } from '@/shared/ui'
+import { GRADE_LABELS } from '@/shared/config/dictionaries'
 import type { S } from './api'
 
 /** Подписи значений из контракта API для экранов соискателя. */
@@ -41,6 +42,24 @@ export const SUBMISSION_STATUS: Record<S['SubmissionStatus'], { label: string; t
   graded: { label: 'Оценено', tone: 'success' },
   expired: { label: 'Срок истёк', tone: 'neutral' },
   skipped: { label: 'Выбрана другая', tone: 'neutral' },
+}
+
+/** Статус приглашения глазами соискателя: «Отправлено» — это про рекрутера, для соискателя оно новое. */
+export const CANDIDATE_INVITATION_STATUS: Record<S['InvitationStatus'], string> = {
+  sent: 'Новое',
+  viewed: 'Просмотрено',
+  accepted: 'Принято',
+  declined: 'Отклонено',
+  expired: 'Истекло',
+  withdrawn: 'Отозвано',
+}
+
+/** «Рекрутер свяжется с вами …» — способ связи в предложном виде. */
+export const CONTACT_TYPE_PHRASE: Record<S['ContactMethodType'], string> = {
+  email: 'по почте',
+  phone: 'по телефону',
+  telegram: 'в Telegram',
+  other: 'указанным способом',
 }
 
 export const ANSWER_KIND_LABELS: Record<S['AnswerKind'], string> = {
@@ -106,7 +125,7 @@ export const REPORT_REASON_LABELS: Record<S['ReportReason'], string> = {
 
 /** Запасные подписи причин отказа, если справочник не загрузился. */
 export const DECLINE_REASON_FALLBACK: Record<S['DeclineReason'], string> = {
-  salary_too_low: 'Мала зарплата',
+  salary_too_low: 'Зарплата ниже ожиданий',
   wrong_stack: 'Не тот стек',
   not_interested_domain: 'Не интересна сфера',
   not_looking: 'Не ищу работу сейчас',
@@ -122,4 +141,9 @@ export function formatTheta(value: number, digits = 2): string {
 /** В текстах событий с бэкенда «θ = 0.42» / «θ = -1.98» → «θ = 0,42» / «θ = −1,98». */
 export function ruThetaText(text: string): string {
   return text.replace(/θ\s*=\s*(-?)(\d+)\.(\d+)/g, (_, minus: string, int: string, frac: string) => `θ = ${minus ? '−' : ''}${int},${frac}`)
+}
+
+/** «тест на грейд «Стажёр»» — грейд в кавычках, чтобы не путать с падежом («тест на Стажёр»). */
+export function gradeTestLabel(grade: S['GradeCode'], capital = false): string {
+  return `${capital ? 'Тест' : 'тест'} на грейд «${GRADE_LABELS[grade]}»`
 }

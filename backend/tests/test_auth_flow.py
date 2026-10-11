@@ -43,6 +43,16 @@ def test_full_flow_candidate(api: TestClient, outbox: Outbox) -> None:
         {"id": created["user_id"]},
     )
     assert (ctype, version, granted) == ("processing", "2026-10-01", True) and granted_at
+    # видимость записана явно — те же умолчания, что в настройках
+    [(privacy,)] = db_exec(
+        "SELECT privacy FROM candidate_profiles WHERE user_id = :id", {"id": created["user_id"]}
+    )
+    assert privacy == {
+        "show_city": True,
+        "show_experience": True,
+        "show_links": False,
+        "show_fsp_achievements": True,
+    }
     token = outbox.last_token(email)
     assert not db_exec("SELECT 1 FROM email_tokens WHERE token_hash = :t", {"t": token})
 

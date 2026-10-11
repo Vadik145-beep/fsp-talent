@@ -225,7 +225,7 @@ def test_invitations_state_machine(client: TestClient) -> None:
         json={"reason": "salary_too_low"},
         headers=CANDIDATE,
     ).json()
-    assert reason["decline_reason_label"] == "Мала зарплата"
+    assert reason["decline_reason_label"] == "Зарплата ниже ожиданий"
     # чужое приглашение — 404
     foreign = next(i for i in fixtures.load("invitations") if i["candidate_id"] != 1)
     assert client.get(f"/api/invitations/{foreign['id']}", headers=CANDIDATE).status_code == 404

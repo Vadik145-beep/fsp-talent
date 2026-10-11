@@ -59,12 +59,7 @@ export function PublicLayout() {
             width={224}
             height={28}
           />
-          <span className="flex flex-wrap items-center gap-x-4 gap-y-1">
-            <span>Таланты — платформа подбора IT-специалистов, спецтрек ФСП</span>
-            <Link to="/ui-kit" className="font-medium hover:text-primary">
-              UI-кит
-            </Link>
-          </span>
+          <span>Таланты — платформа подбора IT-специалистов, спецтрек ФСП</span>
         </div>
       </footer>
     </div>

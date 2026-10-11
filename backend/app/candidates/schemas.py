@@ -9,6 +9,7 @@
 """
 
 from datetime import date, datetime
+from typing import Any
 
 from pydantic import ConfigDict, Field
 
@@ -74,6 +75,17 @@ class PrivacySettings(ApiModel):
     show_experience: bool = True
     show_links: bool = False
     show_fsp_achievements: bool = True
+
+
+# Умолчания видимости — одни для настроек, превью, карточки рекрутера и фильтров банка.
+# Профиль без ключа (новый соискатель, старые записи с privacy={}) читается с ними.
+PRIVACY_DEFAULTS: dict[str, bool] = PrivacySettings().model_dump()
+
+
+def privacy_flag(privacy: dict[str, Any] | None, key: str) -> bool:
+    """Значение настройки видимости с умолчанием из `PrivacySettings`."""
+    value = (privacy or {}).get(key)
+    return PRIVACY_DEFAULTS[key] if value is None else bool(value)
 
 
 class CandidateContacts(OutModel):

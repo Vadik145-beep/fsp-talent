@@ -9,7 +9,7 @@ from typing import Annotated, Any, Literal
 from fastapi import APIRouter, Cookie, Depends, Query, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.schemas import FspAuthorizeUrl, TokenResponse
+from app.auth.schemas import FspAuthorizeUrl, FspLogoutUrl, TokenResponse
 from app.auth.sessions import issue_session
 from app.core.config import get_settings
 from app.core.db import get_session
@@ -39,6 +39,9 @@ Session = Annotated[AsyncSession, Depends(get_session)]
 Keycloak = Annotated[KeycloakClient, Depends(get_keycloak_client)]
 Registry = Annotated[RegistryClient, Depends(get_registry_client)]
 StateCookie = Annotated[str | None, Cookie(alias=STATE_COOKIE, include_in_schema=False)]
+# ID-токен ФСП ID после входа через Keycloak: нужен только для выхода (id_token_hint)
+ID_TOKEN_COOKIE = "fsp_id_token"
+IdTokenCookie = Annotated[str | None, Cookie(alias=ID_TOKEN_COOKIE, include_in_schema=False)]
 
 KEYCLOAK_UNAVAILABLE = (503, "keycloak_unavailable", "Сервис ФСП ID недоступен")
 OIDC_ERROR = (
@@ -71,6 +74,19 @@ def _set_state_cookie(response: Response, value: str) -> None:
 
 def _clear_state_cookie(response: Response) -> None:
     response.delete_cookie(STATE_COOKIE, path=STATE_COOKIE_PATH)
+
+
+def _set_id_token_cookie(response: Response, id_token: str) -> None:
+    settings = get_settings()
+    response.set_cookie(
+        ID_TOKEN_COOKIE,
+        id_token,
+        max_age=settings.refresh_token_ttl_days * 86400,
+        httponly=True,
+        samesite="lax",
+        secure=settings.app_env != "dev",
+        path=STATE_COOKIE_PATH,
+    )
 
 
 async def _identity(
@@ -152,7 +168,33 @@ async def fsp_login(
 ) -> Any:
     identity = await _identity(body, cookie, "login", keycloak, response)
     user_id = await FspService(session).login_user_id(identity.fsp_id)
+    if identity.id_token:
+        _set_id_token_cookie(response, identity.id_token)
     return issue_session(response, user_id)
+
+
+@router.post(
+    "/fsp/logout",
+    response_model=FspLogoutUrl,
+    summary="Выход из ФСП ID (адрес end_session Keycloak)",
+    description=(
+        "Вызывается фронтом при выходе. Если в этом браузере был вход через ФСП ID (httpOnly "
+        "cookie `fsp_id_token`), отдаёт адрес выхода Keycloak с `id_token_hint`, `client_id` "
+        "и `post_logout_redirect_uri` (страница входа) и удаляет cookie. Иначе `logout_url` = "
+        "null. Свою сессию закрывает `POST /api/auth/logout`."
+    ),
+)
+async def fsp_logout(response: Response, keycloak: Keycloak, id_token: IdTokenCookie = None) -> Any:
+    if not id_token:
+        return {"logout_url": None}
+    response.delete_cookie(ID_TOKEN_COOKIE, path=STATE_COOKIE_PATH)
+    try:
+        await keycloak.check_available()
+    except KeycloakUnavailableError:
+        # Keycloak лежит — не уводим браузер на мёртвую страницу, выходим только у себя
+        return {"logout_url": None}
+    target = f"{get_settings().public_frontend_url.rstrip('/')}/login"
+    return {"logout_url": keycloak.end_session_url(target, id_token)}
 
 
 @router.post(
