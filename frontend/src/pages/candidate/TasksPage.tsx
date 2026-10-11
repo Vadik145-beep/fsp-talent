@@ -81,7 +81,7 @@ function WeekOffers({ offers }: { offers: TaskSubmission[] }) {
         Задачи недели
       </h2>
       <p className="mt-1 mb-3 text-sm text-muted">
-        Выберите одну и ответьте — остальные уйдут, новые придут в понедельник. Засчитывается один ответ в неделю.
+        Выберите одну и ответьте до срока на карточке — остальные уйдут. Засчитывается один ответ в неделю.
       </p>
       <ul className="grid gap-3 md:grid-cols-3">
         {offers.map((o) => {
@@ -140,7 +140,7 @@ function ActiveTask({ task, onBack }: { task: TaskSubmission; onBack?: () => voi
         </span>
       </div>
       <h2 className="mt-3 text-xl font-bold">{task.task_title}</h2>
-      <p className="text-sm text-muted">от {task.company_name}</p>
+      <p className="text-sm text-muted">от компании {quotedName(task.company_name)}</p>
       <p className="mt-4 rounded-md bg-surface-muted p-4 text-[15px] leading-relaxed text-ink">{task.statement}</p>
       <form
         className="mt-5 grid gap-3"
@@ -225,4 +225,9 @@ function HistoryItem({ task }: { task: TaskSubmission }) {
       )}
     </Card>
   )
+}
+
+/** Название компании в кавычках, если своих кавычек в нём нет: «Альфа», но Облачные системы «Тайга». */
+function quotedName(name: string): string {
+  return /[«"]/.test(name) ? name : `«${name}»`
 }

@@ -5,7 +5,7 @@ import { formatDate, formatSalaryRange } from '@/shared/lib/format'
 import { Card, EmptyState, PageHeader, StatusPill, Tabs } from '@/shared/ui'
 import { useInvitations, type Invitation } from './api'
 import { QueryView } from './components/QueryView'
-import { CONTACT_TYPE_LABELS } from './labels'
+import { CANDIDATE_INVITATION_STATUS, CONTACT_TYPE_LABELS } from './labels'
 
 type TabId = 'all' | 'new' | 'accepted' | 'declined' | 'archive'
 
@@ -102,7 +102,7 @@ function InvitationRow({ inv }: { inv: Invitation }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <span className="font-semibold text-ink">{inv.company_name}</span>
-            <StatusPill status={inv.status} />
+            <StatusPill status={inv.status} label={CANDIDATE_INVITATION_STATUS[inv.status]} />
             {inv.status === 'sent' && <span className="size-2 rounded-full bg-primary" aria-label="Новое" />}
           </div>
           <p className="mt-1 text-xl font-bold text-fsp-night tabular-nums sm:text-2xl">{formatSalaryRange(inv.salary_from, inv.salary_to)}</p>

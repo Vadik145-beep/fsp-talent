@@ -147,12 +147,13 @@ export function Pseudonym({ code, id, subtitle, size = 'md', className }: Pseudo
         className={cn(
           'inline-flex shrink-0 items-center justify-center rounded-full bg-primary font-mono font-semibold text-on-primary',
           avatarSize[size],
-          size === 'sm' && 'text-[10px]',
-          size === 'md' && 'text-xs',
+          // код псевдонима целиком (до 4 знаков), как в подписи «Кандидат #CFAD», — без обрезки «#CF»
+          size === 'sm' && 'text-[9px] tracking-tight',
+          size === 'md' && 'text-[10px] tracking-tight',
         )}
         aria-hidden
       >
-        #{c.slice(0, 2)}
+        {c.slice(0, 4)}
       </span>
       <span className="min-w-0">
         <span className="block truncate font-semibold text-ink">Кандидат #{c}</span>

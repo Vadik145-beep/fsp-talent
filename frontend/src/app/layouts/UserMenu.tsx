@@ -31,6 +31,7 @@ export function UserMenu({ user }: { user: DemoUser }) {
     <div ref={ref} className="relative">
       <button
         type="button"
+        aria-label={`Меню пользователя: ${user.name}`}
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-haspopup="menu"

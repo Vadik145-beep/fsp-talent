@@ -215,7 +215,7 @@ def _on_page(canvas: Canvas, doc: Any, footer: str) -> None:
     canvas.setFont("FspMono-Bold", 9)
     canvas.drawString(18 * mm + 5 * mm, h - 11.2 * mm, "ФСП · ПРОФИЛЬ IT-СПЕЦИАЛИСТА")
     canvas.setFont("FspMono", 8)
-    canvas.drawRightString(w - 18 * mm, h - 11.2 * mm, "fsp-talent")
+    canvas.drawRightString(w - 18 * mm, h - 11.2 * mm, "ФСП · Таланты")
     # подвал
     canvas.setStrokeColor(GREY)
     canvas.setLineWidth(0.5)
@@ -241,7 +241,7 @@ def build_profile_pdf(data: ProfileData) -> bytes:
         topMargin=20 * mm,
         bottomMargin=20 * mm,
         title=f"Профиль: {cand.get('full_name') or 'кандидат'}",
-        author="fsp-talent",
+        author="ФСП · Таланты",
         subject="Стандартизированный профиль IT-специалиста",
     )
     width = doc.width - 2 * FRAME_PAD
@@ -441,7 +441,7 @@ def build_profile_pdf(data: ProfileData) -> bytes:
     story += fsp_tail
 
     footer = (
-        f"Сформировано {data.generated.strftime('%d.%m.%Y')} на платформе fsp-talent · "
+        f"Сформировано {data.generated.strftime('%d.%m.%Y')} на платформе «ФСП · Таланты» · "
         "«подтверждено ФСП» — данные реестра ФСП"
     )
     doc.build(

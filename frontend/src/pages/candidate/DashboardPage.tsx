@@ -1,20 +1,23 @@
 import { Link } from 'react-router'
-import { ArrowRight, Award, ClipboardList, GraduationCap, Lightbulb, Mail, Rocket, UserRoundPen } from 'lucide-react'
+import { ArrowRight, Award, ClipboardList, GraduationCap, Lightbulb, Mail, CirclePause, Rocket, UserRoundPen } from 'lucide-react'
 import { Badge, Card, CardHeader, EmptyState, ProgressBar, Skeleton, StatusPill } from '@/shared/ui'
 import { formatDate, formatSalaryRange, plural } from '@/shared/lib/format'
-import { useDashboard } from './api'
+import { useDashboard, useSettings } from './api'
 import { QueryView } from './components/QueryView'
 import { FspLinkButton } from './components/FspLinkButton'
 import { GradeConfirmedBadge, TakeTestButton, UnconfirmedGrade } from './components/GradeStatus'
 import { PublicationPrompt } from './components/PublicationPrompt'
-import { formatTheta } from './labels'
+import { CANDIDATE_INVITATION_STATUS, formatTheta } from './labels'
+import { greetingName } from './components/personName'
 import { PageHeader } from '@/shared/ui'
 
 const linkCls = 'inline-flex items-center gap-1 text-sm font-semibold text-fsp-plum hover:underline'
 
 export default function CandidateDashboardPage() {
   const q = useDashboard()
-  const firstName = q.data?.full_name.split(' ')[0]
+  const settings = useSettings()
+  const paused = settings.data?.job_search_paused === true
+  const firstName = greetingName(q.data?.full_name)
   return (
     <>
       <PageHeader title={firstName ? `Здравствуйте, ${firstName}` : 'Главная'} description="Категория, приглашения и задания — всё в одном месте." />
@@ -71,6 +74,23 @@ export default function CandidateDashboardPage() {
               </Card>
             )}
 
+            {paused && (
+              <Card className="border-warning/30 bg-warning-soft" data-testid="search-paused" role="status">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex gap-3">
+                    <CirclePause className="mt-0.5 size-5 shrink-0 text-warning" aria-hidden />
+                    <div className="text-[15px] text-ink">
+                      <p className="font-semibold">Поиск работы на паузе</p>
+                      <p>Профиля нет в выдаче работодателей, новые приглашения не придут.</p>
+                    </div>
+                  </div>
+                  <Link to="/candidate/settings" className={`${linkCls} shrink-0`}>
+                    Включить поиск <ArrowRight className="size-4" aria-hidden />
+                  </Link>
+                </div>
+              </Card>
+            )}
+
             <PublicationPrompt />
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -110,7 +130,9 @@ export default function CandidateDashboardPage() {
                   title={
                     <span className="inline-flex items-center gap-2">
                       <Mail className="size-5 text-fsp-plum" aria-hidden /> Приглашения
-                      {d.new_invitations_count > 0 && <Badge tone="accent">{d.new_invitations_count} новых</Badge>}
+                      {d.new_invitations_count > 0 && <Badge tone="accent">
+                          {d.new_invitations_count} {plural(d.new_invitations_count, ['новое', 'новых', 'новых'])}
+                        </Badge>}
                     </span>
                   }
                   actions={
@@ -132,7 +154,7 @@ export default function CandidateDashboardPage() {
                             <span className="block text-sm text-muted tabular-nums">{formatSalaryRange(inv.salary_from, inv.salary_to)}</span>
                           </span>
                           <span className="shrink-0">
-                            <StatusPill status={inv.status} />
+                            <StatusPill status={inv.status} label={CANDIDATE_INVITATION_STATUS[inv.status]} />
                           </span>
                         </Link>
                       </li>
