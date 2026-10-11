@@ -49,10 +49,11 @@ export function Tabs({ items, value, onChange, variant = 'underline', className,
         onKeyDown={onKeyDown}
         className={cn(
           'flex',
-          // на телефоне вкладки страницы переносятся на вторую строку, а не прячутся за край
+          // на телефоне вкладки страницы переносятся на вторую строку, а не прячутся за край.
+          // Линия снизу — внутренняя тень, а не border: с -mb-px у вкладок ряд вылезал на 1px вниз и Windows рисовал стрелки прокрутки
           variant === 'underline'
-            ? 'flex-wrap gap-x-1 border-b border-line sm:flex-nowrap sm:overflow-x-auto'
-            : 'inline-flex max-w-full gap-1 overflow-x-auto rounded-md bg-neutral-soft p-1',
+            ? 'flex-wrap gap-x-1 shadow-[inset_0_-1px_0_var(--color-line)] [scrollbar-width:none] sm:flex-nowrap sm:overflow-x-auto'
+            : 'inline-flex max-w-full gap-1 overflow-x-auto rounded-md bg-neutral-soft p-1 [scrollbar-width:none]',
         )}
       >
         {items.map((item, i) => {
@@ -75,7 +76,7 @@ export function Tabs({ items, value, onChange, variant = 'underline', className,
                 'inline-flex shrink-0 items-center gap-2 text-sm font-semibold whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:opacity-50',
                 variant === 'underline'
                   ? cn(
-                      '-mb-px border-b-2 px-3 py-2.5',
+                      'border-b-2 px-3 py-2.5',
                       selected ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-ink',
                     )
                   : cn(
