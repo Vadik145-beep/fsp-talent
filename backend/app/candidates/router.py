@@ -270,8 +270,8 @@ async def search_candidates(
         raise AppError(
             422,
             "validation_error",
-            "Сортировка по соответствию — только с выбранной потребностью",
-            {"fields": {"sort": "Выберите потребность (need_id)"}},
+            "Сортировка по соответствию — только с выбранным поиском",
+            {"fields": {"sort": "Выберите поиск (need_id)"}},
         )
     return await CandidateProfileService(session).search(
         need=need,

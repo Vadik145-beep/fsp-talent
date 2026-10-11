@@ -42,8 +42,8 @@ export function NeedActions({ need }: { need: Need }) {
       setConfirming(false)
       toast(
         saved.status === 'closed'
-          ? { tone: 'success', title: 'Потребность закрыта', description: 'Она во вкладке «Закрытые». Отправленные приглашения остаются в силе.' }
-          : { tone: 'success', title: 'Потребность снова в работе' },
+          ? { tone: 'success', title: 'Поиск закрыт', description: 'Он во вкладке «Закрытые». Отправленные приглашения остаются в силе.' }
+          : { tone: 'success', title: 'Поиск снова в работе' },
       )
     },
     onError: (e) => toast({ tone: 'error', title: 'Не удалось сменить статус', description: getErrorMessage(e) }),
@@ -60,14 +60,14 @@ export function NeedActions({ need }: { need: Need }) {
         </Button>
       ) : (
         <Button variant="secondary" onClick={() => setConfirming(true)} leftIcon={<Archive className="size-4" aria-hidden />}>
-          Закрыть потребность
+          Закрыть поиск
         </Button>
       )}
       <Modal
         open={confirming}
         onClose={() => setConfirming(false)}
         size="sm"
-        title="Закрыть потребность?"
+        title="Закрыть поиск?"
         description={`«${need.title}»`}
         footer={
           <>
@@ -75,13 +75,13 @@ export function NeedActions({ need }: { need: Need }) {
               Отмена
             </Button>
             <Button loading={setStatus.isPending} onClick={() => setStatus.mutate('closed')}>
-              Закрыть потребность
+              Закрыть поиск
             </Button>
           </>
         }
       >
         <p className="text-[15px] text-ink">
-          Потребность уйдёт во вкладку «Закрытые» и пропадёт с главной. Отправленные по ней приглашения останутся в силе. Вернуть в работу
+          Поиск уйдёт во вкладку «Закрытые» и пропадёт с главной. Отправленные по нему приглашения останутся в силе. Вернуть в работу
           можно в любой момент.
         </p>
       </Modal>

@@ -170,7 +170,7 @@ export default function RecruiterCandidatePage() {
 
         <div className="flex flex-col gap-4">
           <Card>
-            <CardHeader title="Стек и опыт" description={highlight.length ? 'Зелёным — совпадения с потребностью' : undefined} />
+            <CardHeader title="Стек и опыт" description={highlight.length ? 'Зелёным — совпадения с поиском' : undefined} />
             <StackTags stack={p.stack} highlight={highlight} />
             <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
               <div>

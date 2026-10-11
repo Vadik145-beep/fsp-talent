@@ -110,7 +110,7 @@ export default function RecruiterNeedNewPage() {
   if (need.isSuccess) return <NeedForm need={need.data} />
   return (
     <>
-      <PageHeader title="Изменить потребность" back={{ to: `/recruiter/needs/${id}`, label: 'Подборка' }} />
+      <PageHeader title="Изменить поиск" back={{ to: `/recruiter/needs/${id}`, label: 'Подборка' }} />
       {need.isPending ? (
         <>
           <Skeleton className="mb-6 h-10 w-2/3" />
@@ -183,8 +183,8 @@ function NeedForm({ need }: { need?: Need }) {
       qc.setQueryData(rk.need(saved.id), saved)
       toast(
         need
-          ? { tone: 'success', title: 'Потребность сохранена', description: 'Подборка пересчитана по новым полям.' }
-          : { tone: 'success', title: 'Потребность создана', description: `В основной категории ${saved.candidates_count} канд.` },
+          ? { tone: 'success', title: 'Поиск сохранён', description: 'Подборка пересчитана по новым полям.' }
+          : { tone: 'success', title: 'Поиск создан', description: `В основной категории ${saved.candidates_count} канд.` },
       )
       navigate(`/recruiter/needs/${saved.id}`)
     },
@@ -239,14 +239,14 @@ function NeedForm({ need }: { need?: Need }) {
     <>
       {need ? (
         <PageHeader
-          title="Изменить потребность"
+          title="Изменить поиск"
           back={{ to: `/recruiter/needs/${need.id}`, label: 'Подборка' }}
           description="Поправьте поля — подборка пересчитается. Можно заново разобрать текст."
         />
       ) : (
         <PageHeader
-          title="Новая потребность"
-          back={{ to: '/recruiter/needs', label: 'Потребности' }}
+          title="Новый поиск"
+          back={{ to: '/recruiter/needs', label: 'Поиск кандидатов' }}
           description="Опишите, кого ищете, своими словами — мы разложим текст по полям. Потом поправьте и запустите подбор."
         />
       )}
@@ -291,7 +291,7 @@ function NeedForm({ need }: { need?: Need }) {
 
       <form onSubmit={onSubmit} noValidate>
         <Card>
-          <CardHeader title="Поля потребности" description="Проверьте и при необходимости поправьте." />
+          <CardHeader title="Параметры поиска" description="Проверьте и при необходимости поправьте." />
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <Input
               label={<>Название {mark('specialization')}</>}

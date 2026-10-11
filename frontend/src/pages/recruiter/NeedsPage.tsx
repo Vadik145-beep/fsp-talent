@@ -24,12 +24,12 @@ export default function RecruiterNeedsPage() {
   return (
     <>
       <PageHeader
-        title="Потребности"
-        description="Кого ищет компания. По каждой потребности — подборка кандидатов с объяснением."
+        title="Поиск кандидатов"
+        description="Кого ищет компания. По каждому поиску — подборка кандидатов с объяснением."
         actions={
           <Link to="/recruiter/needs/new" className={newNeedLink}>
             <Plus className="size-4" aria-hidden />
-            Новая потребность
+            Новый поиск
           </Link>
         }
       />
@@ -49,17 +49,17 @@ export default function RecruiterNeedsPage() {
           <Card padding="none">
             <EmptyState
               icon={<Target aria-hidden />}
-              title={tab === 'active' ? 'Активных потребностей нет' : 'Закрытых потребностей нет'}
+              title={tab === 'active' ? 'Активных поисков нет' : 'Закрытых поисков нет'}
               description={
                 tab === 'active'
                   ? 'Опишите, кого ищете, — подборка появится сразу.'
-                  : 'Когда подбор завершён, закройте потребность на её странице — она переедет сюда.'
+                  : 'Когда подбор завершён, закройте поиск на его странице — он переедет сюда.'
               }
               action={
                 tab === 'active' ? (
                   <Link to="/recruiter/needs/new" className={newNeedLink}>
                     <Plus className="size-4" aria-hidden />
-                    Новая потребность
+                    Новый поиск
                   </Link>
                 ) : undefined
               }
