@@ -64,9 +64,14 @@ export function VariantPreview({ variants }: { variants: ItemVariantPreview[] })
           </p>
           {v.code && (
             <pre className="mt-3 overflow-x-auto rounded-md bg-fsp-ink p-3 font-mono text-[12.5px] leading-relaxed text-fsp-gray">
-              {v.code.split('\n').map((line, i) => (
+              {v.code.split('\n').map((line, i, all) => (
                 <div key={i} className="flex gap-3">
-                  <span className="w-5 shrink-0 text-right text-fsp-silver select-none">{i + 1}</span>
+                  <span
+                    className="shrink-0 text-right text-fsp-silver select-none"
+                    style={{ width: `${Math.max(2, String(all.length).length)}ch` }}
+                  >
+                    {i + 1}
+                  </span>
                   <span className="[&_mark]:bg-fsp-blue [&_mark]:text-on-primary">
                     <Highlighted text={line} varying={codeVarying} />
                   </span>
