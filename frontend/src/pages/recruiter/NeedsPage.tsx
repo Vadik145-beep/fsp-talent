@@ -6,7 +6,6 @@ import { api } from '@/shared/api'
 import { formatDate, formatSalaryRange, plural } from '@/shared/lib/format'
 import { Badge, Card, EmptyState, PageHeader, Tabs } from '@/shared/ui'
 import { rk, type Need } from './api'
-import { WORK_FORMAT_LABELS } from './labels'
 import { StackTags } from './components/CandidateBits'
 import { QueryState } from './components/QueryState'
 
@@ -82,7 +81,7 @@ export default function RecruiterNeedsPage() {
                           {n.status === 'closed' && <Badge tone="neutral">Закрыта</Badge>}
                         </div>
                         <p className="mt-1 text-sm text-muted">
-                          {formatSalaryRange(n.salary_from, n.salary_to)} · {WORK_FORMAT_LABELS[n.work_format]}
+                          {formatSalaryRange(n.salary_from, n.salary_to)}
                           {n.city ? ` · ${n.city}` : ''} · создана {formatDate(n.created_at)}
                         </p>
                         {Boolean(n.skills_required?.length) && <StackTags className="mt-2" stack={n.skills_required ?? []} />}
