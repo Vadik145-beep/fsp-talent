@@ -1837,7 +1837,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Skill"
+                    "$ref": "#/components/schemas/SkillWithAliases"
                   },
                   "title": "Response List Skills Api Catalog Skills Get"
                 }
@@ -3530,7 +3530,7 @@
           "candidates"
         ],
         "summary": "Банк кандидатов (обезличенно)",
-        "description": "Поиск по всей базе. В выдаче только кандидаты с грейдом, подтверждённым тестом (`grade_status = confirmed`; заявленный, но не подтверждённый грейд — не в выдаче), согласием на публикацию и без паузы поиска. ФИО и контактов в ответе нет. `need_id` — потребность своей компании (чужая → 404): у карточек появляются `match_score` и `match_reasons` (та же формула и причины, что в подборке), сортировка по умолчанию — `match` (по соответствию). Фильтры работают вместе с ней. `sort=match` без `need_id` — 422.",
+        "description": "Поиск по всей базе. В выдаче только кандидаты с грейдом, подтверждённым тестом (`grade_status = confirmed`; заявленный, но не подтверждённый грейд — не в выдаче), согласием на публикацию и без паузы поиска. ФИО и контактов в ответе нет. `need_id` — потребность своей компании (чужая → 404): у карточек появляются `match_score` и `match_reasons` (та же формула и причины, что в подборке), сортировка по умолчанию — `match` (по соответствию). Фильтры работают вместе с ней. `sort=match` без `need_id` — 422. `invitation_status` — статус последнего приглашения от вашей компании (null — не приглашали).",
         "operationId": "search_candidates_api_candidates_get",
         "security": [
           {
@@ -10108,6 +10108,7 @@
           "invitations"
         ],
         "summary": "Отозвать приглашение (рекрутер)",
+        "description": "Отозвать может только рекрутер, который отправил приглашение (иначе 403).",
         "operationId": "withdraw_invitation_api_invitations__invitation_id__withdraw_post",
         "security": [
           {
@@ -19329,6 +19330,18 @@
             "type": "string",
             "title": "Candidate Pseudonym"
           },
+          "candidate_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidate Name",
+            "description": "ФИО: кандидат откликнулся сам, контакты открыты"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -19687,6 +19700,17 @@
             "type": "array",
             "title": "Match Reasons",
             "description": "1–3 короткие причины «почему подходит» (те же, что в подборке)"
+          },
+          "invitation_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InvitationStatus"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Статус последнего приглашения от вашей компании; null — не приглашали"
           }
         },
         "type": "object",
@@ -22809,6 +22833,18 @@
             ],
             "title": "Vacancy Id"
           },
+          "vacancy_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vacancy Title",
+            "description": "Вакансия, к которой привязано"
+          },
           "category": {
             "type": "string",
             "title": "Category"
@@ -23176,6 +23212,18 @@
               }
             ],
             "title": "Vacancy Id"
+          },
+          "vacancy_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vacancy Title",
+            "description": "Вакансия, к которой привязано"
           },
           "category": {
             "type": "string",
@@ -27426,6 +27474,65 @@
             "label": "Rust",
             "specializations": [
               "backend"
+            ]
+          }
+        ]
+      },
+      "SkillWithAliases": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "examples": [
+              "python"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "examples": [
+              "Python"
+            ]
+          },
+          "specializations": {
+            "items": {
+              "$ref": "#/components/schemas/SpecializationCode"
+            },
+            "type": "array",
+            "title": "Specializations"
+          },
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Aliases",
+            "description": "Синонимы и сленг для подсказок ввода (словарь разбора текста)",
+            "examples": [
+              [
+                "питон",
+                "пайтон",
+                "python3"
+              ]
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "specializations"
+        ],
+        "title": "SkillWithAliases",
+        "description": "Технология справочника с синонимами — для подсказок ввода стека.",
+        "examples": [
+          {
+            "id": "python",
+            "label": "Python",
+            "specializations": [
+              "backend",
+              "data_ml",
+              "qa"
             ]
           }
         ]

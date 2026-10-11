@@ -88,6 +88,7 @@ class InvitationRecord(OutModel):
     recruiter_name: str
     need_id: int | None = None
     vacancy_id: int | None = None
+    vacancy_title: str | None = Field(default=None, description="Вакансия, к которой привязано")
     category: str
     category_label: str
     description: str

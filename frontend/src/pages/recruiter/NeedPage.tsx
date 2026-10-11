@@ -18,6 +18,7 @@ import {
 import { RELATION_LABELS, WORK_FORMAT_LABELS, WORK_FORMAT_OPTIONS } from './labels'
 import { InviteModal } from './components/InviteModal'
 import { MatchCard } from './components/MatchCard'
+import { NeedActions } from './components/NeedActions'
 import { QueryState } from './components/QueryState'
 
 const FILTER_KEYS = ['skills', 'has_fsp', 'work_format', 'city'] as const
@@ -116,14 +117,22 @@ export default function RecruiterNeedPage() {
       <PageHeader
         title={n.title}
         back={{ to: '/recruiter/needs', label: 'Потребности' }}
-        meta={<Badge tone="violet">{n.category_label}</Badge>}
+        meta={
+          <>
+            <Badge tone="violet">{n.category_label}</Badge>
+            {n.status === 'closed' && <Badge tone="neutral">Закрыта</Badge>}
+          </>
+        }
         description={[formatSalaryRange(n.salary_from, n.salary_to), WORK_FORMAT_LABELS[n.work_format], n.city]
           .filter(Boolean)
           .join(' · ')}
         actions={
-          <Link to="/recruiter/candidates" className="text-sm font-semibold text-fsp-plum hover:underline">
-            Искать во всём банке
-          </Link>
+          <>
+            <NeedActions need={n} />
+            <Link to={`/recruiter/candidates?need=${n.id}&specialization=${n.specialization}`} className="text-sm font-semibold text-fsp-plum hover:underline">
+              Искать во всём банке
+            </Link>
+          </>
         }
       />
 

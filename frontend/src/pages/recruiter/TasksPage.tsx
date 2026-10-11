@@ -1,10 +1,11 @@
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ListChecks, Plus } from 'lucide-react'
 import { api, getErrorMessage } from '@/shared/api'
 import { cn } from '@/shared/lib/cn'
 import { formatDate, plural } from '@/shared/lib/format'
+import { useMediaQuery } from '@/shared/lib/useMediaQuery'
 import { Badge, Button, Card, CardHeader, EmptyState, Input, Modal, PageHeader, Pseudonym, Select, Textarea, useToast } from '@/shared/ui'
 import { apiFieldErrors, pseudonymCodeOf, refreshRecruiter, rk, upsertInList, useCategories, type RegularTask, type S, type TaskSubmission } from './api'
 import { ANSWER_KIND_LABELS, SCORE_LABELS, SUBMISSION_STATUS } from './labels'
@@ -17,6 +18,13 @@ export default function RecruiterTasksPage() {
   const tasks = useQuery({ queryKey: rk.tasks, queryFn: () => api.get<RegularTask[]>('/tasks') })
   const selectedId = Number(sp.get('task')) || tasks.data?.[0]?.id || null
   const selected = tasks.data?.find((t) => t.id === selectedId) ?? null
+  // на узком экране ответы — под списком: после выбора задания прокручиваем к ним
+  const wide = useMediaQuery('(min-width: 1024px)')
+  const detailRef = useRef<HTMLDivElement>(null)
+  const choose = (id: number) => {
+    setSp({ task: String(id) }, { replace: true })
+    if (!wide) requestAnimationFrame(() => detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+  }
 
   return (
     <>
@@ -52,7 +60,7 @@ export default function RecruiterTasksPage() {
                   <li key={t.id}>
                     <button
                       type="button"
-                      onClick={() => setSp({ task: String(t.id) }, { replace: true })}
+                      onClick={() => choose(t.id)}
                       aria-current={active ? 'true' : undefined}
                       className={cn(
                         'w-full rounded-lg border p-3 text-left transition-colors',
@@ -68,7 +76,9 @@ export default function RecruiterTasksPage() {
                 )
               })}
             </ul>
-            {selected && <TaskSubmissions task={selected} />}
+            <div ref={detailRef} className="min-w-0 scroll-mt-20">
+              {selected && <TaskSubmissions task={selected} />}
+            </div>
           </div>
         )}
       </QueryState>

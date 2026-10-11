@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useQuery, type QueryClient, type QueryKey } from '@tanstack/react-query'
+import { useAuth } from '@/app/auth/AuthContext'
 import { api, isApiError } from '@/shared/api'
 import type { components } from '@/shared/api/schema'
 
@@ -77,24 +78,47 @@ export function useCategories() {
   })
 }
 
-/** Справочник стека: подписи по коду и список подписей для подсказок. */
+/**
+ * Справочник стека: подписи по коду и список подписей для подсказок.
+ * `resolve` узнаёт введённое по подписи, коду и синонимам (сленг «постгрес» → PostgreSQL) —
+ * тот же словарь, что у разбора текста потребности на бэкенде.
+ */
 export function useSkills() {
   const q = useQuery({
     queryKey: rk.skills,
-    queryFn: () => api.get<S['Skill'][]>('/catalog/skills'),
+    queryFn: () => api.get<S['SkillWithAliases'][]>('/catalog/skills'),
     staleTime: Infinity,
   })
   return useMemo(() => {
     const list = q.data ?? []
     const byId = new Map(list.map((s) => [s.id, s.label]))
     const byLabel = new Map(list.map((s) => [s.label.toLowerCase(), s.id]))
+    const byAlias = new Map<string, string>()
+    for (const s of list) {
+      for (const a of [s.id, s.label, ...(s.aliases ?? [])]) {
+        const key = a.trim().toLowerCase()
+        if (key && !byAlias.has(key)) byAlias.set(key, s.id)
+      }
+    }
     return {
       list,
       label: (id: string) => byId.get(id) ?? id,
       idOf: (label: string) => byLabel.get(label.toLowerCase()) ?? label.trim().toLowerCase(),
+      /** Введённый текст → подпись технологии из справочника или null. */
+      resolve: (raw: string): string | null => {
+        const id = byAlias.get(raw.trim().toLowerCase().replace(/\s+/g, ' '))
+        return id ? (byId.get(id) ?? null) : null
+      },
       isLoading: q.isPending,
     }
   }, [q.data, q.isPending])
+}
+
+/** Мой id рекрутера (для «кто отправил» и прав на отзыв приглашения). */
+export function useMyRecruiterId(): number | null {
+  const { user } = useAuth()
+  const recruiters = useCompanyRecruiters()
+  return recruiters.data?.find((r) => r.user_id === user?.userId)?.id ?? null
 }
 
 /** Значение с задержкой — для подсказок при вводе (рыночная подсказка). */

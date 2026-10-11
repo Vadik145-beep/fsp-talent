@@ -494,3 +494,28 @@ def test_market_hint_hidden_for_small_sample(client: TestClient) -> None:
         ).status_code
         == 404
     )
+
+
+def test_only_sender_can_withdraw(client: TestClient) -> None:
+    created = invite(client, 10)
+    colleague = as_role("recruiter", 42)  # рекрутер 2 той же компании
+    listed = client.get("/api/invitations", headers=colleague).json()
+    assert created["id"] in {i["id"] for i in listed}  # видит приглашения компании
+    response = client.post(f"/api/invitations/{created['id']}/withdraw", headers=colleague)
+    assert response.status_code == 403 and response.json()["code"] == "forbidden"
+    own = client.post(f"/api/invitations/{created['id']}/withdraw", headers=RECRUITER)
+    assert own.status_code == 200 and own.json()["status"] == "withdrawn"
+
+
+def test_invitation_shows_vacancy_title(client: TestClient) -> None:
+    vacancy = next(
+        v for v in fixtures.load("vacancies") if v["company_id"] == 1 and v["status"] == "published"
+    )
+    created = client.post(
+        "/api/invitations", json=body(10, vacancy_id=vacancy["id"]), headers=RECRUITER
+    ).json()
+    assert created["vacancy_title"] == vacancy["title"]
+    cand10 = as_role("candidate", fixtures.by_id("candidates", 10)["user_id"])  # type: ignore[index]
+    seen = client.get(f"/api/invitations/{created['id']}", headers=cand10).json()
+    assert seen["vacancy_title"] == vacancy["title"]
+    assert invite(client, 18)["vacancy_title"] is None

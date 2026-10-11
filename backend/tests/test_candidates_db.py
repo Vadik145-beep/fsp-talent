@@ -393,3 +393,21 @@ def test_bank_need_access_and_validation(client: TestClient) -> None:
     assert own.status_code == 200 and own.json()["items"][0]["match_score"] is not None
     no_need = client.get("/api/candidates", params={"sort": "match"}, headers=RECRUITER)
     assert no_need.status_code == 422
+
+
+def test_bank_shows_company_invitation_status(client: TestClient) -> None:
+    """Карточка банка знает статус последнего приглашения своей компании (как подборка)."""
+    invs = [i for i in fixtures.load("invitations") if i["company_id"] == 1]
+    items = _bank_all(client)["items"]
+    latest: dict[int, dict[str, Any]] = {}
+    for inv in sorted(invs, key=lambda i: (i["created_at"], i["id"])):
+        latest[inv["candidate_id"]] = inv
+    for card in items:
+        expected = latest.get(card["id"])
+        assert card["invitation_status"] == (expected["status"] if expected else None)
+    assert any(c["invitation_status"] for c in items)
+    # другая компания не видит чужих приглашений
+    other = {i["candidate_id"] for i in fixtures.load("invitations") if i["company_id"] == 2}
+    c2 = client.get("/api/candidates", params={"page_size": 100}, headers=RECRUITER_C2)
+    c2 = c2.json()["items"]
+    assert all(c["invitation_status"] is None for c in c2 if c["id"] not in other)

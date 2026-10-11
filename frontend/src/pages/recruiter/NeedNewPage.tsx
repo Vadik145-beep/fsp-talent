@@ -1,14 +1,16 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
-import { useNavigate } from 'react-router'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowRight, Sparkles, WandSparkles } from 'lucide-react'
+import { useNavigate, useParams } from 'react-router'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { ArrowRight, Save, Sparkles, WandSparkles } from 'lucide-react'
 import { api, isApiError } from '@/shared/api'
 import { GRADE_OPTIONS, SPECIALIZATION_OPTIONS, type Grade, type Specialization } from '@/shared/config/dictionaries'
-import { Badge, Button, Card, CardHeader, Input, PageHeader, RadioGroup, Select, Textarea, useToast } from '@/shared/ui'
-import { apiFieldErrors, refreshRecruiter, rk, upsertInList, useSkills, type Need, type NeedCreate, type NeedParseResult, type WorkFormat } from './api'
+import { Badge, Button, Card, CardHeader, Input, PageHeader, RadioGroup, Select, Skeleton, SkeletonCard, Textarea, useToast } from '@/shared/ui'
+import { apiFieldErrors, refreshRecruiter, rk, upsertInList, useSkills, type Need, type NeedCreate, type NeedParseResult, type S, type WorkFormat } from './api'
 import { WORK_FORMAT_OPTIONS } from './labels'
 import { MoneyInput } from './components/MoneyInput'
+import { QueryState } from './components/QueryState'
 import { SkillInput } from './components/SkillInput'
+import { useFieldErrors } from './useFieldErrors'
 
 const EXAMPLES = [
   'Нужен сеньор на Go в финтех, удалёнка, 300–400к',
@@ -57,6 +59,35 @@ const EMPTY: FormState = {
 
 type Errors = Partial<Record<keyof FormState, string>>
 
+function validateNeed(form: FormState): Errors {
+  const next: Errors = {}
+  if (form.title.trim().length < 3) next.title = 'Название — не короче 3 символов'
+  if (!form.specialization) next.specialization = 'Выберите специализацию'
+  if (!form.grade) next.grade = 'Выберите грейд'
+  if (!form.work_format) next.work_format = 'Выберите формат'
+  if (!form.salary_from) next.salary_from = 'Укажите «от»'
+  if (!form.salary_to) next.salary_to = 'Укажите «до»'
+  if (form.salary_from && form.salary_to && form.salary_from > form.salary_to) next.salary_from = '«От» больше «до»'
+  return next
+}
+
+const SALARY_PAIR: Array<Array<keyof FormState>> = [['salary_from', 'salary_to']]
+
+function formOf(n: Need): FormState {
+  return {
+    title: n.title,
+    specialization: n.specialization,
+    grade: n.grade,
+    skills_required: n.skills_required ?? [],
+    skills_desired: n.skills_desired ?? [],
+    team_description: n.team_description ?? '',
+    work_format: n.work_format,
+    city: n.city ?? '',
+    salary_from: n.salary_from,
+    salary_to: n.salary_to,
+  }
+}
+
 const REQUIRED_FIELDS: Array<['specialization' | 'grade' | 'work_format' | 'salary', string]> = [
   ['specialization', 'специализация'],
   ['grade', 'грейд'],
@@ -64,16 +95,43 @@ const REQUIRED_FIELDS: Array<['specialization' | 'grade' | 'work_format' | 'sala
   ['salary', 'вилка'],
 ]
 
-/** Создание потребности: свободный текст → «Разобрать» → правка полей → «Подобрать кандидатов». */
+/**
+ * Создание потребности: свободный текст → «Разобрать» → правка полей → «Подобрать кандидатов».
+ * С `:id` в адресе (`/recruiter/needs/:id/edit`) — та же форма для изменения потребности.
+ */
 export default function RecruiterNeedNewPage() {
+  const id = Number(useParams().id) || null
+  const need = useQuery({
+    queryKey: rk.need(id ?? 0),
+    queryFn: () => api.get<Need>(`/matching/needs/${id}`),
+    enabled: id !== null,
+  })
+  if (id === null) return <NeedForm />
+  if (need.isSuccess) return <NeedForm need={need.data} />
+  return (
+    <>
+      <PageHeader title="Изменить потребность" back={{ to: `/recruiter/needs/${id}`, label: 'Подборка' }} />
+      {need.isPending ? (
+        <>
+          <Skeleton className="mb-6 h-10 w-2/3" />
+          <SkeletonCard />
+        </>
+      ) : (
+        <QueryState query={need}>{() => null}</QueryState>
+      )}
+    </>
+  )
+}
+
+function NeedForm({ need }: { need?: Need }) {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const { toast } = useToast()
   const skills = useSkills()
-  const [text, setText] = useState('')
+  const [text, setText] = useState(need?.raw_text ?? '')
   const [textError, setTextError] = useState<string | null>(null)
-  const [form, setForm] = useState<FormState>(EMPTY)
-  const [errors, setErrors] = useState<Errors>({})
+  const [form, setForm] = useState<FormState>(need ? formOf(need) : EMPTY)
+  const { errors, setErrors, touch, check } = useFieldErrors<FormState, keyof FormState>(validateNeed, SALARY_PAIR)
   const [parsed, setParsed] = useState<NeedParseResult | null>(null)
   // В контракте вилка — salary_from / salary_to, в старых ответах — salary: приводим к одному.
   const fromText = new Set((parsed?.recognized_fields ?? []).map((f) => (f === 'salary_from' || f === 'salary_to' ? 'salary' : f)))
@@ -84,7 +142,11 @@ export default function RecruiterNeedNewPage() {
     ? REQUIRED_FIELDS.filter(([f]) => (f === 'salary' ? !form.salary_from || !form.salary_to : !form[f])).map(([, label]) => label)
     : []
 
-  const set = <K extends keyof FormState>(key: K, value: FormState[K]) => setForm((f) => ({ ...f, [key]: value }))
+  const set = <K extends keyof FormState>(key: K, value: FormState[K]) => {
+    const next = { ...form, [key]: value }
+    setForm(next)
+    touch(key, next)
+  }
 
   const parse = useMutation({
     mutationFn: (t: string) => api.post<NeedParseResult>('/matching/needs/parse', { text: t }),
@@ -109,14 +171,22 @@ export default function RecruiterNeedNewPage() {
   })
 
   const create = useMutation({
-    mutationFn: (body: NeedCreate) => api.post<Need>('/matching/needs', body),
-    onSuccess: (need) => {
+    mutationFn: (body: NeedCreate) =>
+      need
+        ? api.put<Need>(`/matching/needs/${need.id}`, { ...body, status: need.status } satisfies S['NeedUpdate'])
+        : api.post<Need>('/matching/needs', body),
+    onSuccess: (saved) => {
       // Потребность из ответа — в кэш: экран подборки откроется без лишнего запроса.
-      qc.setQueryData(rk.need(need.id), need)
-      upsertInList(qc, rk.needs, need)
-      void refreshRecruiter(qc, rk.needs)
-      toast({ tone: 'success', title: 'Потребность создана', description: `В основной категории ${need.candidates_count} канд.` })
-      navigate(`/recruiter/needs/${need.id}`)
+      upsertInList(qc, rk.needs, saved)
+      // список уже обновлён; подборка и категории изменённой потребности — заново
+      void refreshRecruiter(qc, (k) => k.length === rk.needs.length && k[1] === rk.needs[1])
+      qc.setQueryData(rk.need(saved.id), saved)
+      toast(
+        need
+          ? { tone: 'success', title: 'Потребность сохранена', description: 'Подборка пересчитана по новым полям.' }
+          : { tone: 'success', title: 'Потребность создана', description: `В основной категории ${saved.candidates_count} канд.` },
+      )
+      navigate(`/recruiter/needs/${saved.id}`)
     },
     onError: (e) => {
       const fields = apiFieldErrors(e) as Errors
@@ -142,16 +212,7 @@ export default function RecruiterNeedNewPage() {
 
   function onSubmit(e: FormEvent) {
     e.preventDefault()
-    const next: Errors = {}
-    if (form.title.trim().length < 3) next.title = 'Название — не короче 3 символов'
-    if (!form.specialization) next.specialization = 'Выберите специализацию'
-    if (!form.grade) next.grade = 'Выберите грейд'
-    if (!form.work_format) next.work_format = 'Выберите формат'
-    if (!form.salary_from) next.salary_from = 'Укажите «от»'
-    if (!form.salary_to) next.salary_to = 'Укажите «до»'
-    if (form.salary_from && form.salary_to && form.salary_from > form.salary_to) next.salary_from = '«От» больше «до»'
-    setErrors(next)
-    if (Object.keys(next).length) return
+    if (!check(form)) return
     create.mutate({
       title: form.title.trim(),
       raw_text: text.trim() || null,
@@ -176,11 +237,19 @@ export default function RecruiterNeedNewPage() {
 
   return (
     <>
-      <PageHeader
-        title="Новая потребность"
-        back={{ to: '/recruiter/needs', label: 'Потребности' }}
-        description="Опишите, кого ищете, своими словами — мы разложим текст по полям. Потом поправьте и запустите подбор."
-      />
+      {need ? (
+        <PageHeader
+          title="Изменить потребность"
+          back={{ to: `/recruiter/needs/${need.id}`, label: 'Подборка' }}
+          description="Поправьте поля — подборка пересчитается. Можно заново разобрать текст."
+        />
+      ) : (
+        <PageHeader
+          title="Новая потребность"
+          back={{ to: '/recruiter/needs', label: 'Потребности' }}
+          description="Опишите, кого ищете, своими словами — мы разложим текст по полям. Потом поправьте и запустите подбор."
+        />
+      )}
 
       <Card className="mb-6">
         <Textarea
@@ -298,9 +367,15 @@ export default function RecruiterNeedNewPage() {
           </div>
           {skills.isLoading && <p className="mt-2 text-[13px] text-muted">Загружаем справочник стека…</p>}
           <div className="mt-6 flex justify-end border-t border-line pt-4">
-            <Button type="submit" size="lg" loading={create.isPending} rightIcon={<ArrowRight className="size-5" aria-hidden />}>
-              Подобрать кандидатов
-            </Button>
+            {need ? (
+              <Button type="submit" size="lg" loading={create.isPending} leftIcon={<Save className="size-5" aria-hidden />}>
+                Сохранить
+              </Button>
+            ) : (
+              <Button type="submit" size="lg" loading={create.isPending} rightIcon={<ArrowRight className="size-5" aria-hidden />}>
+                Подобрать кандидатов
+              </Button>
+            )}
           </div>
         </Card>
       </form>

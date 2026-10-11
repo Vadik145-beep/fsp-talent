@@ -100,6 +100,9 @@ class ApplicationBrief(OutModel):
     vacancy_id: int
     vacancy_title: str
     candidate_pseudonym: str
+    candidate_name: str | None = Field(
+        default=None, description="ФИО: кандидат откликнулся сам, контакты открыты"
+    )
     created_at: datetime
 
 

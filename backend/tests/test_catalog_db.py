@@ -38,6 +38,9 @@ def test_public_lists_from_db(client: TestClient) -> None:
     assert {s["id"] for s in skills} == {s["id"] for s in fixtures.load("skills")}
     found = client.get("/api/catalog/skills", params={"q": "post"}).json()
     assert "postgresql" in {s["id"] for s in found}
+    # синонимы и сленг для подсказок ввода — из словаря разбора текста
+    pg = next(s for s in skills if s["id"] == "postgresql")
+    assert "постгрес" in pg["aliases"] and "postgresql" not in pg["aliases"]
 
 
 def test_skill_crud_and_in_use(client: TestClient, fresh_db: None) -> None:

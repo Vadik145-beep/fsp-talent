@@ -190,6 +190,7 @@ async def decline_invitation(
     "/{invitation_id}/withdraw",
     response_model=Invitation,
     summary="Отозвать приглашение (рекрутер)",
+    description="Отозвать может только рекрутер, который отправил приглашение (иначе 403).",
     responses=error_responses(401, 403, 404, TRANSITION_ERROR),
 )
 async def withdraw_invitation(invitation_id: int, user: RecruiterUser, session: SessionDep) -> Any:

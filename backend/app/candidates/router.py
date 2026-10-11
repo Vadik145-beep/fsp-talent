@@ -227,7 +227,8 @@ async def declare_grade(body: DeclaredGradeUpdate, user: CandidateUser, session:
         "`need_id` — потребность своей компании (чужая → 404): у карточек появляются "
         "`match_score` и `match_reasons` (та же формула и причины, что в подборке), "
         "сортировка по умолчанию — `match` (по соответствию). Фильтры работают вместе с ней. "
-        "`sort=match` без `need_id` — 422."
+        "`sort=match` без `need_id` — 422. `invitation_status` — статус последнего приглашения "
+        "от вашей компании (null — не приглашали)."
     ),
     responses=error_responses(*AUTH_ERRORS, 404, 422),
 )
@@ -274,6 +275,7 @@ async def search_candidates(
         )
     return await CandidateProfileService(session).search(
         need=need,
+        company_id=user.company_id,
         specialization=specialization,
         grade=grade,
         category=category,

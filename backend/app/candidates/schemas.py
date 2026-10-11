@@ -301,6 +301,10 @@ class BankCandidateCard(CandidateCard):
         default_factory=list,
         description="1–3 короткие причины «почему подходит» (те же, что в подборке)",
     )
+    invitation_status: InvitationStatus | None = Field(
+        default=None,
+        description="Статус последнего приглашения от вашей компании; null — не приглашали",
+    )
 
 
 class TestHistoryPoint(OutModel):

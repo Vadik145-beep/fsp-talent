@@ -122,9 +122,10 @@ class CompanyDb:
     async def applications(self, company_id: int) -> list[dict[str, Any]]:
         rows = (
             await self.session.execute(
-                select(Application, Vacancy.title, CandidateProfile.pseudonym)
+                select(Application, Vacancy.title, CandidateProfile.pseudonym, User.full_name)
                 .join(Vacancy, Vacancy.id == Application.vacancy_id)
                 .join(CandidateProfile, CandidateProfile.id == Application.candidate_id)
+                .join(User, User.id == CandidateProfile.user_id)
                 .where(Vacancy.company_id == company_id)
                 .order_by(Application.created_at.desc(), Application.id.desc())
             )
@@ -135,8 +136,10 @@ class CompanyDb:
                 "vacancy_id": a.vacancy_id,
                 "vacancy_title": title,
                 "candidate_pseudonym": pseudonym,
+                # кандидат откликнулся сам — контакты и ФИО компании открыты
+                "candidate_name": full_name,
                 "status": a.status,
                 "created_at": as_msk(a.created_at),
             }
-            for a, title, pseudonym in rows
+            for a, title, pseudonym, full_name in rows
         ]

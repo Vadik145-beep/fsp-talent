@@ -58,8 +58,10 @@ export function ApplicationItem({ app, showVacancy }: { app: Application; showVa
             {formatDate(app.created_at)}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        {/* статус — одним элементом: список, если есть куда переводить, иначе бейдж */}
+        {APPLICATION_TRANSITIONS[app.status].length === 0 ? (
           <Badge tone={APPLICATION_STATUS_TONE[app.status]}>{APPLICATION_STATUS_LABELS[app.status]}</Badge>
+        ) : (
           <Select
             aria-label="Статус отклика"
             containerClassName="w-40"
@@ -75,7 +77,7 @@ export function ApplicationItem({ app, showVacancy }: { app: Application; showVa
               } else setStatus.mutate({ status })
             }}
           />
-        </div>
+        )}
       </div>
       {inviting && (
         <ApplicationInviteModal

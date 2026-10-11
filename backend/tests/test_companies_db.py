@@ -70,3 +70,8 @@ def test_dashboard_counts_from_db(client: TestClient) -> None:
         if a["vacancy_id"] in vacancies and a["status"] == "new"
     ]
     assert dashboard["new_applications_count"] == len(new_apps)
+    # отклик — кандидат сам открыл контакты: на главной имя, а не только псевдоним
+    names = {c["id"]: c["full_name"] for c in fixtures.load("candidates")}
+    by_id = {a["id"]: a for a in new_apps}
+    for brief in dashboard["recent_applications"]:
+        assert brief["candidate_name"] == names[by_id[brief["id"]]["candidate_id"]]

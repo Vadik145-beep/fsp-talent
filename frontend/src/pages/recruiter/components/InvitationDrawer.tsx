@@ -1,10 +1,10 @@
 import { Link } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Lock } from 'lucide-react'
+import { Briefcase, Lock, UserRound } from 'lucide-react'
 import { api } from '@/shared/api'
 import { formatDateTime } from '@/shared/lib/format'
 import { Button, Drawer, Pseudonym, SalaryRange, SkeletonText, StatusPill, ErrorState } from '@/shared/ui'
-import { pseudonymCodeOf, rk, type Invitation, type InvitationDetail } from '../api'
+import { pseudonymCodeOf, rk, useMyRecruiterId, type Invitation, type InvitationDetail } from '../api'
 import { CONTACT_TYPE_LABELS, EVENT_LABELS } from '../labels'
 
 const CAN_WITHDRAW = ['sent', 'viewed']
@@ -25,6 +25,7 @@ export function InvitationDrawer({
     enabled: id !== null,
   })
   const qc = useQueryClient()
+  const myId = useMyRecruiterId()
   // Строка из списка — пока карточка грузится и если карточки на сервере нет (без журнала).
   const fromList = qc.getQueryData<Invitation[]>(rk.invitations)?.find((i) => i.id === id)
   const inv: InvitationDetail | undefined = q.data ?? (fromList && (q.isPending || q.isError) ? { ...fromList, events: [] } : undefined)
@@ -36,9 +37,13 @@ export function InvitationDrawer({
       title="Приглашение"
       footer={
         inv && CAN_WITHDRAW.includes(inv.status) ? (
-          <Button variant="danger" onClick={() => onWithdraw(inv.id)}>
-            Отозвать приглашение
-          </Button>
+          inv.recruiter_id === myId ? (
+            <Button variant="danger" onClick={() => onWithdraw(inv.id)}>
+              Отозвать приглашение
+            </Button>
+          ) : (
+            <p className="text-[13px] text-muted">Отозвать может только отправитель — {inv.recruiter_name}.</p>
+          )
         ) : undefined
       }
     >
@@ -56,6 +61,32 @@ export function InvitationDrawer({
                 <span>{inv.category_label}</span>
               )}
               <StatusPill status={inv.status} />
+            </div>
+
+            <div className="flex flex-col gap-1.5 text-sm">
+              <Link
+                to={`/recruiter/candidates/${inv.candidate_id}`}
+                className="inline-flex items-center gap-1.5 font-semibold text-fsp-plum hover:underline"
+                data-testid="invitation-profile-link"
+              >
+                <UserRound className="size-4" aria-hidden />
+                Открыть профиль кандидата
+              </Link>
+              {inv.vacancy_id ? (
+                <Link
+                  to={`/recruiter/vacancies/${inv.vacancy_id}`}
+                  className="inline-flex items-center gap-1.5 text-ink hover:text-fsp-plum hover:underline"
+                  data-testid="invitation-vacancy"
+                >
+                  <Briefcase className="size-4 text-fsp-plum" aria-hidden />
+                  Вакансия: {inv.vacancy_title ?? `№${inv.vacancy_id}`}
+                </Link>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 text-muted" data-testid="invitation-vacancy">
+                  <Briefcase className="size-4" aria-hidden />
+                  Без привязки к вакансии
+                </span>
+              )}
             </div>
 
             {inv.status === 'accepted' && inv.candidate_contacts ? (
@@ -98,7 +129,8 @@ export function InvitationDrawer({
               </section>
             )}
             <p className="text-[13px] text-muted">
-              Отправил {inv.recruiter_name} · действует до {formatDateTime(inv.expires_at)}
+              {inv.recruiter_id === myId ? 'Отправили вы' : `Отправитель: ${inv.recruiter_name}`}
+              {CAN_WITHDRAW.includes(inv.status) && <> · ждёт ответа до {formatDateTime(inv.expires_at)}</>}
             </p>
 
             <section>

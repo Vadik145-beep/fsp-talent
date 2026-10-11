@@ -82,7 +82,12 @@ export default function RecruiterVacanciesPage() {
         onChange={(v) => setSp(v === 'applications' ? { tab: 'applications' } : {}, { replace: true })}
         items={[
           { id: 'vacancies', label: 'Вакансии', count: vacancies.data?.length },
-          { id: 'applications', label: 'Отклики', count: newApps ? newApps : applications.data?.length },
+          {
+            id: 'applications',
+            // счётчик — все отклики; новые — отдельной подписью (было «4» при 13 в списке)
+            label: newApps ? `Отклики · новых ${newApps} из ${applications.data?.length ?? 0}` : 'Отклики',
+            count: newApps ? undefined : applications.data?.length,
+          },
         ]}
       />
       {tab === 'vacancies' ? (

@@ -6,7 +6,7 @@ import { api } from '@/shared/api'
 import { INVITATION_STATUSES, INVITATION_STATUS_LABELS, type InvitationStatus } from '@/shared/config/dictionaries'
 import { formatDate, formatSalaryRange } from '@/shared/lib/format'
 import { Button, Card, EmptyState, PageHeader, Pseudonym, StatusPill, Table, Tabs, Tag, type TableColumn } from '@/shared/ui'
-import { pseudonymCodeOf, rk, type Invitation } from './api'
+import { pseudonymCodeOf, rk, useMyRecruiterId, type Invitation } from './api'
 import { InvitationDrawer } from './components/InvitationDrawer'
 import { QueryState } from './components/QueryState'
 import { QuotaMeter } from './components/QuotaMeter'
@@ -34,6 +34,8 @@ export default function RecruiterInvitationsPage() {
   const [openId, setOpenId] = useState<number | null>(null)
   const [withdrawId, setWithdrawId] = useState<number | null>(null)
   const invitations = useQuery({ queryKey: rk.invitations, queryFn: () => api.get<Invitation[]>('/invitations') })
+  const myId = useMyRecruiterId()
+  const sender = (i: Invitation) => (i.recruiter_id === myId ? 'Вы' : i.recruiter_name)
 
   const setParam = (key: string, value: string | null) => {
     const next = new URLSearchParams(sp)
@@ -67,6 +69,13 @@ export default function RecruiterInvitationsPage() {
       ),
     },
     {
+      key: 'recruiter_name',
+      header: 'Кто отправил',
+      sortable: true,
+      sortValue: (i) => sender(i),
+      render: (i) => <span className={i.recruiter_id === myId ? 'font-semibold' : undefined}>{sender(i)}</span>,
+    },
+    {
       key: 'created_at',
       header: 'Отправлено',
       sortable: true,
@@ -78,7 +87,8 @@ export default function RecruiterInvitationsPage() {
       header: '',
       align: 'right',
       render: (i) =>
-        CAN_WITHDRAW.includes(i.status) ? (
+        // отозвать может только отправитель (бэкенд тоже проверяет)
+        CAN_WITHDRAW.includes(i.status) && i.recruiter_id === myId ? (
           <Button
             size="sm"
             variant="ghost"
@@ -180,7 +190,9 @@ export default function RecruiterInvitationsPage() {
                           {i.status === 'declined' && i.decline_reason_label && (
                             <span className="mt-1 block text-[13px] text-danger">{i.decline_reason_label}</span>
                           )}
-                          <span className="mt-1 block text-xs text-subtle">{formatDate(i.created_at)}</span>
+                          <span className="mt-1 block text-xs text-subtle">
+                            {formatDate(i.created_at)} · {sender(i)}
+                          </span>
                         </button>
                       ))}
                       {!items.length && <p className="px-1 py-3 text-center text-xs text-subtle">Пусто</p>}

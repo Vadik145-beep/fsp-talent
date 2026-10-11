@@ -57,8 +57,8 @@ export default function RecruiterDashboardPage() {
           <>
             <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <Kpi icon={<Target aria-hidden />} label="Активные потребности" value={data.active_needs.length} to="/recruiter/needs" />
-              <Kpi icon={<Mail aria-hidden />} label="Приглашения ждут ответа" value={inWork} to="/recruiter/invitations" />
-              <Kpi icon={<UserCheck aria-hidden />} label="Приняли приглашение" value={by.accepted ?? 0} to="/recruiter/invitations?status=accepted" />
+              <Kpi icon={<Mail aria-hidden />} label="Ждут ответа · по компании" value={inWork} to="/recruiter/invitations" />
+              <Kpi icon={<UserCheck aria-hidden />} label="Приняли · по компании" value={by.accepted ?? 0} to="/recruiter/invitations?status=accepted" />
               <Kpi icon={<Inbox aria-hidden />} label="Новые отклики" value={data.new_applications_count} to="/recruiter/vacancies?tab=applications" accent={data.new_applications_count > 0} />
             </div>
 
@@ -119,7 +119,7 @@ export default function RecruiterDashboardPage() {
                           <Link to={`/recruiter/vacancies/${a.vacancy_id}`} className="flex items-center justify-between gap-3 py-2.5 text-sm hover:text-fsp-plum">
                             <span className="min-w-0">
                               <span className="block font-medium break-words">{a.vacancy_title}</span>
-                              <span className="block text-[13px] text-muted">{a.candidate_pseudonym}</span>
+                              <span className="block text-[13px] text-muted">{a.candidate_name ?? a.candidate_pseudonym}</span>
                             </span>
                             <span className="shrink-0 text-[13px] text-muted">{formatDate(a.created_at)}</span>
                           </Link>
@@ -134,7 +134,7 @@ export default function RecruiterDashboardPage() {
 
               <div className="flex flex-col gap-4">
                 <Card>
-                  <CardHeader title="Приглашения по статусам" />
+                  <CardHeader title="Приглашения по статусам" description="Все рекрутеры компании" />
                   <ul className="flex flex-col gap-2.5">
                     {INVITATION_STATUSES.map((s) => (
                       <li key={s}>
